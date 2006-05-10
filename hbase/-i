@@ -1,0 +1,14 @@
+This file is here to prevent 'rm -r /path/to/somewhere/ *'...
+	(which deletes '/path/to/somewhere' AND '*')
+when all you meant to do was 'rm -r /path/to/somewhere/*'
+	(which deletes '*' in '/path/to/somewhere')
+
+This way, if you do the fist one in a directory with this file, it sees 
+this file (named -i) and thinks that its an argument. The -i argument 
+happens to be --interactive; that is, it will ask you for each file 
+whether you want to remove it. hehe.
+
+To make this file, just do 'touch -- -i'
+To kill this file, just do 'rm -- -i'
+
+MegaProps to kapheine on forums.gentoo.org for this one. Ingenious.

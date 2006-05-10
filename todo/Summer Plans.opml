@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Summer Plans</title>
+    <expansionState>0,3,4,10,11,15,19,24,28,31,33</expansionState>
+  </head>
+  <body>
+    <outline text="Disciple Josiah">
+      <outline text="Mostly the same things that Mark is doing with us guys"/>
+      <outline text="Erick sounded interested in being part of the lust talk with him"/>
+    </outline>
+    <outline text="Prepare for school, &amp; work to earn $3K">
+      <outline text="$260 would cover all of my rent + utilities at Hampton for 9 months at $300/month">
+        <outline text="at $230/mo, a likely amount during the winter, it would be even less..."/>
+      </outline>
+      <outline text="see what my total expenses would be over the summer"/>
+      <outline text="how many classes can I fit into next semester?"/>
+      <outline text="how much work do I need to do to pay all my bills?"/>
+      <outline text="Mama &amp; Papa are prepared to pay $250/mo (wow)"/>
+    </outline>
+    <outline text="God stuff">
+      <outline text="Memorize a book of the Bible">
+        <outline text="goal: memorize good chunks of the Bible, esp NT, and to know all of it very well. (set a goal, eg, memorize a book a year or something until that becomes unreasonable, then set other goals without giving up on the whole thing)"/>
+        <outline text="Try to spend time with God, plus memorize, plus read. So, 30 min of prayer, plus reading, plus memorizing"/>
+        <outline text="get an audio recording of the Bible that I can listen to in my car/ipod"/>
+      </outline>
+      <outline text="Every day:">
+        <outline text="some memorization"/>
+        <outline text="some reading"/>
+        <outline text="30 minutes of prayer, at least - perhaps make a goal to try to work up to 45 minutes to one hour/day by the end of the summer"/>
+      </outline>
+      <outline text="Every 2 or 3 days, do this also: ">
+        <outline text="spend extra time on memorization, and especially adding new portions to memorize"/>
+        <outline text="spend an hour or so studying a specific topic or passage"/>
+        <outline text="these things would have a day and a time set aside for them, in the middle of the day and not waiting until the end. I think that it might be too much to do that every day, but something like every Monday and Friday I will spend a couple of hours on something, at a set time of day, for a set time, would be pretty easy to keep up with."/>
+        <outline text="It is probably best to do them at separate times from the daily stuff, but after the daily stuff, to get interaction with God before study. "/>
+      </outline>
+    </outline>
+    <outline text="Prepare for Turkey, and take a full course in Turkish">
+      <outline text="that is, complete one unit, have a set goal"/>
+      <outline text="Helpful to have listenable things on iPod."/>
+      <outline text="Probably helpful to *not* have it on my computer. Heh."/>
+    </outline>
+    <outline text="Get in shape">
+      <outline text="no excuses, Gym Every Day (GED), or at least solid, no exceptions, 3-4 times/week"/>
+      <outline text="the goal is to actually change the way I look by the end of the summer. Not change it into what I want to be (theoretically possible, eg bootcamp), but to change it, period... to make a change."/>
+    </outline>
+    <outline text="Things I would like to do">
+      <outline text="learn some more programming in perl"/>
+      <outline text="Finish a lot of books:">
+        <outline text="Captivating (and skim over Wild At Heart and finish the end to refresh my memory of it)"/>
+        <outline text="the Jack Deer books - this is a lot, but perhaps I could try to read just the first book in the large volume."/>
+        <outline text="the rest of Let the Nations be Glad that we read for Turkey"/>
+      </outline>
+    </outline>
+  </body>
+</opml>
