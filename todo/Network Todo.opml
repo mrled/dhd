@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Network Todo</title>
+    <expansionState>3,4,11,12,15,19,23,25,28,33,36,40,42,44,58,60,69,77,82,84,85,88,92,95</expansionState>
+  </head>
+  <body>
+    <outline text="New Natverk Layout">
+      <outline text="Laptop: Mac OS X"/>
+      <outline text="Server">
+        <outline text="Roles">
+          <outline text="Network server/gateway/router">
+            <outline text="Wireless network - probably not">
+              <outline text="can keep me on a separate network than everyone else at Hampton, or than Papa's at home"/>
+              <outline text="I administer it, which means I can let people on or off. I may also be able to administer Hampton, though."/>
+              <outline text="At home, I might want to be able to set up a web interface for tunneling through vlack.com using ssh. "/>
+            </outline>
+            <outline text="Wired network - probably not">
+              <outline text="This may even assign IP addresses for the whole house, at Hampton, Probably not, though, so that they'd have a way to do it when I left..?"/>
+            </outline>
+          </outline>
+          <outline text="Disk server">
+            <outline text="main disk holds:">
+              <outline text="svn repository - just a few GB. &lt;10"/>
+              <outline text="NFS exports for craptop - &lt;5 GB, if I even need it."/>
+              <outline text="/home for the entire network">
+                <outline text="would I really want to do this, if I also had svn?"/>
+                <outline text="it would be the place I could keep /var stuff like movies I've seen but I keep seeding."/>
+                <outline text="I *would* need some sort of network-available drive like that... but perhaps it's best to mount it as something else, so that it wouldn't interfere with the svn.. "/>
+              </outline>
+            </outline>
+            <outline text="backup array holds:">
+              <outline text="exported svn repository - just a few GB. &lt;10"/>
+              <outline text="exported imap mailbox - reserve a couple of GB... &lt;5"/>
+              <outline text="exported copy of my mp3s - might as well reserver 30GB"/>
+            </outline>
+          </outline>
+        </outline>
+        <outline text="CHOSEN PLATFORM: Ultra 5 running Solaris 10. ">
+          <outline text="OLD: Platform possibilities: ">
+            <outline text="Oldness">
+              <outline text="NetBSD may be the only way to get FW and 802.11 support? "/>
+              <outline text="Possibly, Solaris/Intel may have support for  FW/802.11 devices that /SPARC doesn't have. "/>
+              <outline text="Blade 100 running Solaris 10">
+                <outline text="DON'T need this b/c I can now fit everything into a U5 and it will be supported under solaris"/>
+                <outline text="comes with 2 FW ports (and 4 USB1.1 ports)!"/>
+                <outline text="additional 3 PCI slots, which gets me everything I need"/>
+                <outline text="more expensive :("/>
+              </outline>
+              <outline text="Intel hardware running Solaris 10">
+                <outline text="May be able to get FW/802.11 support here that isn't available on SPARC hardware, but still use Solaris 10 and ZFS. "/>
+                <outline text="I would be able to cheaply get a faster processor, more RAM, and more PCI slots. "/>
+              </outline>
+              <outline text="Any hardware running NetBSD">
+                <outline text="would NOT support ZFS, obviously, and if NetBSD's RAID support hasn't matured any, it may still have subpar RAID, which would suck"/>
+                <outline text="May be the only way to get FW/802.x support"/>
+                <outline text="If I ran on Intel, I would be able to cheaply get faster processor, more RAM, and more PCI slots. "/>
+              </outline>
+              <outline text="NOTHING with SBUS!">
+                <outline text="No firewire, no SATA, no GBe, and expensive wireless (there are SBUS-&gt;PCMCIA adaptors, but they were expensive last time I checked)"/>
+              </outline>
+              <outline text="802.11g wireless network bridge - plug into the onboard ethernet port, and get the GigE card below.">
+                <outline text="so that my laptop can be on its own network?"/>
+              </outline>
+            </outline>
+            <outline text="Firewire/USB/wireless support:">
+              <outline text="This page gives you links to cards which work under Solaris/sparc, Solaris/x86, and Linux. Sweet. www.sun.com &lt;http://www.sun.com/&gt;—ihvindex.html www.sun.com—ihvindex.html &lt;http://www.sun.com/io_technologies/ihvindex.html&gt;"/>
+              <outline text="apparently FireWire and USB2 drives are supported... but I can't find any supported HBAs :(. "/>
+              <outline text="... seems like U60s running Solaris support some sort of USB2/FW card? A guy in this thread says that he is running one in the same system as a SunPCi, which, AFAIK, only runs under Solaris. forum.risc-machines.org—viewtopic.php forum.risc-machines.org—viewtopic.php &lt;http://forum.risc-machines.org/viewtopic.php?pid=180&gt;"/>
+              <outline text="USB2: According to this, any USB2 card based on NEC UPD720101 should work fine. www.sunmanagers.org &lt;http://www.sunmanagers.org/&gt;—005805.html www.sunmanagers.org—005805.html &lt;http://www.sunmanagers.org/pipermail/summaries/2004-October/005805.html&gt;"/>
+              <outline text="USB2: apparently, an &quot;Addonics 4-port USB 2.0 PCI card&quot; works. www.sunmanagers.org &lt;http://www.sunmanagers.org/&gt;—006966.html www.sunmanagers.org—006966.html &lt;http://www.sunmanagers.org/pipermail/summaries/2005-December/006966.html&gt;"/>
+              <outline text="FireWire: I searched SunManagers, and there was no mention of 3rd-party firewire devices, but if we have USB2, then that's OK... I guess..."/>
+              <outline text="SATA: hah. Why not? Who knows. But, you can get this SAS controller, which supports SATA drives. Of course, Froogle lists it as at LEAST $250. www.unixzone.dk &lt;http://www.unixzone.dk/&gt;—sata-on-sparc-solaris www.unixzone.dk—sata-on-sparc-solaris &lt;http://www.unixzone.dk/unix/20060218/sata-on-sparc-solaris/&gt;"/>
+              <outline text="Read on the rescue@ list: &quot;My reading of the Internet Oracle was different - I thought I saw &#10;(although I can't confirm now) that people were happily using the Belkin &#10;F5U508 USB2.0/Firewire card was supported in Solaris/sparc.  Certainly &#10;it's on my list of PCI cards to grab for my E-250.&quot; ... it is explicitly supported. See this page: www.sun.com—S8List.html &lt;http://www.sun.com/io_technologies/S8List.html&gt; www.sun.com—S8List.html &lt;http://www.sun.com/io_technologies/S8List.html&gt;"/>
+              <outline text="Also &quot;You can get 802.11b&lt;-&gt;ethernet bridges for $40-50 last I checked... &#10;screw the PCI cards.&quot;"/>
+              <outline text="Sun also mentions an Addonics &quot;USB2.0/FireWire/Serial ATA Host Controller&quot;, and says that it is supported under Solaris 10/sparc. If all of those things work (and it's not just one of the three functions that's supported), then that's almost everything I need in a single card."/>
+            </outline>
+          </outline>
+          <outline text="Solaris 10 does ZFS, which is probably the best way do deal with the disks (and super easy to use)"/>
+          <outline text="Hardware as maxed as I can get it (CPU: 440MHz?, RAM: 1GB?)"/>
+          <outline text="Serial console: connected to the Craptop."/>
+          <outline text="PCI Slots: ">
+            <outline text="SCSI controller for boot disks"/>
+            <outline text="FW/USB2 controller for:">
+              <outline text="disk pool"/>
+              <outline text="USB2 &lt;-&gt; anything"/>
+            </outline>
+            <outline text="GBe - these seem to be less than $50. Perhaps as low as $20. "/>
+          </outline>
+        </outline>
+      </outline>
+      <outline text="Craptop: Compaq">
+        <outline text="Hardware is already maxed, except for disks. Heh. "/>
+        <outline text="OS: Definitely NetBSD"/>
+        <outline text="Role: serial console to the server."/>
+        <outline text="I can get by without the base station if I just get a wired network card (or a wireless one if I think I'd want to move it around, but I don't see why I'd do that...)"/>
+        <outline text="NFS import /usr">
+          <outline text="actually, this is dumb if it's supposed to be a serial console for the NFS server! Be much better to just import /usr/src and /usr/pkgsrc, or to even just buy a 5GB laptop disk or something and not have to worry about it."/>
+          <outline text="Being able to even use /usr/pkgsrc might be nice while the NFS server is down. That way, I could build new software that I didn't know I'd need before hand. On the other hand, /usr/src is just used for updating the system, and there's no reason that I'd have to do that while the NFS server was down. "/>
+        </outline>
+      </outline>
+      <outline text="Workstation: CycleQuad">
+        <outline text="Hardware: 4x400MHz US-II processors, 1-2GB of RAM, and I have 4x18GB hard drives (I think it supports all four)."/>
+        <outline text="Be sure to get a DVD drive... solaris 10 is big, and besides, you can watch DVDs on it, duh. "/>
+        <outline text="Monitor: Apple monitor, probably. Or that LCD screen I could steal from work. "/>
+        <outline text="OS: Definitely Solaris, b/c NetBSD doesn't support SMP. "/>
+        <outline text="PCI Slots - 3 total. ">
+          <outline text="SunPCi for Windows"/>
+          <outline text="SunPCi takes up TWO, if you include all the options. I'm not sure if I need to do that or not, though..."/>
+          <outline text="GBe (only if I'm actually using it elsewhere on the network, otherwise, dumb)"/>
+          <outline text="USB2/FW: for external disks and USB for anything else."/>
+        </outline>
+      </outline>
+      <outline text="New thoughts">
+        <outline text="CycleQuad could be my workstation and also serve svn"/>
+      </outline>
+    </outline>
+    <outline text="Backup procedures:">
+      <outline text="svn server:">
+        <outline text="/etc"/>
+        <outline text="text (and small binary?) files in /home"/>
+      </outline>
+      <outline text="nfs server:">
+        <outline text="mp3s, images, and other BIG data that I want to make a BACKUP of"/>
+        <outline text="movies, bittorent, big data that I want to keep for a period of time and then DELETE"/>
+        <outline text="svn, mail, and other SMALL data that I want to make a BACKUP of"/>
+      </outline>
+      <outline text="rsnapshot">
+        <outline text="maybe nothing?"/>
+        <outline text="I could nicely keep a backup of an entire computer. OTOH, I don't know that I'd need that... I'll just reinstall the operating system to get things back to normal. "/>
+      </outline>
+    </outline>
+    <outline text="IPv6">
+      <outline text="girtby.net—star-wars-in-ascii-and-ipv6 girtby.net—star-wars-in-ascii-and-ipv6 &lt;http://girtby.net/archives/2006/04/25/star-wars-in-ascii-and-ipv6/&gt; - an overview of getting IPv6 set up"/>
+      <outline text="public 6to4 thingies: www.kfu.com &lt;http://www.kfu.com/&gt;—6to4 www.kfu.com—6to4 &lt;http://www.kfu.com/~nsayer/6to4/&gt;"/>
+      <outline text="howto for OpenWRT: wiki.openwrt.org—IPv6_howto wiki.openwrt.org—IPv6_howto &lt;http://wiki.openwrt.org/IPv6_howto&gt;"/>
+      <outline text="use IPv6 be default in Safari www.macosxhints.com &lt;http://www.macosxhints.com/&gt;—article.php www.macosxhints.com—article.php &lt;http://www.macosxhints.com/article.php?story=20040112104026573&gt;"/>
+      <outline text="How to configure in OS X: www.cs.utk.edu &lt;http://www.cs.utk.edu/&gt;—howto-6to4-macosx.html www.cs.utk.edu—howto-6to4-macosx.html &lt;http://www.cs.utk.edu/~moore/hints/howto-6to4-macosx.html&gt;"/>
+    </outline>
+  </body>
+</opml>
