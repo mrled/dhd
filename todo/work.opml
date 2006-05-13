@@ -2,7 +2,7 @@
 <opml version="1.0">
   <head>
     <title>work</title>
-    <expansionState>0,3,6</expansionState>
+    <expansionState>0,3</expansionState>
   </head>
   <body>
     <outline text="RU Ranch thing for Tom">
@@ -10,14 +10,8 @@
     </outline>
     <outline text="Michael's computer - Office (?) and fix email"/>
     <outline text="Make Subversion work">
-      <outline text="svn co svn+ssh://micah@explody.mine.nu &lt;mailto:micah@explody.mine.nu&gt;/home/export/svnrepo/mrl/"/>
-      <outline text="svn co svn+ssh://mrled@mrled.org &lt;mailto:mrled@mrled.org&gt;/home/.arietty/mrled/svn/dhd"/>
-    </outline>
-    <outline text="Hours that I haven't recorded yet">
-      <outline text="Tuesday: 2:15-6:45 = 4:30"/>
-      <outline text="Wednesday: 10:30-6:30 = 8"/>
-      <outline text="Thursday: 10:15-6:15 = 8 + 10 miles to Walmart to copy key"/>
-      <outline text="Friday"/>
+      <outline text="svn co svn+ssh://micah@explody.mine.nu &lt;mailto:micah@explody.mine.nu&gt; micah@explody.mine.nu &lt;mailto:micah@explody.mine.nu&gt;/home/export/svnrepo/mrl/"/>
+      <outline text="svn co svn+ssh://mrled@mrled.org &lt;mailto:mrled@mrled.org&gt; mrled@mrled.org &lt;mailto:mrled@mrled.org&gt;/home/.arietty/mrled/svn/dhd"/>
     </outline>
   </body>
 </opml>
