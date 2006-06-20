@@ -1,5 +1,15 @@
 # .tcshrc
 
+# I NEED TO DO THIS:
+    # You can detect an interactive shell from a non interactive one 
+    # by testing for the $prompt variable, like this:
+
+      # if ($?prompt) then
+        # bindkey ^W backward-delete-word
+        # set prompt = "$USER@$HOSTNAME> "
+        # ...
+      # endif
+
 # thanks to all the little people:
 # http://howto.unixdev.net/tcshrc.html
 # http://www.dotfiles.com
@@ -36,6 +46,12 @@
 #	.tcsh/mrl: if ( MY_LS_TYPE == "gnu") then 
 #			alias ls "$MY_LS -hF --color"
 # etc. 
+# 
+# A better idea:
+# have the same two files, except .tcshrc is global, and it calls .tcsh/local
+# or .tcsh/$hostname or something, which is unique per machine.
+# Could also call .tcsh/$uname to have unique per OS options (eg all NetBSD 
+# machines check for gls and use it instead of ls)
 
 ########
 # new, as yet uncategorized: 
