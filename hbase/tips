@@ -1,0 +1,10 @@
+screen: C-a S = split screen
+screen: C-a [tab] = change focus of screen
+screen: C-a X = kill the current region (no-op if there is only one region)
+screen: resize +N       increase current region height by N
+screen: resize -N       decrease current region height by N
+screen: resize  N       set current region height to N
+screen: resize  =       make all windows equally high
+screen: resize  max     maximize current region height
+screen: resize  min     minimize current region height
+irssi: /rmreconns Means that if a server is not responding, you can stop irssi trying to connect to it.
