@@ -167,7 +167,7 @@ if ( -f /usr/local/bin/pkg_add ) then
 	setenv PKG_PATH "ftp://ftp.interopsystems.com/pkgs/3.5/"
 endif
 
-# NetBSD's pkgsrc from pkgsrc.org (multi-platform?)
+# NETBSD'S pkgsrc from pkgsrc.org (multi-platform?)
 if ( -d /usr/pkg ) then
 	set pman_pkgsrc=true
 endif
