@@ -118,6 +118,12 @@ else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
 endif
 
+# Cygwin
+if ( -d /cygdrive ) then 
+# it inherits the Windows path, so if your Windows path has this set, it will be wrong
+    setenv SVN_SSH /usr/bin/ssh  
+endif
+
 
 ######################
 # Package Management #
