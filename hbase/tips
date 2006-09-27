@@ -12,4 +12,4 @@ svn: svn co svn+ssh://mrled@mrled.org/home/.arietty/mrled/svn/dhd
 dpkg: run "apt-get clean" to clear out the large /sw/var/cache directory
 dpkg: "apt-get update" resyncs package index
 dpkg: "apt-get dist-upgrade" (fink update-all) updates all installed packages. 
-cdrecord: mac os x, for combo or super drives, dev=IODVDServices (/0?)
+cdrecord: mac os x, for combo or super drives, dev=IODVDServices (/0?)mac os x: hdiutil convert /path/to/filename.dmg -format UDTO -o /path/to/savefile.iso
