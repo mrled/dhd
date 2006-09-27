@@ -10,6 +10,10 @@
         # ...
       # endif
 
+    # this sounds cool: 
+    # setenv PATH = "${HOME}/bin/${HOSTNAME}:${HOME}/bin/`uname -s`:"
+
+
 # thanks to all the little people:
 # http://howto.unixdev.net/tcshrc.html
 # http://www.dotfiles.com
@@ -80,7 +84,7 @@ setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
 
 setenv UNAME `uname`
 setenv UNAMEA `uname -a`
-setenv HOST `hostname -s`
+setenv HOST `hostname`
 
 # Checking for stuff-specific stuff
 

@@ -8,3 +8,8 @@ screen: resize  =       make all windows equally high
 screen: resize  max     maximize current region height
 screen: resize  min     minimize current region height
 irssi: /rmreconns Means that if a server is not responding, you can stop irssi trying to connect to it.
+svn: svn co svn+ssh://mrled@mrled.org/home/.arietty/mrled/svn/dhd
+dpkg: run "apt-get clean" to clear out the large /sw/var/cache directory
+dpkg: "apt-get update" resyncs package index
+dpkg: "apt-get dist-upgrade" (fink update-all) updates all installed packages. 
+cdrecord: mac os x, for combo or super drives, dev=IODVDServices (/0?)

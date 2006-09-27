@@ -1,0 +1,5 @@
+# linux tcsh-ness
+
+
+# might want to rewrite this for when I have boot mounted, but ro. 
+alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
