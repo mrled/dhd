@@ -1,0 +1,13 @@
+# darwin & mac os x tcsh-ness
+
+# fink's GNU ls
+if ( -fx /sw/bin/ls ) then
+	set ls = "/sw/bin/ls"
+endif
+
+# under OS X, posd tells you where the topmost Finder window is. 
+# this is installable via fink (apt-get install posd)
+# that package also installs the utility "fdc"
+# which changes the directory of the shell to match that of the
+# topmost Finder window. This alias is the reverse behavior. 
+alias cdf 'cd "`posd`"'
