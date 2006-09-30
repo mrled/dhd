@@ -1,0 +1,271 @@
+# .tcshrc
+
+# I NEED TO DO THIS:
+
+# thanks to all the little people:
+# http://howto.unixdev.net/tcshrc.html
+# http://www.dotfiles.com
+# ...
+# and probably a lot more
+
+# precmd = before prompt
+# postcmd = before exec
+
+
+#
+# TODO
+#
+# organize data rightly right
+#
+# $UNAME section
+# $HOST section
+# Package Manager Section
+
+
+# A cool idea:
+# have 2 files:
+#	.tcshrc - unique per machine
+#	.tcsh/mrl - or something. stuff that is applicable everywhere
+# have settings in .tcshrc and have them read and reacted to in .tcsh/mrl
+# eg: 
+#	.tcshrc: setenv MY_LS "/usr/pkg/bin/gls" && setenv MY_LS_TYPE "gnu"
+#	.tcsh/mrl: if ( MY_LS_TYPE == "gnu") then 
+#			alias ls "$MY_LS -hF --color"
+# etc. 
+# 
+# A better idea:
+# have the same two files, except .tcshrc is global, and it calls .tcsh/local
+# or .tcsh/$hostname or something, which is unique per machine.
+# Could also call .tcsh/$uname to have unique per OS options (eg all NetBSD 
+# machines check for gls and use it instead of ls)
+
+###########################################################
+#                 NON-INTERACTIVE SECTION                 #
+###########################################################
+
+# Set some stuff that we'll use throughout the .tcshrc
+# also, set this before $PATH; this way I use system binaries for this
+setenv UNAME `uname`
+setenv UNAMEA `uname -a`
+setenv HOST `hostname -s`
+
+
+# YES! correct backslash escape sequences: 
+# backslashes always quote the following characters: \'"
+# why not the default? 
+# b/c it creates errors with some csh scripts. 
+set backslash_quote
+
+# umask defaults such that no one else can read my files. 
+umask 077
+
+# PATH stuff
+#set path = (/usr/man /usr/*/man /opt/*/man)
+#setenv MANPATH "$PATH"
+#set path = (/opt/*/{,s}bin /usr/*/{,s}bin /{,s}bin /usr/{,s}bin /usr/games /usr/ucb ~/opt/{,s}bin ~micah/{,s}bin ~vlack/{,s}bin)
+#set path = ($path ~/opt/arch/`uname -s`/bin/`uname -m` ~/opt/bin ~/opt/arch/neutral/bin)
+
+# here is where a unique-per-system rc file and a global, unchanging rc file would be really handy:
+setenv LOCALPATH "/usr/games/bin:/usr/games:/opt/bzflag-bin/bin:/opt/local/bin:/opt/local/sbin:${HOME}/opt/bin:/Users/micah/opt/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:"
+setenv PATH "${PATH}:${LOCALPATH}:"
+
+###########################################################
+#                   INTERACTIVE SECTION                   #
+###########################################################
+
+    # You can detect an interactive shell from a non interactive one 
+    # by testing for the $prompt variable, like this:
+
+      # if ($?prompt) then
+        # bindkey ^W backward-delete-word
+        # set prompt = "$USER@$HOSTNAME> "
+        # ...
+      # endif
+
+    # it seems that you can also check for the existence of the $edit
+    # variable, which is set by default in interactive shells
+
+if ($?prompt) then
+
+########
+# multiple tcsh config files... mm hmm
+########
+
+# I HAVE NOT TESTED THIS YET BITCHES
+
+# I don't think that I'll need to have host-specific noninteractive files
+# which is why that this is under the interactive section
+# if that changes, I'll move this
+
+# sources an OS-specific file
+if -f ( "~/dhd/os-$UNAME/tcshrc" ) then 
+    source ~/dhd/os-$UNAME/tcshrc
+endif
+
+# sources a host-specific file
+if -f (~/dhd/host-$HOST/tcshrc) then
+    source ~/dhd/host-$HOST/tcshrc
+endif
+
+########
+# new, as yet uncategorized: 
+########
+
+alias logrec 'ls -alF --color /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
+
+# a WAAAAY cool idea about prompt colors is here
+# http://www.dotfiles.com/files/21/442_dot.tcshrc
+# (also mirrored locally in my tcsh examples dir
+
+
+########
+# Checking For Stuff
+########
+
+# ls... the search for GNU
+# <replaced with my 2-rc-files idea
+# here's what I want to do NOW:
+#if {$ls is not a set variable} then 
+    # ls-F function built into tcsh. tries to behave like GNU
+#    set ls = "ls-F"
+#endif
+
+# GNUstep
+if ( -fx /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
+	source /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh
+else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
+	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
+endif
+
+########
+# Global Aliases
+########
+
+
+alias .. 'cd ..'
+alias c clear
+alias df df -h
+alias h history
+alias m more
+alias l less
+
+alias ls '$ls -hF --color'
+alias lsa '$ls -ahF --color'
+alias lsl '$ls -alhF --color'
+alias l1 '$ls -1hF --color'
+
+alias psa ps ax
+alias psaf 'ps ax|grep -i \!*'
+
+alias pu pushd
+alias po popd
+
+alias ff "find . -name '\!*' -print"
+
+
+alias tailmes 'tail -f /var/log/messages'
+alias mess less /var/log/messages
+alias dmesg 'dmesg|less'
+
+
+# This is the "new command" section for stuff that might 
+# should just go in various shell scripts
+#
+
+alias arin      'whois -h whois.arin.net'
+alias ripe      'whois -h whois.ripe.net'
+alias apnic     'whois -h whois.apnic.net'
+
+alias omg		'echo wtf'
+
+
+########
+# Global Settings
+########
+
+# tcsh settings
+# don't correct me... I know I'm right!
+set correct=none
+# not only can tcsh list completions, it can do it in color!
+set autolist 
+set color 
+set colorcat
+# disable annoying DING!
+set noding
+# set 24-hr time
+unset ampm
+# list jobs long
+set listjobs=long
+# ls-F builtin will list the type of file to which a symlink points
+set listlinks
+# turn off beeping for ambiguous completion (this is so annoying)
+set matchbeep=never
+# save history between sessions (default?)
+#set savehist
+# print logins and logouts
+#set watch=(any any)
+
+
+# will set my pager to be the best available
+where more >/dev/null && setenv PAGER more
+where less >/dev/null && setenv PAGER less
+where most >/dev/null && setenv PAGER most
+
+# set my editor to be correct
+# (the -nw tells it not to open up a new window)
+#setenv EDITOR "emacs -nw"
+#setenv VISUAL "emacs -nw"
+#setenv FSEDIT "emacs -nw"
+
+# set my edit mode to emacs
+# why in the WORLD would someone set this to vi by default?
+# no new freaking user wants to learn how to enter "edit mode"
+# to edit his command history. STUPID!
+# (Interix, at least, does this wrong)
+bindkey -e
+
+
+# turn on talk
+mesg y
+
+# cause new programs to be recognized after installed
+#alias postcmd "rehash"
+
+# Setting the default prompt
+# Gentoo default:  
+# set prompt='[%n@%m %c]# '
+# Mine: looks like the following, but in color
+# 12:14:46 micah@AndrAIa micah % 
+set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+
+# the rprompt is a string printed on the right hand side of the screen
+# (after the command input) when the prompt is being displayed on the
+# left. recognizes same formatting as 'prompt'. automatically appears 
+# and reappears as necessary. appears only when it fits. 
+#set rprompt='somethinghere?'
+
+
+
+# GNU dircolors
+# has to be done after PATH, in case, eg, it's in /sw/bin or something
+test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
+
+
+########
+# Completions
+########
+
+#complete find \
+#	'n/-name/f/' \
+#	'n/-type/(c b d f p l s)/' \
+#	'n/-exec/c/' \
+#	'c/-/(name type user size ctime mtime atime print exec )/' \
+#	'n/*/d/'
+
+
+########
+# clean up after yourself!
+########
+
+# end the "if ($?prompt)" statement
+endif
