@@ -1,0 +1,5 @@
+
+
+ssh mrled@mrled.org 'svn up ~/dhd' &
+ssh mledbetter@vlack.com 'svn up ~/dhd' &
+ssh vlack@silenceisdefeat.org 'svn up ~/dhd' &
