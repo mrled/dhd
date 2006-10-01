@@ -332,6 +332,8 @@ setenv PATH "${PATH}:${LOCALPATH}:"
 # has to be done after PATH, in case, eg, it's in /sw/bin or something
 if (-X dircolors)
     test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
+else if (-X gdircolors)
+    test -r ~/.dir_colors && eval `gdircolors -c ~/.dir_colors`
 endif
 
 
