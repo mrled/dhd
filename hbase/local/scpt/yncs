@@ -1,0 +1,4 @@
+#!/bin/csh -f
+
+cd ~/opt/yublib/
+python yncs.py $argv
