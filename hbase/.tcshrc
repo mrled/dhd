@@ -28,7 +28,9 @@
 # TODO
 #
 # organize data rightly right
-# setup a single command that searches whatever package manager I use for what I'm looking for. needs to be able to search more than one (eg fink, dports; solaris, pkgsrc; etc)
+# setup a single command that searches whatever package manager I use for what I'm 
+# looking for. needs to be able to search more than one (eg fink, dports; solaris, 
+# pkgsrc; etc)
 #      if portage, then (if esearch, then esearch; else emerge -s)
 #      if fink, then
 #      if darwinports, then
@@ -316,12 +318,21 @@ set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
 #set path = ($path ~/opt/arch/`uname -s`/bin/`uname -m` ~/opt/bin ~/opt/arch/neutral/bin)
 
 # here is where a unique-per-system rc file and a global, unchanging rc file would be really handy:
-setenv LOCALPATH "/usr/games/bin:/usr/games:/opt/bzflag-bin/bin:/opt/local/bin:/opt/local/sbin:${HOME}/opt/bin:/Users/micah/opt/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:"
+    setenv LOCALPATH "/usr/games/bin:/usr/games:${HOME}/opt/bin:${HOME}/opt/local/scpt:${HOME}/opt/uenc:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/opt/surfraw/bin:"
 setenv PATH "${PATH}:${LOCALPATH}:"
+#setenv PATH "${LOCALPATH}:"
+
+# a lot of times, software is installed to /opt/<package>/(s)bin
+# (eg gentoo does this for commercial binary stuff). 
+#foreach f (/opt/*)
+#    setenv PATH 
+#    end
 
 # GNU dircolors
 # has to be done after PATH, in case, eg, it's in /sw/bin or something
-test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
+if (-X dircolors)
+    test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
+endif
 
 
 ###############
