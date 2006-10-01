@@ -1,0 +1,52 @@
+# y'know... I've been thinking...
+# maybe I can just put this in a shell script. 
+# that way it won't have to load every time...
+
+# my goals for this section:
+# - to set the path properly (for those that require it, something special: eg, fink)
+# - to have a utility for searching no matter what my package manager is
+#	eg, if portage, then alias package to emerge -S (or if esearch, emerge package to esearch).
+# I could have the package utility in a separate script, but I couldn't set the path there
+# however, that would go well with my dynamic path setting (either below, or in an example somewhere, I forget where. 
+# so I think I'm going to try that. hrm. 
+
+# so I don't inherit anything silly
+unsetenv PMAN_*
+
+# Gentoo's portage
+if ( -d /usr/portage ) then
+	setenv PMAN_PORTAGE "true"
+	alias ugrep 'grep \!* /usr/portage/profiles/use.desc /usr/portage/profiles/use.local.desc'
+	alias fnc 'find /etc -iname "._cfg????*"'
+endif
+
+# Fink (apt-get on OS X)
+if ( -f /sw/bin/init.csh ) then
+	set pman_fink=true
+	test -r /sw/bin/init.csh && source /sw/bin/init.csh
+endif 
+
+# DarwinPorts (FreeBSD's ports on OS X)
+if ( -d /opt/local ) then
+	set pman_dports=true
+	# so that I can do "ls $DPLP/aqua/AquaLess":
+	setenv DPLP "/opt/local/var/db/dports/sources/rsync.rsync.opendarwin.org_dpupdate_dports/"
+endif
+
+# Interix + pkg_add from InteropSystems (eg not pkgsrc from pkgsrc.org)
+if ( -f /usr/local/bin/pkg_add ) then
+	set pman_interix=true
+	# obviously, this next line requires SFU 3.5, but it also requires
+	# a .netrc with a username and password line
+	# see interopsystems.com for more details
+	setenv PKG_PATH "ftp://ftp.interopsystems.com/pkgs/3.5/"
+endif
+
+# NETBSD'S pkgsrc from pkgsrc.org (multi-platform?)
+if ( -d /usr/pkg ) then
+	set pman_pkgsrc=true
+endif
+
+
+# Solaris's package system
+#	alias pa 'pkgadd -d .'
