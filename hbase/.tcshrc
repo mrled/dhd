@@ -107,6 +107,9 @@ else
 	set ls = "ls-F"
 endif
 
+# fink
+test -r /sw/bin/init.csh && source /sw/bin/init.csh
+
 ####### sdf.lonestar.org - various weirdnesses
 ### notify
 # had to execyte this next line in a subshell - that is, use () - 
@@ -136,6 +139,8 @@ endif
 ######################
 
 # finally moved to dhd/tmp/tpkg
+# if you use dports or interix or something again, check to see that your stuff 
+# wasn't moved there also... i know i had to put fink back in here
 
 ##################
 # Global Aliases #
@@ -267,7 +272,7 @@ set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
 #set path = ($path ~/opt/arch/`uname -s`/bin/`uname -m` ~/opt/bin ~/opt/arch/neutral/bin)
 
 # here is where a unique-per-system rc file and a global, unchanging rc file would be really handy:
-    setenv LOCALPATH "/usr/games/bin:/usr/games:${HOME}/opt/bin:${HOME}/opt/local/scpt:${HOME}/opt/uenc:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/opt/surfraw/bin:"
+setenv LOCALPATH "/usr/games/bin:/usr/games:${HOME}/opt/bin:${HOME}/opt/local/bin:${HOME}/opt/uenc:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/opt/surfraw/bin:"
 setenv PATH "${PATH}:${LOCALPATH}:"
 #setenv PATH "${LOCALPATH}:"
 

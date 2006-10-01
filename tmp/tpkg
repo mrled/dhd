@@ -23,7 +23,6 @@ endif
 # Fink (apt-get on OS X)
 if ( -f /sw/bin/init.csh ) then
 	set pman_fink=true
-	test -r /sw/bin/init.csh && source /sw/bin/init.csh
 endif 
 
 # DarwinPorts (FreeBSD's ports on OS X)
