@@ -1,0 +1,2 @@
+set ssl:key-file 	~/.ssh/id_rsa
+set csh:history 	true
