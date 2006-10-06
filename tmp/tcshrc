@@ -2,6 +2,25 @@
 
 # I NEED TO DO THIS:
 
+# when I move to the local-tcshrc system, however it is implemented, 
+# point a $MRL_DHD variable to wherever I did svn co dhd. Default this to 
+# ~/opt/dhd. Then, I can say 'source $MRL_DHD/os/$UNAME' (etc) instead of 
+# linkning it somewhere or hardcoding it into the path (which won't work for 
+# all systems anyway). 
+
+# use `uname -o` on systems that support it
+# this returns the OS, not the kernel. helpful for at least Cygwin
+# the kernel is CYGWIN_NT-5.1, but the OS is just Cygwin...
+# I don't need (yet, anyway) to deal with XP vs 2K vs (...)
+
+# create a script that determines important things. eg, GNU ls status. 
+# save all that information using tcsh syntax as $MRL_DHD/host/$HOST
+# if that file doesn't exist on tcsh startup, call the script to create it
+# if it does exist, don't call the script and run all the tests to see 
+# where stuff is... just load it. 
+# keep the script in the $PATH so that I can call it whenever I need to
+# this way, the shell starts up faster, since it's just loading variables,
+# not running commands like uname each time I start the shell. 
 
 ###########################################################
 #                 NON-INTERACTIVE SECTION                 #
