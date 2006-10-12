@@ -211,10 +211,12 @@ set listjobs=long
 set listlinks
 # turn off beeping for ambiguous completion (this is so annoying)
 set matchbeep=never
-# save history between sessions (default?)
-#set savehist
+# save history between sessions
+set savehist
 # print logins and logouts
 #set watch=(any any)
+# autologout drives me crazy
+set autologout=0
 
 
 # YES! correct backslash escape sequences: 
