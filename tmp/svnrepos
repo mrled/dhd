@@ -1,0 +1,4 @@
+svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd
+svn co svn+ssh://mrled@mrled.org/home/mrled/svn/uenc
+svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dneuric
+echo 'do not forget dsrc if you need it'
