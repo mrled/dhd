@@ -171,6 +171,11 @@ alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
 
+if ( -X wn ) then
+    alias wno 'wn \!* -over'
+    alias define wno
+endif
+
 # under OS X, posd tells you where the topmost Finder window is. 
 # this is installable via fink (apt-get install posd)
 # that package also installs the utility "fdc"
