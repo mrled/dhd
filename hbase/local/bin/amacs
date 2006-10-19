@@ -1,0 +1,1 @@
+open -a /Apps/Text/Aquamacs/Aquamacs\ Emacs.app $1

@@ -14,3 +14,4 @@ dpkg: "apt-get update" resyncs package index
 dpkg: "apt-get dist-upgrade" (fink update-all) updates all installed packages. 
 cdrecord: mac os x, for combo or super drives, dev=IODVDServices (/0?)
 mac os x: hdiutil convert /path/to/filename.dmg -format UDTO -o /path/to/savefile.iso
+ssh: ssh-keygen -t rsa; scp ~/.ssh/id_rsa.pub user@host:~/id_mj.pub
