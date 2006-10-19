@@ -133,6 +133,10 @@ if ( -d /cygdrive ) then
     setenv SVN_SSH /usr/bin/ssh  
 endif
 
+if ( $UNAME == SunOS ) then
+    setenv PATH "${PATH}:/opt/csw/bin:/usr/sfw/bin:"
+endif
+
 
 ######################
 # Package Management #
