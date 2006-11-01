@@ -1,0 +1,5 @@
+svn up ~/opt/dhd
+svn up ~/opt/dtbox
+svn up ~/opt/uenc
+svn up ~/opt/dneuric
+# don't forget about ~/opt/dsrc

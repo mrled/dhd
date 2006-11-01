@@ -7,11 +7,12 @@ screen: resize  N       set current region height to N
 screen: resize  =       make all windows equally high
 screen: resize  max     maximize current region height
 screen: resize  min     minimize current region height
-irssi: /rmreconns Means that if a server is not responding, you can stop irssi trying to connect to it.
+irssi: /rmreconns keeps irssi from trying to connect to non-responding servers.
 svn: svn co svn+ssh://mrled@mrled.org/home/.arietty/mrled/svn/dhd
 dpkg: run "apt-get clean" to clear out the large /sw/var/cache directory
 dpkg: "apt-get update" resyncs package index
 dpkg: "apt-get dist-upgrade" (fink update-all) updates all installed packages. 
 cdrecord: mac os x, for combo or super drives, dev=IODVDServices (/0?)
-mac os x: hdiutil convert /path/to/filename.dmg -format UDTO -o /path/to/savefile.iso
+mac os x: hdiutil convert /path/to/filename.dmg -format UDTO -o /path/to/x.iso
 ssh: ssh-keygen -t rsa; scp ~/.ssh/id_rsa.pub user@host:~/id_mj.pub
+svn: setenv LC_ALL en_US # so that I dont get erros about converting to UTF-8
