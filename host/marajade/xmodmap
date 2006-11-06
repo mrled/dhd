@@ -1,0 +1,3 @@
+keycode 64 = Control_L
+clear Lock
+add Control = Control_L

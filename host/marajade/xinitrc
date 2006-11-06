@@ -1,0 +1,11 @@
+# .xinitrc X11 startup file
+# marajade,vlack
+
+# xmodmap, to map capslock to ctrl
+xmodmap ~/.xmodmap
+
+# synergy server. loads ~/.synergy.conf
+/opt/csw/bin/synergys
+
+# when this exits, X11 terminates
+wmaker
