@@ -134,7 +134,8 @@ if ( -d /cygdrive ) then
 endif
 
 if ( $UNAME == SunOS ) then
-    setenv PATH "${PATH}:/opt/csw/bin:/usr/sfw/bin:"
+    setenv PATH "${PATH}:/usr/sfw/bin:/opt/csw/bin:/opt/csw/gcc4/bin:/opt/SUNWspro/bin:"
+    setenv CC "/opt/csw/gcc4/bin/gcc"
 endif
 
 
