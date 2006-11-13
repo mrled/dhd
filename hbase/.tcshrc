@@ -63,6 +63,14 @@
 # new, as yet uncategorized: 
 ########
 
+setenv EDU "~/doc/edu/2006-3(fall)"
+setenv EDU1 /Users/micah/doc/edu/2006-3\(fall\)/1\ Rome\ \&\ Jerusalem/
+setenv EDU2 /Users/micah/doc/edu/2006-3\(fall\)/2\ Ling\ 372L/
+setenv EDU3 /Users/micah/doc/edu/2006-3\(fall\)/3\ Spanish\ IV/
+setenv EDU4 /Users/micah/doc/edu/2006-3\(fall\)/4\ CompLing/
+
+setenv NLTK_LITE_CORPORA "/sw/lib/python2.4/site-packages/nltk_lite/corpora"
+
 alias logrec 'ls -alF --color /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
 # of use only on linux.. 
