@@ -1,0 +1,3 @@
+skip used to work for powelsy (?) electronics. he reverse-engineered a microprocessor testing machine, and sold a faster replacement. he did this first under thomas as a contractor, and later working for the company directly
+
+thomas used to work for arm, developing the processor. he wrote a compiler and linker for it first, and sold it on his own, in the 80s; worked for arm after that. 

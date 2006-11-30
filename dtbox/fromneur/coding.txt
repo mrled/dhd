@@ -1,0 +1,10 @@
+http://en.wikibooks.org/wiki/Windows_Programming
+	see also the "see also" at the end of the section (see also)
+http://visualcpp.net/ ?
+
+
+
+
+misc:
+cout for non-console apps: http://www.codeproject.com/debug/dhananjaygune_cout.asp
+

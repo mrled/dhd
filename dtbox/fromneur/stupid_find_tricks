@@ -1,0 +1,56 @@
+from http://www.matilda.com/hacmp/find_tricks.htm
+
+find . -type f -size +10000 -exec ./doit {} \;
+
+     One common operation performed on found files is to use grep to extract certain lines from the files. At first glance, the following appears to print the lines containing the word hello in each of the found files:
+
+         find . -type f -size +10000 -exec grep hello {} \;
+
+     The problem is that since you've only specified a single file to the grep command, grep doesn't prefix each line with the name of the file that the line was found in. Since this is often quite important in this context, trick grep into showing the file name by giving it two files to look in but being sure that it won't find the pattern in the second file. Obviously, an empty file works best for this so we use everyone's favourite empty file /dev/null in our example:
+
+         find . -type f -size +10000 -exec grep hello {} /dev/null \;
+
+     Find is being given two file names so it will prefix lines found in the first file with the name of the file (it will never find anything in /dev/null so you won't get lines prefixed by /dev/null).
+
+
+
+
+     Here's one of our favourites:
+
+         vi ` find . -type f -name '*.c' -print `
+
+
+     This invokes vi on all of the .c files in the current hierarchy.  
+Once invoked, you move on to the next file using the :n command from within vi.
+
+     Be careful - you don't want to do this at the top of a directory hierarchy containing a few thousand .c files since you'll get really tired of typing the :n commands after the first hundred files!
+
+     This trick is really handy when you're planning on deleting the files which are found. First use the find command to print a list of the files which you want to delete. Once you're sure that the find command is listing the correct files, then use the shell's command line recall and editing capabilities to wrap an rm command around the find like this:
+
+         rm -f ` find . -type f -name '*.o' -print `
+
+     The idea here is to make sure that a typing mistake doesn't result in the loss of a whole bunch of files which you'd rather keep.  
+Another way of getting to the same place is to use the find command's -exec option to remove the files. Again, construct and test a find command which lists the files and then use the shell's command line recall and editing capabilities to append the -exec rm -f {} \; onto the command to get the following:
+
+         find . -type f -name '*.o' -exec rm -f {} \;
+
+
+
+
+
+
+
+According to http://www.sunmanagers.org/pipermail/summaries/2005-
+March/006255.html
+
+It is much more efficient to use find | xargs than find -exec {} \;
+
+"find ... -exec command {} \;" runs the command once for each name.
+
+If find identifies 10000 files, using -exec grep ... as an example, find would fork off a child copy of itself, the copy would become a grep working on a single file.  Meanwhile the original parent find would sleep waiting for its child (grep) to finish before searching for the next file that meets the find criteria.  That means 10000 executions of grep and pauses of find.
+
+"xargs command" reads names on its standard input, and feeds them in bunches to command, so that command is run fewer times (only once, in most cases).  So, if we use find | xargs grep ..., the find is able to work "non-stop" filling the pipe with found file names.  xargs collects groups of about 20 - 50 names and does a single grep for the collection.  Find doesn't pause and you only do about 200 greps, not 10000. There isn't a forked process for every single file.
+
+The weaknesses of xargs are (1) it can be confused by "funny"
+filenames (which is why Gnu has find -print0 |xargs -0, or you can pipe through sed to add backslashes everywhere), and (2) it can feed zero arguments to command which might then just sit there waiting (this is why Gnu xargs has -r which means:
+don't run command if stdin is empty).

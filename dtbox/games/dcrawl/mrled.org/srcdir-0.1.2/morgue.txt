@@ -1,0 +1,91 @@
+ Dungeon Crawl Stone Soup version 0.1.2 (crawl-ref) character file.
+
+
+Qukk the Skirmisher
+
+Race       : Minotaur           Res.Fire  : . . .   See Invis. : .  
+Class      : Fighter            Res.Cold  : . . .   Warding    : .  
+Worship    :                    Life Prot.: . . .   Conserve   : .  
+Level      :       1            Res.Poison: .       Res.Corr.  : .  
+Exp        :       3            Res.Elec. : .       Gourmand   : .  
+Next Level :      13
+Exp Needed :      10            Sust.Abil.: .       Rnd.Telep. : .  
+Spls.Left  :       0            Res.Mut.  : .       Ctrl.Telep.: .  
+Gold       :      28            Res.Slow  : .       Levitation : .  
+                                Clarity   : .       Ctrl.Flight: .  
+HP         :  -1/17
+MP         :   0
+Str        :  19                Weapon : +0 spear
+Int        :   7                Armour : +0 scale mail
+Dex        :   8                Shield : +0 shield
+AC         :   6                Helmet :
+Evasion    :   7                Cloak  :
+Shield     :   5                Gloves : +0 pair of gloves (curse)
+                                Boots  :
+Play time  :   00:01:15         Amulet :
+Turns      :         81         Ring   :
+                                Ring   :
+
+
+You are on level 2.
+You are not hungry.
+
+  Inventory:
+Hand weapons
+ a - a +0 spear (weapon)
+ f - a +0 dagger
+Armour
+ b - a +0 scale mail (worn)
+ c - a +0 shield (worn)
+ g - a cursed +0 pair of gloves (worn)
+ h - a +0 leather armour
+Comestibles
+ d - a bread ration
+Scrolls
+ e - a scroll of teleportation
+
+
+ You have 12 experience left.
+
+   Skills:
+ + Level 4 Fighting
+ + Level 3 Polearms
+ + Level 2 Ranged Combat
+ + Level 2 Armour
+ + Level 1 Stabbing
+ + Level 2 Shields
+
+
+You cannot memorise any spells.
+You don't know any spells.
+
+
+  Last Messages
+
+Sigmund gestures wildly.
+The puff of flame hits you!
+Ouch!  That really hurt!
+You die...
+
+           ##... ..#
+          @..... ..#
+         #<..... ..##
+         #......#...
+         #.........
+         #........#
+         #........######
+         #.)...@..#.....
+         #.....#@.#.####
+         #.....#..#%#..
+         #....##..#.#.###.####
+         #........#.#...#.#....
+         #.....#....'.......#
+         #.... ####.#.......#
+          ###     ..#.......#
+                 #..#.......#
+                 ...#...#.#.#
+
+
+Vanquished Creatures
+  2 jackals (D:2)
+2 creatures vanquished.
