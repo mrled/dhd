@@ -19,3 +19,12 @@ http://www.theregister.co.uk/2002/03/28/winxp_pro_with_net_server/
 	- saying that if you start with .NET server, and convert to XP pro, the graphics will be S L O W
 	- this is a duh, since the server versions don't have graphics acceleration enabled by default. 
 http://www.theregister.co.uk/2002/03/25/registry_hack_turns_xp_pro/
+
+Forever defeat WGA: https://vlack.whilst.org/forums/viewtopic.php?id=14769
+Apparently Magical Jellybean Keyfinder can find Windows install keys on the network (you must enter an IP address).
+http://www.magicaljellybean.com/keyfinder.shtml
+also look at rockxp http://www.majorgeeks.com/download4138.html
+
+15mb war2
+     https://vlack.whilst.org/forums/viewtopic.php?id=16228
+     http://server.war2.ru/modules/mydownloads/
