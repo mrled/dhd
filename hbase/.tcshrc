@@ -180,6 +180,7 @@ alias po popd
 
 alias ff "find . -name '\!*' -print"
 
+alias trash 'mv $argv ~/.Trash/'
 
 alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
