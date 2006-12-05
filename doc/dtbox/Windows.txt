@@ -28,3 +28,13 @@ also look at rockxp http://www.majorgeeks.com/download4138.html
 15mb war2
      https://vlack.whilst.org/forums/viewtopic.php?id=16228
      http://server.war2.ru/modules/mydownloads/
+
+hstart - start cli windows apps without the dos box
+ - http://www.ntwind.com/software/utilities/hstart.html
+
+wintips:
+subst.exe maps paths to drive letter
+
+word: 
+      .dot stuff http://pubs.logicalexpressions.com/Pub0009/LPMArticle.asp?ID=151
+      
