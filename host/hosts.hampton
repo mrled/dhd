@@ -1,0 +1,25 @@
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost 
+
+192.168.1.1	gw 
+192.168.1.60	andraia
+#192.168.1.60	kerrigan
+
+192.168.1.241   andraia         # wireless
+192.168.1.242   andraia         # wired
+#192.168.1.242   icelady        # win2k3 desktop
+192.168.1.243   marajade mj     # sun blade 100
+192.158.1.244   metroid         # andy's powerbook
+
+65.254.37.135	vlack.comh
+216.239.57.99	google.comh
+#66.68.126.240	kerrigan.comh
+
+70.135.78.173   tgupc.cxm
