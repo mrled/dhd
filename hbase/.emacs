@@ -5,6 +5,9 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;;;; for the love of mercy, indent the same way every time!
+;; see: 
+;   code/Neuric Technologies/Neuric/Concept Words/
+;   http://www.student.northpark.edu/pemente/emacs_tabs.htm
 ;; make it never use \t; it only uses a regular space: ' '
 (setq-default indent-tabs-mode nil)
 ; this makes the TAB character (ASCII byte #9), when read from disk,
