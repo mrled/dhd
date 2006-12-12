@@ -23,3 +23,4 @@ cli: /usr/opt/surfraw to surf in the raw
 cli: yncs is yubnub. also installed as yubnub in some places, and in surfraw
 svn: 'svn co -r # <repo>', where # is a revision number and <repo> is a repo
 
+cygwin: `cygstart` is like `open` under os x or `start` under cmd
