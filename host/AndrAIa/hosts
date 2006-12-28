@@ -14,7 +14,7 @@
 
 192.168.1.241   andraia         # wireless
 192.168.1.242   andraia         # wired
-#192.168.1.242   icelady        # win2k3 desktop
+192.168.1.242   icelady         # win2k3 desktop
 192.168.1.243   marajade mj     # sun blade 100
 192.158.1.244   metroid         # andy's powerbook
 
