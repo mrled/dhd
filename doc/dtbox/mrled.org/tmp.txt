@@ -1,2 +1,0 @@
-ls /usr/bin/grep*
-googlism.pl
