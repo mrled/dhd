@@ -108,7 +108,10 @@ if ( -fx /sw/bin/ls ) then
 # darwinports' GNU ls
 else if ( -fx /opt/local/bin/ls ) then
 	set ls = "/opt/local/bin/ls"
-# netbsd prepends g to the gnu tools; eg 'gls'
+# solaris / pkg-get 
+else if ( -fx /opt/csw/bin/gls ) then
+    set ls = "/opt/csw/bin/gls"
+# lots of opeating systems (netbsd...) prepend g to the gnu tools; eg 'gls'
 else if ( -X gls ) then
 	set ls = "gls"
 # ls-F function built into tcsh. tries to behave like GNU
