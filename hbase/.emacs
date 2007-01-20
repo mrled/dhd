@@ -20,3 +20,8 @@
 (define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop);
 ;; set the tab stop list such that a tab = 4 spaces, not 8
 (setq tab-stop-list '(4 8 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120))
+
+;; Show line-number in the mode line
+(line-number-mode 1)
+;; Show column-number in the mode line
+(column-number-mode 1)
