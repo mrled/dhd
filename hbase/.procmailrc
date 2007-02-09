@@ -61,12 +61,16 @@ SPR=2147483647
 
 
 ### specifics:
+
 # gmail
+#:0
+#* ^X-Original-To:.*vlack\+gmail\@vlack.com
+#.INBOX.relayed/
+
+# neuric forwarded stuff
 :0
-* ^X-Original-To:.*vlack\+gmail\@vlack.com
-.INBOX.relayed/
-
-
+* .*vlack\+neuric\@vlack\.com
+.INBOX.Archive.Neuric/
 
 # spam mail for completing offers and such
 #:0
