@@ -1,0 +1,49 @@
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost 
+
+192.168.1.1	melody
+192.168.1.2	bigblue
+192.168.1.3	harmony.wblj.org	harmony
+192.168.1.4	littlemac
+192.168.1.6	water
+192.168.1.7	greymac	graymac
+192.168.1.8	leahmac
+192.168.1.10	timac
+192.168.1.11	piano
+192.168.1.12	megamac
+192.168.1.13	workmac
+192.168.1.14	picard
+
+
+192.168.1.59	demonika		# multiboot x86 machine
+
+192.168.1.60	tiana # (Ti'ana, Myst)	# Ultra AXe / NetBSD diskserver
+192.168.1.61	andraia AndrAIa		# PowerBook 1.5GHz 8-)
+192.168.1.62	kumquat kumq		# 68k Mac - A/UX
+192.168.1.63	kerrigan		# SGI/IRIX machine
+192.168.1.64	skywalker		# winnt4
+192.168.1.65	gaki 			# which, as Erin will tell you, is a Japanese word meaning "brat"
+192.168.1.66	samus			# 
+#192.168.1.67	andraia			# win2k
+192.168.1.68	japan			# BeOS
+192.168.1.69	domino			# SPARCstation 5 / NeXTSTEP
+
+192.168.1.70	kitiara kit		# Sun Ultra 2 / 2x167MHz / Solaris
+
+# vms
+#192.168.6.254	water
+#192.168.6.100	kumquat kumq
+#
+192.168.1.161	andraia-vpc AndrAIa-VPC	# AndrAIa's WinXP VPC
+
+# note that my workgroup was SAMUS
+# but now it should be ARAN 
+
+65.254.37.135	vlack.comh
