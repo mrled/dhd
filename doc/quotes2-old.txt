@@ -1,64 +1,56 @@
 Q: What's the definition of a line in hockey?
 A: Five guys in stockings, looking to score.
  - http://www.avalonhigh.com/d/20021117.html
-
+%
 "Reasonable people adapt themselves to the world. Unreasonable people attempt to adapt the world to themselves. All progress, therefore, depends on unreasonable people."
 --George Bernard Shaw 
-
+%
 "The writing in this book is marvelously simple-minded and glib; the author glosses over complicated subjects and employs facile generalizations in almost every sentence. Readers rarely have to think, and are spared all of the difficulty and tedium typically involved in reading old-fashioned books."
  - Neil Stephenson, "In the Beginning was the Command Line", smirking at how no one reviews computer programs like they review books
-
+%
 I use emacs, which might be thought of as a thermonuclear word processor.
  - Neil Stephenson, "In the Beginning was the Command Line"
-
+%
 Christianity might be a good thing if anybody ever tried it.
  - George Bernard Shaw
-
+%
 "Because in the late twentieth century, you can't seriously ask other people to think that you believe in honor and truth..."
  - Michael Crighton, "Timeline"
-
-"It is hard to satisfy modern writers on witchcraft, who insist on censuring the 16th and 17th century on a basis of modern rationalism. It is quite certain that if some of those who now sit in judgement on the witch-prosecutors had been witch-judges, no defendant would ever have escaped."
- - p 311-312, George Lyman Kittredge on the Salem witch trials
-
+%
 "'One of them said he was upset when you talked about nasal sex with plants.' I had actually demonstrated this perverse act with the bouquet on the table, at dinner the night before I was sent home. The plants were dead, although well preserved, so I was performing rhinophytonecrophilia on them."
  - Richard Stallman
-
+%
 "Everything you know is wrong. (And stupid.)"
-
+%
 N4st0r, trixx0r h0bb1tz0rz! Th3y st0l3 0ur pr3c10uzz!
-
-How many Debian users does it take to change a lightbulb?
-Just one, but he has know how to apt-get install liblightbulb1. apt-get install light-switch-client if you want to be able to turn it on.
-
+%
 I'd rather be right than either rich or famous.
  - Zach Welch
-
+%
 "But I hate to see the First Amendment slashed yet again -- at this rate, the Bill of Rights will have more holes in it than Windows security."
-
+%
 ...and my standard clause, if you post bug reports directly to Gentoo on those builds we will hunt you down and make you rewrite the kernel in object oriented COBOL.
  - Lovechild on the Gentoo forums (about reporting BreakMyGentoo.net ebuilds to Gentoo.org)
-
-But do go on comparing apples with oranges if you wish. It doesn't hurt anyone, and it gives many of us a sense of smug superiority. 
-
+%
 The world can't end today because it's tomorrow in Australia. 
-
+%
 Programmers don't actually write programs, they got too lazy for that long ago. Instead they write instructions for the computer on how to write the program, and when the computer follows these instructions ("source code"), it is called "compiling". Programmers usually pretend was done by them when they speak about it, as in "I recompiled the kernel for my exact CPU this time, and now playing pong is noticeably faster.".
-
+%
 Your only redeeming quality is the fact that you're biodegradeable.
-
+%
 The correct answer to this question is an:
 A) aardvark
 B) rat
 C) cow
-
+%
 When a pastor was asked if a person could go to heaven if he smoked, the pastor replied, "Sure... you probably will get there a lot sooner." Another pastor was asked if a person would go to hell if he smoked. The pastor replied, "No, you just smell like it!" Whether smoking is a sin or not, with all the information we now have, it is at the very least one of the dumber things we can do.
-
+%
 (X) Yes! I am a brain damaged lemur on crack, and would like to buy your software package for $499.95
-
+%
 Man, are you a laxative? Cause you're irritating the shit out of me.
-
+%
 "This is not a novel to be tossed aside lightly. It should be thrown aside with great force." -- Dorothy Parker
-
+%
 <MortalKombat> stfu mat|t u cu.nt
 * Acaila sets mode: +b MortalKombat!*@*
 <@Acaila> FINISH HIM
@@ -66,13 +58,13 @@ Man, are you a laxative? Cause you're irritating the shit out of me.
 <MortalKombat> omg wtf man
 * MortalKombat was kicked by Acaila (forward, forward, back, back, forward, punch)
 <@Acaila> FATALITY!
-
+%
 <tatclass> YOU ALL SUCK DICK
 <tatclass> er.
 <tatclass> hi.
 <andy\code> A common typo.
 <tatclass> the keys are like right next to each other.
-
+%
 <tag> Ouroboros: lets play Pong
 <Ouroboros> Ok.
 <tag> |    .
@@ -82,18 +74,18 @@ Man, are you a laxative? Cause you're irritating the shit out of me.
 <tag> | .
 <Ouroboros>      | .
 <Ouroboros> Whoops
-
+%
 <NES> lol
 <NES> I download something from Napster
 <NES> And the same guy I downloaded it from starts downloading it from me when I'm done
 <NES> I message him and say "What are you doing? I just got that from you"
 <NES> "getting my song back fucker"
-
+%
 <blazemore> LITTLETON, Colo. - Colorado officials plan to try a 15-year-old boy as an adult for allegedly offering a Sony PlayStation to have his aunt killed.
 <FlipTopBx> is it modded?
-
+%
 <DaZE> at my school.. the cop from DARE passed around 3 joints to show everyone... and he said "if i dont get all three of these back this schools getting locked down and everyones getting searched till i find it.." and like 30 minutes later when everyone got to see 'em and they got passed back the cop had 4
-
+%
 <Firefly> Time for my prayers:
 <Firefly> Our Father, who 0wnz heaven, j00 r0ck! 
 <Firefly> May all 0ur base someday be belong to you! 
@@ -102,44 +94,40 @@ Man, are you a laxative? Cause you're irritating the shit out of me.
 <Firefly> And cut us some slack when we act like n00b lamerz, just as we teach n00bz when they act lame on us. 
 <Firefly> Please don't give us root access on some poor d00d'z box when we're too pissed off to think about what's right and wrong, and if you could keep the fbi off our backs, we'd appreciate it. 
 <Firefly> For j00 0wn r00t on all our b0x3s 4ever and ever, 4m3n.
-
+%
 <Mikkel> If you went camping and you got REALLY drunk with your friend and you 
 woke up the next morning with a condom stuck up your ass would you tell anybody? 
 <Celestya> i dont think so 
 <Mikkel> Wanna go camping?
-
+%
 <FL|Work> feck, forgot to pay my stupid tax
 <Pi|Mu|Rho> you get taxed on stupid? That's going to be one hefty bill.
 <marek> he could fund 3 new hospitals all by himself
-
+%
 <BhavFox> FurServ: op me
 <FurServ> BhavFox: You are already opped.
 <BhavFox> ;O)
 <Kas> FurServ: suck me
 <Kas> aww
 <Hawx> Kas: You already suck.
-
-<PixieDee> GIVE ME A YOUNG MAN TO SACRIFICE
-*** tao|Cyrus- is now known as tao|Cyrus-dieing
-<PixieDee> omg i don't want a grammatically incorrect sacrificial young man.
-
+%
 <pronstar``afk> my kazaa preformed an illegal opperation
 <cCCPehlet`> isn't that what kazaa is designed to do?
-
+%
 WallJam7: roses are red
 WallJam7: violets are blue
 WallJam7: all of my base
 WallJam7: are belong to you
-
+%
 <malaclypse> The general rule on about people on IRC seems to be "Attractive, single, mentally stable: choose two"
-
+%
 <Ruth> hmmm first thing to do when one gets home is .... check spam for emails
-
+%
 <{LD}> roses are red
 <{LD}> violets are blue
 <{LD}> in soviet russia
 <{LD}> poems write you
-
+%
 Primus521: hey dude the funniest thing happened to me today
 Primus521: im at walmart and this chick is buying a box of tampons and they are missing the upc and wont ring up
 Primus521: so the cashier tells his buddy to get a price check on tampax
@@ -151,23 +139,16 @@ Primus521: you should have seen the look on the chicks face
 Primus521: omfg
 Primus521: til the day i die
 Primus521: i will never forget it
-
+%
 <Delusion> I'm reminded of someone I worked with who was about 35 and who dyed a streak of grey in his hair to look 'distinguished'.
 <Delusion> Instead, he looked 'gay'.
-
+%
 (timmo) the average testicle is the size of a walnut.
 [maff] the average walnut tastes better than the average testicle
-
+%
 <iMike> i was just thinking of hiring a man to service my septic system
 <maff> is that the classy way to say you want to get fucked in the ass?
-
-<calin> we had a guy at school that wore black lipstick.. and was all gothy.. and then one day we caught him buying an assvibrator 
-<ecoli> ew.
-<ecoli> wait, you "caught" him?
-<ecoli> like, you were behind him in line at the assvibrator store?
-<Aero> he doesnt answer
-*** Quits: calin (No route to host)
-
+%
 <no_soul> did you know the testes on blue whales weigh like 400 pounds?
 <no_soul> thats a hefty sack
 <ecoli> my god.
@@ -175,25 +156,25 @@ Primus521: i will never forget it
 <ecoli> them is some big nuts
 <ecoli> did you know that the blue whale's penis is 11 feet long?
 <no_soul> i bet the shoot loads like a fuckin cruise missle
-
+%
 <timmo> if i were to take a stab in the dark as to what orion is pissed about
 <timmo> i would have to say its women troubles
 <orion> next time you take a stab at something, aim for your eye
-
+%
 -PDC:#windowsnt- MCSE = Must Consult Someone Experienced
 (L0ki) MCSE=Mindsweeper Consultant and Solitare Expert
 (nexxai) MCSE = Must Consult (with) Someone Else
-
+%
 (adnama) I have flabby thighs, but fortunately my stomach covers them.
-
+%
 <DigiGnome> doesn't play properly. The White Stripes one.
 <Thom> Ach. Dang.
 <DigiGnome> Unless it's MEANT to sound like a cat trying to shit wasps through a sewn up asshole.
 <puchiko> It is.
 <DigiGnome> Ah. A Slipknot cover, then.
-
+%
 <Miko> hey i don't remember them dropping food on NYC when they crashed into the WTC
-
+%
 <Turing_> this is going to sound very gay, but we were watching the discovery channel today at work where there were these sort of african olympics in a tribe when a male reaches mating age
 <Turing_> anyways...the guy had to be nude and do this relay on a balance beem to appease some god
 <kunio> HAW
@@ -204,16 +185,16 @@ Primus521: i will never forget it
 <Turing_> lol
 <Turing_> I felt terribly inadequate
 <Turing_> I hate the discovery channel
-
+%
 <notBel> Two Eskimos sitting in a kayak were chilly; but when they lit a fire in the craft, it sank, proving once and for all that you can't have your kayak and heat it.
-
+%
 <Lyrai> What's the difference between Slow Motion and Bullet Time?
 <Lyrai> About $100 Million.
-
+%
 <rosonowski> Hah! I love slashdot sometimes.
 <rosonowski> You know the old manta "Fighting for peace is like fucking for virginity?"
 <rosonowski> Someone replied to it "If you know of a better way to make more virgins, I'd like to hear it."
-
+%
 <Eticam> I work at a computershop
 <Eticam> And you don't wanna know how f***in' STUPID some customers are
 <Eticam> I get questions like:
@@ -224,47 +205,44 @@ Primus521: i will never forget it
 <Eticam> I even had a customer who brought his pc for technical service
 <Eticam> "My dog humped the pc and had an orgasm in the power supply, and it short circuited" "how's the dog?" "Don't know, my wife took him to the vet"
 <Eticam> really, one day I'm gonna shoot myself in front of a customer....
-
+%
 <Fulgore> whats the complement to a 43 degree angle?
 <sparks> My you're looking "acute" today
 <Fulgore> fuck you
-
+%
 <rastakid> Which one shouldn't be there: rape - monopoly - incest ?
 <seal> Monopoly?
 <rastakid> Wrong! Rape, because it's not a family game.
-
+%
 <@j0nkatz> jwbozzy: I have an audi out port on my cd player in my car.
 <@j0nkatz> audio
 <nukle> heh.
 <nukle> fordian slip.
-
+%
 <dFYNE> Geography of a Man
 <dFYNE> A man is like Iraq, ruled by a dick.
-
+%
 <TeamsterX> man watching 6 MSCE's around a sun box, looks alot like the opening scene's of 2001:space odyssey and the monkey's with the monolith
-
+%
 <asr> 'fo sheezy. 
 <Sabboth> what the fuck does that mean in english? you should understand that having a day job precludes me from 'keeping it real' and as such, I lack a certain familiarity with the language of the 'streets' as it were.
-
+%
 Cyberathletes no longer wish to have their social and professional opportunities limited by their dubiously politically correct name. Cyberathletes? Nay, these are truly the most athletic of us all. Troy Aiken can throw a BALL? That's nothing, I can maintain a 10:1 K ratio in UT2k3 and AAA Legend of Max let's see TROY AIKEN DO TAHT
-
+%
 What may be art to me may be art to the next guy. Um, wait. What I meant to say was my opinion is the only thing that matters. Yes, I like that.
-
+%
 [quote]
 Im looking for a bento box, it cant be pinku (thats japanese for pink) or any girl color. It has to be of 2 or more kotoba (thats japanese for 2 compartments) and has be be chibi (small) sized. And has to be really kawaii (cute). Also It has to be about 10-20 bux. And you have to post pics of it first (i want to make shure it's kawaii (cute)). And it would be nice if it came with matching chopstick holder (WITH chopsticks). OH! and it CANNOT have any cartoon pictures, or be made out of plastic. It has to be made of ceramic, or something like that. Also it would be nice if it was made in japan. and not in china or corea (korea) or whatever. I have found a bento box similar to the one im describing in e-bay, but it was 1 kotoba, and i dont want my gohan (rice) to touch my other things (it can get wet and i would not like that, plus 2 compartments looks more kawaii)[/quote]
  - SA. 
-
-"Like a spelling checker, you mean?"
-I don't need a spellchecker on Slashdot - I just wait for a tool like you do it for me.
-
+%
 Agent Elrond: "Mister Aragorn! Welcome back... we missed you."
-
+%
 Meanwhile, industry wags are saying that God invented SCO to give people a company to hate more than Microsoft.
-
+%
 It's not true karma-whoring until you risk coming back as a Toad on the Information Superhighway.
-
+%
 "[T]he working stiffs...They make $75-100k a year. That's not much to live on." - Jack Valenti on who piracy hurts most
-
+%
 The Chewbacca Defense
 From South Park, Episode 214 "Chef Aid"
  - Judge Moses: Mr. Johnny Cochrane, your closing argument.
@@ -281,22 +259,22 @@ From South Park, Episode 214 "Chef Aid"
  - Johnny Cochrane: It does not make sense. Look at me. I'm a lawyer defending a major record company and I'm talkin' about Chewbacca. Does that make sense? Ladies and Gentlemen I'm am not making any sense. None of this makes sense. And so you have to remember when you're in that jury room deliberating and conjugating the Emancipation Proclamation, does it make sense? No. Ladies and Gentlemen of this deposed jury it does not make sense. If Chewbacca lives on Endor you must acquit. The defense rests.
  - [Silence]
  - Judge Moses: OK then.
-
+%
 A young idea is a beautiful and a fragile thing. Attack people, not ideas.
-
--=-=- Quantum physics - the dreams stuff are made of.
-
+%
+Quantum physics - the dreams stuff are made of.
+%
 A recent survey said more people under age thirty believe in flying saucers than believe that they will receive a dime from Social Insecurity.
  - Dave Ramsey, "Total Money Makeover"
-
+%
 "If life hands you lemons, YOU BLOW THOSE LEMONS TO BITS WITH YOUR LASER CANNONS!" -- Brak
-
+%
 It's a damn poor mind that can only think of one way to spell a word.
  - Andrew Jackson
-
+%
 A friend of mine doesn't believe that Mohammed is real. He thinks he was made up, because "The muslims thought that Jesus was cool, and wanted one of their own." Someone's going to fly a plane into him someday.
  - "Lazy Like A Fox" on the SA boards
-
+%
 Feminism rocks!
 Ok, try to follow this logic:
 Feminism says that there is little difference between boys and girls
@@ -304,92 +282,57 @@ This leads to less that girls can identify with femininity
 This means that girls only have their bodies left to identify as "differnt" from guys
 So they show off their bodies to express feminity
 Which means... good eye candy!
-
+%
 It was a normal day, and we were driving around, when my buddy blew past a parked cop going about 15 miles over the speed limit. So he blue lighted us ( yea i watch cops) and thankfully my friend pulled over. He knew he was screwed and i knew he was, and the cop sat there taking down info.
 The cop got out of the car and walked to my friend window with his pen and ticket holding thing out. My friend rolled down the window, and this is the classic part. The cop says hello as he writes stuff down, and my friend kinda smiles at me. He looks at the cop and says " Are you writing me a ticket to the illinois state police ball?". The cop, looks confused for a second, and then replies. " No, illinois state police do not have balls". Oh man i laughed. The cop looked at me, then realizing what he said, kinda snickered, then walked back to the car and drove away.
-
+%
 angor (SA) -
 A friend...well, and aquaintance, got pulled over doing 120 on the loop 101. Conversation as follows...
 Officer: Ive been waiting for someone like you aaalll day.
 Dood: Sorry, I got here as fast as I could.
 The officer laughed for a good 2 min, then told the guy to keep his speed down.
-
+%
 'unfriendly' is such an ugly word. We prefer the term 'user-indifferent'.
-
+%
 Apprentice: "What is that, Master?"
 Master: "It's a command line. The instrument of a Unix Programmer. Not as random or clumsy as a GUI. An elegant interface for a more civilized age. Before the dark times. Before...Microsoft!"
-
+%
 "Backups are for wimps. Real men upload their data to an FTP site and have everyone else mirror it." -- Linus Torvalds
-
+%
 WhiskeyJuvenile: Yeah, I don't like people who say that fetuses are people because god said so, either.
 Arson Equity: Aren't semen people too? Are you an anti-semenite?
  - SA
-
+%
 In The History of the World, Part I, Gregory Hines walks up to a man and greets him, "Yo Oedipus! What's up, motherfucker?"
 [lol]Oedipus is a figure in Greek myth who killed his father and married his stepmother.
-
+%
 We are each entitled to our own opinion, but no one is entitled to his own facts. -- Patrick Moynihan
-
+%
 Be a little more proactive about the things you should start thinking about doing
-
+%
 "He's like an idiot savant. Without the savant."
 - MST3K
-
+%
 (By the way, if you're a Wacky California who was all set to write me an email suggesting some kind of family therapy pioneered by another Wacky Californian, but who finds yourself now even more compelled to write one beginning, "In fact, the dreamcatcher is an old Native American tradition. Nokomis, the grandmother was watching a spider..." then can I ask that you just don't, OK? In fact, as a general rule, I tend not to take advice - 'consider the source', right? - about life from people who choose to live on a massive earthquake faultline.)
 - http://www.thingsmygirlfriendandihavearguedabout.com/
-
-
-The Song of Failing Disks
-
-Ten little gigabytes, waiting on line
-one caught a virus, then there were nine.
-
-Nine little gigabytes, holding just the date,
-someone jammed a write protect, then there were eight.
-
-Eight little gigabytes, should have been eleven,
-then they cut the budget, now there are seven.
-
-Seven little gigabytes, involved in mathematics
-stored an even larger prime, now there are six.
-
-Six little gigabytes, working like a hive,
-one died of overwork, now there are five.
-
-Five little gigabytes, trying to add more
-plugged in the wrong lead, now there are four.
-
-Four little gigabytes, failing frequently,
-one used for spare parts, now there are three.
-
-Three little gigabytes, have too much to do
-service man on holiday, now there are two.
-
-Two little gigabytes, badly overrun,
-took the work elsewhere, now just need one.
-
-One little gigabyte, systems far too small
-shut the whole thing down, now there's none at all.
-
-
+%
 What did the Japanese pirate say to the sailor?
 L!
-
+%
 What did Kermit the Frog say at Jim Henson's funeral?
 Nothing.
-
+%
 So, a baby seal walks into a club...
-
-Friends' and mine:
-What did the left butt cheek say to the right butt cheek?
--Together, we can stop this shit
-
+%
+Q: What did the left butt cheek say to the right butt cheek?
+A: Together, we can stop this shit
+%
 A pirate walks into a bar with a giant ship's steering wheel stuffed in the front of his pants. He goes up to the bar and orders a drink.
 The bartender asks, "um... you realize you've got a navigating wheel in your pants? why?"
 and the pirate says "arrrrrr, it's driving me nuts!"
-
+%
 George Orwell was probably right. About everything except the date.
-
+%
 A guy from Microsoft, a guy from Apple and a guy from sun are at a conference. There is a break and they all go to take a piss.
 After the piss the microsoft guy washes his hands and goes and takes a whole bunch of paper and dries his hands REALLY well. he then says
 "at microsoft we have to be thorough"
@@ -397,10 +340,9 @@ the apple guy goes to wash his hands and takes ONE sheet of paper and dries his 
 "at apple we have to be thorough AND efficient"
 the sun guy just walks straight out the door without even washing and says
 "at sun we don't piss on our hands"
-
+%
 "An Irishman walks out of a bar." <- the epitome of comedy.
-
-
+%
 A: "Hi, there, new neighbor, it sure is a nice day to be moving"
 B: "Yes, it is and people around here seem extremely friendly"
 A: "So what is it you do for a living?"
@@ -428,18 +370,16 @@ C: "Deductive reasoning, what is that"
 A: "Let me give you an example. Do you have a dog house?"
 C: "No"
 A: "Fag."
-
-
+%
 An Italian, a Frenchman and a Canadian are on an airplane together; First Class! They start chatting.
 The Italian, with his grappa, says: "Last night, I made love with my wife for 3 horus. And in the morning she said she'd never leave me."
 The Frenchman, with his red wine, says (smirking): Last night, I made love with my wife for 6 hours, and in the morning she said she'd never love another man."
 The Canadian just drank his beer. After a while the Italian and Frenchman smiled at each other. "So what did YOUR wife say in the morning?"
 The Canadian looked up, smiled and said: "Don't stop."
-
+%
 Why do mermaids wear sea shells?
 Because b-shells were to small, and d-shells were to big.
-
-
+%
 Panda walks into a resturant, waddles up to the stool at the bar and orders a double shot of whiskey and a small plate of steamed vegetables. The bartender serves him, and the panda attacks his meal, inhales the fucking thing, takes the whiskey, and wipes himself off.
 
 The panda stands up, pulls out two mac10s from his little panda pockets in the front of his fur, and blows everyone in the bar he sees away. families ducking under tables, the bartender narrowly surviving the barrage. He empties the sub machine guns and replaces them to his panda pockets.
@@ -458,40 +398,38 @@ pa... pan.... pand...PANDA here it is.
 pan·da ( P )
 n.
 A rare bearlike mammal (Ailuropoda melanoleuca) of the mountains of China and Tibet, having woolly fur with distinctive black and white markings. Eats shoots and leaves.
-
-
+%
 While wearing a tie, roll it up and say you're going to race the fat end and the skinny end to see which falls down first. Let go and then yell "It's a tie!"
-
+%
 What's better than winning the special olympics?
 Being able to walk.
-
+%
 OK, so Palestinian man walks into a bar...
 ...and EXPLODES!
-
+%
 What did Stevie Wonder think about the cheese grater he recieved for Christmas?
 It was the most violent book he's ever read.
-
+%
 Why did Snoop Dog carry the umbrella?
 For Drizzle.
-
+%
 A man and a monkey walk into a bar. The monkey jumps onto the bar and starts eating all of the cherries. When the cherries were all gone, the monkey hops over to the pool table and eats the red 3 ball - right out of the rack.
 Seeing that the bartender chases the monkey and the man out of the bar.
 A week later the man and the monkey go back to the bar. The monkey jumps onto the bar again and finds a jar of cherries. This time the monkey methodically takes each cherry, sticks it up its ass, then eats it. The bartender looks stunned and asks the man - "Hey, what's the deal with your monkey?"
 The man replies - "Oh, that's nothing. After eating that 3 ball, now he measures everything!"
-
+%
 What do you call a black guy in the cockpit of an airplane?
 The pilot, you fucking racist.
-
+%
 What's brown and sounds like a bell?
 Dung.
-
+%
 Did you hear about the pirate movie?
 It was rated AARRRRRRRRRRRRR
-
+%
 Q: What has seven arms and sucks?
 A: Def Leppard!
-
-
+%
 There was an old train conductor, and his name was Joe. He drove a train that used to pass by this way for a very long time. Joe was an alright guy, kinda near sighted though. But he was very proud and refused to get glasses to correct his vision. This caused all kinds of trouble for Joe throughout his career.
 
 Why a few years back, Joe was navigating down the train tracks when there was a car stalled out in the middle of the tracks. Joe being near sighted didn't see it till it was too late. Obliterated the car. Unfortunately for Joe, that car belong to the local Mayor, and he had killed the Mayor.
@@ -522,22 +460,20 @@ Joe eats his banana and this time the electrocute him for 20 mins straight. Afte
 "Joe," he says, "why is it that no matter how many times we electrocute you, you just don't die. Its really starting to bug me."
 
 To which Joe simply replies, "Well, I guess I am just a good conductor."
-
-
+%
 Q. What's the difference between a prositute with diarhea and a cornhusker with Parkinsons disease?
 A. One shucks between fits...
-
+%
 3.1415926 walks into a bar and the bartender says, "Sorry, we don't serve pi."
-
+%
 A ham sandwich walks into a bar and orders a beer. Bartender says, "Sorry, we don't serve food."
-
+%
 So this big-shot Hollywood movie star buys a brand-new, bright pink Cadillac. And he's driving it everywhere, and every time anyone catches a glimpse of him he's behind the wheel of this huge pink thing. So naturally it becomes the latest fad, and pretty soon every car driven by everyone in the country is pink! Everywhere you look, there's somebody tooling up or down the road in his very own brand-new, bright pink Cadillac, or Honda or Toyota or what-have-you. But then, all of a sudden, springtime comes along, and almost overnight there has appeared a huge blanket of pollen from every flower and plant, and all the people come out of their houses to see that this layer of white pollen has covered everything in sight -- even their brand-new cars! And one neighbor sees his pink Cadillac covered in pollen, and he shouts across the street, "Hey! What's going on here?!" And another neighbor looks down at his own pollen-covered pink Cadillac, and he says, "It's pretty clear what we're dealing with here."
 "Oh yeah?" says his friend, "What's that?"
 "It's a white spore coat on a pink car nation!"
-
+%
 In the words of Bob Dobbs ... "You know how dumb the average guy is?  Well, half of 'em are dumber than that!"
-
-
+%
 Let's get back to basics.
 
 *Pong: the Movie.*
@@ -553,16 +489,15 @@ Nicholas Cage *is* right paddle.
 And Uma Thurman is ball.
 
 *Pong: A John Woo film.*
-
-
+%
 That that is is not that that is not. That that is not is not that that is.
+%
 Two students were writing papers and each grappled with a certain grammatical issue. Tim, where James had had "had", had had "had had"; "had had" had had a better effect on the teacher.
-
+%
 In the Beginning there was nothing, which exploded - Yeah right...
-
+%
 The Internet is a slut.  You don't know where it's been.  Use some protection.
-
-
+%
 The Washington Post publishes a yearly contest in which readers are asked to
 supply alternate meanings for various words. The following were some of this
 year's winning entries:
@@ -583,8 +518,7 @@ year's winning entries:
 14) Circumvent (n.), the opening in the front of boxer shorts.
 15) Frisbeetarianism (n.), The belief that, when you die, your soul goes up on the roof and gets stuck there.
 16) Pokemon (n), A Jamaican proctologist.
-
-
+%
 Resume Bloopers
  - "Revolved customer problems and inquiries." Just what every employer is looking for -- an expert in passing the buck. 
  - "Consistently tanked as top sales producer for new accounts." Sales managers aren't likely to be impressed with this self-proclaimed underachiever. 
@@ -596,17 +530,15 @@ Resume Bloopers
  - "Experienced supervisor, defective with both rookies and seasoned professionals." Many of us have had a boss like this at some point in our careers, but you usually don't find them being so up-front about their leadership inadequacies. 
  - "I am seeking a salary commiserate with my training and experience." There are a couple problems with this statement. To begin with, salary requirements don't belong on a resume. Secondly, a salary should be "commensurate" with experience (meaning proportionate to), not "commiserate" with (meaning to express sympathy for). 
  - "Seeking a party-time position with potential for advancement." Sounds like a fun job. 
-
-
+%
 So, it's that time of year again, when the four horsemen of the apocalypse - Hallmark, Teleflora, Hershey's, and network television - conspire against mankind by forcing us to acknowledge feelings we probably don't have, certainly don't understand, and definitely don't want to explore. 
 
 Valentine's Day. When couples try and pretend that an arbitrary point in time will somehow hold emotional significance, and tide over the cracks in failing relationships. The time of year when baubles, trinkets, and cellulite-friendly sugar products turn men into knights on white steeds. 
-
-
+%
 No, I take pills, lots and lots of pills. The blue ones are the best. They make the salt shakers dance and play hopscotch. - Tossed_Salad_Man on SA
-
+%
 Internet dating... "The odds are good...but the goods are odd" - Rib Feast on SA
-
+%
 Well, we can't all vote for Rep. Boucher. Unless Diebold voting machines 
 are being used to tally the votes, of course.
 Ah, this is why Slashdot should start supporting Diebold instead of 
@@ -614,141 +546,83 @@ constantly lambasting them. Then come November, the nation will stand in
 awe of the first president to ever by elected by a write in campaign, 
 and all the lobbying groups will scramble to figure out how to best 
 curry the favor of this hitherto unknown Cowboy Neal.
-
+%
 "Sometimes, I think Trent just needs a cup of hot chocolate and a blankie." -Tori Amos on Nine Inch Nails
-
-
-
-Bitter  after  being  snubbed  for membership in the "Axis of Evil," Libya,
-China,  and  Syria  today  announced  they  had formed the "Axis of Just as
-Evil,"  which they said would be more evil than that stupid Iran-Iraq-North
-Korea axis President Bush warned of in his State of the Union address.
-
-Axis  of  Evil  members,  however,  immediately  dismissed  the new axis as
-having,  for  starters,  a  really  dumb  name.   "Right.  They are Just as
-Evil...in   their  dreams!"  declared  North  Korean  leader  Kim  Jong-il.
-"Everybody  knows  we're  the best evils...  best at being evil...we're the
-best."
-
-Diplomats from Syria denied they were jealous over being excluded, although
-they conceded they did ask if they could join the Axis of Evil.
-
-"They  told  us  it  was full," said Syrian President Bashar al-Assad.  "An
-Axis  can't  have  more  than  three  countries," explained Iraqi President
-Saddam Hussein.  "This is not my rule, it's tradition.  In World War II you
-had  Germany,  Italy,  and  Japan  in the evil Axis.  So, you can only have
-three, and a secret handshake.  Ours is wickedly cool."
-
-International  reaction  to  Bush's  Axis of Evil declaration was swift, as
-within minutes, France surrendered.
-
-Elsewhere, peer-conscious nations rushed to gain triumvirate status in what
-became a game of geopolitical chairs.
-
-Cuba,  Sudan,  and Serbia said they had formed the "Axis of Somewhat Evil,"
-forcing   Somalia  to  join  with  Uganda  and  Myanmar  in  the  "Axis  of
-Occasionally  Evil,"  while  Bulgaria,Indonesia  and Russia established the
-"Axis of Not So Much Evil Really As Just Generally Disagreeable."
-
-With  the  criteria  suddenly  expanded and all the desirable clubs filling
-up...Sierra  Leone,  El Salvador, and Rwanda applied to be called the "Axis
-of Countries That Aren't the Worst But Certainly Won't Be Asked to Host the
-Olympics."
-
-Canada, Mexico, and Australia formed the "Axis of Nations That Are Actually
-Quite  Nice  But  Secretly  Have  Some Nasty Thoughts About America," while
-Scotland,  New Zealand and Spain established the "Axis of Countries That Be
-Allowed  to Ask Sheep to Wear Lipstick." "That's not a threat, really, just
-something  we  like  to  do,"  said  Scottish Executive First Minister Jack
-McConnell.
-
-While  wondering  if  the other nations of the world weren't perhaps making
-fun  of  him,  a  cautious Bush granted approval for most axis, although he
-rejected  the  establishment  of  the  Axis of Countries Whose Names End in
-"Guay,"  accusing  one  of  its  members  of  filing  a  false application.
-Officials from Paraguay, Uruguay, and Chadguay denied the charges.
-
-Israel, meanwhile, insisted it didn't want to join any Axis, but privately,
-world leaders said that's only because no one asked them.
-
-
+%
 I'm generally "Interesting," "Insightful," and even "Funny" here. What the hell happens to me at parties? - slashdot
-
-
+%
 It is by caffeine alone I set my mind in motion. 
 It is by the beans of Java the thoughts acquire speed, 
 The hands acquire shaking, 
 The shaking becomes a warning. 
 It is by caffeine alone I set my mind in motion. 
 -- à la the Mentat mantra from Dune by Frank Herbert
-
+%
 A: Because it messes up the order in which people normally read text.
 Q: Why is top-posting such a bad thing?
 A: Top-posting.
 Q: What is the most annoying thing on usenet and in e-mail?
-
+%
 "Help stop spam and pop-ups in ***there*** tracks With MSN Premium" -- Ad on Hotmail Message [emphasis mine] [this quote found on slashdot]
-
-
-
+%
 "If every atom in the universe were a pixel that could be turned either
 on or off to collectively form an image, it would still not be enough
 pixels to form enough rolleyes to express what an utter and complete
 moron you are." -- Forum Newbie
-
+%
 "vBulletin has about as much right to call their software 'meant for
 large communities' as I have to call my ass 'suitable for television'."
 -- radium
-
+%
 "Wow, no offense, but I didn't know girls had feelings! This changes
 everything!" -- Don Incognito
-
+%
 "The more patriotic the name, the more fascist the policy. Soon the
 government will announce operation "Apple Pie" which will allow national
 guardsmen to shoot American citizens whenever they feel like it." --
 Hangly Man
-
+%
 "Each week, millions and millions of upper middle class American
 citizens put on expensive dress clothes, and load themselves into SUV's
 and drive past homeless shelters, orphanages, prisons, missions, and
 halfway houses on their way to a very expensive and nice church, where
 somebody tells them how to be more like Jesus." -- Captain_Obvious
-
+%
 MaliciousIntent - Wow, it's like a fountain of wisdom, except somehow
 all the water has turned to piss.
-
+%
 Hold on, let me check my vast archive of retarded bullshit.
  - In a thread requesting some image or another
-
+%
 "Grocery store hijinks: One day a customer has a seizure in the store.
 While the ambulance was parked in front of the store, I got on the PA
 and said in a British accent (don't ask): 'Would the driver of the van
 with the disco lights please move their vehicle, you're blocking
 traffic.' The boss never found out who it was."
-
+%
 On political correctness:
 "education alienates the stupid. we must stop it at once."
-
+%
 It was a "post your mailing address - get random crap in the mail" type
 of thread.
 "Pipebomb"
 1600 Pennsylvania Ave NW
 Washington, DC 20500
-
+%
 We're playin' Staaaar Waaaaars, I'll be Darth Vaaaaaader! How is the
 waaaaiter, waiting on you?
 --Hannibal Smith
 (sung to the tune of the Star Wars theme, of course)
-
+%
 Unknown poster 1: Why did god create man?
 Unknown poster 2: To do battle with the tree people.
-
+%
 imagine if there was a whole army of bees coming from the ocean and they
 flew out of the sea and flew around stinging people but they could not
 fly very fast because their wings were wet fromt he water (because they
 are from the ocean) also how could the bees even breathe underwater
 honestly i do not think you have thought this all the way though
-
+%
 Listen. I'm not going to rehash the same old argument about going out,
 smelling smoke, and smelling secondhand smoke. What pisses me off is
 what made you get started on smoking. Every single fucking one of you
@@ -757,58 +631,59 @@ can understand pot smokers because THC actually has an effect. Tobacco
 has nothing, and everyone I've talked to says they always hated their
 first cigarette. So you can fuck right off, you poser faggot.
 -CaptainScraps
-
+%
 Why does Stevie Wonder smile so much?
 Because he doesn't know he's black
-
+%
 "KHHHHHHAAAAAAAAAANNNNNNNNNNNNNNNN!"
 - The first reply in "What is the longest one-syllable word in the
 English language?"
-
+%
 -can animals consent to sex?
 if they can't, did we evolve from rapists?
 if they can, can I do them?
 -PicnicAtTheDump
-
+%
 -OMG YOU MADE ME LAUGH A KEYBOARD OUT OF MY NOSE INTO MY COFFEE 
 -unknown
-
+%
 Jaywalking's a gateway crime to other infractions such as running a
 yellow light and failing to signal while turning. And also rape.
 Hope you enjoy your time in federal pound me in the ass prison, rapist.
-
+%
 Close but not exact:
 [In referring to Oddjob and Pele, respectively] "So, did you have to
 take two planes? Like you take Austrailian Airlines and she takes one
 with OPERATION DUMBO DROP written on the side?" - Lowtax
-
+%
 I want an animated gif tatooed on my forearm.
-
+%
 <Taganath> Mary had a little lamb. It bumped into a pylon. Ten thousand volts went up its arse and turned its wool to nylon!
-
+%
 When are people going to realize that blogs are the equivalent of public urination on the web? People post stream of consciousness bullshit dressed up as "information" or even "facts" and because it's on a blog, well then, it must be true.  - /.
-
+%
 Why do ducks have webbed feet? 
 To put out forest fires. 
 Why do elephants have flat feet? 
 To put out burning ducks.
-
+%
 MSFT - Resistance is patented.
 - me and /.
-
+%
 Kiss a nonsmoker; tase the difference.
-
+%
 Under capitalism man exploits man. Under communism it's the other way around.
-
+%
 You May Joke...
 ...but the actual promotional banners Apple are using at WWDC for Tiger have the strapline "Redmond, start your photocopiers"
  - /., right after WWDC showcased OS X 10.4
-
+%
 I knew I picked a bad week to not be rich.
  - /., right after WWDC showcased 30" flat panel cinema displays @ 3.3K$, and the required gfx card for 0.7K$ :)
-
+%
 "They redundantly repeated themselves over and over again incessantly without end ad infinitum"
-
+%
 Its the Internet, where men are men, women are men and children are FBI agents...and they're men!"
-
+%
 "This is your computer.. this is your computer on Internet Explorer" *** image macro time
+%
