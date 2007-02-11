@@ -118,9 +118,9 @@ SPR=2147483647
 	* ^List-Id:.*<[-A-Za-z0-9]*\.sunhelp\.org>  
 	* ^List-Id:.*<\/[-A-Za-z0-9]*  
 	.INBOX.lists.sunhelp-${MATCH}/  
-	# sgihelp
+	# sgihelp - changed from @sgihelp.org to @lists.synack-hosting.com
 	:0  
-	* ^List-Id:.*<[-A-Za-z0-9]*\.sgihelp\.org>  
+	* ^List-Id:.*<[-A-Za-z0-9]*\.lists\.synack-hosting\.com>  
 	* ^List-Id:.*<\/[-A-Za-z0-9]*  
 	.INBOX.lists.sgihelp-${MATCH}/  
 
