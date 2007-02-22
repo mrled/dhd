@@ -55,16 +55,16 @@ set ansi_bg_white	= '\033[47m'
 setenv HOST `hostname`
 
 if ( $HOST == "samantha" ) then
-#
-# Super-cute cat. looks like:
-# (stolen unabashedly from someone else)
-#       |\      _,,,---,,_
-# ZZZzz /,`.-'`'    -.  ;-;;,_
-#      |,4-  ) )-,_. ,\ (  `'-'
-#     '---''(_/--'  `-'\_)
-#
-# had to cut this up, since I needed to escape ' and ` characters. 
-#
+    #
+    # Super-cute cat. looks like:
+    # (stolen unabashedly from someone else)
+    #       |\      _,,,---,,_
+    # ZZZzz /,`.-'`'    -.  ;-;;,_
+    #      |,4-  ) )-,_. ,\ (  `'-'
+    #     '---''(_/--'  `-'\_)
+    #
+    # had to cut this up, since I needed to escape ' and ` characters. 
+    #
 	printf "$ansi_fg_yellow       |\\      _,,,---,,_\n"  
 	printf "$ansi_fg_white$ansi_bold ZZZzz $ansi_norm$ansi_fg_yellow" 
 		printf '/,`.-' 
@@ -79,55 +79,53 @@ if ( $HOST == "samantha" ) then
 		printf '`-'
 		printf "'\\_)\n"
 	printf "	$ansi_fg_white$ansi_bold Shh! Samantha is sleeping!\n"
-
 # else if ( $HOST == "tiana" ) then
-
 else if ( $HOST == "kerrigan" ) then
-# 
-#  hammer+sickle:
-# ... actually my idea. I stole the ASCII art though. 
-#
-#      >   .    
-#    ',     :
-#   <. `.  .:
-# CCCP   `.:     ALL HAIL THE IRON
-#      ,.:'`.    FIST OF COMMUNISM
-#     /'
-printf "$ansi_bold$ansi_fg_magenta"
-printf "Sarah Kerrigan welcomes you to:$ansi_norm\n"
-printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow      >   .                       $ansi_norm\n"
+    #  hammer+sickle:
+    # ... actually my idea. I stole the ASCII art though. 
+    #
+    #      >   .    
+    #    ',     :
+    #   <. `.  .:
+    # CCCP   `.:     ALL HAIL THE IRON
+    #      ,.:'`.    FIST OF COMMUNISM
+    #     /'
+    printf "$ansi_bold$ansi_fg_magenta"
+    printf "Sarah Kerrigan welcomes you to:$ansi_norm\n"
+    printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow      >   .                       $ansi_norm\n"
+    
+    printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow    \',     :                      $ansi_norm\n"
 
-printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow    \',     :                      $ansi_norm\n"
-
-printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow"
-printf '   <. `.  .:'
-printf "                      $ansi_norm\n"
-
-printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow"
-printf ' CCCP   `.:     ALL HAIL THE IRON '
-printf "$ansi_norm\n"
-
-printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow      ,.:\'"
-printf '`.    FIST OF COMMUNISM '
-printf "$ansi_norm\n"
-
-printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow     /'                           $ansi_norm\n"
-
+    printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow"
+    printf '   <. `.  .:'
+    printf "                      $ansi_norm\n"
+    
+    printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow"
+    printf ' CCCP   `.:     ALL HAIL THE IRON '
+    printf "$ansi_norm\n"
+    
+    printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow      ,.:\'"
+    printf '`.    FIST OF COMMUNISM '
+    printf "$ansi_norm\n"
+    
+    printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow     /'                           $ansi_norm\n"
+    
 else if ( $HOST == "marajade" || $HOST == "mj" ) then
-
-printf "{HHHHHH<@>HHHHHH}[========================================="
-
+    printf "$ansi_bold"
+    printf "{HHHHHH@HHHHHH}$ansi_fg_magenta"
+    printf "[=========================================\n"
+    printf "$ansi_fg_red    Welcome to marajade$ansi_norm\n"
 else
-#
-# Metroid. looks like: 
-# (stolen unabashedly from soneone else, though all I saw was a .gif
-#  or something... it was in a webcomic.)
-#  .---.
-# /  @  \
-# \ @ @ /
-#  {'^'}
-#     -- SQUEE!!
-#
+    #
+    # Metroid. looks like: 
+    # (stolen unabashedly from soneone else, though all I saw was a .gif
+    #  or something... it was in a webcomic.)
+    #  .---.
+    # /  @  \
+    # \ @ @ /
+    #  {'^'}
+    #     -- SQUEE!!
+    #
 	printf "  $ansi_fg_green.---.\n"
 	printf " $ansi_fg_green/  $ansi_fg_red@  $ansi_fg_green\\\n"
 	printf " $ansi_fg_green\\ $ansi_fg_red@ @ $ansi_fg_green/\n"
