@@ -12,13 +12,14 @@
 192.168.1.60	andraia
 #192.168.1.60	kerrigan
 
-#192.168.1.241   andraia         # wireless
-#192.168.1.242   andraia         # wired
-
 192.168.1.240   mgateway mgw    # linksys router that bridges wired/wireless so my other servers can have a wired internet connection
-192.168.1.242   icelady         # win2k3 desktop
+
+192.168.1.241   andraia         # wireless
+192.168.1.242   andraia         # wired
+
 192.168.1.243   marajade mj     # sun blade 100
 192.158.1.244   metroid         # andy's powerbook
+192.168.1.245   icelady         # x86 gentoo linux
 
 65.254.37.135	vlack.comh
 216.239.57.99	google.comh

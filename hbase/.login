@@ -113,6 +113,10 @@ printf "$ansi_norm\n"
 
 printf "$ansi_bold$ansi_fg_red$ansi_bg_yellow     /'                           $ansi_norm\n"
 
+else if ( $HOST == "marajade" || $HOST == "mj" ) then
+
+printf "{HHHHHH<@>HHHHHH}[========================================="
+
 else
 #
 # Metroid. looks like: 
