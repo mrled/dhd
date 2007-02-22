@@ -112,7 +112,8 @@ else if ( $HOST == "kerrigan" ) then
     
 else if ( $HOST == "marajade" || $HOST == "mj" ) then
     printf "$ansi_bold"
-    printf "{HHHHHH@HHHHHH}$ansi_fg_magenta"
+#    printf "{HHHHHH@HHHHHH}$ansi_fg_magenta"
+    printf "{HHHHHHH}$ansi_fg_magenta"
     printf "[=========================================\n"
     printf "$ansi_fg_red    Welcome to marajade$ansi_norm\n"
 else
