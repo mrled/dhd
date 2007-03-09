@@ -1,31 +1,34 @@
-; dont create those dumb file~ files every time we edit something
-(setq make-backup-files nil) 
+;; mrled's .emacs.w32 file
+;; lots from http://homepages.inf.ed.ac.uk/s0243221/emacs/
 
-; Make all "yes or no" prompts show "y or n" instead
-(fset 'yes-or-no-p 'y-or-n-p)
+; dont create those dumb file~ files every time we edit something
+;(setq make-backup-files nil) 
+; make backups to a certain directory
+;; Enable backup files.
+(setq make-backup-files t)
+;; Enable versioning with default values (keep five last versions, I think!)
+(setq version-control t)
+;; Save all backup file in this directory.
+(setq backup-directory-alist (quote ((".*" . "~/Backup/emacs/"))))
+
+
+(fset 'yes-or-no-p 'y-or-n-p); Make all "yes or no" prompts show "y or n" instead
 
 ;;;; for the love of mercy, indent the same way every time!
-;; see: 
-;   code/Neuric Technologies/Neuric/Concept Words/
-;   http://www.student.northpark.edu/pemente/emacs_tabs.htm
+;; see: http://www.student.northpark.edu/pemente/emacs_tabs.htm
 ;; make it never use \t; it only uses a regular space: ' '
-(setq-default indent-tabs-mode nil)
-; this makes the TAB character (ASCII byte #9), when read from disk,
-; to be displayed as four characters wide
+(setq-default indent-tabs-mode nil) ; tab char = 4 wide (when read from disk)
 (setq default-tab-width 4)
-;; bind [tab] to tab-to-tab-stop
-;;   ... in every mode
-;global-set-key (kbd "TAB") 'tab-to-tab-stop);
-;;   ... in text  mode
-(define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop);
+(define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop);; bind [tab] to tab-to-tab-stop in text mode
 ;; set the tab stop list such that a tab = 4 spaces, not 8
 (setq tab-stop-list '(4 8 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120))
+
+
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(column-number-mode t)
  '(emacsw32-style-frame-title t)
  '(mail-host-address "mail.vlack.com")
  '(mail-use-rfc822 nil)
@@ -44,12 +47,14 @@
   ;; If there is more than one, they won't work right.
  )
 
-
-;; Show line-number in the mode line
-(line-number-mode 1)
-;; Show column-number in the mode line
-(column-number-mode 1)
+(line-number-mode 1) ;; Show line-number in the mode line
+(column-number-mode 1) ;; Show column-number in the mode line
 
 ;; Font stuff:
 (global-font-lock-mode t) ;; syntax highlighting?
-(set-default-font "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1") ;; this is a mess. default font is ProFontWindows 9pt
+(set-default-font "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1") ;;font = ProFontWindows 9pt
+(set-cursor-color "green") ;; the blinking text insertion cursor thing
+;;(set-mouse-color "goldenrod") ;;?
+(set-face-background 'region "blue") ;; Set region background color
+(set-background-color "black") ;; set bg
+(set-foreground-color "white") ;; set fg
