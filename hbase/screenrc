@@ -1,0 +1,4 @@
+autodetach on       # detach on hangupb
+startup_message off # suppress splash
+hardstatus alwayslastline "%{=b}%{G} Screen: %{b}%w %=%{kG}%C%A  %D, %M/%d/%Y "
+escape ^zz # I really wish this could be ' or . yarg!
