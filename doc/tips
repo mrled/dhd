@@ -22,5 +22,5 @@ mac os x: qs is the quicksilver command line client
 cli: /usr/opt/surfraw to surf in the raw
 cli: yncs is yubnub. also installed as yubnub in some places, and in surfraw
 svn: 'svn co -r # <repo>', where # is a revision number and <repo> is a repo
-
+rsync: rsync -rvlu --progress --bwlimit=20 ~/USB.80GB.01/Software/ mrled@mrled.org:/home/mrled/UNIX/
 cygwin: `cygstart` is like `open` under os x or `start` under cmd
