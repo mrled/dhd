@@ -36,6 +36,7 @@
 192.168.1.69	domino			# SPARCstation 5 / NeXTSTEP
 
 192.168.1.70	kitiara kit		# Sun Ultra 2 / 2x167MHz / Solaris
+192.168.1.71    icelady         # dell optiplex <1GHz linux
 
 # vms
 #192.168.6.254	water
