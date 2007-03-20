@@ -1,6 +1,7 @@
-screen: C-a S = split screen
-screen: C-a [tab] = change focus of screen
-screen: C-a X = kill the current region (no-op if there is only one region)
+screen: C-z is now my screen cmd character
+screen: C-z S = split screen
+screen: C-z [tab] = change focus of screen
+screen: C-z X = kill the current region (no-op if there is only one region)
 screen: resize +N       increase current region height by N
 screen: resize -N       decrease current region height by N
 screen: resize  N       set current region height to N
@@ -19,8 +20,9 @@ svn: setenv LC_ALL en_US # so that I dont get erros about converting to UTF-8
 synergy: xmodmap switch CAPS & ctrl on server to switch on all clients. 
 synergy: see the Configuration page to make Sun Type 6 kbd work 
 mac os x: qs is the quicksilver command line client
-cli: /usr/opt/surfraw to surf in the raw
+zcli: /usr/opt/surfraw to surf in the raw
 cli: yncs is yubnub. also installed as yubnub in some places, and in surfraw
 svn: 'svn co -r # <repo>', where # is a revision number and <repo> is a repo
 rsync: rsync -rvlu --progress --bwlimit=20 ~/USB.80GB.01/Software/ mrled@mrled.org:/home/mrled/UNIX/
 cygwin: `cygstart` is like `open` under os x or `start` under cmd
+screen: copy mode: C-z [

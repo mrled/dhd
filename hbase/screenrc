@@ -1,4 +1,22 @@
+nethack on          # :)
 autodetach on       # detach on hangupb
 startup_message off # suppress splash
-hardstatus alwayslastline "%{=b}%{G} Screen: %{b}%w %=%{kG}%C%A  %D, %M/%d/%Y "
-escape ^zz # I really wish this could be ' or . yarg!
+escape ^zz          # I really wish this could be ' or . yarg!
+nonblock on         # if a window goes unresponsive, don't block whole session
+
+#bind c screen 1     # window numbering starts at 1, not 0
+#bind 0 select 10    # window 0 refers to window 10
+
+shell -$SHELL       # make every shell a login shell
+
+
+
+hardstatus on
+hardstatus alwayslastline 
+#hardstatus string "%w %==]===-"
+hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
+
+#hardstatus string "%w%=%m/%d %c"
+
+#hardstatus alwayslastline "%{=b}%{G} Screen: %{b}%w %=%{kG}%C%A  %D, %M/%d/%Y "
+#hardstatus string '%{gk}[ %{G}%H %{g}][%= %{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u)%?%{=b kR})%{= kw}%?%+Lw%?%?%= %{g}][%{Y}%l%{g}]%{=b C}[ %m/%d %c ]%{W}'
