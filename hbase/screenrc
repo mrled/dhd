@@ -1,7 +1,7 @@
 nethack on          # :)
 autodetach on       # detach on hangupb
 startup_message off # suppress splash
-escape ^zz          # I really wish this could be ' or . yarg!
+escape ^tt          # I really wish this could be ' or . yarg! C-t is transpose-character in emacs
 nonblock on         # if a window goes unresponsive, don't block whole session
 
 #bind c screen 1     # window numbering starts at 1, not 0
