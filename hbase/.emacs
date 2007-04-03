@@ -27,8 +27,6 @@
 
 ;(set-default-font "-*-ProFontX-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1") ;;font = ProFont 9pt
 (global-font-lock-mode t) ;; syntax highlighting?
-;(modify-frame-parameters (selected-frame) '((active-alpha . 0.9)))     ;; alpha transparency - foreground
-;(modify-frame-parameters (selected-frame) '((inactive-alpha . 0.7)))   ;; alpha transparency - background
 
 (when (eq system-type 'windows-nt)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
@@ -41,19 +39,61 @@
   ;(setq shell-command-switch "-Command")            ; Argument to use when executing a single command
   ;(setq explicit-powershell-args '("-command" "-")) ; Arguments when starting an interactive shell
   (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+(when (eq system-type 'darwin)
+;  (setq exec-path (cons "/sw/bin" exec-path)) ;add fink's path...
+  (add-to-list 'exec-path "/sw/bin") ;add fink's path
+  (setq mac-option-modifier 'meta)
+  (setq mac-command-key-is-meta 'alt)
+;  (setq mac-command-modifier 'nil) ;might be necessary, but COMPLETELY removes the cmd key
+;  (setq x-select-enable-clipboard t) ;merge emacs' killring with the clipboard(?)
+  (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
 
-;(cond (window-system)  ;ok we have a windowing environment
-;  (setq default-frame-alist ; this actually sets the font, as well as colours
-;    (list
-;      (cons 'font  myfont)
-;      (cons 'foreground-color  "white")
-;      (cons 'background-color  "black")
-;      (cons 'cursor-color'  "green"))))
-;  (setq initial-frame-alist default-frame-alist))
+(cond (window-system) (  ;ok we have a windowing environment
+  (setq default-frame-alist ; this actually sets the font, as well as colours
+    (list
+      (cons 'font  myfont)
+      (cons 'foreground-color  "white")
+      (cons 'background-color  "black")
+      (cons 'cursor-color'  "green")))
+  (setq initial-frame-alist default-frame-alist))
+  (modify-frame-parameters (selected-frame) '((active-alpha . 0.9)))     ;; alpha transparency - foreground
+  (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.7)))   ;; alpha transparency - background
+)
+;; (setq default-frame-alist ; this actually sets the font, as well as colours
+;;   (list
+;;     (cons 'font  myfont)
+;;     (cons 'foreground-color  "white")
+;;     (cons 'background-color  "black")
+;;     (cons 'cursor-color'  "green")))
+;;(setq initial-frame-alist default-frame-alist)
 
-;(require 'cl) ;; for 'unless'
-;(unless window-system ;ok we have only a cli environment
-;)
+;; some conveniences: 
+(setq edu5 "~/doc/edu/2007-1(spring)/.5")
+
+;; other packages
+(add-to-list 'load-path "~/opt/emacs/")
+(require 'psvn)
+(setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+(require 'org-install)
+(require 'vm)
+
+;; lisp stuff
+(add-to-list 'load-path "~/opt/emacs/slime-2.0/")
+(setq inferior-lisp-program "/usr/local/bin/openmcl")
+(require 'slime)
+(slime-setup)
+
+;; Load CEDET
+(load-file "~/opt/emacs/cedet-1.0pre3/common/cedet.elc")
+
+;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
+;; Select one of the following
+(semantic-load-enable-code-helpers)
+;; (semantic-load-enable-guady-code-helpers)
+;; (semantic-load-enable-excessive-code-helpers)
+
+;; Enable this if you develop in semantic, or develop grammars
+;; (semantic-load-enable-semantic-debugging-helpers)
 
 
 ;; eshell stuff
