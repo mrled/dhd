@@ -8,6 +8,9 @@
 255.255.255.255	broadcasthost
 ::1             localhost 
 
+# hosts @ vpn
+10.187.6.1      emperorshand eh
+
 # hosts @ misc
 192.168.1.1	gw 
 
