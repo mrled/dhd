@@ -42,8 +42,8 @@ t;; mrl's emacs file
 (when (eq system-type 'darwin)
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
   (setq mac-option-modifier 'meta)
-  (setq mac-command-key-is-meta 'alt)
-  (setq mac-command-modifier 'nil) ;otherwise cmd AND opt are meta. 
+  (setq mac-command-key-is-meta 'alt) ;wait what does this do again
+  (setq mac-command-modifier 'alt) ;otherwise cmd AND opt are meta. 
   (modify-frame-parameters (selected-frame) '((active-alpha . 0.9))) ;transparency - foreground
   (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.7))) ;transparency - background
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
