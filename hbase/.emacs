@@ -27,8 +27,8 @@
 
 ;(set-default-font "-*-ProFontX-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1") ;;font = ProFont 9pt
 (global-font-lock-mode t) ;; syntax highlighting?
-(modify-frame-parameters (selected-frame) '((active-alpha . 0.9)))     ;; alpha transparency - foreground
-(modify-frame-parameters (selected-frame) '((inactive-alpha . 0.7)))   ;; alpha transparency - background
+;(modify-frame-parameters (selected-frame) '((active-alpha . 0.9)))     ;; alpha transparency - foreground
+;(modify-frame-parameters (selected-frame) '((inactive-alpha . 0.7)))   ;; alpha transparency - background
 
 (when (eq system-type 'windows-nt)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
@@ -42,13 +42,18 @@
   ;(setq explicit-powershell-args '("-command" "-")) ; Arguments when starting an interactive shell
   (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
 
-(setq default-frame-alist ; this actually sets the font, as well as colours
-  (list
-    (cons 'font  myfont)
-    (cons 'foreground-color  "white")
-    (cons 'background-color  "black")
-    (cons 'cursor-color'  "green")))
-(setq initial-frame-alist default-frame-alist)
+;(cond (window-system)  ;ok we have a windowing environment
+;  (setq default-frame-alist ; this actually sets the font, as well as colours
+;    (list
+;      (cons 'font  myfont)
+;      (cons 'foreground-color  "white")
+;      (cons 'background-color  "black")
+;      (cons 'cursor-color'  "green"))))
+;  (setq initial-frame-alist default-frame-alist))
+
+;(require 'cl) ;; for 'unless'
+;(unless window-system ;ok we have only a cli environment
+;)
 
 
 ;; eshell stuff
@@ -82,3 +87,15 @@ If set to `always', history will always be saved, silently."
 		 (const :tag "Ask" t)
 		 (const :tag "Always save" always))
   :group 'eshell-hist)
+
+
+;; my own functions
+(defun insert-time ()
+  (interactive)
+  (insert (format-time-string "%Y%m%d-%H%M")))
+(defun insert-time-spacey ()
+  (interactive)
+  (insert (format-time-string "%Y-%m-%d %H:%M:%S")))
+(defun insert-time-long ()
+  (interactive)
+  (insert (format-time-string "%Y%m%d-%H%M%S")))
