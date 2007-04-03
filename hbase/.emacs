@@ -1,4 +1,4 @@
-;; mrl's emacs file
+t;; mrl's emacs file
 ; see:
 ;    http://bc.tech.coop/emacs.html
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
@@ -40,35 +40,27 @@
   ;(setq explicit-powershell-args '("-command" "-")) ; Arguments when starting an interactive shell
   (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
 (when (eq system-type 'darwin)
-;  (setq exec-path (cons "/sw/bin" exec-path)) ;add fink's path...
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
   (setq mac-option-modifier 'meta)
   (setq mac-command-key-is-meta 'alt)
-;  (setq mac-command-modifier 'nil) ;might be necessary, but COMPLETELY removes the cmd key
-;  (setq x-select-enable-clipboard t) ;merge emacs' killring with the clipboard(?)
+  (setq mac-command-modifier 'nil) ;otherwise cmd AND opt are meta. 
+  (modify-frame-parameters (selected-frame) '((active-alpha . 0.9))) ;transparency - foreground
+  (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.7))) ;transparency - background
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
 
-(cond (window-system) (  ;ok we have a windowing environment
-  (setq default-frame-alist ; this actually sets the font, as well as colours
+(unless (eq window-system nil) ;if we are NOT running in the console
+;(cond (window-system) (  ;ok we have a windowing environment
+  (setq default-frame-alist ; this actually sets the font and colours
     (list
       (cons 'font  myfont)
       (cons 'foreground-color  "white")
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
-  (setq initial-frame-alist default-frame-alist))
-  (modify-frame-parameters (selected-frame) '((active-alpha . 0.9)))     ;; alpha transparency - foreground
-  (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.7)))   ;; alpha transparency - background
+  (setq initial-frame-alist default-frame-alist)
 )
-;; (setq default-frame-alist ; this actually sets the font, as well as colours
-;;   (list
-;;     (cons 'font  myfont)
-;;     (cons 'foreground-color  "white")
-;;     (cons 'background-color  "black")
-;;     (cons 'cursor-color'  "green")))
-;;(setq initial-frame-alist default-frame-alist)
 
-;; some conveniences: 
-(setq edu5 "~/doc/edu/2007-1(spring)/.5")
+;; conveniences: 
+(setq edu5 "~/doc/edu/.07a)/.5")
 
 ;; other packages
 (add-to-list 'load-path "~/opt/emacs/")
