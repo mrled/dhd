@@ -1,4 +1,5 @@
 #!/bin/csh
-setenv DATE `/bin/date %Y%m%d`
-mkdir -p ~/Backups/$DATE
-cp -r ~/Library/Application\ Support/Camino ~/Backups/$DATE/
+setenv DATE `/bin/date +%Y%m%d`
+setenv BDIR "~/Backup/$DATE"
+mkdir -p $BDIR
+cp -r ~/Library/Application\ Support/Camino $BDIR
