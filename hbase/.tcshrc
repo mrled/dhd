@@ -266,6 +266,7 @@ setenv FSEDIT "emacs"
 # to edit his command history. STUPID!
 # (Interix, at least, does this wrong)
 bindkey -e
+bindkey ^G kill-whole-line #behaves somewhat more like emacs
 
 # umask defaults such that no one else can read my files. 
 umask 077
