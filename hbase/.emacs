@@ -1,4 +1,4 @@
-t;; mrl's emacs file
+ut;; mrl's emacs file
 ; see:
 ;    http://bc.tech.coop/emacs.html
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
