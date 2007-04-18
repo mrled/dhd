@@ -1,12 +1,20 @@
-ut;; mrl's emacs file
+;; mrl's emacs file
 ; see:
 ;    http://bc.tech.coop/emacs.html
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
 ;    http://www.student.northpark.edu/pemente/emacs_tabs.htm
 
+; my vars:
+(setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
+
+; if I have a host-specific emacs file, load it. 
+(if (file-exists-p 
+  (setq custom-file (concat "~/doc/remote/dhd/host/" host-name "/dot.emacs")))
+    (load-file custom-file))
+
+; settings (not custom variables)
 (setq inhibit-startup-message t)   ; inhibit startup
 (setq initial-scratch-message nil) ; inhibit splash
-(fset 'yes-or-no-p 'y-or-n-p) ; Make all "yes or no" prompts show "y or n" instead
 (setq make-backup-files t) ; Enable backup files.
 (setq version-control t) ; Enable backup versioning 
 (setq backup-directory-alist (quote ((".*" . "~/Backup/emacs/")))) ;; Save all backups here
@@ -14,9 +22,12 @@ ut;; mrl's emacs file
 (setq mouse-autoselect-window t) ; focus-follows-mouse. NOT frames... just for emacs' WINDOWS only. 
 (setq display-time-24hr-format t)
 (setq display-time-day-and-date t)
+
+(fset 'yes-or-no-p 'y-or-n-p) ; Make all "yes or no" prompts show "y or n" instead
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
 (tool-bar-mode 0)
+(global-font-lock-mode t) ;; syntax highlighting
 
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab character
@@ -24,9 +35,6 @@ ut;; mrl's emacs file
 (define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop) ; bind [TAB] key to tab-to-tab-stop
 ;; set the tab stop list such that a tab = 4 spaces, not 8
 (setq tab-stop-list '(4 8 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120))
-
-;(set-default-font "-*-ProFontX-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1") ;;font = ProFont 9pt
-(global-font-lock-mode t) ;; syntax highlighting?
 
 (when (eq system-type 'windows-nt)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
@@ -63,30 +71,44 @@ ut;; mrl's emacs file
 (setq edu5 "~/doc/edu/.07a)/.5")
 
 ;; other packages
-(add-to-list 'load-path "~/opt/emacs/")
-(require 'psvn)
-(setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-(require 'org-install)
-(require 'vm)
+(add-to-list 'load-path 
+  (setq home-load-path  "~/opt/emacs/") 
+  (setq local-load-path "/usr/local/share/emacs/site-lisp"))
 
-;; lisp stuff
+(autoload 'psvn "psvn" "SVN for Emacs")
+(autoload 'org-install "org-install" "Organization mode for Emacs")
+(autoload 'vm "vm" "A more MUA-like MUA for Emacs")
+
+;; ceded (emacs ide-like features) stuff
+(if (file-exists-p (setq cedet-file (concat home-load-path "cedet/common/cedet.elc")))
+  (load-file cedet-file)
+  (semantic-load-enable-code-helpers))
+
+;; lisp programming stuff
+;; (if (file-exists-p (setq slime-path (concat home-load-path "slime/")))
+;;   (add-to-list 'load-path slime-path)
+;;   (setq inferior-lisp-program "/usr/local/bin/openmcl")
+;;   (require 'slime)
+;;   (slime-setup))
+
+;(setq slime-path (concat home-load-path "slime-2.0/"))
+;(add-to-list 'load-path slime-path)
+;(setq inferior-lisp-program "/usr/local/bin/openmcl")
+;(require 'slime)
+;(slime-setup)
+
 (add-to-list 'load-path "~/opt/emacs/slime-2.0/")
 (setq inferior-lisp-program "/usr/local/bin/openmcl")
 (require 'slime)
 (slime-setup)
 
-;; Load CEDET
-(load-file "~/opt/emacs/cedet-1.0pre3/common/cedet.elc")
 
-;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
-;; Select one of the following
-(semantic-load-enable-code-helpers)
-;; (semantic-load-enable-guady-code-helpers)
-;; (semantic-load-enable-excessive-code-helpers)
-
-;; Enable this if you develop in semantic, or develop grammars
-;; (semantic-load-enable-semantic-debugging-helpers)
-
+(autoload 'slime "slime"
+          "Start an inferior^_superior Lisp and connect to its Swank server."
+          t)
+(autoload 'slime-mode "slime"
+          "SLIME: The Superior Lisp Interaction Mode for Emacs (minor-mode)."
+          t)
 
 ;; eshell stuff
 ; make C-a go to the beginning of the command line, unless it is already there, in which case 
@@ -119,7 +141,6 @@ If set to `always', history will always be saved, silently."
 		 (const :tag "Ask" t)
 		 (const :tag "Always save" always))
   :group 'eshell-hist)
-
 
 ;; my own functions
 (defun insert-time ()

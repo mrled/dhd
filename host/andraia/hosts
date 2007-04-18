@@ -9,7 +9,9 @@
 ::1             localhost 
 
 # hosts @ vpn
-10.187.6.1      emperorshand eh
+10.187.6.1      marajade-vpn mj-vpn # emperorshand eh
+10.187.6.6      andraia-vpn
+10.187.6.10     icelady-vpn il-vpn
 
 # hosts @ misc
 192.168.1.1	gw 
