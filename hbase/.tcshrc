@@ -99,6 +99,11 @@ setenv HOST `hostname`
 
 # Checking for stuff-specific stuff
 
+
+#default cases:
+alias psa ps ax
+alias psaf 'ps ax|grep -i \!*'
+
 # ls... the search for GNU
 # perhaps I can substitute the builtin ls-F function for this?
 # or this is a great place for my 2-rc-files idea. 
@@ -118,6 +123,14 @@ else if ( -X gls ) then
 else 
 	set ls = "ls-F"
 endif
+
+if ($UNAME == 'SunOS') then
+    alias psa ps -ef
+    alias psaf 'ps -ef|grep -i \!*'
+endif
+ 
+
+
 
 # fink
 test -r /sw/bin/init.csh && source /sw/bin/init.csh
@@ -175,9 +188,6 @@ alias lsa '$ls -ahF --color'
 alias lsl '$ls -alhF --color'
 alias l1 '$ls -1hF --color'
 alias llm '$ls -lahrtF --color' # lists by last modification time (recently modified files at the end)
-
-alias psa ps ax
-alias psaf 'ps ax|grep -i \!*'
 
 alias pu pushd
 alias po popd
@@ -299,9 +309,21 @@ set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
 #set path = ($path ~/opt/arch/`uname -s`/bin/`uname -m` ~/opt/bin ~/opt/arch/neutral/bin)
 
 # here is where a unique-per-system rc file and a global, unchanging rc file would be really handy:
-setenv LOCALPATH "/usr/games/bin:/usr/games:${HOME}/opt/bin:${HOME}/opt/local/bin:${HOME}/opt/uenc:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/opt/surfraw/bin:"
+setenv LOCALPATH "/usr/games/bin:/usr/games:${HOME}/opt/bin:${HOME}/opt/local/bin:${HOME}/opt/uenc:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/opt/surfraw/bin:/opt/csw/flex/bin:/opt/csw/sbin:"
 setenv PATH "${PATH}:${LOCALPATH}:"
 #setenv PATH "${LOCALPATH}:"
+
+# autogen the MANPATH from PATH
+# while I'm at it, I might as well clean up the path...
+#  no dup entries
+#  no multiple ':'
+# setenv CLEANPATH = \
+#   echo $PATH | sed s/:/\\n/g | sed /^\$/d | sort | uniq | sed s/\$/:/g | tr -d "\n"
+# setenv CLEANMANPATH = \
+#   (...)
+
+
+
 
 # a lot of times, software is installed to /opt/<package>/(s)bin
 # (eg gentoo does this for commercial binary stuff). 
