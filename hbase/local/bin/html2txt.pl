@@ -1,4 +1,4 @@
-#!/usr/pkg/bin/perl -s
+#!/usr/bin/perl -s
 
 # Written by Robert Stockton (rgs@cs.cmu.edu).
 # Known to be imcomplete.  Expected to be maintainable by author, and somewhat
