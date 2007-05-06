@@ -15,11 +15,6 @@
 (require 'muse-docbook)
 (require 'muse-book)
 (require 'muse-blosxom)
-;(defcustom muse-blosxom-extension ".txt")  ; oh, which one do I need? 
-;(setq muse-blosxom-extension ".txt")       ; oh, which one do I need? 
-(setq muse-blosxom-base-directory "/Library/WebServer/Data/pybosxom/blog")
-(global-set-key "\C-cbn" 'muse-blosxom-new-entry)
-;(global-set-key "\C-cbp" 'muse-blosxom-)
 
 ;; ceded (emacs ide-like features) stuff
 ;(if (file-exists-p (setq cedet-file (concat home-load-path "cedet/common/cedet.elc")))
@@ -33,13 +28,7 @@
 ;;   (require 'slime)
 ;;   (slime-setup))
 
-;(setq slime-path (concat home-load-path "slime-2.0/"))
-;(add-to-list 'load-path slime-path)
-;(setq inferior-lisp-program "/usr/local/bin/openmcl")
-;(require 'slime)
-;(slime-setup)
-
-(add-to-list 'load-path "~/opt/emacs/slime-2.0/")
+z(add-to-list 'load-path "~/opt/emacs/slime-2.0/")
 (setq inferior-lisp-program "/usr/local/bin/openmcl")
 (require 'slime)
 (slime-setup)
