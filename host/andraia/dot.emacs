@@ -1,11 +1,30 @@
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+
 (autoload 'psvn "psvn" "SVN for Emacs")
 (autoload 'org-install "org-install" "Organization mode for Emacs")
 (autoload 'vm "vm" "A more MUA-like MUA for Emacs")
 
+;(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/muse/")
+(autoload 'muse "muse" "Wiki mode for Emacs")
+(require 'muse)
+(require 'muse-mode)
+(require 'muse-project)
+(require 'muse-html)
+(require 'muse-latex)
+(require 'muse-texinfo)
+(require 'muse-docbook)
+(require 'muse-book)
+(require 'muse-blosxom)
+;(defcustom muse-blosxom-extension ".txt")  ; oh, which one do I need? 
+;(setq muse-blosxom-extension ".txt")       ; oh, which one do I need? 
+(setq muse-blosxom-base-directory "/Library/WebServer/Data/pybosxom/blog")
+(global-set-key "\C-cbn" 'muse-blosxom-new-entry)
+;(global-set-key "\C-cbp" 'muse-blosxom-)
+
 ;; ceded (emacs ide-like features) stuff
-(if (file-exists-p (setq cedet-file (concat home-load-path "cedet/common/cedet.elc")))
-  (load-file cedet-file)
-  (semantic-load-enable-code-helpers))
+;(if (file-exists-p (setq cedet-file (concat home-load-path "cedet/common/cedet.elc")))
+;  (load-file cedet-file)
+;  (semantic-load-enable-code-helpers))
 
 ;; lisp programming stuff
 ;; (if (file-exists-p (setq slime-path (concat home-load-path "slime/")))
