@@ -1,0 +1,6 @@
+(add-to-list 'load-path' "~/opt/emacs/muse-3.02/lisp/")
+(require 'muse)
+(require 'muse-mode)
+(require 'muse-project)
+(require 'muse-html)
+(require 'muse-blosxom)
