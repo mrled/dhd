@@ -28,7 +28,7 @@
 ;;   (require 'slime)
 ;;   (slime-setup))
 
-z(add-to-list 'load-path "~/opt/emacs/slime-2.0/")
+(add-to-list 'load-path "~/opt/emacs/slime-2.0/")
 (setq inferior-lisp-program "/usr/local/bin/openmcl")
 (require 'slime)
 (slime-setup)
