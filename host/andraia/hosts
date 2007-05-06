@@ -9,25 +9,24 @@
 ::1             localhost 
 
 # hosts @ vpn
-10.187.6.1      marajade-vpn mj-vpn # emperorshand eh
-10.187.6.6      andraia-vpn
-10.187.6.10     icelady-vpn il-vpn
+10.187.6.1      marajade-vpn    mj-vpn
+10.187.6.6      andraia-vpn     a-vpn
+10.187.6.10     icelady-vpn     il-vpn
 
 # hosts @ misc
 192.168.1.1	gw 
 
 # hosts @ leander
 192.168.1.60	andraia
-#192.168.1.60	kerrigan
 192.168.1.71    icelady
 192.168.1.72    sexysamantha samantha sam
+192.168.1.44    idk
 
 # hosts @ hampton
-192.168.1.240   mgateway mgw    # linksys router that bridges wired/wireless so my other servers can have a wired internet connection
+192.168.1.240   mgateway mgw    # linksys router bridges wired/w-less
 192.168.1.241   andraia         # wireless
 192.168.1.242   andraia         # wired
 192.168.1.243   marajade mj     # sun blade 100
-192.158.1.244   metroid         # andy's powerbook
 
 # hosts @ internet
 65.254.37.135	vlack.comh
