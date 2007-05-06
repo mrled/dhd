@@ -7,9 +7,14 @@
 ; my vars:
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
 
+;; other packages: load these before host-specific emacs file
+(setq home-load-path  "~/opt/emacs/")
+(setq local-load-path "/usr/local/share/emacs/site-lisp")
+(add-to-list 'load-path home-load-path local-load-path)
+
 ; if I have a host-specific emacs file, load it. 
 (if (file-exists-p 
-  (setq custom-file (concat "~/doc/remote/dhd/host/" host-name "/dot.emacs")))
+  (setq custom-file (concat "~/doc/remote/dhd/host/" host-name "/emacs.el")))
     (load-file custom-file))
 
 ; settings (not custom variables)
@@ -67,13 +72,6 @@
   (setq initial-frame-alist default-frame-alist)
 )
 
-;; conveniences: 
-(setq edu5 "~/doc/edu/.07a)/.5")
-
-;; other packages
-(add-to-list 'load-path 
-  (setq home-load-path  "~/opt/emacs/") 
-  (setq local-load-path "/usr/local/share/emacs/site-lisp"))
 
 ;; eshell stuff
 ; make C-a go to the beginning of the command line, unless it is already there, in which case 
@@ -117,3 +115,9 @@ If set to `always', history will always be saved, silently."
 (defun insert-time-long ()
   (interactive)
   (insert (format-time-string "%Y%m%d-%H%M%S")))
+(defun insert-date ()
+  (interactive)
+  (insert (format-time-string "%Y%m%d")))
+(defun insert-time-blos ()
+  (interactive) 
+  (insert (format-time-string "%Y-%m-%d-%H-%M")))
