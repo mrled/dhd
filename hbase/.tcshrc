@@ -197,6 +197,16 @@ alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
 
+if ( -X gsed ) then
+    set sed=gsed
+else 
+    set sed=sed
+endif
+
+alias ppath  'echo $PATH | $sed "s/:/\n/g"'
+alias pupath 'echo $PATH | $sed "s/:/\n/g" | sort | uniq'
+
+
 #alias ugrep "grep -i $1 /usr/portage/profiles/use.desc"# ; grep -i $1 /usr/portage/profiles/use.local.desc"
 
 if ( -X wn ) then
