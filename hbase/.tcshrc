@@ -281,7 +281,9 @@ bindkey ^G kill-whole-line #behaves somewhat more like emacs
 umask 077
 
 # turn on talk
-mesg y
+if (-X mesg) then 
+    mesg y
+endif
 
 # cause new programs to be recognized after installed
 #alias postcmd "rehash"
