@@ -102,29 +102,7 @@ setenv HOST `hostname`
 alias psa ps ax
 alias psaf 'ps ax|grep -i \!*'
 
-# ls... the search for GNU
-# perhaps I can substitute the builtin ls-F function for this?
-# or this is a great place for my 2-rc-files idea. 
-# fink's GNU ls
-if ( -fx /sw/bin/ls ) then
-	set ls = "/sw/bin/ls"
-# darwinports' GNU ls
-else if ( -fx /opt/local/bin/ls ) then
-	set ls = "/opt/local/bin/ls"
-# solaris / pkg-get 
-else if ( -fx /opt/csw/bin/gls ) then
-    set ls = "/opt/csw/bin/gls"
-# lots of opeating systems (netbsd...) prepend g to the gnu tools; eg 'gls'
-else if ( -X gls ) then
-	set ls = "gls"
-# ls-F function built into tcsh. tries to behave like GNU
-else 
-	set ls = "ls-F"
-endif
  
-
-
-
 # fink
 test -r /sw/bin/init.csh && source /sw/bin/init.csh
 
@@ -331,6 +309,15 @@ foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
 end
 set path = ( $p )
 unset p
+
+# ls... the search for GNU
+# lots of opeating systems (netbsd...) prepend g to the gnu tools; eg 'gls'
+if ( -X gls ) then
+	set ls = "gls"
+# ls-F function built into tcsh. tries to behave like GNU
+else 
+	set ls = ls #"ls-F"
+endif
 
 # autogen the MANPATH from PATH
 # while I'm at it, I might as well clean up the path...
