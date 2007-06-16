@@ -4,6 +4,8 @@
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
 ;    http://www.student.northpark.edu/pemente/emacs_tabs.htm
 
+; "If you are an idiot, then you should use Emacs." 
+
 ; my vars:
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
 
@@ -18,6 +20,7 @@
     (load-file host-specific-init-file))
 
 ; settings (not custom variables)
+(setq visible-bell t) ; Is this vi? Should there be beeping? 
 (setq inhibit-startup-message t)   ; inhibit startup
 (setq initial-scratch-message nil) ; inhibit splash
 (setq make-backup-files t) ; Enable backup files.
