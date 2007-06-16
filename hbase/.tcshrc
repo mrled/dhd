@@ -106,16 +106,6 @@ alias psaf 'ps ax|grep -i \!*'
 # fink
 test -r /sw/bin/init.csh && source /sw/bin/init.csh
 
-####### sdf.lonestar.org - various weirdnesses
-### notify
-# had to execyte this next line in a subshell - that is, use () - 
-# because it wouldn't recognize it correctly otherwise. 
-# THIS DOESN'T WORK
-#alias notify-builtin '(unalias notify && notify)'
-#alias notify-sdf '/usr/pkg/bin/notify'
-#alias notify 'printf "Do you want /usr/pkg/bin/notify? \n\tThen type notify-sdf\nDo you want tcsh builtin notify?\n\tThen type notify-builtin\n"' 
-###
-
 # GNUstep
 if ( -fx /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh
@@ -125,9 +115,10 @@ endif
 
 # Cygwin
 if ( -d /cygdrive ) then 
-    # it inherits the Windows path, so if your Windows path has this set, it will be wrong
+    # it inherits the Windows path, so if your Windows path has this set, 
+    #  then it will be wrong:
     setenv SVN_SSH /usr/bin/ssh  
-    # http://lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html
+    # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
 endif
 
@@ -138,14 +129,6 @@ if ( $UNAME == SunOS ) then
 
 endif
 
-
-######################
-# Package Management #
-######################
-
-# finally moved to dhd/tmp/tpkg
-# if you use dports or interix or something again, check to see that your stuff 
-# wasn't moved there also... i know i had to put fink back in here
 
 ##################
 # Global Aliases #
@@ -175,22 +158,19 @@ alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
 
-if ( -X gsed ) then
-    set sed=gsed
-else 
-    set sed=sed
+if ( -X gsed ) set sed=gsed
+else set sed=sed
 endif
 
 alias ppath  'echo $PATH | $sed "s/:/\n/g"'
 alias pupath 'echo $PATH | $sed "s/:/\n/g" | sort | uniq'
 
+#gentoo junk: 
+alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
+alias fnc 'find /etc -iname "._cfg????*"'
 
-#alias ugrep "grep -i $1 /usr/portage/profiles/use.desc"# ; grep -i $1 /usr/portage/profiles/use.local.desc"
+if ( -X wn ) alias define 'wn \!* -over'
 
-if ( -X wn ) then
-    alias wno 'wn \!* -over'
-    alias define wno
-endif
 
 # under OS X, posd tells you where the topmost Finder window is. 
 # this is installable via fink (apt-get install posd)
@@ -216,34 +196,25 @@ alias omg		'echo wtf'
 ###################
 
 # tcsh settings
-# don't correct me... I know I'm right!
-set correct=none
-# not only can tcsh list completions, it can do it in color!
-set autolist 
-set color 
-set colorcat
-# disable annoying DING!
-set noding
-# set 24-hr time
-unset ampm
-# list jobs long
-set listjobs=long
-# ls-F builtin will list the type of file to which a symlink points
-set listlinks
-# turn off beeping for ambiguous completion (this is so annoying)
-set matchbeep=never
-# save history between sessions
-set savehist
-# print logins and logouts
-#set watch=(any any)
-# autologout drives me crazy
-set autologout=0
+set correct=none # don't correct me... I know I'm right!
+set autolist # not only can tcsh list completions, it can do it in color!
+set color    # ...
+set colorcat # ...
+set noding # disable annoying DING!
+unset ampm # set 24-hr time
+set listjobs=long # list jobs long
+set listlinks # ls-F builtin will list the filetype to which a symlink points
+set matchbeep=never # turn off beeping for ambiguous completion (so annoying)
+set savehist # save history between sessions
+set watch=(any any) # print logins and logouts
+set autologout=0 # autologout drives me crazy
+set notify # tell me emediately when jobs complete; don't wait for prompt
+set noclobber # > only into new files; >> only into existing files
 
 
 # YES! correct backslash escape sequences: 
 # backslashes always quote the following characters: \'"
-# why not the default? 
-# b/c it creates errors with some csh scripts. 
+# not default b/c it creates errors with some csh scripts. 
 set backslash_quote
 
 # will set my pager to be the best available
@@ -265,16 +236,9 @@ setenv FSEDIT "emacs"
 bindkey -e
 bindkey ^G kill-whole-line #behaves somewhat more like emacs
 
-# umask defaults such that no one else can read my files. 
-umask 077
-
-# turn on talk
-if (-X mesg) then 
-    mesg y
-endif
-
-# cause new programs to be recognized after installed
-#alias postcmd "rehash"
+umask 077 #stop reading my files!!
+if (-X mesg) mesg y # turn on talk
+#alias postcmd "rehash" # see new apps after install. SLOW
 
 # Setting the default prompt
 # Gentoo default:  
@@ -291,11 +255,7 @@ set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
 
 
 
-# Make the $PATH not suck
-# determine current path: 
-# echo $PATH | sed 's/:/\n/g' | sort | uniq
-# this only adds directories to the path which exist. woot. 
-set p=()
+set p=() # Make the $PATH not suck:
 # don't include: /usr/ucb /usr/sfw/bin
 foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
             /usr/games{,/bin} /usr/X11R6/{,s}bin \
@@ -311,12 +271,8 @@ set path = ( $p )
 unset p x
 
 # ls... the search for GNU
-# lots of opeating systems (netbsd...) prepend g to the gnu tools; eg 'gls'
-if ( -X gls ) then
-	set ls = "gls"
-# ls-F function built into tcsh. tries to behave like GNU
-else 
-	set ls = ls #"ls-F"
+if ( -X gls ) set ls = "gls" # lots of OS prepend g to gnu tools; eg 'gls'
+else set ls = ls # "ls-F" is built in to tcsh; tries to behave like GNU
 endif
 
 # autogen the MANPATH from PATH
@@ -330,10 +286,8 @@ endif
 
 # GNU dircolors
 # has to be done after PATH, in case, eg, it's in /sw/bin or something
-if (-X dircolors) then
-    test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
-else if (-X gdircolors) then
-    test -r ~/.dir_colors && eval `gdircolors -c ~/.dir_colors`
+if (-X dircolors) test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
+else if (-X gdircolors) test -r ~/.dir_colors && eval `gdircolors -c ~/.dir_colors`
 endif
 
 
