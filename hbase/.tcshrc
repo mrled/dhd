@@ -300,6 +300,11 @@ set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
 #set rprompt='somethinghere?'
 
 
+
+# Make the $PATH not suck
+# determine current path: 
+# echo $PATH | sed 's/:/\n/g' | sort | uniq
+# this only adds directories to the path which exist. woot. 
 set p=()
 # don't include: /usr/ucb /usr/sfw/bin
 foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
