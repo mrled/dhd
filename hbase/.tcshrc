@@ -200,6 +200,8 @@ alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
 
+#alias ugrep "grep -i $1 /usr/portage/profiles/use.desc"# ; grep -i $1 /usr/portage/profiles/use.local.desc"
+
 if ( -X wn ) then
     alias wno 'wn \!* -over'
     alias define wno

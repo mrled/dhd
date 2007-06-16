@@ -26,3 +26,5 @@ svn: 'svn co -r # <repo>', where # is a revision number and <repo> is a repo
 rsync: rsync -rvlu --progress --bwlimit=20 ~/USB.80GB.01/Software/ mrled@mrled.org:/home/mrled/UNIX/
 cygwin: `cygstart` is like `open` under os x or `start` under cmd
 screen: copy mode: C-z [
+gentoo: eix is what you use for fast searches
+gentoo: portage: eix-sync does emerge --sync and eix-update
