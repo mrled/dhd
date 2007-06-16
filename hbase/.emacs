@@ -14,8 +14,8 @@
 
 ; if I have a host-specific emacs file, load it. 
 (if (file-exists-p 
-  (setq custom-file (concat "~/doc/remote/dhd/host/" host-name "/emacs.el")))
-    (load-file custom-file))
+  (setq host-specific-init-file (concat "~/doc/remote/dhd/host/" host-name "/emacs.el")))
+    (load-file host-specific-init-file))
 
 ; settings (not custom variables)
 (setq inhibit-startup-message t)   ; inhibit startup
@@ -27,6 +27,16 @@
 (setq mouse-autoselect-window t) ; focus-follows-mouse. NOT frames... just for emacs' WINDOWS only. 
 (setq display-time-24hr-format t)
 (setq display-time-day-and-date t)
+
+;; trying to make Info behave
+(require 'info)
+(add-to-list 'Info-directory-list "/usr/share/emacs/info")
+;; "/usr/local/share/emacs/info" "/opt/csw/share/info")
+(setq Info-directory-list
+ (cons (expand-file-name "/usr/share/emacs/info")
+       Info-directory-list))
+
+
 
 (fset 'yes-or-no-p 'y-or-n-p) ; Make all "yes or no" prompts show "y or n" instead
 (line-number-mode 1) ;; Show line-number in the mode line
