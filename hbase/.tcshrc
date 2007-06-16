@@ -303,12 +303,12 @@ foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
             /sw/{,s}bin /usr/texbin \
             /usr/pkg/{,s}bin \
             /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
-            /opt/SUNWspor/{,s}bin \
+            /opt/SUNWspro/{,s}bin \
             )
   if (-d $x) set p=( $p $x )
 end
 set path = ( $p )
-unset p
+unset p x
 
 # ls... the search for GNU
 # lots of opeating systems (netbsd...) prepend g to the gnu tools; eg 'gls'
