@@ -82,8 +82,6 @@ alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /b
 # this makes emacs' command: C-x C-c work properly (quit emacs)
 # instead of be interpretted as C-x C-g
 # more info here:
-# http://lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html
-setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
 
 # a WAAAAY cool idea about prompt colors is here
 # http://www.dotfiles.com/files/21/442_dot.tcshrc
@@ -123,11 +121,6 @@ else if ( -X gls ) then
 else 
 	set ls = "ls-F"
 endif
-
-if ($UNAME == 'SunOS') then
-    alias psa ps -ef
-    alias psaf 'ps -ef|grep -i \!*'
-endif
  
 
 
@@ -154,13 +147,17 @@ endif
 
 # Cygwin
 if ( -d /cygdrive ) then 
-# it inherits the Windows path, so if your Windows path has this set, it will be wrong
+    # it inherits the Windows path, so if your Windows path has this set, it will be wrong
     setenv SVN_SSH /usr/bin/ssh  
+    # http://lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html
+    setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
 endif
 
 if ( $UNAME == SunOS ) then
-    setenv PATH "${PATH}:/usr/sfw/bin:/opt/csw/bin:/opt/csw/gcc4/bin:/opt/SUNWspro/bin:"
     setenv CC "/opt/csw/gcc4/bin/gcc"
+    alias psa ps -ef
+    alias psaf 'ps -ef|grep -i \!*'
+
 endif
 
 
@@ -303,17 +300,19 @@ set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
 #set rprompt='somethinghere?'
 
 
-
-# PATH stuff
-#set path = (/usr/man /usr/*/man /opt/*/man)
-#setenv MANPATH "$PATH"
-#set path = (/opt/*/{,s}bin /usr/*/{,s}bin /{,s}bin /usr/{,s}bin /usr/games /usr/ucb ~/opt/{,s}bin ~micah/{,s}bin ~vlack/{,s}bin)
-#set path = ($path ~/opt/arch/`uname -s`/bin/`uname -m` ~/opt/bin ~/opt/arch/neutral/bin)
-
-# here is where a unique-per-system rc file and a global, unchanging rc file would be really handy:
-setenv LOCALPATH "/usr/games/bin:/usr/games:${HOME}/opt/bin:${HOME}/opt/local/bin:${HOME}/opt/uenc:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/opt/surfraw/bin:/opt/csw/flex/bin:/opt/csw/sbin:"
-setenv PATH "${PATH}:${LOCALPATH}:"
-#setenv PATH "${LOCALPATH}:"
+set p=()
+# don't include: /usr/ucb /usr/sfw/bin
+foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
+            /usr/games{,/bin} /usr/X11R6/{,s}bin \
+            /usr/opt/surfraw/bin ~/opt/{,s}bin ~/opt/local/bin \
+            /sw/{,s}bin /usr/texbin \
+            /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
+            /opt/SUNWspor/{,s}bin \
+            )
+  if (-d $x) set p=( $p $x )
+end
+set path = ( $p )
+unset p
 
 # autogen the MANPATH from PATH
 # while I'm at it, I might as well clean up the path...
@@ -323,15 +322,6 @@ setenv PATH "${PATH}:${LOCALPATH}:"
 #   echo $PATH | sed s/:/\\n/g | sed /^\$/d | sort | uniq | sed s/\$/:/g | tr -d "\n"
 # setenv CLEANMANPATH = \
 #   (...)
-
-
-
-
-# a lot of times, software is installed to /opt/<package>/(s)bin
-# (eg gentoo does this for commercial binary stuff). 
-#foreach f (/opt/*)
-#    setenv PATH 
-#    end
 
 # GNU dircolors
 # has to be done after PATH, in case, eg, it's in /sw/bin or something
@@ -346,12 +336,12 @@ endif
 # Completions #
 ###############
 
-#complete find \
-#	'n/-name/f/' \
-#	'n/-type/(c b d f p l s)/' \
-#	'n/-exec/c/' \
-#	'c/-/(name type user size ctime mtime atime print exec )/' \
-#	'n/*/d/'
+complete find \
+	'n/-name/f/' \
+	'n/-type/(c b d f p l s)/' \
+	'n/-exec/c/' \
+	'c/-/(name type user size ctime mtime atime print exec )/' \
+	'n/*/d/'
 
 ##############
 # Subversion #
