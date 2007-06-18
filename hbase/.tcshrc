@@ -281,8 +281,9 @@ unset p x
 foreach x ( `ppath | sed 's/\/[a-zA-Z0-9]*$/\/man/g' | sort | uniq|tc -s "\n" " "`
 
 # ls... the search for GNU
-if ( -X gls ) set ls = "gls" # lots of OS prepend g to gnu tools; eg 'gls'
-else set ls = ls # "ls-F" is built in to tcsh; tries to behave like GNU
+if ( -X gls ) then 
+    set ls = "gls" # lots of OS prepend g to gnu tools, eg 'gls'
+else set ls = ls # "ls-F" is built in to tcsh, tries to behave like GNU
 endif
 
 # autogen the MANPATH from PATH
