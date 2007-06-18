@@ -141,6 +141,6 @@ If set to nil, it means never ask whether history should be saved.
 If set to t, always ask if any Eshell buffers are open at exit time.
 If set to `always', history will always be saved, silently."
   :type '(choice (const :tag "Never" nil)
-		 (const :tag "Ask" t)
+		 (const :tag "Ask" f)
 		 (const :tag "Always save" always))
   :group 'eshell-hist)

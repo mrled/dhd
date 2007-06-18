@@ -25,9 +25,14 @@
 (setq initial-scratch-message nil) ; inhibit splash
 (setq make-backup-files t) ; Enable backup files.
 (setq version-control t) ; Enable backup versioning 
-(setq backup-directory-alist (quote ((".*" . "~/Backup/emacs/")))) ;; Save all backups here
+(setq backup-directory-alist (quote ((".*" . "~/Backup/emacs/")))) ; Save bckups
 (setq delete-old-versions t) ; don't ask me to delete old backups, just do it
-(setq mouse-autoselect-window t) ; focus-follows-mouse. NOT frames... just for emacs' WINDOWS only. 
+(setq mouse-autoselect-window t) ; focus-follows-mouse in WINDOWS, NOT frames
+(fset 'yes-or-no-p 'y-or-n-p) ; "yes or no" = "y or n"
+(line-number-mode 1) ;; Show line-number in the mode line
+(column-number-mode 1) ;; Show column-number in the mode line
+(tool-bar-mode 0)
+(global-font-lock-mode t) ;; syntax highlighting
 (setq display-time-24hr-format t)
 (setq display-time-day-and-date t)
 
@@ -41,18 +46,12 @@
 
 
 
-(fset 'yes-or-no-p 'y-or-n-p) ; Make all "yes or no" prompts show "y or n" instead
-(line-number-mode 1) ;; Show line-number in the mode line
-(column-number-mode 1) ;; Show column-number in the mode line
-(tool-bar-mode 0)
-(global-font-lock-mode t) ;; syntax highlighting
 
 ; for the love of mercy, indent the same way every time!
-(setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab character
-(setq default-tab-width 4) ; when i read tab char from disk, display as 4 chars wide
-(define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop) ; bind [TAB] key to tab-to-tab-stop
-;; set the tab stop list such that a tab = 4 spaces, not 8
-(setq tab-stop-list '(4 8 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120))
+(setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
+(setq default-tab-width 4) ; when tab char on disk, display as 4 chars wide
+(define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop) ; [TAB]ky = tab2tab-stop
+(setq tab-stop-list '(4 8 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)) ;; tab = 4 spaces, not 8
 
 (when (eq system-type 'windows-nt)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
@@ -114,7 +113,7 @@ If set to nil, it means never ask whether history should be saved.
 If set to t, always ask if any Eshell buffers are open at exit time.
 If set to `always', history will always be saved, silently."
   :type '(choice (const :tag "Never" nil)
-		 (const :tag "Ask" t)
+		 (const :tag "Ask" f)
 		 (const :tag "Always save" always))
   :group 'eshell-hist)
 
