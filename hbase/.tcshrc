@@ -99,8 +99,6 @@ alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
 
-alias ppath  'echo $PATH | $sed "s/:/\n/g"'
-alias pupath 'echo $PATH | $sed "s/:/\n/g" | sort | uniq'
 
 #gentoo junk: 
 alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
@@ -217,18 +215,19 @@ unset p x
 # ls... the search for GNU
 set ls = "/bin/ls"
 if ( -X gls ) set ls = "gls"
-
-
-# sed
-if ( -X gsed ) then 
-    set sed=gsed
-else 
-    set sed=sed
-endif
+# GNU sed
+if ( -X gsed ) alias sed "gsed"
+# GNU du for the -h option :):):)
+if ( -X gdu ) alias du gdu
 # GNU dircolors
 if (-X dircolors) test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
 else if (-X gdircolors) test -r ~/.dir_colors && eval `gdircolors -c ~/.dir_colors`
 endif
+
+
+# these use sed:
+alias ppath  'echo $PATH | sed "s/:/\n/g"'
+alias pupath 'echo $PATH | sed "s/:/\n/g" | sort | uniq'
 
 
 ###############
