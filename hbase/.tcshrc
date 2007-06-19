@@ -214,9 +214,6 @@ set path = ( $p )
 unset p x
 
 
-
-foreach x ( `ppath | sed 's/\/[a-zA-Z0-9]*$/\/man/g' | sort | uniq|tc -s "\n" " "`
-
 # ls... the search for GNU
 set ls = "/bin/ls"
 if ( -X gls ) set ls = "gls"
