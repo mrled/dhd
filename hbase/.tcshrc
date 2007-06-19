@@ -223,7 +223,7 @@ if ( -X gls ) then
 else if ( -X /usr/nekoware/bin/ls ) then 
     set ls = "/usr/nekoware/bin/ls"
 else
-    set ls = /bin/ls # "ls-F" is built in to tcsh, tries to behave like GNU
+    set ls = "/bin/ls" # "ls-F" is built in to tcsh, tries to behave like GNU
 endif
 # sed
 if ( -X gsed ) then 
