@@ -1,5 +1,12 @@
 # .tcshrc
 
+# thanks to all the little people:
+# http://howto.unixdev.net/tcshrc.html
+# http://www.dotfiles.com
+# ...
+# and probably a lot more
+
+
 # I NEED TO DO THIS:
     # You can detect an interactive shell from a non interactive one 
     # by testing for the $prompt variable, like this:
@@ -10,82 +17,20 @@
         # ...
       # endif
 
-    # this sounds cool: 
-    # setenv PATH = "${HOME}/bin/${HOSTNAME}:${HOME}/bin/`uname -s`:"
-
-
-# thanks to all the little people:
-# http://howto.unixdev.net/tcshrc.html
-# http://www.dotfiles.com
-# ...
-# and probably a lot more
 
 # precmd = before prompt
 # postcmd = before exec
 
 
-#
-# TODO
-#
-# organize data rightly right
-# setup a single command that searches whatever package manager I use for what I'm 
-# looking for. needs to be able to search more than one (eg fink, dports; solaris, 
-# pkgsrc; etc)
-#      if portage, then (if esearch, then esearch; else emerge -s)
-#      if fink, then
-#      if darwinports, then
-#      if solaris, then
-#      if pkgsrc, then
-#
-# $UNAME section
-# $HOST section
-# Package Manager Section
-
-
-# A cool idea:
-# have 2 files:
-#	.tcshrc - unique per machine
-#	.tcsh/mrl - or something. stuff that is applicable everywhere
-# have settings in .tcshrc and have them read and reacted to in .tcsh/mrl
-# eg: 
-#	.tcshrc: setenv MY_LS "/usr/pkg/bin/gls" && setenv MY_LS_TYPE "gnu"
-#	.tcsh/mrl: if ( MY_LS_TYPE == "gnu") then 
-#			alias ls "$MY_LS -hF --color"
-# etc. 
-# 
-# A better idea:
-# have the same two files, except .tcshrc is global, and it calls .tcsh/local
-# or .tcsh/$hostname or something, which is unique per machine.
-# Could also call .tcsh/$uname to have unique per OS options (eg all NetBSD 
-# machines check for gls and use it instead of ls)
-
 ########
 # new, as yet uncategorized: 
 ########
-
-setenv EDU "~/doc/edu/2007-1(spring)"
-setenv EDU1 "~/doc/edu/2007-1(spring)/.1"
-setenv EDU2 "~/doc/edu/2007-1(spring)/.2"
-setenv EDU3 "~/doc/edu/2007-1(spring)/.3"
-setenv EDU4 "~/doc/edu/2007-1(spring)/.4"
-setenv EDU5 "~/doc/edu/2007-1(spring)/.5"
-
-setenv NLTK_LITE_CORPORA "${HOME}/opt/words/nltk_lite_corpora"
 
 alias logrec 'ls -alF --color /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
 # of use only on linux.. 
 # might want to rewrite this for when I have boot mounted, but ro. 
 alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
-
-# for cygwin:
-# this makes emacs' command: C-x C-c work properly (quit emacs)
-# instead of be interpretted as C-x C-g
-# more info here:
-
-# a WAAAAY cool idea about prompt colors is here
-# http://www.dotfiles.com/files/21/442_dot.tcshrc
-# (also mirrored locally in my tcsh examples dir
 
 ######################
 # Checking For Stuff #
@@ -126,7 +71,6 @@ if ( $UNAME == SunOS ) then
     setenv CC "/opt/csw/gcc4/bin/gcc"
     alias psa ps -ef
     alias psaf 'ps -ef|grep -i \!*'
-
 endif
 
 
@@ -149,18 +93,11 @@ alias llm '$ls -lahrtF --color' # lists by last modification time (recently modi
 
 alias pu pushd
 alias po popd
-
 alias ff "find . -name '\!*' -print"
-
 alias trash 'mv $argv ~/.Trash/'
-
 alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
-
-if ( -X gsed ) set sed=gsed
-else set sed=sed
-endif
 
 alias ppath  'echo $PATH | $sed "s/:/\n/g"'
 alias pupath 'echo $PATH | $sed "s/:/\n/g" | sort | uniq'
@@ -283,20 +220,18 @@ foreach x ( `ppath | sed 's/\/[a-zA-Z0-9]*$/\/man/g' | sort | uniq|tc -s "\n" " 
 # ls... the search for GNU
 if ( -X gls ) then 
     set ls = "gls" # lots of OS prepend g to gnu tools, eg 'gls'
-else set ls = ls # "ls-F" is built in to tcsh, tries to behave like GNU
+else if ( -X /usr/nekoware/bin/ls ) then 
+    set ls = "/usr/nekoware/bin/ls"
+else
+    set ls = /bin/ls # "ls-F" is built in to tcsh, tries to behave like GNU
 endif
-
-# autogen the MANPATH from PATH
-# while I'm at it, I might as well clean up the path...
-#  no dup entries
-#  no multiple ':'
-# setenv CLEANPATH = \
-#   echo $PATH | sed s/:/\\n/g | sed /^\$/d | sort | uniq | sed s/\$/:/g | tr -d "\n"
-# setenv CLEANMANPATH = \
-#   (...)
-
+# sed
+if ( -X gsed ) then 
+    set sed=gsed
+else 
+    set sed=sed
+endif
 # GNU dircolors
-# has to be done after PATH, in case, eg, it's in /sw/bin or something
 if (-X dircolors) test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
 else if (-X gdircolors) test -r ~/.dir_colors && eval `gdircolors -c ~/.dir_colors`
 endif
@@ -316,4 +251,4 @@ complete find \
 ##############
 # Subversion #
 ##############
-alias co_homebase "svn co svn+ssh://kerrigan/home/export/svnrepo/mrl/home/base ."
+alias co_homebase "mkdir -p ~/doc/remote/dhd && svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd doc/remote/"
