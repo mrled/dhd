@@ -1,3 +1,4 @@
+
 # .tcshrc
 
 # thanks to all the little people:
@@ -58,14 +59,21 @@ else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
 endif
 
-# Cygwin
+# Cygwin / SFU
 if ( -d /cygdrive ) then 
     # it inherits the Windows path, so if your Windows path has this set, 
     #  then it will be wrong:
     setenv SVN_SSH /usr/bin/ssh  
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
+    set winc = "/cygdrive/c"
+else if ( -d /dev/fs ) then
+    setenv SVN_SSH /usr/pkg/bin/ssh
+    set winc = "/dev/fs/C"
 endif
+
+alias firefox "$winc/Program\ Files/Mozilla\ Firefox/firefox.exe"
+
 
 if ( $UNAME == SunOS ) then
     setenv CC "/opt/csw/gcc4/bin/gcc"
@@ -203,6 +211,7 @@ foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
             /sw/{,s}bin /usr/texbin \
             /usr/pkg/{,s}bin \
             /usr/nekoware/{,s}bin \
+            /opt/gcc.3.3/bin /opt/gcc.3.3/bin/i586-pc-interix3 \
             /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
             /opt/SUNWspro/{,s}bin \
             )
