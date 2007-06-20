@@ -1,0 +1,10 @@
+#!/bin/csh
+
+echo $argv > /tmp/xtest
+#echo $argv | sed 's/- Administrator//'
+cat /tmp/xtest | sed 's/- Administrator -c//' > /tmp/mxtest
+#echo $margv > /tmp/xmtest
+
+#/bin/ksh -c "`cat /tmp/mxtest`"
+
+/usr/pkg/bin/bash /tmp/mxtest
