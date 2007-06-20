@@ -1,5 +1,20 @@
-#!/bin/csh
+#!/bin/csh -f
 
+# what is this:
+# When I installed SFU on XP Home, it couldn't 'su' correctly, b/c
+# Home is an abomination that doesn't let you be Admin unless you're in Safe
+# Mode. This is an abomination of a script to let me in anyway. 
+# I'm pretty sure that Interix is supposed to detect that you're in the
+# Administrators goup, but it didn't. I actually do have write permission
+# to everywhere that I need to write to, but it wouldn't work unless `su`
+# actually succeeded. 
+# The reason I needed it was for pkgsrc: cd pkg_dir && bmake would always fail.
+# Interestingly, installed prebuilt Interix packages from ftp.netbsd.org
+# didn't brokenly require su. Meh. 
+
+# Also, let's not forget that this is fucking insecure. 
+
+rm /tmp/mxtest /tmp/xtest
 echo $argv > /tmp/xtest
 #echo $argv | sed 's/- Administrator//'
 cat /tmp/xtest | sed 's/- Administrator -c//' > /tmp/mxtest
