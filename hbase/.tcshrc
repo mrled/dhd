@@ -23,34 +23,49 @@
 # postcmd = before exec
 
 
-########
-# new, as yet uncategorized: 
-########
+## PATH... should come before everything else
+# Future:
+#  I should include a util that: 
+#   - searches /etc /usr/etc /usr/local/etc /usr/nekoware/etc for execable files
+#   - links them to /usr/etcbin or something like that
+#   - man that is an abomination
+set p=() # Make the $PATH not suck:
+# don't include: /usr/ucb /usr/sfw/bin
+foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
+            /usr/games{,/bin} /usr/X11R6/{,s}bin \
+            /usr/opt/surfraw/bin ~/opt/{,s}bin ~/opt/local/bin \
+            /sw/{,s}bin /usr/texbin \
+            /usr/pkg/{,s}bin \
+            /usr/nekoware/{,s}bin \
+            /opt/gcc.3.3/bin /opt/gcc.3.3/bin/i586-pc-interix3 \
+            /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
+            /opt/SUNWspro/{,s}bin \
+            )
+  if (-d $x) set p=( $p $x )
+end
+set path = ( $p )
+unset p x
 
-alias logrec 'ls -alF --color /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
-# of use only on linux.. 
-# might want to rewrite this for when I have boot mounted, but ro. 
-alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
+# ls... the search for GNU
+set ls = "/bin/ls"
+if ( -X gls ) set ls = "gls"
+# GNU sed
+if ( -X gsed ) alias sed "gsed"
+# GNU du for the -h option :):):)
+if ( -X gdu ) alias du gdu
+# GNU dircolors
+if (-X dircolors) test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
+else if (-X gdircolors) test -r ~/.dir_colors && eval `gdircolors -c ~/.dir_colors`
+endif
+
 
 ######################
 # Checking For Stuff #
 ######################
 
-setenv UNAME `uname`
-setenv UNAMEA `uname -a`
-setenv HOST `hostname`
-
-# Checking for stuff-specific stuff
-
-
-#default cases:
-alias psa ps ax
-alias psaf 'ps ax|grep -i \!*'
-
- 
-# fink
-test -r /sw/bin/init.csh && source /sw/bin/init.csh
+set uname = `uname`
+set host = `hostname`
 
 # GNUstep
 if ( -fx /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
@@ -59,36 +74,42 @@ else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
 endif
 
-set fff = ''
-# Cygwin / SFU
-if ( -d /cygdrive ) then 
+# set my browsah
+set surf = ''
+if ( -d /cygdrive ) then    # Cygwin
     # it inherits the Windows path, so if your Windows path has this set, 
     #  then it will be wrong:
     setenv SVN_SSH /usr/bin/ssh  
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
-    set winc = "/cygdrive/c"
-else if ( -d /dev/fs ) then
+    set surf = "/cygdrive/c/Program\ Files/Mozilla\ Firefox/firefox.exe"
+else if ( -d /dev/fs ) then # SFU/SUA
     setenv SVN_SSH /usr/pkg/bin/ssh
-    set winc = "/dev/fs/C"
-endif
-if ($fff != '') then
-    alias browse "$winc/Program\ Files/Mozilla\ Firefox/firefox.exe"
-    alias firefox browse
-endif
-unset fff
-
-
-if ( $UNAME == SunOS ) then
+    set surf = "/dev/fs/C/Program\ Files/Mozilla\ Firefox/firefox.exe"
+else if ( $uname == Darwin ) then # Mac OS X
+    set surf = 'open -f "$argv" /Apps/Net\ -\ Web/Camino.app'
+    test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
+else if ( $uname == SunOS ) then  # Solaris
     setenv CC "/opt/csw/gcc4/bin/gcc"
     alias psa ps -ef
     alias psaf 'ps -ef|grep -i \!*'
 endif
 
+alias surf $surf
+alias firefox $surf
+alias stfu $surf
+
 
 ##################
 # Global Aliases #
 ##################
+
+alias ppath  'echo $PATH | sed "s/:/\n/g"'
+alias pupath 'echo $PATH | sed "s/:/\n/g" | sort | uniq'
+alias logrec 'lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
+
+alias psa ps ax
+alias psaf 'ps ax|grep -i \!*'
 
 alias .. 'cd ..'
 alias c clear
@@ -110,30 +131,26 @@ alias trash 'mv $argv ~/.Trash/'
 alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
-
+if ( -X wn ) alias define 'wn \!* -over'
 
 #gentoo junk: 
 alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
 alias fnc 'find /etc -iname "._cfg????*"'
+# of use only on linux.. 
+# might want to rewrite this for when I have boot mounted, but ro. 
+alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
 
-if ( -X wn ) alias define 'wn \!* -over'
 
-
-# under OS X, posd tells you where the topmost Finder window is. 
-# this is installable via fink (apt-get install posd)
-# that package also installs the utility "fdc"
-# which changes the directory of the shell to match that of the
+# under OS X, `posd` tells you where the topmost Finder window is. (in fink)
+# `fdc` changes the directory of the shell to match that of the
 # topmost Finder window. This alias is the reverse behavior. 
-alias cdf 'cd "`posd`"'
-
-#
-# This is the "new command" section for stuff that might 
-# should just go in various shell scripts
-#
+alias cdf 'cd "`posd`"' # requires posd (in fink). 
 
 alias arin      'whois -h whois.arin.net'
 alias ripe      'whois -h whois.ripe.net'
 alias apnic     'whois -h whois.apnic.net'
+
+alias co_homebase "mkdir -p ~/doc/remote/dhd && svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd doc/remote/"
 
 alias omg		'echo wtf'
 
@@ -157,7 +174,8 @@ set watch=(any any) # print logins and logouts
 set autologout=0 # autologout drives me crazy
 set notify # tell me emediately when jobs complete; don't wait for prompt
 set noclobber # > only into new files; >> only into existing files
-
+set history = 100
+set savehist = 100
 
 # YES! correct backslash escape sequences: 
 # backslashes always quote the following characters: \'"
@@ -201,47 +219,6 @@ set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
 #set rprompt='somethinghere?'
 
 
-## PATH
-# Future:
-#  I should include a util that: 
-#   - searches /etc /usr/etc /usr/local/etc /usr/nekoware/etc for execable files
-#   - links them to /usr/etcbin or something like that
-#   - man that is an abomination
-set p=() # Make the $PATH not suck:
-# don't include: /usr/ucb /usr/sfw/bin
-foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
-            /usr/games{,/bin} /usr/X11R6/{,s}bin \
-            /usr/opt/surfraw/bin ~/opt/{,s}bin ~/opt/local/bin \
-            /sw/{,s}bin /usr/texbin \
-            /usr/pkg/{,s}bin \
-            /usr/nekoware/{,s}bin \
-            /opt/gcc.3.3/bin /opt/gcc.3.3/bin/i586-pc-interix3 \
-            /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
-            /opt/SUNWspro/{,s}bin \
-            )
-  if (-d $x) set p=( $p $x )
-end
-set path = ( $p )
-unset p x
-
-
-# ls... the search for GNU
-set ls = "/bin/ls"
-if ( -X gls ) set ls = "gls"
-# GNU sed
-if ( -X gsed ) alias sed "gsed"
-# GNU du for the -h option :):):)
-if ( -X gdu ) alias du gdu
-# GNU dircolors
-if (-X dircolors) test -r ~/.dir_colors && eval `dircolors -c ~/.dir_colors`
-else if (-X gdircolors) test -r ~/.dir_colors && eval `gdircolors -c ~/.dir_colors`
-endif
-
-
-# these use sed:
-alias ppath  'echo $PATH | sed "s/:/\n/g"'
-alias pupath 'echo $PATH | sed "s/:/\n/g" | sort | uniq'
-
 
 ###############
 # Completions #
@@ -253,8 +230,3 @@ complete find \
 	'n/-exec/c/' \
 	'c/-/(name type user size ctime mtime atime print exec )/' \
 	'n/*/d/'
-
-##############
-# Subversion #
-##############
-alias co_homebase "mkdir -p ~/doc/remote/dhd && svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd doc/remote/"
