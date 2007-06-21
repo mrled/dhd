@@ -28,3 +28,4 @@ cygwin: `cygstart` is like `open` under os x or `start` under cmd
 screen: copy mode: C-z [
 gentoo: eix is what you use for fast searches
 gentoo: portage: eix-sync does emerge --sync and eix-update
+hx: to connect to higher intellect, use /server -n vlack -f preterhuman.net
