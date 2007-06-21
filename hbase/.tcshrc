@@ -59,6 +59,7 @@ else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
 endif
 
+set fff = ''
 # Cygwin / SFU
 if ( -d /cygdrive ) then 
     # it inherits the Windows path, so if your Windows path has this set, 
@@ -71,8 +72,11 @@ else if ( -d /dev/fs ) then
     setenv SVN_SSH /usr/pkg/bin/ssh
     set winc = "/dev/fs/C"
 endif
-
-alias firefox "$winc/Program\ Files/Mozilla\ Firefox/firefox.exe"
+if ($fff != '') then
+    alias browse "$winc/Program\ Files/Mozilla\ Firefox/firefox.exe"
+    alias firefox browse
+endif
+unset fff
 
 
 if ( $UNAME == SunOS ) then
