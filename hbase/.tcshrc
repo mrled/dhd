@@ -33,7 +33,7 @@ set p=() # Make the $PATH not suck:
 # don't include: /usr/ucb /usr/sfw/bin
 foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
             /usr/games{,/bin} /usr/X11R6/{,s}bin \
-            /usr/opt/surfraw/bin ~/opt/{,s}bin ~/opt/local/bin \
+            /usr/opt/surfraw/bin /opt/ast/bin ~/opt/{,s}bin ~/opt/local/bin \
             /sw/{,s}bin /usr/texbin \
             /usr/pkg/{,s}bin \
             /usr/nekoware/{,s}bin \
