@@ -1311,10 +1311,10 @@ I'm afraid the website is all in bork-de-borkish and there are no current plans 
 %
 "Most modern democracies have citizens that will say with a sigh 'I've never seen our society in worse shape'. This does not happen in Germany."
 %
-    The black hat community is drooling over the possibility of a secure
-    execution environment that would allow applications to run in a
-    secure area which cannot be attached to via debuggers.
-    - Jason Spence, on Palladium aka NGCSB aka "Trusted Computing"
+The black hat community is drooling over the possibility of a secure
+execution environment that would allow applications to run in a
+secure area which cannot be attached to via debuggers.
+ -- Jason Spence, on Palladium aka NGCSB aka "Trusted Computing"
 %
 "An armed society is a polite society."
 %
@@ -1344,7 +1344,7 @@ Comment by David Ely on diveintomark.org
 11:31 < vm> glad I didnt order
 11:31 < Criswell> who has real friends anymore to play that shit with
 %
-Mankind is like a king or queen in exile, and we cannot be happy until we have recovered our true state. What would you expect the Queen of a kingdom and the Beaury of the realm to fieel when she wakes to find herself a laundress in a foreign land? A woman's struggle with her sense of worth points to something glorious that she /was/ designed to be. The great emptiness we feel points to the great place we /were/ created for. It's true. All those legends and fairy tales of the undiscovered Princess and the Beauty hidden as a maid are more accurate than we thought. there's a /reason/ little girls resonate  with them so. 
+Mankind is like a king or queen in exile, and we cannot be happy until we have recovered our true state. What would you expect the Queen of a kingdom and the Beauty of the realm to feel when she wakes to find herself a laundress in a foreign land? A woman's struggle with her sense of worth points to something glorious that she /was/ designed to be. The great emptiness we feel points to the great place we /were/ created for. It's true. All those legends and fairy tales of the undiscovered Princess and the Beauty hidden as a maid are more accurate than we thought. There's a /reason/ little girls resonate with them so. 
  - Stasi Eldredge, _Captivating_
 %
 -- 
@@ -1388,21 +1388,21 @@ Doctor
 Doctor Who?
 That's right!
 %
-    Q: Why did the chicken cross the Möbius strip?
-    A: To get to the same side. 
+Q: Why did the chicken cross the Möbius strip?
+A: To get to the same side. 
 %
-    Q: Why did the Frenchman cross the road?
-    A: Because he was chicken. 
+Q: Why did the Frenchman cross the road?
+A: Because he was chicken. 
 %
 A lecturer visits the mental hospital and gives a lecture about how great communism is. Everybody claps loudly except for one person who keeps quiet. The lecturer asks: "why aren't you clapping?" and the person replies "I'm not a psycho, I work here."
 %
-    Q: What word starts with "N," ends with "R," and you don't want to call a black person?
-    A: "Neighbor." 
+Q: What word starts with "N," ends with "R," and you don't want to call a black person?
+A: "Neighbor." 
 %
-    A woman gets on a bus with her baby.
-    The bus driver says: "That's the ugliest baby that I've ever seen. Ugh!"
-    The woman goes to the rear of the bus and sits down, fuming. She says to a man next to her: "The driver just insulted me!"
-    The man says: "You go right up there and tell him off – go ahead, I'll hold your monkey for you."
+A woman gets on a bus with her baby.
+The bus driver says: "That's the ugliest baby that I've ever seen. Ugh!"
+The woman goes to the rear of the bus and sits down, fuming. She says to a man next to her: "The driver just insulted me!"
+The man says: "You go right up there and tell him off – go ahead, I'll hold your monkey for you."
 %
 <loss> i met this japanese kid at comdex who could sms 65 wpm
 <_dren_> fucker prolly rip his weenier off when he whacks
@@ -1857,7 +1857,7 @@ You work for the Federation Temporal Adjustment Division don't you.
 %
 The World Wide Web is the only thing I know of whose shortened form takes three times longer to say than what it's short for.
 —Douglas Adams, The Independent on Sunday, 1999
-(double-you double-you double-you)
+(double-you double-you double-you?)
 %
 I'm getting the vapors.
 by Joanna Wuertz (notes) 6:50pm Sunday, Sep 24
@@ -2080,4 +2080,10 @@ As the Sergeant was untying Rather and Couric, they asked him, "Why didn't you j
 Guy 1: <talking about Apple touting the iPhone as "able to receive sw updates.">
 Guy 2: "I think what they mean is, 'We are the Apple marketing department'."
 Good one there, Guy 2. 
+%
+I will pull back the foreskin of ignorance, and apply the wireskin of enlightenment.
+ - SenatorIvy
+%
+Also, OP, dump that bitch. Right now. Trust me on this. I've had a girl that would go ape shit if I had a password on something, one time she even said "Your internet explorer browsing history is empty, what are you hiding from me? ARE YOU CHEATING ON ME? DO YOU YOU THINK IM FAT???" .... well, the answer to those questions may have well been yes, but the main reason was I was using Opera...
+ - Jealous Cow on SA
 %

@@ -36,7 +36,7 @@ foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
             /usr/opt/surfraw/bin /opt/ast/bin ~/opt/{,s}bin ~/opt/local/bin \
             /sw/{,s}bin /usr/texbin \
             /usr/pkg/{,s}bin \
-            /usr/nekoware/{,s}bin \
+            /usr/nekoware/{,s}bin /usr/bin/X11 \
             /opt/gcc.3.3/bin /opt/gcc.3.3/bin/i586-pc-interix3 \
             /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin \
             /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
@@ -134,6 +134,8 @@ alias tailmes 'tail -f /var/log/messages'
 alias mess less /var/log/messages
 alias dmesg 'dmesg|less'
 if ( -X wn ) alias define 'wn \!* -over'
+alias wh where
+alias .t source ~/.tcshrc
 
 #gentoo junk: 
 alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"

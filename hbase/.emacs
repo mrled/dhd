@@ -44,6 +44,11 @@
  (cons (expand-file-name "/usr/share/emacs/info")
        Info-directory-list))
 
+;; key shortcuts
+; http://steve.yegge.googlepages.com/effective-emacs
+(global-set-key "\C-w" 'backward-kill-word) 
+(global-set-key "\C-c\C-w" 'kill-region)
+
 
 
 
