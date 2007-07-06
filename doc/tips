@@ -29,4 +29,7 @@ screen: copy mode: C-z [
 gentoo: eix is what you use for fast searches
 gentoo: portage: eix-sync does emerge --sync and eix-update
 hx: to connect to higher intellect, use /server -n vlack -f preterhuman.net
+interix: /Tools packages: install: pkg_update -L $pkgname
+interix: /Tools packages: update:  pkg_update -Ln OR pkg_update -La
 mac os x: umount: use `hdiutil detach` or `drutil eject`
+

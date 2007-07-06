@@ -1,4 +1,4 @@
-
+#!/bin/tcsh <---- THIS MAKES EMACS DTRT. 
 # .tcshrc
 
 # thanks to all the little people:
@@ -22,6 +22,9 @@
 # precmd = before prompt
 # postcmd = before exec
 
+set uname = `uname`
+set host = `hostname`
+
 
 ## PATH... should come before everything else
 # Future:
@@ -29,20 +32,32 @@
 #   - searches /etc /usr/etc /usr/local/etc /usr/nekoware/etc for execable files
 #   - links them to /usr/etcbin or something like that
 #   - man that is an abomination
+# NOTE: this method does NOT seem to be workable if a directory has spaces
 set p=() # Make the $PATH not suck:
 # don't include: /usr/ucb /usr/sfw/bin
-foreach x ( /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
-            /usr/games{,/bin} /usr/X11R6/{,s}bin \
-            /usr/opt/surfraw/bin /opt/ast/bin ~/opt/{,s}bin ~/opt/local/bin \
-            /sw/{,s}bin /usr/texbin \
-            /usr/pkg/{,s}bin \
-            /usr/nekoware/{,s}bin /usr/bin/X11 \
-            /opt/gcc.3.3/bin /opt/gcc.3.3/bin/i586-pc-interix3 \
-            /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin \
-            /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
-            /opt/SUNWspro/{,s}bin \
-            )
-  if (-d $x) set p=( $p $x )
+# /opt/alternatives is where I put commands that I want to come BEFORE system-
+# supplied commands in /bin. e.g. on Interix, su, make, ksh, and tar are all
+# there, mostly as links to other commands such as /usr/pkg/bin/gtar. 
+# This way, I don't break OS-updates by "updating" my version of /bin/tar
+# with the new OS version of /bin/tar - /bin/tar always belongs to the OS, and 
+# my stuff always belongs to me. 
+foreach x ( \
+    ~/opt/alternatives /opt/alternatives \
+    /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
+    /usr/games{,/bin} /usr/X11R6/{,s}bin \
+    /usr/opt/surfraw/bin ~/opt/{,s}bin ~/doc/remote/dhd/hbase/local/bin \
+    /opt/local /opt/ast/bin \
+    ~/doc/remote/dhd/os/$uname/bin \
+    /sw/{,s}bin /usr/texbin \
+    /usr/pkg/{,s}bin \
+    /usr/nekoware/{,s}bin /usr/bin/X11 /usr/freeware/bin \
+    /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin \
+    /opt/gcc.3.3/bin /opt/ast/bin \
+    /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin \
+    /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
+    /opt/SUNWspro/{,s}bin \
+    )
+    if (-d $x) set p=( $p $x )
 end
 set path = ( $p )
 unset p x
@@ -65,9 +80,6 @@ endif
 # Checking For Stuff #
 ######################
 
-set uname = `uname`
-set host = `hostname`
-
 # GNUstep
 if ( -fx /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh
@@ -75,19 +87,21 @@ else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
 endif
 
-# set my browsah
-set surf = ''
 if ( -d /cygdrive ) then    # Cygwin
     # it inherits the Windows path, so if your Windows path has this set, 
     #  then it will be wrong:
     setenv SVN_SSH /usr/bin/ssh  
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
-    set surf = "/cygdrive/c/Program\ Files/Mozilla\ Firefox/firefox.exe"
+    set winc = "/cygdrive/c"
 else if ( -d /dev/fs ) then # SFU/SUA
+    set winc = "/dev/fs/C"
     setenv SVN_SSH /usr/pkg/bin/ssh
-    set surf = "/dev/fs/C/Program\ Files/Mozilla\ Firefox/firefox.exe"
     if ( -f /usr/examples/win32/aliases.csh ) source /usr/examples/win32/aliases.csh
+    # the following assume updated rxvt and xterm, as well as /opt/alternatives
+    # in addition, they assume that your Windows fixed font is profont (??)
+    if ( -X rxvt  ) alias rxvt  "rxvt  -bg black -fg white -fn fixed"
+    if ( -X xterm ) alias xterm "xterm -bg black -fg white -fn fixed -sl 10000"
 else if ( $uname == Darwin ) then # Mac OS X
     set surf = 'open -f "$argv" /Apps/Net\ -\ Web/Camino.app'
     test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
@@ -97,9 +111,30 @@ else if ( $uname == SunOS ) then  # Solaris
     alias psaf 'ps -ef|grep -i \!*'
 endif
 
-alias surf $surf
-alias firefox $surf
-alias stfu $surf
+if ( $?winc ) then # we are on Windows, either cygwin or SFU or something
+    # psh. I do all this and then realize that I should just use 
+    # `runwin32 explorer` instead. 
+    set windir =    "$winc/WINDOWS"
+    set wins32 =    "$winc/WINDOWS/system32"
+    set progfiles = "$winc/Program\ Files"
+    set surf =      "$progfiles/Mozilla\ Firefox/firefox.exe"
+    alias explorer  "$windir/explorer.exe" # you *must* use \ paths and quote *everything*
+    alias explore    explorer
+    alias expl       explorer
+    alias hh        "$windir/hh.exe"
+    alias regedit   "$windir/regedit.exe"
+    alias ifconfig  "$wins32/ipconfig.exe"
+    alias mstsc     "$wins32/mstsc.exe"
+    alias fsutil    "$wins32/fsutil.exe"
+    alias net       "$wins32/net.exe"
+    alias netsh     "$wins32/netsh.exe"
+endif
+
+if ( $?surf ) then # we have a web browser!
+    alias surf $surf
+    alias firefox $surf
+    alias stfu $surf
+endif
 
 
 ##################
@@ -119,6 +154,7 @@ alias df df -h
 alias h history
 alias m more
 alias l less
+alias wh where
 
 alias ls '$ls -hF --color'
 alias lsa '$ls -ahF --color'
@@ -177,7 +213,7 @@ set savehist # save history between sessions
 set watch=(any any) # print logins and logouts
 set autologout=0 # autologout drives me crazy
 set notify # tell me emediately when jobs complete; don't wait for prompt
-set noclobber # > only into new files; >> only into existing files
+#set noclobber # > only into new files; >> only into existing files
 set history = 100
 set savehist = 100
 
@@ -214,7 +250,13 @@ if (-X mesg) mesg y # turn on talk
 # set prompt='[%n@%m %c]# '
 # Mine: looks like the following, but in color
 # 12:14:46 micah@AndrAIa micah % 
-set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+#
+# first prompt: in case this is standalone (and there is no dhd)
+set prompt='%{\033[37\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+#if ( -f ~/doc/remote/dhd/hbase/ansi_colors ) then
+#    source ~/doc/remote/dhd/hbase/ansi_colors
+#    set prompt="$ansi_bold"
+#endif
 
 # the rprompt is a string printed on the right hand side of the screen
 # (after the command input) when the prompt is being displayed on the
