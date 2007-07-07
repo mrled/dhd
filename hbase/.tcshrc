@@ -35,19 +35,21 @@ set p=() # Make the $PATH not suck:
 # my stuff always belongs to me. 
 foreach x ( \
     ~/opt/alternatives /opt/alternatives \
-    /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
-    /usr/games{,/bin} /usr/X11R6/{,s}bin \
-    /usr/opt/surfraw/bin ~/opt/{,s}bin ~/doc/remote/dhd/hbase/local/bin \
-    /opt/local /opt/ast/bin \
-    ~/doc/remote/dhd/os/$uname/bin \
+    ~/opt/{,s}bin \
+    ~/doc/remote/dhd/hbase/local/bin ~/doc/remote/dhd/os/$uname/bin \
+    \
     /sw/{,s}bin /opt/local/{,s}bin \
     /usr/pkg/{,s}bin \
-    /usr/nekoware/{,s}bin /usr/bin/X11 /usr/freeware/bin \
+    /usr/nekoware/{,s}bin /usr/freeware/bin \
+    /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
+    \
     /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin \
     /opt/gcc.3.3/bin /opt/ast/bin \
     /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin \
-    /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
     /opt/SUNWspro/{,s}bin \
+    \
+    /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
+    /usr/games{,/bin} /usr/X11R6/{,s}bin  /usr/bin/X11 \
     )
     if (-d $x) set p=( $p $x )
 end

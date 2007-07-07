@@ -33,3 +33,4 @@ interix: /Tools packages: install: pkg_update -L $pkgname
 interix: /Tools packages: update:  pkg_update -Ln OR pkg_update -La
 mac os x: umount: use `hdiutil detach` or `drutil eject`
 
+cygwin: ssh: DOMAIN\\username@host
