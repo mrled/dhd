@@ -40,7 +40,7 @@ foreach x ( \
     /usr/opt/surfraw/bin ~/opt/{,s}bin ~/doc/remote/dhd/hbase/local/bin \
     /opt/local /opt/ast/bin \
     ~/doc/remote/dhd/os/$uname/bin \
-    /sw/{,s}bin /opt/local \
+    /sw/{,s}bin /opt/local/bin \
     /usr/pkg/{,s}bin \
     /usr/nekoware/{,s}bin /usr/bin/X11 /usr/freeware/bin \
     /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin \
