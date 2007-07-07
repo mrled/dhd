@@ -8,19 +8,11 @@
 # and probably a lot more
 
 
-# I NEED TO DO THIS:
-    # You can detect an interactive shell from a non interactive one 
-    # by testing for the $prompt variable, like this:
-
-      # if ($?prompt) then
-        # bindkey ^W backward-delete-word
-        # set prompt = "$USER@$HOSTNAME> "
-        # ...
-      # endif
-
-
-# precmd = before prompt
-# postcmd = before exec
+# You can detect an interactive shell from a non interactive one like this:
+  # if ($?prompt) then
+    # bindkey ^W backward-delete-word
+    # set prompt = "$USER@$HOSTNAME> "
+  # endif
 
 set uname = `uname`
 set host = `hostname`
@@ -48,7 +40,7 @@ foreach x ( \
     /usr/opt/surfraw/bin ~/opt/{,s}bin ~/doc/remote/dhd/hbase/local/bin \
     /opt/local /opt/ast/bin \
     ~/doc/remote/dhd/os/$uname/bin \
-    /sw/{,s}bin /usr/texbin \
+    /sw/{,s}bin /opt/local \
     /usr/pkg/{,s}bin \
     /usr/nekoware/{,s}bin /usr/bin/X11 /usr/freeware/bin \
     /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin \
