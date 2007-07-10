@@ -1,0 +1,14 @@
+**** Todo file
+(related to computers and system administration)
+
+
+*** Interix
+
+** Make some scripts that either do this for me, or generate aliases instead. 
+If I'm running alias scripts, it's probably best to run them manually and dump them into ~/.tmp/aliases or something like that. Otherwise, shell startup time will be very slow. 
+
+* ln -s /dev/fs/C/Programs/Xming /usr/Xming; ln -s /usr/Xming/*.exe /opt/Xming/*
+
+* ln -s /dev/fs/C/Programs/MSVC /usr/local/MSVC; ln -s /usr/local/MSVC/*.exe /opt/MSVC/*
+
+
