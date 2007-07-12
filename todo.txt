@@ -6,11 +6,11 @@
 
 *** Make some scripts that either do this for me, or generate aliases instead. 
 
-Interix and IRIX are at least two systems which have commands available to them in inconvenient places. For instance, using Xming under Windows with Inerix's X clients, xhost.exe is in /dev/fs/C/Program Files/Xming/xhost.exe, and on top of that, I must specify the '.exe' part at the end of the command. In IRIX, /usr/etc has a lot of networking commands like ping and traceroute, but on my system there is at least one non-executable rc-file. 
+Interix and IRIX are at least two systems which have commands available to them in inconvenient places. For instance, using Xming under Windows with Inerix's X clients, xhost.exe is in /dev/fs/C/Program Files/Xming/xhost.exe, and on top of that, I must specify the '.exe' part at the end of the command. In IRIX, /usr/etc has a lot of networking commands like ping and traceroute, but on my system there is at least one non-executable rc-file (which means I can't just add /usr/etc to my path). 
 
-I'd like to fix that by either aliasing the commands within my shell, or symlinking them to a nice convenient place on the path, optionally without the trailing .exe. 
+I'd like to fix that by either aliasing the commands within my shell, or symlinking them to a nice convenient place on the path, maybe even without the trailing .exe. 
 
-If I'm running alias scripts, it's probably best to run them manually and dump them into ~/.tmp/aliases or something like that. Otherwise, shell startup time will be very slow. 
+If I'm running alias scripts, it's probably best to run them manually and dump them into ~/.tmp/aliases or something like that. If I run the alias-generating script at each shell startup, it will make startup very slow. 
 
 ** Examples: 
 * ln -s /dev/fs/C/Programs/Xming /usr/Xming; ln -s /usr/Xming/*.exe /opt/Xming/*
