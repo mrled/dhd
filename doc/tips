@@ -32,5 +32,5 @@ hx: to connect to higher intellect, use /server -n vlack -f preterhuman.net
 interix: /Tools packages: install: pkg_update -L $pkgname
 interix: /Tools packages: update:  pkg_update -Ln OR pkg_update -La
 mac os x: umount: use `hdiutil detach` or `drutil eject`
-
 cygwin: ssh: DOMAIN\\username@host
+emacs: delete not deleting? M-x normal-erase-is-backspace-mode

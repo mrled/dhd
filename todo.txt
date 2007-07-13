@@ -4,7 +4,7 @@
 (related to computers and system administration)
 
 
-*** Make some scripts that either do this for me, or generate aliases instead. 
+*** [FixPathInterixIRIX] Make some scripts that either do this for me, or generate aliases instead. 
 
 Interix and IRIX are at least two systems which have commands available to them in inconvenient places. For instance, using Xming under Windows with Inerix's X clients, xhost.exe is in /dev/fs/C/Program Files/Xming/xhost.exe, and on top of that, I must specify the '.exe' part at the end of the command. In IRIX, /usr/etc has a lot of networking commands like ping and traceroute, but on my system there is at least one non-executable rc-file (which means I can't just add /usr/etc to my path). 
 
@@ -12,7 +12,107 @@ I'd like to fix that by either aliasing the commands within my shell, or symlink
 
 If I'm running alias scripts, it's probably best to run them manually and dump them into ~/.tmp/aliases or something like that. If I run the alias-generating script at each shell startup, it will make startup very slow. 
 
-** Examples: 
+** Examples (pseudocode): 
 * ln -s /dev/fs/C/Programs/Xming /usr/Xming; ln -s /usr/Xming/*.exe /opt/Xming/*
 * ln -s /dev/fs/C/Programs/MSVC /usr/local/MSVC; ln -s /usr/local/MSVC/*.exe /opt/MSVC/*
 * gfind /etc /usr/etc -type f -perm -100 # finds all regular files which are executable by at least their owner
+
+
+*** [Splunk] Set up splunk, or some other centralised logging system. 
+
+Obviously, this requires access to the same log host, anywhere in the world (or at least the Internet). 
+
+** Prereqs: [Dyndns]
+
+
+*** [Dyndns] Get me a server which is totally mine, and can be accessed by the outside world (at the very least, ssh and vpn). 
+
+Westley apparently isn't going to put his firewall rules back where they were... and it's so unreliable, I'd need to do this anyway. 
+
+
+*** [VCShome]
+
+Some of these things suggested at the vcs-home wiki/list. 
+
+** Separate things into sub-repositories, so that I can have a distinction between trusted/untrusted and basics/full at the very lest
+** Check in my crontabs, and go through the machines I have and check in anything that looks useful. 
+
+
+*** [OtherHomedir] Use other strategies to get the rest of my homedir
+
+Some stuff just doesn't work well tied into a real RCS
+
+** offlineimap
+** `unison` can be helpful somewhere?
+** movies, music
+** solve the problem of big files - e.g. 200MB Encyclopedia of Linguistics PDFs. 
+
+
+*** [Backups]
+
+** pull down a copy of the svn repo
+
+** make something like rsnapshot, where I always have copies of older backups as well. 
+* Won't be as granual as RCS, but that's probably OK
+
+** backup my Mac (!!)
+* In fact, make a script that I can run on my Mac and it will backup to either mj or icelady. 
+* Get regular, full backups going... I want restore to be a piece of cake. !!
+
+** backup other machines
+* I could set up an AMANDA instance @leander, which pushes stuff to just another disk (preferably RAIDed). 
+* Probably especially important for IRIX, just due to the number of CDs. 
+* Do an audit of what is hard to do with svn, and see about backing that up (on any machine, not just @leander)
+
+** Prereqs: 
+* [Splunk]
+* [Dyndns]
+* [VCShome] - in fact, if I solve the "big file" problem, this whole thing is 80% solved. 
+* [OtherHomedir]
+
+** We'll make the Archives a separate problem, even though I need to back them up too. 
+
+
+*** [Archives]
+
+In short, cron the automatic backup to dreamhost, etc of the Archives. 
+
+** cron. All new stuff gets put @dreamhost first, and then pulled from there by Hampton, Leander, etc.
+** implement my mirroring. 
+** How to deal with very sensitive stuff - like DOS and Half Life code? Needs to be backed up, but probably not @dreamhost. 
+
+
+*** [Windows] Game & software backups
+
+(Pretty long term)
+
+Copy my Windows games, software, disk images, etc to an easily-accessable location on my $home network (for whatever value of $home you want). 
+
+
+*** [Blog] Get a blog
+
+I need a blog, with a possible wiki. Or at least, my homedir with all the non-copyrighted docs I can publish should be available on the web, and with good search (so that I can search it myself). 
+
+** Emacs. emacs emacs emacs. Absolute necessity. 
+* The point is that it's easy to use, so I'll actually use it. Hence, emacs. 
+
+** Publish my homedir, not just a dumb blog
+** Use google for this? Blogger, gmail (yikes, scary), etc.
+
+
+*** [Email] Solve my email debacle
+
+I need to rethink the way I do email. 
+
+** Write email in emacs?
+** Use gmail for everything? Provides nice integration with [blog]
+
+** Combine all my accounts so that they forward to ONE account. I really need to do this
+* The reason it hasn't been done already is for redundancy... kept me from screwing things up
+* But I no longer run my own server now. It's going to be much better to just backup with offlineimap
+* Save myself the hassle of 3+ accounts, just for email.
+* Maybe, for once in the world, I could not have a crappy self-signed certificate? 
+
+** Somehow get a workable way to view Neuric mail when out of office as well... 
+* Even if Outlook is open at work
+* Check it automatically so I get email from Neuric even if I'm not expecting it. 
