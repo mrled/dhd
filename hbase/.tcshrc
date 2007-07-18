@@ -254,7 +254,8 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     # 12:14:46 micah@AndrAIa micah % 
     #
     # first prompt: in case this is standalone (and there is no dhd)
-    set prompt='%{\033[37\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+    #set prompt='%{\033[37\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+    set prompt='%{\033[37m\033[1m\033[37\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
     #if ( -f ~/doc/remote/dhd/hbase/ansi_colors ) then
     #    source ~/doc/remote/dhd/hbase/ansi_colors
     #    set prompt="$ansi_bold"
@@ -279,5 +280,9 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
         'c/-/(name type user size ctime mtime atime print exec )/' \
         'n/*/d/'
 
+    ###################
+    # Pretty pictures #
+    ###################
+    if ( -f ~/doc/remote/dhd/hbase/.pretty-picture ) source ~/doc/remote/dhd/hbase/.pretty-picture
 
 endif #complete the prompt
