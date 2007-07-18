@@ -1,0 +1,54 @@
+#!/bin/tcsh
+#
+# ANSI color would be a darn difficult-looking bunch 
+# of ugliness except for the setting of variables below
+# I can't believe I didn't think of it myself. heh.
+#
+# set prompt='%{\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+# goes to:
+# set prompt='%{$ansi_bold%}%P %{$ansi_fg_green%}%n@%m %{$ansi_fg_blue%}%C%#%{$ansi_norm%} '
+# set prompt="%{$ansi_bold%}%P %{$ansi_fg_green%}%n@%m %{$ansi_fg_blue%}%C%#%{$ansi_norm%} "
+#
+#
+set ansi_norm       = '\033[0m'
+set ansi_bold       = '\033[1m'
+set ansi_blink      = '\033[5m'
+set ansi_rev        = '\033[7m'
+set ansi_fg_black   = '\033[30m'
+set ansi_fg_red     = '\033[31m'
+set ansi_fg_green   = '\033[32m'
+set ansi_fg_yellow  = '\033[33m'
+set ansi_fg_blue    = '\033[34m'
+set ansi_fg_magenta = '\033[35m'
+set ansi_fg_cyan    = '\033[36m'
+set ansi_fg_white   = '\033[37m'
+set ansi_bg_black   = '\033[40m'
+set ansi_bg_red     = '\033[41m'
+set ansi_bg_green   = '\033[42m'
+set ansi_bg_yellow  = '\033[43m'
+set ansi_bg_blue    = '\033[44m'
+set ansi_bg_magenta = '\033[45m'
+set ansi_bg_cyan    = '\033[46m'
+set ansi_bg_white   = '\033[47m'
+#
+# for c&p purposes, w/ $
+# $ansi_norm		= '\033[0m'
+# $ansi_bold		= '\033[1m'
+# $ansi_blink		= '\033[5m'
+# $ansi_rev		    = '\033[7m'
+# $ansi_fg_black	= '\033[30m'
+# $ansi_fg_red		= '\033[31m'
+# $ansi_fg_green	= '\033[32m'
+# $ansi_fg_yellow	= '\033[33m'
+# $ansi_fg_blue		= '\033[34m'
+# $ansi_fg_magenta	= '\033[35m'
+# $ansi_fg_cyan		= '\033[36m'
+# $ansi_fg_white	= '\033[37m'
+# $ansi_bg_black	= '\033[40m'
+# $ansi_bg_red 		= '\033[41m'
+# $ansi_bg_gree 	= '\033[42m'
+# $ansi_bg_yellow 	= '\033[43m'
+# $ansi_bg_blue		= '\033[44m'
+# $ansi_bg_magenta	= '\033[45m'
+# $ansi_bg_cyan		= '\033[46m'
+# $ansi_bg_white	= '\033[47m'
