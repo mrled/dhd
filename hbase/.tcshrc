@@ -8,12 +8,6 @@
 # and probably a lot more
 
 
-# You can detect an interactive shell from a non interactive one like this:
-  # if ($?prompt) then
-    # bindkey ^W backward-delete-word
-    # set prompt = "$USER@$HOSTNAME> "
-  # endif
-
 set uname = `uname`
 set host = `hostname`
 
@@ -55,6 +49,11 @@ foreach x ( \
 end
 set path = ( $p )
 unset p x
+
+
+# You can detect an interactive shell from a non interactive one like this:
+if ($?prompt) then
+
 
 
 # ls... the search for GNU
@@ -270,3 +269,6 @@ complete find \
 	'n/-exec/c/' \
 	'c/-/(name type user size ctime mtime atime print exec )/' \
 	'n/*/d/'
+
+
+endif #complete the prompt
