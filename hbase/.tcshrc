@@ -56,38 +56,38 @@ if ($?prompt) then
 
 
 
-# ls... the search for GNU
-set ls = "/bin/ls"
-if ( -X gls ) set ls = "gls"
-# GNU sed
-if ( -X gsed ) alias sed "gsed"
-# GNU du for the -h option :):):)
-if ( -X gdu ) alias du gdu
-# GNU dircolors
-if (-X gdircolors) gdircolors -c ~/doc/remote/dhd/hbase/.dir_colors
-else if (-X dircolors) dircolors -c ~/doc/remote/dhd/hbase/.dir_colors
-endif
+    # ls... the search for GNU
+    set ls = "/bin/ls"
+    if ( -X gls ) set ls = "gls"
+    # GNU sed
+    if ( -X gsed ) alias sed "gsed"
+    # GNU du for the -h option :):):)
+    if ( -X gdu ) alias du gdu
+    # GNU dircolors
+    if (-X gdircolors) gdircolors -c ~/doc/remote/dhd/hbase/.dir_colors
+    else if (-X dircolors) dircolors -c ~/doc/remote/dhd/hbase/.dir_colors
+    endif
 
 
-######################
-# Checking For Stuff #
-######################
+    ######################
+    # Checking For Stuff #
+    ######################
 
-# GNUstep
-if ( -fx /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
+    # GNUstep
+    if ( -fx /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh
-else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
+    else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
 	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
-endif
+    endif
 
-if ( -d /cygdrive ) then    # Cygwin
+    if ( -d /cygdrive ) then    # Cygwin
     # it inherits the Windows path, so if your Windows path has this set, 
     #  then it will be wrong:
     setenv SVN_SSH /usr/bin/ssh  
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
     set winc = "/cygdrive/c"
-else if ( -d /dev/fs ) then # SFU/SUA
+    else if ( -d /dev/fs ) then # SFU/SUA
     set winc = "/dev/fs/C"
     setenv SVN_SSH /usr/pkg/bin/ssh
     if ( -f /usr/examples/win32/aliases.csh ) source /usr/examples/win32/aliases.csh
@@ -95,16 +95,16 @@ else if ( -d /dev/fs ) then # SFU/SUA
     # in addition, they assume that your Windows fixed font is profont (??)
     if ( -X rxvt  ) alias rxvt  "rxvt  -bg black -fg white -fn fixed"
     if ( -X xterm ) alias xterm "xterm -bg black -fg white -fn fixed -sl 10000"
-else if ( $uname == Darwin ) then # Mac OS X
+    else if ( $uname == Darwin ) then # Mac OS X
     set surf = 'open -f "$argv" /Apps/Net\ -\ Web/Camino.app'
     test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
-else if ( $uname == SunOS ) then  # Solaris
+    else if ( $uname == SunOS ) then  # Solaris
     setenv CC "/opt/csw/gcc4/bin/gcc"
     alias psa ps -ef
     alias psaf 'ps -ef|grep -i \!*'
-endif
+    endif
 
-if ( $?winc ) then # we are on Windows, either cygwin or SFU or something
+    if ( $?winc ) then # we are on Windows, either cygwin or SFU or something
     # psh. I do all this and then realize that I should just use 
     # `runwin32 explorer` instead. 
     set windir =    "$winc/WINDOWS"
@@ -121,149 +121,149 @@ if ( $?winc ) then # we are on Windows, either cygwin or SFU or something
     alias fsutil    "$wins32/fsutil.exe"
     alias net       "$wins32/net.exe"
     alias netsh     "$wins32/netsh.exe"
-endif
+    endif
 
-if ( $?surf ) then # we have a web browser!
+    if ( $?surf ) then # we have a web browser!
     alias surf $surf
     alias firefox $surf
     alias stfu $surf
-endif
+    endif
 
 
-##################
-# Global Aliases #
-##################
+    ##################
+    # Global Aliases #
+    ##################
 
-alias ppath  'echo $PATH | sed "s/:/\n/g"'
-alias pupath 'echo $PATH | sed "s/:/\n/g" | sort | uniq'
-alias logrec 'lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
+    alias ppath  'echo $PATH | sed "s/:/\n/g"'
+    alias pupath 'echo $PATH | sed "s/:/\n/g" | sort | uniq'
+    alias logrec 'lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
-alias psa ps ax
-alias psaf 'ps ax|grep -i \!*'
+    alias psa ps ax
+    alias psaf 'ps ax|grep -i \!*'
 
-alias .. 'cd ..'
-alias c clear
-alias df df -h
-alias h history
-alias m more
-alias l less
-alias wh where
+    alias .. 'cd ..'
+    alias c clear
+    alias df df -h
+    alias h history
+    alias m more
+    alias l less
+    alias wh where
 
-alias ls '$ls -hF --color'
-alias lsa '$ls -ahF --color'
-alias lsl '$ls -alhF --color'
-alias l1 '$ls -1hF --color'
-alias llm '$ls -lahrtF --color' # lists by last modification time (recently modified files at the end)
+    alias ls '$ls -hF --color'
+    alias lsa '$ls -ahF --color'
+    alias lsl '$ls -alhF --color'
+    alias l1 '$ls -1hF --color'
+    alias llm '$ls -lahrtF --color' # lists by last modification time (recently modified files at the end)
 
-alias pu pushd
-alias po popd
-alias ff "find . -name '\!*' -print"
-alias trash 'mv $argv ~/.Trash/'
-alias tailmes 'tail -f /var/log/messages'
-alias mess less /var/log/messages
-alias dmesg 'dmesg|less'
-if ( -X wn ) alias define 'wn \!* -over'
-alias wh where
-alias .t source ~/.tcshrc
+    alias pu pushd
+    alias po popd
+    alias ff "find . -name '\!*' -print"
+    alias trash 'mv $argv ~/.Trash/'
+    alias tailmes 'tail -f /var/log/messages'
+    alias mess less /var/log/messages
+    alias dmesg 'dmesg|less'
+    if ( -X wn ) alias define 'wn \!* -over'
+    alias wh where
+    alias .t source ~/.tcshrc
 
-#gentoo junk: 
-alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
-alias fnc 'find /etc -iname "._cfg????*"'
-# of use only on linux.. 
-# might want to rewrite this for when I have boot mounted, but ro. 
-alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
-
-
-# under OS X, `posd` tells you where the topmost Finder window is. (in fink)
-# `fdc` changes the directory of the shell to match that of the
-# topmost Finder window. This alias is the reverse behavior. 
-alias cdf 'cd "`posd`"' # requires posd (in fink). 
-
-alias arin      'whois -h whois.arin.net'
-alias ripe      'whois -h whois.ripe.net'
-alias apnic     'whois -h whois.apnic.net'
-
-alias co_homebase "mkdir -p ~/doc/remote/dhd && svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd doc/remote/"
-
-alias omg		'echo wtf'
+    #gentoo junk: 
+    alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
+    alias fnc 'find /etc -iname "._cfg????*"'
+    # of use only on linux.. 
+    # might want to rewrite this for when I have boot mounted, but ro. 
+    alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
 
 
-###################
-# Global Settings #
-###################
+    # under OS X, `posd` tells you where the topmost Finder window is. (in fink)
+    # `fdc` changes the directory of the shell to match that of the
+    # topmost Finder window. This alias is the reverse behavior. 
+    alias cdf 'cd "`posd`"' # requires posd (in fink). 
 
-# tcsh settings
-set correct=none # don't correct me... I know I'm right!
-set autolist # not only can tcsh list completions, it can do it in color!
-set color    # ...
-set colorcat # ...
-set noding # disable annoying DING!
-unset ampm # set 24-hr time
-set listjobs=long # list jobs long
-set listlinks # ls-F builtin will list the filetype to which a symlink points
-set matchbeep=never # turn off beeping for ambiguous completion (so annoying)
-set savehist # save history between sessions
-set watch=(any any) # print logins and logouts
-set autologout=0 # autologout drives me crazy
-set notify # tell me emediately when jobs complete; don't wait for prompt
-#set noclobber # > only into new files; >> only into existing files
-set history = 100
-set savehist = 100
+    alias arin      'whois -h whois.arin.net'
+    alias ripe      'whois -h whois.ripe.net'
+    alias apnic     'whois -h whois.apnic.net'
 
-# YES! correct backslash escape sequences: 
-# backslashes always quote the following characters: \'"
-# not default b/c it creates errors with some csh scripts. 
-set backslash_quote
+    alias co_homebase "mkdir -p ~/doc/remote/dhd && svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd doc/remote/"
 
-# will set my pager to be the best available
-where more >/dev/null && setenv PAGER more
-where less >/dev/null && setenv PAGER less
-#where most >/dev/null && setenv PAGER most
-
-# set my editor to be correct
-# (the -nw tells it not to open up a new window)
-setenv EDITOR "emacs"
-setenv VISUAL "emacs"
-setenv FSEDIT "emacs"
-
-# set my edit mode to emacs
-# why in the WORLD would someone set this to vi by default?
-# no new freaking user wants to learn how to enter "edit mode"
-# to edit his command history. STUPID!
-# (Interix, at least, does this wrong)
-bindkey -e
-bindkey ^G kill-whole-line #behaves somewhat more like emacs
-
-umask 077 #stop reading my files!!
-if (-X mesg) mesg y # turn on talk
-#alias postcmd "rehash" # see new apps after install. SLOW
-
-# Setting the default prompt
-# Gentoo default:  
-# set prompt='[%n@%m %c]# '
-# Mine: looks like the following, but in color
-# 12:14:46 micah@AndrAIa micah % 
-#
-# first prompt: in case this is standalone (and there is no dhd)
-set prompt='%{\033[37\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
-#if ( -f ~/doc/remote/dhd/hbase/ansi_colors ) then
-#    source ~/doc/remote/dhd/hbase/ansi_colors
-#    set prompt="$ansi_bold"
-#endif
-
-# the rprompt is a string printed on the right hand side of the screen
-# (after the command input) when the prompt is being displayed on the
-# left. recognizes same formatting as 'prompt'. automatically appears 
-# and reappears as necessary. appears only when it fits. 
-#set rprompt='somethinghere?'
+    alias omg		'echo wtf'
 
 
+    ###################
+    # Global Settings #
+    ###################
 
-###############
-# Completions #
-###############
+    # tcsh settings
+    set correct=none # don't correct me... I know I'm right!
+    set autolist # not only can tcsh list completions, it can do it in color!
+    set color    # ...
+    set colorcat # ...
+    set noding # disable annoying DING!
+    unset ampm # set 24-hr time
+    set listjobs=long # list jobs long
+    set listlinks # ls-F builtin will list the filetype to which a symlink points
+    set matchbeep=never # turn off beeping for ambiguous completion (so annoying)
+    set savehist # save history between sessions
+    set watch=(any any) # print logins and logouts
+    set autologout=0 # autologout drives me crazy
+    set notify # tell me emediately when jobs complete; don't wait for prompt
+    #set noclobber # > only into new files; >> only into existing files
+    set history = 100
+    set savehist = 100
 
-complete find \
+    # YES! correct backslash escape sequences: 
+    # backslashes always quote the following characters: \'"
+    # not default b/c it creates errors with some csh scripts. 
+    set backslash_quote
+
+    # will set my pager to be the best available
+    where more >/dev/null && setenv PAGER more
+    where less >/dev/null && setenv PAGER less
+    #where most >/dev/null && setenv PAGER most
+
+    # set my editor to be correct
+    # (the -nw tells it not to open up a new window)
+    setenv EDITOR "emacs"
+    setenv VISUAL "emacs"
+    setenv FSEDIT "emacs"
+
+    # set my edit mode to emacs
+    # why in the WORLD would someone set this to vi by default?
+    # no new freaking user wants to learn how to enter "edit mode"
+    # to edit his command history. STUPID!
+    # (Interix, at least, does this wrong)
+    bindkey -e
+    bindkey ^G kill-whole-line #behaves somewhat more like emacs
+
+    umask 077 #stop reading my files!!
+    if (-X mesg) mesg y # turn on talk
+    #alias postcmd "rehash" # see new apps after install. SLOW
+
+    # Setting the default prompt
+    # Gentoo default:  
+    # set prompt='[%n@%m %c]# '
+    # Mine: looks like the following, but in color
+    # 12:14:46 micah@AndrAIa micah % 
+    #
+    # first prompt: in case this is standalone (and there is no dhd)
+    set prompt='%{\033[37\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+    #if ( -f ~/doc/remote/dhd/hbase/ansi_colors ) then
+    #    source ~/doc/remote/dhd/hbase/ansi_colors
+    #    set prompt="$ansi_bold"
+    #endif
+
+    # the rprompt is a string printed on the right hand side of the screen
+    # (after the command input) when the prompt is being displayed on the
+    # left. recognizes same formatting as 'prompt'. automatically appears 
+    # and reappears as necessary. appears only when it fits. 
+    #set rprompt='somethinghere?'
+
+
+
+    ###############
+    # Completions #
+    ###############
+
+    complete find \
 	'n/-name/f/' \
 	'n/-type/(c b d f p l s)/' \
 	'n/-exec/c/' \
