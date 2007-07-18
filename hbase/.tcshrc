@@ -8,6 +8,9 @@
 # and probably a lot more
 
 
+# All this stuff applies to ALL SESSIONS - not just interactive ones! 
+
+
 set uname = `uname`
 set host = `hostname`
 
@@ -50,9 +53,14 @@ end
 set path = ( $p )
 unset p x
 
+umask 077 #stop reading my files!!
 
-# You can detect an interactive shell from a non interactive one like this:
-if ($?prompt) then
+
+# INTERACTIVE SHELLS ONLY
+
+# (This makes it so, for instance, rsync, scp, and sftp don't die... if your
+#  shell init file outputs to STDOUT, it will confuse those apps)
+if ($?prompt) then # this is how we determine if we're in an interactive shell
 
 
 
@@ -63,10 +71,12 @@ if ($?prompt) then
     if ( -X gsed ) alias sed "gsed"
     # GNU du for the -h option :):):)
     if ( -X gdu ) alias du gdu
+
     # GNU dircolors
-    if (-X gdircolors) gdircolors -c ~/doc/remote/dhd/hbase/.dir_colors
-    else if (-X dircolors) dircolors -c ~/doc/remote/dhd/hbase/.dir_colors
-    endif
+    # This spirts out a big line of 'setenv LS_COLORS=lkasjdflkjasdlfkj'
+    #if (-X gdircolors) gdircolors -c ~/doc/remote/dhd/hbase/.dir_colors
+    #else if (-X dircolors) dircolors -c ~/doc/remote/dhd/hbase/.dir_colors
+    #endif
 
 
     ######################
@@ -81,52 +91,52 @@ if ($?prompt) then
     endif
 
     if ( -d /cygdrive ) then    # Cygwin
-    # it inherits the Windows path, so if your Windows path has this set, 
-    #  then it will be wrong:
-    setenv SVN_SSH /usr/bin/ssh  
-    # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
-    setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
-    set winc = "/cygdrive/c"
+        # it inherits the Windows path, so if your Windows path has this set, 
+        #  then it will be wrong:
+        setenv SVN_SSH /usr/bin/ssh  
+        # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
+        setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
+        set winc = "/cygdrive/c"
     else if ( -d /dev/fs ) then # SFU/SUA
-    set winc = "/dev/fs/C"
-    setenv SVN_SSH /usr/pkg/bin/ssh
-    if ( -f /usr/examples/win32/aliases.csh ) source /usr/examples/win32/aliases.csh
-    # the following assume updated rxvt and xterm, as well as /opt/alternatives
-    # in addition, they assume that your Windows fixed font is profont (??)
-    if ( -X rxvt  ) alias rxvt  "rxvt  -bg black -fg white -fn fixed"
-    if ( -X xterm ) alias xterm "xterm -bg black -fg white -fn fixed -sl 10000"
+        set winc = "/dev/fs/C"
+        setenv SVN_SSH /usr/pkg/bin/ssh
+        if ( -f /usr/examples/win32/aliases.csh ) source /usr/examples/win32/aliases.csh
+        # the following assume updated rxvt and xterm, as well as /opt/alternatives
+        # in addition, they assume that your Windows fixed font is profont (??)
+        if ( -X rxvt  ) alias rxvt  "rxvt  -bg black -fg white -fn fixed"
+        if ( -X xterm ) alias xterm "xterm -bg black -fg white -fn fixed -sl 10000"
     else if ( $uname == Darwin ) then # Mac OS X
-    set surf = 'open -f "$argv" /Apps/Net\ -\ Web/Camino.app'
-    test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
+        set surf = 'open -f "$argv" /Apps/Net\ -\ Web/Camino.app'
+        test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
     else if ( $uname == SunOS ) then  # Solaris
-    setenv CC "/opt/csw/gcc4/bin/gcc"
-    alias psa ps -ef
-    alias psaf 'ps -ef|grep -i \!*'
+        setenv CC "/opt/csw/gcc4/bin/gcc"
+        alias psa ps -ef
+        alias psaf 'ps -ef|grep -i \!*'
     endif
 
     if ( $?winc ) then # we are on Windows, either cygwin or SFU or something
-    # psh. I do all this and then realize that I should just use 
-    # `runwin32 explorer` instead. 
-    set windir =    "$winc/WINDOWS"
-    set wins32 =    "$winc/WINDOWS/system32"
-    set progfiles = "$winc/Program\ Files"
-    set surf =      "$progfiles/Mozilla\ Firefox/firefox.exe"
-    alias explorer  "$windir/explorer.exe" # you *must* use \ paths and quote *everything*
-    alias explore    explorer
-    alias expl       explorer
-    alias hh        "$windir/hh.exe"
-    alias regedit   "$windir/regedit.exe"
-    alias ifconfig  "$wins32/ipconfig.exe"
-    alias mstsc     "$wins32/mstsc.exe"
-    alias fsutil    "$wins32/fsutil.exe"
-    alias net       "$wins32/net.exe"
-    alias netsh     "$wins32/netsh.exe"
+        # psh. I do all this and then realize that I should just use 
+        # `runwin32 explorer` instead. 
+        set windir =    "$winc/WINDOWS"
+        set wins32 =    "$winc/WINDOWS/system32"
+        set progfiles = "$winc/Program\ Files"
+        set surf =      "$progfiles/Mozilla\ Firefox/firefox.exe"
+        alias explorer  "$windir/explorer.exe" # you *must* use \ paths and quote *everything*
+        alias explore    explorer
+        alias expl       explorer
+        alias hh        "$windir/hh.exe"
+        alias regedit   "$windir/regedit.exe"
+        alias ifconfig  "$wins32/ipconfig.exe"
+        alias mstsc     "$wins32/mstsc.exe"
+        alias fsutil    "$wins32/fsutil.exe"
+        alias net       "$wins32/net.exe"
+        alias netsh     "$wins32/netsh.exe"
     endif
 
     if ( $?surf ) then # we have a web browser!
-    alias surf $surf
-    alias firefox $surf
-    alias stfu $surf
+        alias surf $surf
+        alias firefox $surf
+        alias stfu $surf
     endif
 
 
@@ -234,7 +244,6 @@ if ($?prompt) then
     bindkey -e
     bindkey ^G kill-whole-line #behaves somewhat more like emacs
 
-    umask 077 #stop reading my files!!
     if (-X mesg) mesg y # turn on talk
     #alias postcmd "rehash" # see new apps after install. SLOW
 
@@ -264,11 +273,11 @@ if ($?prompt) then
     ###############
 
     complete find \
-	'n/-name/f/' \
-	'n/-type/(c b d f p l s)/' \
-	'n/-exec/c/' \
-	'c/-/(name type user size ctime mtime atime print exec )/' \
-	'n/*/d/'
+        'n/-name/f/' \
+        'n/-type/(c b d f p l s)/' \
+        'n/-exec/c/' \
+        'c/-/(name type user size ctime mtime atime print exec )/' \
+        'n/*/d/'
 
 
 endif #complete the prompt
