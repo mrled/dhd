@@ -1,4 +1,4 @@
-;; mrl's emacs file
+; mrl's emacs file
 ; see:
 ;    http://bc.tech.coop/emacs.html
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
@@ -69,6 +69,8 @@
   ;(setq shell-command-switch "-Command")            ; Argument to use when executing a single command
   ;(setq explicit-powershell-args '("-command" "-")) ; Arguments when starting an interactive shell
   (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+(when (eq system-type 'Interix) ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, so as long as I've installed ProFontWindows and can use it, this should work too
+  (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
 (when (eq system-type 'darwin)
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
   (setq mac-option-modifier 'meta)
