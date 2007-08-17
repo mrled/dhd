@@ -46,8 +46,11 @@
 
 ;; key shortcuts
 ; http://steve.yegge.googlepages.com/effective-emacs
-(global-set-key "\C-w" 'backward-kill-word) 
-(global-set-key "\C-c\C-w" 'kill-region)
+(global-set-key "\C-w" 'backward-kill-word) ; replaces the kill-region default
+(global-set-key "\C-c\C-w" 'kill-region)    ; rebinds kill-region to my space
+; you should use the "\C-c" "name"space for defining your own keys
+;(global-set-key "\C-cr"    'revert-buffer)
+(global-set-key "\C-c\C-r" 'revert-buffer)
 
 
 
