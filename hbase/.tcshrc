@@ -175,6 +175,7 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     if ( -X wn ) alias define 'wn \!* -over'
     alias wh where
     alias .t source ~/.tcshrc
+    alias listen 'netstat -a | grep LISTEN'
 
     #gentoo junk: 
     alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
