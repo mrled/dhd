@@ -17,6 +17,7 @@
 192.168.1.1	gw 
 
 # hosts @ leander
+192.168.1.11    piano
 192.168.1.60	andraia
 192.168.1.71    icelady
 192.168.1.72    sexysamantha samantha sam
