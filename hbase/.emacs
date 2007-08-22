@@ -20,21 +20,25 @@
     (load-file host-specific-init-file))
 
 ; settings (not custom variables)
-(setq visible-bell t) ; Is this vi? Should there be beeping? 
-(setq inhibit-startup-message t)   ; inhibit startup
-(setq initial-scratch-message nil) ; inhibit splash
-(setq make-backup-files t) ; Enable backup files.
-(setq version-control t) ; Enable backup versioning 
-(setq backup-directory-alist (quote ((".*" . "~/Backup/emacs/")))) ; Save bckups
-(setq delete-old-versions t) ; don't ask me to delete old backups, just do it
-(setq mouse-autoselect-window t) ; focus-follows-mouse in WINDOWS, NOT frames
+(setq visible-bell t              ; Is this vi? Should there be beeping? 
+      inhibit-startup-message t   ; inhibit startup
+      initial-scratch-message nil ; inhibit splash
+      make-backup-files t         ; Enable backup files
+      version-control t           ; Enable backup versioning 
+      backup-directory-alist (quote ((".*" . "~/Backup/emacs/"))) ; Save bckups
+      delete-old-versions t       ; don't ask me to delete old backups, just do it
+      mouse-autoselect-window t   ; focus-follows-mouse in WINDOWS, NOT frames
+      display-time-24hr-format t
+      display-time-day-and-date t)
 (fset 'yes-or-no-p 'y-or-n-p) ; "yes or no" = "y or n"
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
 (tool-bar-mode 0)
 (global-font-lock-mode t) ;; syntax highlighting
-(setq display-time-24hr-format t)
-(setq display-time-day-and-date t)
+
+(global-hl-line-mode t) ;; Highlight the current line. 
+(set-face-background 'hl-line "#335")     ;; Emacs 22 Only
+;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
 
 ;; trying to make Info behave
 (require 'info)
