@@ -205,6 +205,9 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     endif
     if ( -f /usr/pkgsrc ) then  # NetBSD pkgsrc
         alias pkgup "cd /usr/pkgsrc && sudo cvs -d anoncvs@anoncvs4.us.NetBSD.org:/cvsroot up"
+        if ( $uname == Interix ) setenv PKG_PATH "ftp://ftp.netbsd.org/pub/NetBSD/packages/current-packages/Interix-3.5/i386/current"
+        else if ( $uname == SunOS ) setenv PKG_PATH "ftp://ftp.netbsd.org/pub/NetBSD/packages/current-packages/SunOS-5.9/sparc/current-20040131"
+        else if ( $uname == IRIX ) setenv PKG_PATH "ftp://ftp.netbsd.org/pub/NetBSD/packages/current-packages/IRIX-6.5/64/pkgsrc-2006Q3"
     endif
 
 
