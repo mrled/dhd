@@ -54,6 +54,7 @@ set path = ( $p )
 unset p x
 
 umask 077 #stop reading my files!!
+setenv CVS_RSH ssh
 
 
 # INTERACTIVE SHELLS ONLY
@@ -164,7 +165,7 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     alias lsl '$ls -alhF --color'
     alias lsli '$ls -alhFi --color' # lsl+inodes
     alias l1 '$ls -1hF --color'
-    alias llm '$ls -lahrtF --color' # lists by last modification time (recently modified files at the end)
+    alias llm '$ls -lahrtF --color' # lists by last mod time
 
     alias pu pushd
     alias po popd
@@ -178,14 +179,6 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     alias .t source ~/.tcshrc
     alias listen 'netstat -a | grep LISTEN'
 
-    #gentoo junk: 
-    alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
-    alias fnc 'find /etc -iname "._cfg????*"'
-    # of use only on linux.. 
-    # might want to rewrite this for when I have boot mounted, but ro. 
-    alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
-
-
     # under OS X, `posd` tells you where the topmost Finder window is. (in fink)
     # `fdc` changes the directory of the shell to match that of the
     # topmost Finder window. This alias is the reverse behavior. 
@@ -198,6 +191,22 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     alias co_homebase "mkdir -p ~/doc/remote/dhd && svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd doc/remote/"
 
     alias omg		'echo wtf'
+
+
+    ####################
+    # Software Systems #
+    ####################
+
+    if ( -f /usr/portage ) then # Gentoo Portage
+        alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
+        alias fnc 'find /etc -iname "._cfg????*"'
+        # might want to rewrite this for when I have boot mounted, but ro. 
+        alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
+    endif
+    if ( -f /usr/pkgsrc ) then  # NetBSD pkgsrc
+        alias pkgup "cd /usr/pkgsrc && sudo cvs -d anoncvs@anoncvs4.us.NetBSD.org:/cvsroot up"
+    endif
+
 
 
     ###################
