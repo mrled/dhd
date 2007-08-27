@@ -10,7 +10,7 @@
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
 
 ;; other packages: load these before host-specific emacs file
-(setq home-load-path  "~/opt/emacs/")
+(setq home-load-path  "~/opt/emacs/site-lisp")
 (setq local-load-path "/usr/local/share/emacs/site-lisp")
 (add-to-list 'load-path home-load-path local-load-path)
 
@@ -131,6 +131,34 @@ If set to `always', history will always be saved, silently."
 		 (const :tag "Always save" always))
   :group 'eshell-hist)
 
+;; vm: 
+;; (autoload 'vm              "vm" "Start VM on your primary inbox." t)
+;; (autoload 'vm-other-frame  "vm" "Like `vm' but starts in another frame." t)
+;; (autoload 'vm-visit-folder "vm" "Start VM on an arbitrary folder." t)
+;; (autoload 'vm-mode         "vm" "Run VM major mode on a buffer" t)
+;; (autoload 'vm-mail         "vm" "Send a mail message using VM." t)
+;; (autoload 'vm-visit-virtual-folder "vm" "Visit a VM virtual folder." t)
+;; (autoload 'vm-submit-bug-report    "vm" "Send a bug report about VM." t)
+
+;; ;; mew:
+;; (autoload 'mew "mew" nil t)
+;; (autoload 'mew-send "mew" nil t)
+;; ;; Optional setup (Read Mail menu for Emacs 21):
+;; (if (boundp 'read-mail-command)
+;;     (setq read-mail-command 'mew))
+;; ;; Optional setup (e.g. C-xm for sending a message):
+;; (autoload 'mew-user-agent-compose "mew" nil t)
+;; (if (boundp 'mail-user-agent)
+;;     (setq mail-user-agent 'mew-user-agent))
+;; (if (fboundp 'define-mail-user-agent)
+;;     (define-mail-user-agent
+;;       'mew-user-agent
+;;       'mew-user-agent-compose
+;;       'mew-draft-send-message
+;;       'mew-draft-kill
+;;       'mew-send-hook))
+
+
 ;; my own functions
 (defun insert-time ()
   (interactive)
@@ -147,3 +175,4 @@ If set to `always', history will always be saved, silently."
 (defun insert-time-blos ()
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
+
