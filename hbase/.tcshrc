@@ -246,9 +246,8 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
 
     # set my editor to be correct
     # (the -nw tells it not to open up a new window)
-    if ( -X emacs )     set myeditor = "emacs"
-    else if ( -X zile ) set myeditor = "zile" # textdrive = meanies
-    endif
+    set myeditor = "emacs"
+    if ( -X zile ) set myeditor = "zile" # textdrive = meanies
     setenv EDITOR $myeditor
     setenv VISUAL $myeditor
     setenv FSEDIT $myeditor
