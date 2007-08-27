@@ -9,6 +9,13 @@ VERBOSE = "on"
 PMDIR=$HOME/.procmail
 #DOMAIN=howe\.textdrive\.com
 
+
+:0 hc
+! varchive@vlack.com
+:0 hc
+! fullvarchive@mrled.org
+
+
 ### Locking methods:
 # :0: 				Let procmail figure out how to lock it
 # :0 				No locking
@@ -83,7 +90,8 @@ SPR=2147483647
 * $ $SPR^0 ^From:.*Vanessa.*Smith
 #* $ $SPR^0 ^To:.*vlack+f\.retailreportcard
 * $ $SPR^0 .*vlack+f\.retailreportcard
-* $ $SPR^0 ^X-Original-To:.*offers # had been used for fusioncash.com
+# previously used for fusioncash.com: 
+* $ $SPR^0 ^X-Original-To:.*offers 
 /dev/null
 
 
