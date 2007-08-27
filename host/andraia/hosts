@@ -24,10 +24,12 @@
 192.168.1.44    idk
 
 # hosts @ hampton
-192.168.1.240   mgateway mgw    # linksys router bridges wired/w-less
-192.168.1.241   andraia         # wireless
-192.168.1.242   andraia         # wired
-192.168.1.243   marajade mj     # sun blade 100
+#192.168.1.240  mgateway mgwd   # linksys router bridges wired/w-less
+192.168.1.241   andraia         # wireless (main subnet)
+# hosts @subnet @hampton
+192.168.6.201   andraia         # wired (my subnet)
+192.168.6.200   marajade mj     # sun blade 100
+192.168.6.202   batleth         # winbox/old water
 
 # hosts @ internet
 65.254.37.135	vlack.comh
