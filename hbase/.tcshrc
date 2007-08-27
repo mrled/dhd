@@ -246,9 +246,13 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
 
     # set my editor to be correct
     # (the -nw tells it not to open up a new window)
-    setenv EDITOR "emacs"
-    setenv VISUAL "emacs"
-    setenv FSEDIT "emacs"
+    if ( -X emacs )     set myeditor = "emacs"
+    else if ( -X zile ) set myeditor = "zile" # textdrive = meanies
+    endif
+    setenv EDITOR $myeditor
+    setenv VISUAL $myeditor
+    setenv FSEDIT $myeditor
+    unset myeditor
 
     # set my edit mode to emacs
     # why in the WORLD would someone set this to vi by default?
