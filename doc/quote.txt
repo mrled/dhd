@@ -2087,3 +2087,9 @@ I will pull back the foreskin of ignorance, and apply the wireskin of enlightenm
 Also, OP, dump that bitch. Right now. Trust me on this. I've had a girl that would go ape shit if I had a password on something, one time she even said "Your internet explorer browsing history is empty, what are you hiding from me? ARE YOU CHEATING ON ME? DO YOU YOU THINK IM FAT???" .... well, the answer to those questions may have well been yes, but the main reason was I was using Opera...
  - Jealous Cow on SA
 %
+<wonko>    is the license model for VI3 per cluster?  Or per cluster node?
+<Jonathan> It's a sliding scale based on your processors' clock speed, average CPI, cache
+           size, the number of memory slots, and how many times the value 0x4993f331
+           appears in its firmware.
+<Jonathan> (complicated licensing models)--
+%
