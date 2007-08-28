@@ -1,0 +1,15 @@
+SHELL = /bin/bash
+
+MAILDIR=$HOME/Maildir/ 
+DEFAULT=$MAILDIR 
+LOGFILE=$HOME/.procmail.log
+LOGABSTRACT = "all"
+VERBOSE = "on"
+
+SPR=2147483647
+
+
+DATEYM=`date +%Y-%m`
+
+:0
+.INBOX.$DATEYM
