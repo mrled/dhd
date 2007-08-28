@@ -12,4 +12,4 @@ SPR=2147483647
 DATEYM=`date +%Y-%m`
 
 :0
-.INBOX.$DATEYM
+.$DATEYM/
