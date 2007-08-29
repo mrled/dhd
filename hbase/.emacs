@@ -10,9 +10,7 @@
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
 
 ;; other packages: load these before host-specific emacs file
-(setq home-load-path  "~/opt/emacs/site-lisp")
-(setq local-load-path "/usr/local/share/emacs/site-lisp")
-(add-to-list 'load-path home-load-path local-load-path)
+(add-to-list 'load-path "~/opt/emacs/site-lisp" "/usr/local/share/emacs/site-lisp")
 
 ; if I have a host-specific emacs file, load it. 
 (if (file-exists-p 
@@ -35,7 +33,7 @@
 (column-number-mode 1) ;; Show column-number in the mode line
 (tool-bar-mode 0)
 (global-font-lock-mode t) ;; syntax highlighting
-
+(menu-bar-mode nil) ;; menu bars suck (i wonder how this works under os x?)
 (global-hl-line-mode t) ;; Highlight the current line. 
 (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
 ;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
@@ -62,7 +60,7 @@
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
 (setq default-tab-width 4) ; when tab char on disk, display as 4 chars wide
-(define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop) ; [TAB]ky = tab2tab-stop
+(define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop) ; [TAB]key = tab2tab-stop
 (setq tab-stop-list '(4 8 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)) ;; tab = 4 spaces, not 8
 
 (when (eq system-type 'windows-nt)
