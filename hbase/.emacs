@@ -35,8 +35,9 @@
 (global-font-lock-mode t) ;; syntax highlighting
 (menu-bar-mode nil) ;; menu bars suck (i wonder how this works under os x?)
 (global-hl-line-mode t) ;; Highlight the current line. 
+
 (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
-;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
+;g(set-face-background 'highlight "#335")  ;; Emacs 21 Only
 
 ;; trying to make Info behave
 (require 'info)

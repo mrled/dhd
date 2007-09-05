@@ -39,3 +39,6 @@
 127.0.0.1       nwnauth.kr.infogrames.com
 127.0.0.1       66.244.193.142
 127.0.0.1       203.239.47.115
+
+# host @vpn @neuric
+192.168.55.1    alpha
