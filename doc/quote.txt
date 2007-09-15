@@ -687,7 +687,7 @@ Its the Internet, where men are men, women are men and children are FBI agents..
 %
 "This is your computer.. this is your computer on Internet Explorer" *** image macro time
 %
-'There's a rest of the world? What for?
+There's a rest of the world? What for?
 %
 On a /. story involving a new kind of dehydrated food that, IN DIRE EMERGENCIES ONLY, could be rehydrated with urine. (More ideally, you'd use water, but the point of talking about urine would be to prove that it can even handle dirty water, like pond or swamp water.)
 
@@ -991,13 +991,14 @@ I heard when they exhume corpses, and open the caskets, that there is a little p
 
  - http://crackmonkey.org/faq.html#ANSWER36
 %
-Topic for #wdma: I tried using 'penis' as my password but it said it wasn't long enough.
+I tried using "penis" as my password but it said it wasn't long enough :(
 %
 <Thuryn> cell phones.... *maybe*.  the phones themselves are still changing too much
 <Thuryn> pretty soon, the damn phones will be so small that the air movement from your speech will also power the phone
 <Thuryn> but then you couldn't talk to your g/f, because *you'd* never talk, so your phone would die
 %
-Spending half the semester to study Freud in an Introduction to Psychology class is exactly the same as spending half the semester to study heliocentrism in an Introduction to Astronomy class. 
+Spending half the semester to study Freud in an Introduction to Psychology class is just as useful as spending half the semester to study heliocentrism in an Introduction to Astronomy class. 
+ - me
 %
 After the horror of atheism, there is nothing that leads weak minds further astray from the paths of virtue than the idea that the minds of the animals resemble our own, and that, therefore, we have no greater right and future life than have gnats and ants. 
  - René Descartes, "A Treatise on the Passions of the Soul", 1649
@@ -1146,7 +1147,7 @@ Sturgeon's Rule: 90% of everything is crap
 %
 Home, home on the range, 
 Where critters are tied up in chains, 
-I cut threw their side, 
+I cut through their side, 
 And I rip off their hide, 
 And the next day I do it again.
 - the bad guy in Rescuers Down Under
@@ -1573,6 +1574,7 @@ I look forward to the day when "Linguists tell us that Eskimos have N words for 
 Does the net utility of MySpace outweigh the net risks? Dunno. Lapsing into old fogey mode, I still just look at it as a design disaster filled with bad writing.
  - http://lawprofessors.typepad.com/tortsprof/2006/06/myspace_complai.html
 %
+"SenatorIvy's Proctological Haberdashery - We'll put a cap in your ass." 
 I have this so that I can sign people's livejournals with a name they'll know, not so I can whine about the purple lake of desolation like you people.
  - SenatorIvy's livejournal profile
 %
@@ -1589,7 +1591,7 @@ Q: What's a seven letter word for "sensitive"?
 A: "Whipped"
 %
 "i walk in on him mounting her, and i was like 'where is she?'. i'm serious - it was like an elephant mounting a rat. he was like 'get out of here', and i was like 'whoa shamoo'"
-- overheard by me in a coffee shop. oh my. 
+- overheard by me in Starbucks @ Anderson. oh my. 
 %
 English is essentially Pictish that was attacked out of nowhere by Angles cohabiting with Teutons who were done in by a drunk bunch of Vikings masquerading as Frenchmen who insisted they spoke Latin and Greek but lacked the Arabic in which to convey that. -- Bill Hammel
 %
@@ -1621,7 +1623,7 @@ Mayonaise is the SEMEN of SATAN.
  - Reid
 %
 If you do not take your hands off her, I will take your hands off you. 
- - Luke Skywalker (in The Courtship of Princess Leia)
+ - Luke Skywalker, _The Courtship of Princess Leia_
 %
 Troy was complaining that his sync wasn’t working with .Mac today, I suggested that it was a clog, as the internets is just a series of tubes, after all. Wim stepped in and recommended dietary supplements to unclog said tubes, such as fiber to the home.
  - The Omni Mouth
@@ -1654,10 +1656,10 @@ I am ghetto
 I am gothic
   (translation: My parents sometimes force me to do chores, which shows the depths of depravity of which the human race is capable. Since all my friends feel the same way, we hang out in the same dingy joint and complain about it.)
 %
-15:16 < SuperKoopa> Ivy I switched to Windows Classic weeks ago are you proud of me
-15:16 <~SenatorIvy> I'm not proud of people for doing things they're supposed to.
+< SuperKoopa> Ivy I switched to Windows Classic weeks ago are you proud of me
+<~SenatorIvy> I'm not proud of people for doing things they're supposed to.
 %
-A little Mexican boy goes into the kitchen where his mom Is baking. He puts his hand in the flour and wipes it all over his face. "Mom, look, I'm a white boy." His mom slaps him in the face and says "Go show your father".
+A little Mexican boy goes into the kitchen where his mom is baking. He puts his hand in the flour and wipes it all over his face. "Mom, look, I'm a white boy." His mom slaps him in the face and says "Go show your father".
 
 He goes to his dad in the living room and says "Look dad, I'm a white boy." His dad slaps him hard in the face and says "Go show your grandmother."
 
@@ -1758,7 +1760,7 @@ under Windoze on a 300 MHz PII can't." --Seth Breidbart
 %
 "I have always wished that my computer be as easy to use as my
 telephone.  My wish has come true.  I no longer understand how to use
-my telephone." --attributed to Bjarne Stoustrup[sic]
+my telephone." --attributed to Bjarne Stroustrup
 %
 I love to go to the playground and watch the children jumping up and down.
 They don't know I'm firing blanks
@@ -1786,9 +1788,9 @@ However, occasionally the rulers do tell someone. Under the usual su mechanism, 
 I'm on the side of the masses, not that of the rulers. If you are used to supporting the bosses and sysadmins in whatever they do, you might find this idea strange at first. 
  - the GNU coreutils info page
 %
-"What's Loose Change?"
-"Bullshit hippy nonsense."
- - Westley
+Someone: What's "Loose Change" ?
+Westley: Bullshit hippy nonsense.
+(hampton, Fall 2006 IIRC
 %
 Hannah & Will: when you get married, you /need to buy an Accord!/. Why? Because, an Accord of /three/ strands is not easily broken.
 <ducks>
@@ -1815,11 +1817,11 @@ The last hurrah of the Book of Erotic Fantasy is an embarrassing Phil Foglio com
 Q: How many software engineers does it take to change a lightbulb? 
 A: None, that's a hardware problem.
 %
-   "Stupidity is used to run 98% of the world's corporations, which tops
-              UNIX server usage by quite a bit." - George Lebl
+"Stupidity is used to run 98% of the world's corporations, which tops UNIX server usage by quite a bit." 
+ - George Lebl
 %
 Aliens are coming to take all the sexy people. Don't worry, you're safe. I just wanted to say goodbye.
- - heard on East Mall
+ - I heard this on East Mall (UT), sometime in 2006
 %
 Indeed, who wouldn’t be shocked to find over-hyped sensational bullshit on Digg? What paragon of journalistic integrity is next? The New York Times? The Wall Street Journal?
  - http://daringfireball.net/2006/08/curious_case
@@ -1979,7 +1981,7 @@ cary-anne is putting the f u back in fun.
 %
 "you can't just ask someone out after you just deleted their database." 
  - cary-anne has this quote on her facebook... by her cow-orker
-&
+%
 "Why does hip hop hate melody so much?"
  - stereogum.com
 %
@@ -2081,16 +2083,14 @@ Guy 1: <talking about Apple touting the iPhone as "able to receive sw updates.">
 Guy 2: "I think what they mean is, 'We are the Apple marketing department'."
 Good one there, Guy 2. 
 %
-I will pull back the foreskin of ignorance, and apply the wireskin of enlightenment.
+I will pull back the foreskin of ignorance, and apply the wire brush of enlightenment.
  - SenatorIvy
 %
 Also, OP, dump that bitch. Right now. Trust me on this. I've had a girl that would go ape shit if I had a password on something, one time she even said "Your internet explorer browsing history is empty, what are you hiding from me? ARE YOU CHEATING ON ME? DO YOU YOU THINK IM FAT???" .... well, the answer to those questions may have well been yes, but the main reason was I was using Opera...
  - Jealous Cow on SA
 %
 <wonko>    is the license model for VI3 per cluster?  Or per cluster node?
-<Jonathan> It's a sliding scale based on your processors' clock speed, average CPI, cache
-           size, the number of memory slots, and how many times the value 0x4993f331
-           appears in its firmware.
+<Jonathan> It's a sliding scale based on your processors' clock speed, average CPI, cache size, the number of memory slots, and how many times the value 0x4993f331 appears in its firmware.
 <Jonathan> (complicated licensing models)--
 %
 As I like to say: When it comes to ripping off artists, consumers (or pirates) really are amateurs compared to the labels.
@@ -2143,4 +2143,26 @@ With each learned language, you acquire a new soul.
 
 A man who knows two languages is worth two men. 
  - French proverb
+%
+I think your problem is you don't do enough coding in seedy desert motels doing lines off of methamphetamine-crazed prostitutes, with a tubfull of radiator moonshine, a closet of AR-15 knockoffs and the latest high capacity polymer-grip Europistols, balancing towers of ice buckets full of jacketed hollowpoints.
+
+You probably sit in some comfortable chair in an air conditioned office somewhere going, "oh, oh, globals, oh no, don't hack me, please!"
+
+Some of us are too busy balancing our RAD needs while fighting off bikini-clad ninja chicks with harpoons and barbed-wire dildoes to be concerned to get our panties in a bunch over globals.
+
+Please, you're standing on my dick.
+
+...moments and one reply later...
+
+I forgot to head "...while blasting Motorhead, and not just the poser anthem Ace of Spades either, but like deep album cuts, B-sides, and Motorhead-like songs Lemmy wrote at the tail-end of his time with Hawkwind."
+
+Thought that might be relevant. I want to be clear here.
+
+ - quag7  on /. in reply to a comment telling the world how much php sucks
+%
+The following is a footnote in "Language Death" by David Crystal, page 46. Unfortunately I do not have the whole book, just an excerpt, so I can't go and look up what Dauenhauers is. The footnote: 
+An anecdote reported by the Dauenhauers (1998: 96) deserves repeating: Jewish writer Isaac Singer was once asked in an interview why he wrote in Yiddish, as it was a dying language. 'So I like ghost stories', Singer replied. 'Also, I believe in the resurrection. What will all those Jews have to read when they come back to life if I don't write in Yiddish?'
+%
+Is it not the duty of the critic to avail himself, in some imperfect measure at least, of another language - if only to experience the defining contours of his own? 
+ - George Steiner
 %
