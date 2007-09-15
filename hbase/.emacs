@@ -155,6 +155,9 @@ If set to `always', history will always be saved, silently."
 ;;       'mew-draft-kill
 ;;       'mew-send-hook))
 
+;; no-word: use antiword to view .doc in emacs
+(autoload 'no-word "no-word" "word to txt")
+(add-to-list 'auto-mode-alist '("\\.doc\\'" . no-word))
 
 ;; my own functions
 (defun insert-time ()
@@ -172,4 +175,11 @@ If set to `always', history will always be saved, silently."
 (defun insert-time-blos ()
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
+
+;; just for a time, while I need to do this a lot at Neuric
+; inserts the example text so I don't have to type it out a hojillion time
+(defun insert-eg ()
+  (interactive) 
+  (insert "// Example: "))
+(global-set-key "\C-c\C-e" 'insert-eg)
 
