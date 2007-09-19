@@ -2093,7 +2093,24 @@ Also, OP, dump that bitch. Right now. Trust me on this. I've had a girl that wou
 <Jonathan> It's a sliding scale based on your processors' clock speed, average CPI, cache size, the number of memory slots, and how many times the value 0x4993f331 appears in its firmware.
 <Jonathan> (complicated licensing models)--
 %
+21:22 <@mr_bill> dietcokeplus, is that the one with ginseng, or is that "Max"?
+21:22 <@Jonathan> that's max
+21:23 <@mr_bill> http://en.wikipedia.org/wiki/Coca-Cola_Light_Sango
+21:23 <@mr_bill> why do other countries get all the good flavors
+21:23 <@Jonathan> To offset the flavour of SOCIALISM.
+%
+This cloud's silver lining: If the typical computer user's
+inclination to actually know how to run the magic Internet box on
+his desk continues to decrease, they'll be to the point of needing
+drool-proof set-top boxes in a couple of years, and this whole
+problem will neatly go away.
+ - Jonathan Patschke on the problem of worms and viruses in Microsoft crapware
+%
+Don t ever say this to me, "Are you O.K.?" It;'s like Yeah, motherfucker, I m fine. 
+ - Lindsay Lohan quoted in Vanity Faire
+%
 As I like to say: When it comes to ripping off artists, consumers (or pirates) really are amateurs compared to the labels.
+ - /.
 %
 1: You say toe-may-toe, I say toe-mah-toe....
 2: I say Solanum lycopersicum. Which fully demonstrates my superiority, I think.
@@ -2166,3 +2183,4 @@ An anecdote reported by the Dauenhauers (1998: 96) deserves repeating: Jewish wr
 Is it not the duty of the critic to avail himself, in some imperfect measure at least, of another language - if only to experience the defining contours of his own? 
  - George Steiner
 %
+
