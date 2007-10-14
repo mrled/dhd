@@ -77,7 +77,7 @@
   (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
 (when (eq system-type 'Interix) ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
-(when (eq system-type 'darwin)
+(when (eq window-system 'mac)
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
 ;  (setq mac-option-modifier 'meta)
 ;  (setq mac-command-key-is-meta 'alt) ;wait what does this do again
@@ -85,6 +85,8 @@
   (modify-frame-parameters (selected-frame) '((active-alpha . 0.9))) ;transparency - foreground
   (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.9))) ;transparency - background
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
+(when (eq window-system 'x)
+  (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
 
 (unless (eq window-system nil) ;if we are NOT running in the console
 ;(cond (window-system) (  ;ok we have a windowing environment
