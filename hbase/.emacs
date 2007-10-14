@@ -67,13 +67,6 @@
 (when (eq system-type 'windows-nt)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
   (setq pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe")
-  ;; Windows PowerShell - THIS DOESN'T WORK (WELL)
-  ;(require 'powershell-mode) ; powershell script editing mode (entirely optional)
-  ;(setq exec-path (cons "C:/system32/WindowsPowerShell/v1.0" exec-path)) ; The path to PowerShell
-  ;(setq explicit-shell-file-name "powershell")      ; Filename of the PowerShell shell
-  ;(setq shell-file-name explicit-shell-file-name)   ; Tell Emacs to use PowerShell
-  ;(setq shell-command-switch "-Command")            ; Argument to use when executing a single command
-  ;(setq explicit-powershell-args '("-command" "-")) ; Arguments when starting an interactive shell
   (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
 (when (eq system-type 'Interix) ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
@@ -89,7 +82,6 @@
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
 
 (unless (eq window-system nil) ;if we are NOT running in the console
-;(cond (window-system) (  ;ok we have a windowing environment
   (setq default-frame-alist ; this actually sets the font and colours
     (list
       (cons 'font  myfont)
@@ -131,33 +123,6 @@ If set to `always', history will always be saved, silently."
 		 (const :tag "Ask" f)
 		 (const :tag "Always save" always))
   :group 'eshell-hist)
-
-;; vm: 
-;; (autoload 'vm              "vm" "Start VM on your primary inbox." t)
-;; (autoload 'vm-other-frame  "vm" "Like `vm' but starts in another frame." t)
-;; (autoload 'vm-visit-folder "vm" "Start VM on an arbitrary folder." t)
-;; (autoload 'vm-mode         "vm" "Run VM major mode on a buffer" t)
-;; (autoload 'vm-mail         "vm" "Send a mail message using VM." t)
-;; (autoload 'vm-visit-virtual-folder "vm" "Visit a VM virtual folder." t)
-;; (autoload 'vm-submit-bug-report    "vm" "Send a bug report about VM." t)
-
-;; ;; mew:
-;; (autoload 'mew "mew" nil t)
-;; (autoload 'mew-send "mew" nil t)
-;; ;; Optional setup (Read Mail menu for Emacs 21):
-;; (if (boundp 'read-mail-command)
-;;     (setq read-mail-command 'mew))
-;; ;; Optional setup (e.g. C-xm for sending a message):
-;; (autoload 'mew-user-agent-compose "mew" nil t)
-;; (if (boundp 'mail-user-agent)
-;;     (setq mail-user-agent 'mew-user-agent))
-;; (if (fboundp 'define-mail-user-agent)
-;;     (define-mail-user-agent
-;;       'mew-user-agent
-;;       'mew-user-agent-compose
-;;       'mew-draft-send-message
-;;       'mew-draft-kill
-;;       'mew-send-hook))
 
 ;; no-word: use antiword to view .doc in emacs
 (autoload 'no-word "no-word" "word to txt")
