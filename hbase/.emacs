@@ -36,8 +36,6 @@
 (global-font-lock-mode t) ;; syntax highlighting
 (menu-bar-mode nil) ;; menu bars suck (i wonder how this works under os x?)
 (global-hl-line-mode t) ;; Highlight the current line. 
-(set-face-background 'hl-line "#335")     ;; Emacs 22 Only
-;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
 
 ;; trying to make Info behave
 (require 'info)
@@ -79,7 +77,7 @@
   (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.9))) ;transparency - background
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
 (when (eq window-system 'x)
-  (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
+  (defvar myfont "-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
 
 (unless (eq window-system nil) ;if we are NOT running in the console
   (setq default-frame-alist ; this actually sets the font and colours
@@ -89,6 +87,8 @@
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
+  (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
+  ;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
 )
 
 
