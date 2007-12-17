@@ -64,7 +64,6 @@ setenv CVS_RSH ssh
 if ($?prompt) then # this is how we determine if we're in an interactive shell
 
 
-
     # ls... the search for GNU
     set ls = "/bin/ls"
     if ( -X gls ) set ls = "gls"
@@ -188,9 +187,11 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     alias ripe      'whois -h whois.ripe.net'
     alias apnic     'whois -h whois.apnic.net'
 
-    alias co_homebase "mkdir -p ~/doc/remote/dhd && svn co svn+ssh://mrled@mrled.org/home/mrled/svn/dhd doc/remote/"
+    alias co-dhd "svn co http://mrled.org/svn/dhd ~/doc/remote/dhd"
 
     alias omg		'echo wtf'
+
+    alias pushid "cat .ssh/id_rsa.pub | ssh \!* 'cat - >> .ssh/authorized_keys"
 
 
     ####################

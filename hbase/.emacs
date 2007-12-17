@@ -139,6 +139,7 @@ If set to `always', history will always be saved, silently."
   (interactive)
   (insert (format-time-string "%Y%m%d-%H%M%S")))
 (defun insert-date ()
+
   (interactive)
   (insert (format-time-string "%Y%m%d")))
 (defun insert-time-blos ()
@@ -151,4 +152,5 @@ If set to `always', history will always be saved, silently."
   (interactive) 
   (insert "// Example: "))
 (global-set-key "\C-c\C-e" 'insert-eg)
+
 

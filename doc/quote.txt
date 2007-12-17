@@ -574,8 +574,7 @@ moron you are." -- Forum Newbie
 large communities' as I have to call my ass 'suitable for television'."
 -- radium
 %
-"Wow, no offense, but I didn't know girls had feelings! This changes
-everything!" -- Don Incognito
+"Wow, no offense, but I didn't know girls had feelings! This changes everything!" -- Don Incognito
 %
 "The more patriotic the name, the more fascist the policy. Soon the
 government will announce operation "Apple Pie" which will allow national
@@ -1127,7 +1126,7 @@ To call those ugly-ass banned, perma-banned, and probation graphics Avatart(tm) 
 When I'm driving here, I see a sign that says "CAUTION: SMALL CHILDREN PLAYING", so I slow down. Then it occurs to me - I'm not afraid of small children. 
 %
 PIRACY FUNDS TERRORISM. 
-(so if you pirate it for free, you must be patriotically undermining their business plan)
+(so if you pirate it for free, you must be patriotically undermining their business plan.)
 %
 At least Republicans are up front about their desire to legislate morality. 
 %
@@ -2026,6 +2025,9 @@ something or other.)
 "I just want a hug! A grande hug!"
  - One Starbucks employee to another (24th & San Antonio Starbucks 20070429)
 %
+"Thanks a latte, have a grande." 
+ - Starbucks policy for departing customers, at Adam's Starbucks quite some time ago
+%
 ed is having trouble with an Indian Muslim @ work. hilarity ensues:
  <@Jonathan> Put a piece of bacon on his chair.
  <@mr_bill> throw a ham sandwich 
@@ -2090,11 +2092,11 @@ Also, OP, dump that bitch. Right now. Trust me on this. I've had a girl that wou
 <Jonathan> It's a sliding scale based on your processors' clock speed, average CPI, cache size, the number of memory slots, and how many times the value 0x4993f331 appears in its firmware.
 <Jonathan> (complicated licensing models)--
 %
-21:22 <@mr_bill> dietcokeplus, is that the one with ginseng, or is that "Max"?
-21:22 <@Jonathan> that's max
-21:23 <@mr_bill> http://en.wikipedia.org/wiki/Coca-Cola_Light_Sango
-21:23 <@mr_bill> why do other countries get all the good flavors
-21:23 <@Jonathan> To offset the flavour of SOCIALISM.
+<@mr_bill> dietcokeplus, is that the one with ginseng, or is that "Max"?
+<@Jonathan> that's max
+<@mr_bill> http://en.wikipedia.org/wiki/Coca-Cola_Light_Sango
+<@mr_bill> why do other countries get all the good flavors
+<@Jonathan> To offset the flavour of SOCIALISM.
 %
 This cloud's silver lining: If the typical computer user's
 inclination to actually know how to run the magic Internet box on
@@ -2103,7 +2105,7 @@ drool-proof set-top boxes in a couple of years, and this whole
 problem will neatly go away.
  - Jonathan Patschke on the problem of worms and viruses in Microsoft crapware
 %
-Don t ever say this to me, "Are you O.K.?" It;'s like Yeah, motherfucker, I m fine. 
+Don t ever say this to me, "Are you O.K.?" It's like "Yeah, motherfucker, I'm fine."
  - Lindsay Lohan quoted in Vanity Faire
 %
 As I like to say: When it comes to ripping off artists, consumers (or pirates) really are amateurs compared to the labels.
@@ -2219,8 +2221,6 @@ insanity of this idea.
 #error "Here's a nickel kid.  Go buy yourself a real computer."
 #endif
         -- linux/arch/sparc64/double.h
-%
-You never know how many friends you have until you rent a house on the beach.
 %
 Endless Loop, n.:
         see Loop, Endless.
@@ -2373,4 +2373,52 @@ One final point remains for me to make. The real question is not whether African
 I am not affiliated in any way with the SadWyw spider. 
 
 By clicking "I AGREE" you certify that you are NOT a member of the FBI or any law-enforcement agency, under the Internet Act of 1993 signed by President Bill Clinton.
+%
+Whenever I manage to turn up in IRC, I use the nick "utis". It's a very old nick. Odysseus used it in #cyclops when chatting with Polyphem. (It means "nobody".)
+ - Oliver Scholz on emacswiki.org
+%
+Everyone knows that the glossier it is, the faster it runs.
+Apps can move faster when they are glossy because there is less friction.
+%
+I just... I don't get it. I'll use coconut body spray or apple body spray. That's it. I like to smell like food.
+ - Candi
+%
+Better late than... pregnant.
+%
+Just when you realize life's a bitch, it has puppies
+- Adrienne E. Gusoff 
+%
+Yeah, Koreans are cool, but they're still kinda strange.
+ - Andy Price, a ...Korean.
+%
+Hey, you got your culture jam on my victory biscuit!
+ - someone on linux-elitists@
+%
+"Here is the memo if you didn't receive it: GNOME and Free Software is all about *SAVING THE WORLD* not drawing pissy little buttons on the screen."
+ - Jeff Waugh
+%
+I can't imagine being a quiet person. How traumatic. 
+ - Andrea Wuertz
+%
+NEWS: Shocking Development: Taser Flying Saucer Drone on the Way
+
+“an unmanned ‘mini flying saucer’ that will be able to zap electric hell from above onto rioting crowds, malcontents and evildoers.” Sounds like a sysadmin tool to me. :-)
+ - The Lone Sysadmin weblog
+%
+Grey's Law: Any sufficiently advanced incompetence is indistinguishable from malice.
+%
+<@jsharp> When the teeth bite your thigh and it makes you want to cry.....that's a moray.
+ - #geeks
+%
+25. Being a Pirate should be considered a Manly job because pirates get two types of booty.
+ - Facebook group: Man Law
+%
+After using Ant to build Tomcat for a few months it became clear that Java property files are not sufficient to express complicated build instructions. Files needed to be checked out, copied, compiled, sent to another machine, and unit tested. In case of failure e-mails needed to be sent out to appropriate people. In case of success "Bad to the Bone" needed to be played at the highest possible volume. 
+ - coffeemug@gmail.com "The Nature of Lisp" http://www.defmacro.org/ramblings/lisp.html
+%
+it's sad, but i'd rather see a law against congressional backronyms than against sex offenders
+ - nsh on #swhack
+%
+I am not a vegetarian because I love animals; I am a vegetarian because I hate plants. 
+—A. Whitney Brown
 %

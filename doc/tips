@@ -36,3 +36,4 @@ cygwin: ssh: DOMAIN\\username@host
 serial ports: cu: `sudo cu -l /dev/ttyS1 -s 9600`. ~# sends break, ~. disconnects
 emacs: delete not deleting? M-x normal-erase-is-backspace-mode
 
+macosx: update hosts: sudo niload -v -m hosts . < /etc/hosts
