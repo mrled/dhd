@@ -2374,6 +2374,9 @@ I am not affiliated in any way with the SadWyw spider.
 
 By clicking "I AGREE" you certify that you are NOT a member of the FBI or any law-enforcement agency, under the Internet Act of 1993 signed by President Bill Clinton.
 %
+I wish I could get back to High School Time, where even a single hour-long class can seem like eternity, and 4 years is effectively infinite. Sigh.
+ - Steve Yegge http://steve-yegge.blogspot.com/2007/12/boring-stevey-status-update.html
+%
 Whenever I manage to turn up in IRC, I use the nick "utis". It's a very old nick. Odysseus used it in #cyclops when chatting with Polyphem. (It means "nobody".)
  - Oliver Scholz on emacswiki.org
 %
@@ -2420,5 +2423,6 @@ it's sad, but i'd rather see a law against congressional backronyms than against
  - nsh on #swhack
 %
 I am not a vegetarian because I love animals; I am a vegetarian because I hate plants. 
-—A. Whitney Brown
+ - A. Whitney Brown
 %
+
