@@ -99,12 +99,16 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
         set winc = "/cygdrive/c"
     else if ( -d /dev/fs ) then # SFU/SUA
         set winc = "/dev/fs/C"
-        setenv SVN_SSH /usr/pkg/bin/ssh
+        setenv SVN_SSH /usr/local/bin/ssh
         if ( -f /usr/examples/win32/aliases.csh ) source /usr/examples/win32/aliases.csh
+        alias df /bin/df -Fk 
+        alias du /bin/du -k
+        # Interix ls has to be upgraded from the /Tools warehouse to support color, and it isn't GNU ls
+        # ... it's some *BSD ls instead that doesn't use the same kind of LSCOLORS variable
+        setenv LS_COLOURS 'dir=[34m:dir_r=[0m:norm=[0m:exe=[32m:all_r=[0m' 
         # the following assume updated rxvt and xterm, as well as /opt/alternatives
-        # in addition, they assume that your Windows fixed font is profont (??)
         if ( -X rxvt  ) alias rxvt  "rxvt  -bg black -fg white -fn fixed"
-        if ( -X xterm ) alias xterm "xterm -bg black -fg white -fn fixed -sl 10000"
+        if ( -X xterm ) alias xterm "/usr/local/bin/xterm -bg black -fg white -sl 1l 10000 -ls -fn -misc-profontwindows-medium-r-normal--12-0-0-0-m-0-iso8859-1"
     else if ( $uname == Darwin ) then # Mac OS X
         set surf = 'open -f "$argv" /Apps/Net\ -\ Web/Camino.app'
         test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink

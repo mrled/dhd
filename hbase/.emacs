@@ -45,13 +45,14 @@
  (cons (expand-file-name "/usr/share/emacs/info")
        Info-directory-list))
 
-;; key shortcuts
+;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs
 (global-set-key "\C-w" 'backward-kill-word) ; replaces the kill-region default
 (global-set-key "\C-c\C-w" 'kill-region)    ; rebinds kill-region to my space
 ; you should use the "\C-c" "name"space for defining your own keys
 ;(global-set-key "\C-cr"    'revert-buffer)
 (global-set-key "\C-c\C-r" 'revert-buffer)
+(global-set-key (kbd "C-c o") 'occur)
 
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
