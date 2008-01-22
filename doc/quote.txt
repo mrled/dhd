@@ -2091,12 +2091,14 @@ Also, OP, dump that bitch. Right now. Trust me on this. I've had a girl that wou
 <wonko>    is the license model for VI3 per cluster?  Or per cluster node?
 <Jonathan> It's a sliding scale based on your processors' clock speed, average CPI, cache size, the number of memory slots, and how many times the value 0x4993f331 appears in its firmware.
 <Jonathan> (complicated licensing models)--
+ - #geeks
 %
 <@mr_bill> dietcokeplus, is that the one with ginseng, or is that "Max"?
 <@Jonathan> that's max
 <@mr_bill> http://en.wikipedia.org/wiki/Coca-Cola_Light_Sango
 <@mr_bill> why do other countries get all the good flavors
 <@Jonathan> To offset the flavour of SOCIALISM.
+ - #geeks
 %
 This cloud's silver lining: If the typical computer user's
 inclination to actually know how to run the magic Internet box on
@@ -2105,7 +2107,7 @@ drool-proof set-top boxes in a couple of years, and this whole
 problem will neatly go away.
  - Jonathan Patschke on the problem of worms and viruses in Microsoft crapware
 %
-Don t ever say this to me, "Are you O.K.?" It's like "Yeah, motherfucker, I'm fine."
+Don't ever say this to me, "Are you O.K.?" It's like "Yeah, motherfucker, I'm fine."
  - Lindsay Lohan quoted in Vanity Faire
 %
 As I like to say: When it comes to ripping off artists, consumers (or pirates) really are amateurs compared to the labels.
@@ -2131,10 +2133,12 @@ For one horrifying moment, I read that as "camel dumplings".
 <@Jonathan> "HOW GOES IT?"
 <@Jonathan> "PRETTY FUCKING ANNOYING, THERE'S THIS SHITHEAD IN FRONT OF ME YAMMERING ON HIS MOBILE!"
 <@Jonathan> (being a dick)++
+ - #geeks
 %
 <@Jonathan> me sew horny
 <@jimmy_> ME EMBROIDER YOU LONG TIME
 <@jimmy_> doesn't quite work does it
+ - #geeks
 %
 Every language is a temple, in which the soul of those who speak it is enshrined.
  - Oliver Wendell Holmes
@@ -2196,6 +2200,7 @@ Music biz is a reality check; The record companys get the other sort of chequeue
 %
 <@mr_bill> I didnt get around to LEARNING emcas (made myself use it for a month) until 2005
 <@doc> why didn't you just buy a buttplug and some sand?
+ - #geeks
 %
 You could also pay me a lot of money. That might help. That'd actually help immediately.
  - MediaDefender-Defenders, in a reply to a C&D from MD's lawyers. 
@@ -2339,7 +2344,7 @@ dreaming in digital - living in realtime - thinking in binary - talking in IP - 
  -- warlord@nologin.org
 %
 The top 10 unintentionally worst company URLs
-1. A site called ‘Who Represents‘ where you can find the name of the agent that represents a celebrity. Their domain name… wait for it… is
+1. A site called "Who Represents" where you can find the name of the agent that represents a celebrity. Their domain name - wait for it - is
 www.whorepresents.com
 2. Experts Exchange, a knowledge base where programmers can exchange advice and views at
 www.expertsexchange.com
@@ -2382,6 +2387,7 @@ Whenever I manage to turn up in IRC, I use the nick "utis". It's a very old nick
 %
 Everyone knows that the glossier it is, the faster it runs.
 Apps can move faster when they are glossy because there is less friction.
+ - #geeks
 %
 I just... I don't get it. I'll use coconut body spray or apple body spray. That's it. I like to smell like food.
  - Candi
@@ -2404,8 +2410,9 @@ I can't imagine being a quiet person. How traumatic.
  - Andrea Wuertz
 %
 NEWS: Shocking Development: Taser Flying Saucer Drone on the Way
+"an unmanned 'mini flying saucer' that will be able to zap electric hell from above onto rioting crowds, malcontents and evildoers." 
 
-“an unmanned ‘mini flying saucer’ that will be able to zap electric hell from above onto rioting crowds, malcontents and evildoers.” Sounds like a sysadmin tool to me. :-)
+Sounds like a sysadmin tool to me. :-)
  - The Lone Sysadmin weblog
 %
 Grey's Law: Any sufficiently advanced incompetence is indistinguishable from malice.
@@ -2419,10 +2426,43 @@ Grey's Law: Any sufficiently advanced incompetence is indistinguishable from mal
 After using Ant to build Tomcat for a few months it became clear that Java property files are not sufficient to express complicated build instructions. Files needed to be checked out, copied, compiled, sent to another machine, and unit tested. In case of failure e-mails needed to be sent out to appropriate people. In case of success "Bad to the Bone" needed to be played at the highest possible volume. 
  - coffeemug@gmail.com "The Nature of Lisp" http://www.defmacro.org/ramblings/lisp.html
 %
-it's sad, but i'd rather see a law against congressional backronyms than against sex offenders
- - nsh on #swhack
+<nsh> it's sad, but i'd rather see a law against congressional backronyms than against sex offenders
+ - #swhack
 %
 I am not a vegetarian because I love animals; I am a vegetarian because I hate plants. 
  - A. Whitney Brown
 %
-
+Chris Burke: But of course, like every such statement people make (e.g. "There's no way i'm sleeping with that donkey"), there is an unstated but very much present addendum of "unless someone gives me enough money, in which case hell yeah". P.S. examples are not from personal experience, and you can't prove otherwise.
+Kjella: Unless I pay someone enough money for the tape, right?
+Chris Burke: Ah, you're catching on.
+ - /.
+%
+<doc> 8 disk slots, splittable backplane for partitioning, 32GB max memory, 6 PCI-X slots, 2xGbit
+<doc> now I have to go touch myself
+ - #geeks
+%
+<Jonathan> Sounds like he's got an IQ slightly below room temperature centigrade
+ - #geeks
+%
+<Jonathan> Software should just be grateful that I let it live on my disk.
+ - #geeks
+%
+Message to hardware developers: DO NOT INVENT NEW USB CONNECTORS. FIRE EMPLOYEES WHO INVENT NEW USB CONNECTORS. AND BY FIRE, I MEAN LITERALLY SET THEM ALIGHT.
+ - http://stevenf.com/
+%
+It's hard to get a lady to evaluate to true.
+ - Pintsize from Questionable Content
+%
+Can't you hipster kids enjoy ANYthing without being concerned about its cultural trappings? 
+ - Dora from Questionable Content
+%
+Q: What's the best way to piss off an indie rock snob? 
+A: Actually enjoy music. 
+ - Questionable Content
+%
+The Man can only achieve an erection if your civil rights are being violated. 
+ - Questionable Content
+%
+Quantum fetish mechanics: "The act of thinking up a new kind of fetish causes that fetish to exist." 
+ - Questionable Content
+%
