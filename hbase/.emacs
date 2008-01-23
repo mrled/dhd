@@ -32,7 +32,7 @@
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
 (show-paren-mode t) ;; show matching paren when your curser is on a paren
-;(tool-bar-mode 0)
+(tool-bar-mode 0)
 (global-font-lock-mode t) ;; syntax highlighting
 (menu-bar-mode nil) ;; menu bars suck (i wonder how this works under os x?)
 (global-hl-line-mode t) ;; Highlight the current line. 
