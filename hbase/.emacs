@@ -45,14 +45,6 @@
  (cons (expand-file-name "/usr/share/emacs/info")
        Info-directory-list))
 
-;; keybindings
-; http://steve.yegge.googlepages.com/effective-emacs
-(global-set-key "\C-w" 'backward-kill-word) ; replaces the kill-region default
-(global-set-key "\C-c\C-w" 'kill-region)    ; rebinds kill-region to my space
-; you should use the "\C-c" "name"space for defining your own keys
-;(global-set-key "\C-cr"    'revert-buffer)
-(global-set-key "\C-c\C-r" 'revert-buffer)
-(global-set-key (kbd "C-c o") 'occur)
 
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
@@ -61,14 +53,26 @@
 (setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)) ;; tab = 4 spaces, not 8
 
 
-
-
-(when (eq system-type 'windows-nt)
+(when (eq window-system 'w32)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
   (setq pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe")
   (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
-(when (eq system-type 'Interix) ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, so as long as I've installed ProFontWindows and can use it, this should work too
+
+  ; let Emacs use the special win keys, don't pass them to the OS
+  ; you can also use :
+  ;      w32-pass-lwindow-to-system nil 
+  ;      w32-pass-rwindow-to-system nil 
+  ;      w32-lwindow-modifier 'super ;; Left Windows key 
+  ;      w32-rwindow-modifier 'super ;; Right Windows key 
+  ; to use this under Interix, you should bind the win keys in your .xinitrc somehow I think
+  (setq w32-pass-apps-to-system nil 
+        w32-apps-modifier 'hyper) ;; Menu key 
+
+(when (eq system-type 'Interix) 
+  ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, 
+  ; so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
+
 (when (eq window-system 'mac)
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
   (setq mac-option-modifier 'meta)
@@ -77,6 +81,7 @@
   (modify-frame-parameters (selected-frame) '((active-alpha . 0.9))) ;transparency - foreground
   (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.9))) ;transparency - background
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
+
 (when (eq window-system 'x)
   (defvar myfont "-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
 
@@ -90,7 +95,20 @@
   (setq initial-frame-alist default-frame-alist)
   (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
   ;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
-)
+  )
+
+;; keybindings
+; http://steve.yegge.googlepages.com/effective-emacs
+(global-set-key "\C-w" 'backward-kill-word) ; replaces the kill-region default
+(global-set-key "\C-c\C-w" 'kill-region)    ; rebinds kill-region to my space
+; you should use the "\C-c" "name"space for defining your own keys
+;(global-set-key "\C-cr"    'revert-buffer)
+(global-set-key "\C-c\C-r" 'revert-buffer)
+(global-set-key (kbd "C-c o") 'occur)
+
+(global-set-key [(meta down)] 'forward-block-dwim)
+(global-set-key [(meta up)]  'backward-block-dwim)
+
 
 ;; eshell stuff
 ; make C-a go to the beginning of the command line, unless it is already there, in which case 
@@ -128,29 +146,66 @@ If set to `always', history will always be saved, silently."
 (autoload 'no-word "no-word" "word to txt")
 (add-to-list 'auto-mode-alist '("\\.doc\\'" . no-word))
 
+
+;; For use with WordNet
+(defun get-current-word ()
+  "Returns the current, or the last entered word."
+  (save-excursion
+    (backward-word)
+    (setq start (point))
+    (forward-word)
+    (setq end (point))
+    (buffer-substring-no-properties start end)))
+
+(defvar wordnet-bin-path
+  "C:/Programs/WordNet/2.1/bin/wn.exe"
+  "This should point to the full path of the wordnet command")
+
+(defun wordnet-current-word ()
+  "Shows the Wordnet overview for the current word."
+  (interactive)
+  (save-window-excursion
+    (let ((buf (get-buffer-create "*wordnet*"))
+          (word (get-current-word)))
+      (save-window-excursion
+        (set-buffer buf)
+        (clear-buffer buf)
+        (insert (concat "Wordnet overview for " word ": "))
+        (call-process wordnet-bin-path nil "*wordnet*" t word "-over")
+        (switch-to-buffer "*wordnet*")
+        (beginning-of-buffer)
+        (read-string "Press Enter to continue...")))))
+
+(defun clear-buffer (buf)
+  "Clear a buffer"
+  (save-excursion
+    (set-buffer buf)
+    (kill-region (point-min) (point-max))))
+
+
 ;; my own functions
-(defun insert-time ()
+(defun mrled-insert-time ()
   (interactive)
   (insert (format-time-string "%Y%m%d-%H%M")))
-(defun insert-time-spacey ()
+(defun mrled-insert-time-spacey ()
   (interactive)
   (insert (format-time-string "%Y-%m-%d %H:%M:%S")))
-(defun insert-time-long ()
+(defun mrled-insert-time-long ()
   (interactive)
   (insert (format-time-string "%Y%m%d-%H%M%S")))
-(defun insert-date ()
-
+(defun mrled-insert-date ()
   (interactive)
   (insert (format-time-string "%Y%m%d")))
-(defun insert-time-blos ()
+(defun mrled-insert-time-blos ()
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
 
 ;; just for a time, while I need to do this a lot at Neuric
 ; inserts the example text so I don't have to type it out a hojillion time
-(defun insert-eg ()
+(defun mrled-insert-eg ()
   (interactive) 
   (insert "// Example: "))
-(global-set-key "\C-c\C-e" 'insert-eg)
+(global-set-key "\C-c\C-e" 'mrled-insert-eg)
+
 
 
