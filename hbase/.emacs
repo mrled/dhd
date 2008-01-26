@@ -73,7 +73,8 @@
   ; so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
 
-(when (eq window-system 'mac)
+;; now I also need 
+(when (or (eq window-system 'mac) (eq window-system 'ns))
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
   (setq mac-option-modifier 'meta)
   (setq mac-command-key-is-meta 'alt) ;wait what does this do again

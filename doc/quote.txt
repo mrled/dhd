@@ -2432,17 +2432,125 @@ After using Ant to build Tomcat for a few months it became clear that Java prope
 I am not a vegetarian because I love animals; I am a vegetarian because I hate plants. 
  - A. Whitney Brown
 %
+Plus everyone will spit on you. People who don't habitually spit will expectorate up to thirty feet, like zoo camels, in order to bespittle you if you even /suggest/ the possibility of using a Lisp or Scheme dialect at your company.
+ - Steve Yegge, http://steve-yegge.blogspot.com/2007/12/codes-worst-enemy.html
+%
 Chris Burke: But of course, like every such statement people make (e.g. "There's no way i'm sleeping with that donkey"), there is an unstated but very much present addendum of "unless someone gives me enough money, in which case hell yeah". P.S. examples are not from personal experience, and you can't prove otherwise.
 Kjella: Unless I pay someone enough money for the tape, right?
 Chris Burke: Ah, you're catching on.
  - /.
 %
+In Canada, they have socialized asskicking. It's called "hockey". 
+ - Marten on Questionable Content
+%
 <doc> 8 disk slots, splittable backplane for partitioning, 32GB max memory, 6 PCI-X slots, 2xGbit
 <doc> now I have to go touch myself
  - #geeks
 %
+I like plottin' downfalls. They make me feel... tingly. 
+ - Faye on QC
+%
 <Jonathan> Sounds like he's got an IQ slightly below room temperature centigrade
  - #geeks
+%
+The IBM/SCO lawsuit as the poisoning scene in the Princess Bride
+
+SCO: So, it is down to you, and it is down to me...if you wish Linux dead, by all means keep moving forward.
+IBM: Let me explain...
+SCO: There's nothing to explain. You're trying to kidnap what I have rightfully stolen.
+IBM: Perhaps an arrangement can be reached?
+SCO: There will be no arrangements...and you're killing Linux.
+IBM: But if there can be no arrangement, then we are at an impasse.
+SCO: I'm afraid so. I can't compete with you physically, and you're no match for my brains.
+IBM: You're that smart?
+SCO: Let me put it this way: Have you ever heard or Kernighan, Ritchie, Torvalds?
+IBM: Yes.
+SCO: Morons!
+IBM: Really! In that case, I challenge you to a battle of wits.
+SCO: For the kernel? To the death? I accept!
+IBM: Good, then untar the source code. [SCO# tar -xvfz code] Inhale this but do not touch.
+SCO: [taking a vial from IBM] I smell nothing.
+IBM: What you do not smell is our patent portfolio. It is odorless, tasteless, and dissolves instantly in source code and is among the more deadly portfolios known to man.
+SCO: [shrugs with laughter] Hmmm.
+IBM: [turning his back, and adding the patents to one of the code trees] Alright, where are the patents? The battle of wits has begun. It ends when you decide and we both compile - and find out who is right, and who is dead.
+SCO: But it's so simple. All I have to do is divine it from what I know of you. Are you the sort of company who would put the patents into his own source code or his enemies? Now, a clever man would put the patents into his own goblet because he would know that only a great fool would reach for what he was given. I am not a great fool so I can clearly not choose the code in front of you...But you must have known I was not a great fool; you would have counted on it, so I can clearly not choose the code in front of me.
+IBM: You've made your decision then?
+SCO: [happily] Not remotely! Because Linux's SMP code originally came from England(1). As everyone knows, England is entirely peopled with criminals. And criminals are used to having people not trust them, as you are not trusted by me. So, I can clearly not choose the code in front of you.
+IBM: Truly, you have a dizzying intellect.
+SCO: Wait 'till I get going!! ...where was I?
+IBM: England.
+SCO: Yes! AH! And you must have suspected I would have known the source code's origin,so I can clearly not choose the code in front of me.
+IBM: You're just stalling now.
+SCO: You'd like to think that, wouldn't you! You've beaten my giant, which means you're exceptionally strong...so you could have put the patents in your own code trusting on your strength to save you, so I can clearly not choose the code in front of you. But, you've also bested my Spaniard, which means you must have studied...and in studying you must have learned that Man is mortal so you would have put the patents as far from yourself as possible, so I can clearly not choose the code in front of me!
+IBM: You're trying to trick me into giving away something. It won't work.
+SCO: It has worked! You've given everything away! I know where the patents are!
+IBM: Then make your choice.
+SCO: I will, and I choose...[pointing behind IBM] What in the world can that be?
+IBM: [turning around, while SCO switches goblets] What?! Where?! I don't see anything.
+SCO: Oh, well, I...I could have sworn I saw something. No matter. [SCO laughs]
+IBM: What's so funny?
+SCO: I...I'll tell you in a minute. First, lets compile, me from my code and you from yours. [They both compile]
+IBM: You guessed wrong.
+SCO: You only think I guessed wrong! That's what's so funny! I switched branches when your back was turned! Ha ha, you fool!! You fell victim to one of the classic blunders. The most famous is never get involved in a land war in Asia; and only slightly less well known is this: Never go in against SCO, when intellectual property is on the line!
+
+SCO: HA-HAHA-HAHA AH-HAHA-HAHA (!!) (THUD!)
+
+[IBM removes the blindfold from Linux]
+
+Linux: Who are you?
+IBM: I'm no one to be trifled with. That is all you'll ever need know.
+Linux: And to think, all that time it was your code that was patented.
+IBM: They were both patented. I spent the last few years building up an impressive patent portfolio.
+
+(1) smp.c
+1 /*
+2 * Intel SMP support routines.
+3 *
+4 * (c) 1995 Alan Cox, Building #3 
+5 * (c) 1998-99, 2000 Ingo Molnar 
+6 *
+7 * This code is released under the GNU General Public License version 2 or
+8 * later.
+9 */
+
+
+ - TitaniumFox on /.
+%
+The IBM/SCO lawsuit as the prince/Westley scene from the Princess Bride: 
+
+IBM lies as before, not a muscle has moved, his head is still on the headboard, Yellin's sword at his side. Linux is alongside the bed; her eyes never leave his face.
+Linux: Oh, IBM, will you ever forgive me?
+IBM: What hideous sin have you committed lately?
+Linux: I got 0wn3d. I didn't want to. It all happened so fast.
+IBM: It never happened.
+Linux: What?
+IBM: It never happened.
+Linux: But it did. I was there. Darl said, "All your code are belong to us."
+IBM: Did SCO win its lawsuit?
+BUTTERCUP: Well, no, we sort of skipped that part.
+IBM: Then you're not 0wn3d-- if Chewbacca has fur you must acquit (a pause) -- wouldn't you agree, Your Slimy-ness?
+CUT TO: Darl, entering the room, staring at them. He pulls out his sword, Boies.
+Darl: A technicality that will shortly be remedied. But first things first. To the death.
+IBM: No. (a little pause) To the pain.
+Darl: (about to charge, stops short) I don't think I'm quite familiar with that phrase.
+IBM: I'll explain. And I'll use small words so that you'll be sure to understand, you wart-hog-faced buffoon.
+Darl: That may be the first time in my life a man has dared insult me.
+IBM: It won't be the last. To the pain means the first thing you lose will be your so-called trade secrets, below the ankles, then your copyrights at the wrists, next your patents.
+Darl: -- and then my trademarks, I suppose. I sued you too slowly the last time, a mistake I don't mean to duplicate tonight.
+IBM: I wasn't finished -- the next thing you lose will be your market capitalization, followed by your investors--
+Darl: (takes step forward) -- and then my customers, I understand. Let's get on with it --
+IBM: Wrong! Your customers you keep, and I'll tell you why --
+CUT TO: Darl. And now he stops, and the look that was in his eyes at the wedding, that look of fear, is starting to return.
+IBM: -- so that every shriek of every CIO at seeing your hideousness will be yours to cherish -- every IT manager that weeps at your approach, every system administrator who cries out, "Dear God, what is that thing?" will echo in the ears of your perfect customers. That is what "to the pain" means. It means I leave you in anguish, wallowing in freakish misery forever.
+CUT TO: Darl, doing his best to hide the fear that keeps building inside him.
+Darl: I think you're bluffing --
+IBM: It's possible, pig -- I might be bluffing -- it's conceivable, you miserable vomitous mass, that I'm only suing you for infringment of four of my patents because I lack the interest in finding the thousands of others -- then again, perhaps I have the interest after all.
+And now, slowly, IBM begins to move. His body turns, his feet go to the floor, he starts to stand --
+CUT TO: Darl, staring, eyes wide.
+CUT TO: IBM. And now he is standing, lawyers in fighting position.
+IBM: -- DROP YOUR LAWSUIT!
+
+ - Specter on /.
 %
 <Jonathan> Software should just be grateful that I let it live on my disk.
  - #geeks

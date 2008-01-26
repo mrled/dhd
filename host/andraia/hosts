@@ -39,7 +39,7 @@
 # hosts @ internet
 65.254.37.135	vlack.comh
 216.239.57.99	google.comh
-70.135.78.173   tgupc.cxm
+70.135.78.173   tucpa.cxm tgupc.cxm
 
 
 127.0.0.6       nwmaster.bioware.com
@@ -49,3 +49,8 @@
 
 # host @vpn @neuric
 192.168.54.2	alpha
+
+# hosts @tucpa
+192.168.0.1	gw
+192.168.0.2	elrond
+192.168.0.3	cookie
