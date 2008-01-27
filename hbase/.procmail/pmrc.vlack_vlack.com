@@ -137,6 +137,10 @@ SPR=2147483647
 	:0
 	* ^Sender:.*college-owner\@oiketes.hopeoffice.org
 	.INBOX.lists.hsl-college/
+
+	:0
+	* ^Sender:.*MACENTERPRISE\@lists\.psu\.edu
+	.INBOX.lists.macenterprise/
 	
 	## announce lists can all go in the same place as far as I'm concerned
 	:0 
