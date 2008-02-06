@@ -333,13 +333,9 @@ and the pirate says "arrrrrr, it's driving me nuts!"
 %
 George Orwell was probably right. About everything except the date.
 %
-A guy from Microsoft, a guy from Apple and a guy from sun are at a conference. There is a break and they all go to take a piss.
-After the piss the microsoft guy washes his hands and goes and takes a whole bunch of paper and dries his hands REALLY well. he then says
-"at microsoft we have to be thorough"
-the apple guy goes to wash his hands and takes ONE sheet of paper and dries his hands perfectly with it. he says:
-"at apple we have to be thorough AND efficient"
-the sun guy just walks straight out the door without even washing and says
-"at sun we don't piss on our hands"
+A guy from Microsoft, a guy from Apple and a guy from sun are at a conference. There is a break and they all go to take a piss. After the piss the Microsoft guy washes his hands and goes and takes a whole bunch of paper and dries his hands REALLY well. He then says, "At Microsoft, we have to be thorough."
+The Apple guy goes to wash his hands and takes ONE sheet of paper and dries his hands perfectly with it. He says: "At Apple, we have to be thorough AND efficient."
+The Sun guy just walks straight out the door without even washing and says, "At Sun, we don't piss on our hands."
 %
 "An Irishman walks out of a bar." <- the epitome of comedy.
 %
@@ -599,14 +595,12 @@ and said in a British accent (don't ask): 'Would the driver of the van
 with the disco lights please move their vehicle, you're blocking
 traffic.' The boss never found out who it was."
 %
-On political correctness:
-"education alienates the stupid. we must stop it at once."
+Education alienates the stupid. We must stop it at once.
 %
-It was a "post your mailing address - get random crap in the mail" type
-of thread.
-"Pipebomb"
-1600 Pennsylvania Ave NW
-Washington, DC 20500
+It was a "post your mailing address - get random crap in the mail" type of thread.
+    "Pipebomb"
+    1600 Pennsylvania Ave NW
+    Washington, DC 20500
 %
 We're playin' Staaaar Waaaaars, I'll be Darth Vaaaaaader! How is the
 waaaaiter, waiting on you?

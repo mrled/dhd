@@ -10,7 +10,10 @@
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
 
 ;; other packages: load these before host-specific emacs file
-(add-to-list 'load-path "~/opt/emacs/site-lisp" "/usr/local/share/emacs/site-lisp")
+(add-to-list 'load-path
+;             "~/opt/emacs/site-lisp"
+             "~/doc/remote/dhd/emacs"
+             "/usr/local/share/emacs/site-lisp")
 
 ; if I have a host-specific emacs file, load it. 
 (if (file-exists-p 
@@ -45,6 +48,8 @@
  (cons (expand-file-name "/usr/share/emacs/info")
        Info-directory-list))
 
+(require 'motion-and-kill-dwim)
+
 
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
@@ -68,7 +73,7 @@
   (setq w32-pass-apps-to-system nil 
         w32-apps-modifier 'hyper) ;; Menu key 
 
-(when (eq system-type 'Interix) 
+ (when (eq system-type 'Interix) 
   ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, 
   ; so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
@@ -109,6 +114,8 @@
 
 (global-set-key [(meta down)] 'forward-block-dwim)
 (global-set-key [(meta up)]  'backward-block-dwim)
+
+(global-set-key "\C-c\C-d" 'wordnet-current-word)
 
 
 ;; eshell stuff
