@@ -12,7 +12,7 @@
 ;; other packages: load these before host-specific emacs file
 (add-to-list 'load-path
 ;             "~/opt/emacs/site-lisp"
-             "~/doc/remote/dhd/emacs"
+             "~/doc/remote/dhd/hbase/emacs"
              "/usr/local/share/emacs/site-lisp")
 
 ; if I have a host-specific emacs file, load it. 
@@ -207,13 +207,6 @@ If set to `always', history will always be saved, silently."
 (defun mrled-insert-time-blos ()
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
-
-;; just for a time, while I need to do this a lot at Neuric
-; inserts the example text so I don't have to type it out a hojillion time
-(defun mrled-insert-eg ()
-  (interactive) 
-  (insert "// Example: "))
-(global-set-key "\C-c\C-e" 'mrled-insert-eg)
 
 
 
