@@ -27,7 +27,7 @@
 192.168.1.241   andraia         # wireless (main subnet)
 192.168.1.242   barista         # win2k3 small dell thingy
 #192.168.1.243   marajade mj     # sun blade 100
-192.168.1.243   selena	  	# old water
+192.168.1.243   selene selena	  	# old water
 
 
 # hosts @subnet @hampton
