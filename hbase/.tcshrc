@@ -308,3 +308,6 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
     if ( -f ~/doc/remote/dhd/hbase/.pretty-picture ) source ~/doc/remote/dhd/hbase/.pretty-picture
 
 endif #complete the prompt
+
+alias get_dhd = "svn co http://mrled.org/svn/dhd ~/doc/remote/dhd"
+alias get_mr  = "git-clone git://git.kitenet.net/mr ~/opt/src/mr"
