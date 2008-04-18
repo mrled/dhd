@@ -1,4 +1,28 @@
-# A simple example config file for the mr(1) command.
+# Micah's .mrconfig
+
+# [DEFAULT]
+# lib = 
+#     linkme() {
+# 	    for file in "$@"; do
+#             test -r "$file" && ln -sf "$file" "~/"
+#         done
+#     }
+
+#     hbase_dhd="~/doc/remote/dhd/hbase"
+#     hbase_uenc="~/doc/remote/uenc"
+
+#     linkdhd() { 
+#         for file in "$@"; do
+#             linkme "$hbase_dhd/$file"
+#         done
+#     }
+
+#     linkuenc() { 
+#         for file in "$@"; do 
+#             linkme "$hbase_uenc/$file"
+#         done
+#     }
+
 
 [doc/remote/dhd]
 checkout = svn co http://mrled.org/svn/dhd
@@ -17,6 +41,13 @@ checkout = svn co svn+ssh://mrled@mrled.org/home/mrled/svn/uenc
 
 [opt/src/mr]
 checkout = 
-     git clone git://git.kitenet.net/mr && 
-     cp ~/opt/src/mr/mr ~/doc/remote/dhd/local/bin/
+    git clone git://git.kitenet.net/mr && 
+    cp ~/opt/src/mr/mr ~/doc/remote/dhd/local/bin/
+#? update = git pull && cp ~/opt/src/mr/mr ~/doc/remote/dhd/local/bin/
 push = error "This does not belong to you."
+
+#[]
+#checkout = 
+#    linkdhd  .screenrc .mrconfig .emacs .tcshrc .dir_colors &&
+#    linkuenc .netrc 
+#update = echo ""
