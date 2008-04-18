@@ -1,0 +1,22 @@
+# A simple example config file for the mr(1) command.
+
+[doc/remote/dhd]
+checkout = svn co http://mrled.org/svn/dhd
+
+[doc/remote/write]
+checkout = svn co svn+ssh://mrled@mrled.org/home/mrled/svn/write
+
+[doc/remote/neuric]
+checkout = svn co svn+ssh://mrled@mrled.org/home/mrled/svn/neuric
+
+[doc/remote/tucpa]
+checkout = svn co svn+ssh://mrled@mrled.org/home/mrled/svn/tucpa
+
+[doc/remote/uenc]
+checkout = svn co svn+ssh://mrled@mrled.org/home/mrled/svn/uenc
+
+[opt/src/mr]
+checkout = 
+     git clone git://git.kitenet.net/mr && 
+     cp ~/opt/src/mr/mr ~/doc/remote/dhd/local/bin/
+push = error "This does not belong to you."
