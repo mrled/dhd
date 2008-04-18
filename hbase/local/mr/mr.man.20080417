@@ -1,0 +1,277 @@
+MR(1)                                 mr                                 MR(1)
+
+
+
+NNAAMMEE
+       mr - a Multiple Repository management tool
+
+SSYYNNOOPPSSIISS
+       mmrr [options] checkout
+
+       mmrr [options] update
+
+       mmrr [options] status
+
+       mmrr [options] commit [-m "message"]
+
+       mmrr [options] record [-m "message"]
+
+       mmrr [options] diff
+
+       mmrr [options] log
+
+       mmrr [options] register [repository]
+
+       mmrr [options] config section ["parameter=[value]" ...]
+
+       mmrr [options] action [params ...]
+
+DDEESSCCRRIIPPTTIIOONN
+       mmrr is a Multiple Repository management tool. It can checkout, update,
+       or perform other actions on a set of repositories as if they were one
+       combined repository. It supports any combination of subversion, git,
+       cvs, mecurial, bzr and darcs repositories, and support for other revi-
+       sion control systems can easily be added.
+
+       mmrr cds into and operates on all registered repositories at or below
+       your working directory. Or, if you are in a subdirectory of a reposi-
+       tory that contains no other registered repositories, it will stay in
+       that directory, and work on only that repository,
+
+       These predefined commands should be fairly familiar to users of any
+       revision control system:
+
+       checkout (or co)
+           Checks out any repositories that are not already checked out.
+
+       update
+           Updates each repository from its configured remote repository.
+
+           If a repository isn't checked out yet, it will first check it out.
+
+       status
+           Displays a status report for each repository, showing what uncom-
+           mitted changes are present in the repository.
+
+       commit (or ci)
+           Commits changes to each repository. (By default, changes are pushed
+           to the remote repository too, when using distributed systems like
+           git. If you don't like this default, you can change it in your
+           .mrconfig, or use record instead.)
+
+           The optional -m parameter allows specifying a commit message.
+
+       record
+           Records changes to the local repository, but does not push them to
+           the remote repository. Only supported for distributed revision
+           control systems.
+
+           The optional -m parameter allows specifying a commit message.
+
+       diff
+           Show a diff of uncommitted changes.
+
+       log Show the commit log.
+
+       These commands are also available:
+
+       list (or ls)
+           List the repositories that mr will act on.
+
+       register
+           Register an existing repository in a mrconfig file. By default, the
+           repository in the current directory is registered, or you can spec-
+           ify a directory to register.
+
+           The mrconfig file that is modified is chosen by either the -c
+           option, or by looking for the closest known one at or below the
+           current directory.
+
+       config
+           Adds, modifies, removes, or prints a value from a mrconfig file.
+           The next parameter is the name of the section the value is in. To
+           add or modify values, use one or more instances of "parame-
+           ter=value". Use "parameter=" to remove a parameter. Use just
+           "parameter" to get the value of a parameter.
+
+           For example, to add (or edit) a repository in src/foo:
+
+             mr config src/foo checkout="svn co svn://example.com/foo/trunk foo"
+
+           To show the command that mr uses to update the repository in
+           src/foo:
+
+             mr config src/foo update
+
+           To see the built-in library of shell functions contained in mr:
+
+             mr config DEFAULT lib
+
+           The ~/.mrconfig file is used by default. To use a different config
+           file, use the -c option.
+
+       help
+           Displays this help.
+
+       Actions can be abbreviated to any unambiguous substring, so "mr st" is
+       equivalent to "mr status", and "mr up" is equivalent to "mr update"
+
+       Additional parameters can be passed to most commands, and are passed on
+       unchanged to the underlying revision control system. This is mostly
+       useful if the repositories mr will act on all use the same revision
+       control system.
+
+OOPPTTIIOONNSS
+       -d directory
+           Specifies the topmost directory that mmrr should work in. The default
+           is the current working directory.
+
+       -c mrconfig
+           Use the specified mrconfig file. The default is ~~//..mmrrccoonnffiigg
+
+       -v  Be verbose.
+
+       -q  Be quiet.
+
+       -s  Expand the statistics line displayed at the end to include informa-
+           tion about exactly which repositories failed and were skipped, if
+           any.
+
+       -i  Interactive mode. If a repository fails to be processed, a subshell
+           will be started which you can use to resolve or investigate the
+           problem. Exit the subshell to continue the mr run.
+
+       -n [number]
+           If no number if specified, just operate on the repository for the
+           current directory, do not recurse into deeper repositories.
+
+           If a number is specified, will recurse into repositories at most
+           that many subdirectories deep. For example, with -n 2 it would
+           recurse into ./src/foo, but not ./src/packages/bar.
+
+       -j [number]
+           Run the specified number of jobs in parallel, or an unlimited num-
+           ber of jobs with no number specified. This can greatly speed up
+           operations such as updates.  It is not recommended for interactive
+           operations.
+
+           Note that running more than 10 jobs at a time is likely to run
+           afoul of ssh connection limits. Running between 3 and 5 jobs at a
+           time will yeild a good speedup in updates without loading the
+           machine too much.
+
+FFIILLEESS
+       mmrr is configured by .mrconfig files. It starts by reading the .mrconfig
+       file in your home directory, and this can in turn chain load .mrconfig
+       files from repositories.
+
+       Here is an example .mrconfig file:
+
+         [src]
+         checkout = svn co svn://svn.example.com/src/trunk src
+         chain = true
+
+         [src/linux-2.6]
+         checkout = git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git &&
+               cd linux-2.6 &&
+               git checkout -b mybranch origin/master
+
+       The .mrconfig file uses a variant of the INI file format. Lines start-
+       ing with "#" are comments. Values can be continued to the following
+       line by indenting the line with whitespace.
+
+       The "DEFAULT" section allows setting default values for the sections
+       that come after it.
+
+       The "ALIAS" section allows adding aliases for actions. Each parameter
+       is an alias, and its value is the action to use.
+
+       All other sections add repositories. The section header specifies the
+       directory where the repository is located. This is relative to the
+       directory that contains the mrconfig file, but you can also choose to
+       use absolute paths.
+
+       Within a section, each parameter defines a shell command to run to han-
+       dle a given action. mr contains default handlers for "update", "sta-
+       tus", "commit", and other standard actions. Normally you only need to
+       specify what to do for "checkout".
+
+       Note that these shell commands are run in a "set -e" shell environment,
+       where any additional parameters you pass are available in "$@". The
+       "checkout" command is run in the parent of the repository directory,
+       since the repository isn't checked out yet. All other commands are run
+       inside the repository, though not necessarily at the top of it.
+
+       The "MR_REPO" environment variable is set to the path to the top of the
+       repository. (For the "register" action, "MR_REPO" is instead set to the
+       basename of the directory that should be created when checking the
+       repository out.)
+
+       The "MR_CONFIG" environment variable is set to the .mrconfig file that
+       defines the repo being acted on, or, if the repo is not yet in a config
+       file, the .mrconfig file that should be modified to register the repo.
+
+       A few parameters have special meanings:
+
+       skip
+           If the "skip" parameter is set and its command returns true, then
+           mmrr will skip acting on that repository. The command is passed the
+           action name in $1.
+
+           Here are two examples. The first skips the repo unless mr is run by
+           joey. The second uses the hours_since function (included in mr's
+           built-in library) to skip updating the repo unless it's been at
+           least 12 hours since the last update.
+
+             skip = test `whoami` != joey
+             skip = [ "$1" = update ] && ! hours_since "$1" 12
+
+       order
+           The "order" parameter can be used to override the default ordering
+           of repositories. The default order value is 10. Use smaller values
+           to make repositories be processed earlier, and larger values to
+           make repositories be processed later.
+
+           Note that if a repository is located in a subdirectory of another
+           repository, ordering it to be processed earlier is not recommended.
+
+       chain
+           If the "chain" parameter is set and its command returns true, then
+           mmrr will try to load a .mrconfig file from the root of the reposi-
+           tory. (You should avoid chaining from repositories with untrusted
+           committers.)
+
+       include
+           If the "include" parameter is set, its command is ran, and should
+           output additional mrconfig file content. The content is included as
+           if it were part of the including file.
+
+           Unlike all other parameters, this parameter does not need to be
+           placed within a section.
+
+       lib The "lib" parameter can specify some shell code that will be run
+           before each command, this can be a useful way to define shell func-
+           tions for other commands to use.
+
+       When looking for a command to run for a given action, mr first looks
+       for a parameter with the same name as the action. If that is not found,
+       it looks for a parameter named "rcs_action" (substituting in the name
+       of the revision control system and the action). The name of the revi-
+       sion control system is itself determined by running each defined
+       "rcs_test" action, until one succeeds.
+
+       Internally, mr has settings for "git_update", "svn_update", etc. To
+       change the action that is performed for a given revision control sys-
+       tem, you can override these rcs specific actions. To add a new revision
+       control system, you can just add rcs specific actions for it.
+
+AAUUTTHHOORR
+       Copyright 2007 Joey Hess <joey@kitenet.net>
+
+       Licensed under the GNU GPL version 2 or higher.
+
+       http://kitenet.net/~joey/code/mr/
+
+
+
+perl v5.8.4                       2008-04-17                             MR(1)
