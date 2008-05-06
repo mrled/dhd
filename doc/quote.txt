@@ -397,8 +397,8 @@ A rare bearlike mammal (Ailuropoda melanoleuca) of the mountains of China and Ti
 %
 While wearing a tie, roll it up and say you're going to race the fat end and the skinny end to see which falls down first. Let go and then yell "It's a tie!"
 %
-What's better than winning the special olympics?
-Being able to walk.
+Q: What's better than winning the special olympics?
+A: Being able to walk.
 %
 OK, so Palestinian man walks into a bar...
 ...and EXPLODES!
@@ -414,14 +414,14 @@ Seeing that the bartender chases the monkey and the man out of the bar.
 A week later the man and the monkey go back to the bar. The monkey jumps onto the bar again and finds a jar of cherries. This time the monkey methodically takes each cherry, sticks it up its ass, then eats it. The bartender looks stunned and asks the man - "Hey, what's the deal with your monkey?"
 The man replies - "Oh, that's nothing. After eating that 3 ball, now he measures everything!"
 %
-What do you call a black guy in the cockpit of an airplane?
-The pilot, you fucking racist.
+Q: What do you call a black guy in the cockpit of an airplane?
+A: The pilot, you fucking racist.
 %
-What's brown and sounds like a bell?
-Dung.
+Q: What's brown and sounds like a bell?
+A: Dung.
 %
-Did you hear about the pirate movie?
-It was rated AARRRRRRRRRRRRR
+Q: Did you hear about the pirate movie?
+A: It was rated AARRRRRRRRRRRRR
 %
 Q: What has seven arms and sucks?
 A: Def Leppard!
@@ -457,8 +457,8 @@ Joe eats his banana and this time the electrocute him for 20 mins straight. Afte
 
 To which Joe simply replies, "Well, I guess I am just a good conductor."
 %
-Q. What's the difference between a prositute with diarhea and a cornhusker with Parkinsons disease?
-A. One shucks between fits...
+Q: What's the difference between a prositute with diarhea and a cornhusker with Parkinsons disease?
+A: One shucks between fits...
 %
 3.1415926 walks into a bar and the bartender says, "Sorry, we don't serve pi."
 %
@@ -625,12 +625,12 @@ has nothing, and everyone I've talked to says they always hated their
 first cigarette. So you can fuck right off, you poser faggot.
 -CaptainScraps
 %
-Why does Stevie Wonder smile so much?
-Because he doesn't know he's black
+Q: Why does Stevie Wonder smile so much?
+A: Because he doesn't know he's black
 %
-"KHHHHHHAAAAAAAAAANNNNNNNNNNNNNNNN!"
-- The first reply in "What is the longest one-syllable word in the
-English language?"
+Q: What is the longest one-syllable word in the English language?
+A: KHHHHHHAAAAAAAAAANNNNNNNNNNNNNNNN!
+ - SA
 %
 -can animals consent to sex?
 if they can't, did we evolve from rapists?
@@ -655,10 +655,10 @@ I want an animated gif tatooed on my forearm.
 %
 When are people going to realize that blogs are the equivalent of public urination on the web? People post stream of consciousness bullshit dressed up as "information" or even "facts" and because it's on a blog, well then, it must be true.  - /.
 %
-Why do ducks have webbed feet? 
-To put out forest fires. 
-Why do elephants have flat feet? 
-To put out burning ducks.
+Q: Why do ducks have webbed feet? 
+A: To put out forest fires. 
+Q: Why do elephants have flat feet? 
+A: To put out burning ducks.
 %
 MSFT - Resistance is patented.
 - me and /.
@@ -954,7 +954,6 @@ Why do you find that funny?
                 -- D. Taylor, Computer Science 350
 %
 We were at the club going over some paperwork, comparing bid proposals to what we were actually billed. 
-
 Alexis: 	Wow, there's a lot of padding in this invoice. 
 jwz: 		Padding. In this context that word means "lies," right? 
 Alexis: 	Well I was trying to be a little more diplomatic than that. 
@@ -962,9 +961,10 @@ jwz: 		Diplomatic. That means... "lies," right?
 Alexis: 	Well, you've got a very black-and-white view of the world. 
 jwz: 		See, I like to refer to that as "truth." 	
 Alexis: 	And that's what makes you special, Jamie.
+ - JWZ worked at Netscape until they were bought by AOL. 
 %
-What did the elephant say to the naked man?
-"How do you breathe through that thing?!"
+Q: What did the elephant say to the naked man?
+A: "How do you breathe through that thing?!"
 %
 Why do rasisins suck?
 
@@ -1147,18 +1147,18 @@ And the next day I do it again.
 %
 A curious young boy one day asks his father "What does a vagina look like?" The father kneels down and tells him "Well son, before sex the vagina looks like a beautiful flower ready to open." The son then asks "Well, what does it look like after sex?" The father pauses a moment and says "Well son, have you ever seen a bulldog eating mayonnaise?"
 %
-Why were there only 10,000 Mexicans at the Alamo?
-They only had 2 trucks.
+Q: Why were there only 10,000 Mexicans at the Alamo?
+A: They only had 2 trucks.
 %
-What did Davey Crockett say when he saw all the Mexicans at the Alamo?
-"I didn't know we were roofing today?"
+Q: What did Davey Crockett say when he saw all the Mexicans at the Alamo?
+A: "I didn't know we were roofing today?"
 %
-What do you call a group of black guys pushing a car up a hill?
-Black Power
-What do you call a group of white guys pushing a car up a hill?
-White Power
-What do you call a group of Mexican guys pushing a car up a hill?
-Grand Theft Auto
+Q: What do you call a group of black guys pushing a car up a hill?
+A: Black Power
+Q: What do you call a group of white guys pushing a car up a hill?
+A: White Power
+Q: What do you call a group of Mexican guys pushing a car up a hill?
+A: Grand Theft Auto
 %
 PS:  I assume you know the story about Mr. Caspar Milquetoast, the
 mild-mannered society figure, whose name was spelled "Casper" in a newspaper
@@ -1337,6 +1337,7 @@ Comment by David Ely on diveintomark.org
 11:31 < vm> yeah, I only found out yesterday
 11:31 < vm> glad I didnt order
 11:31 < Criswell> who has real friends anymore to play that shit with
+ - #pbp
 %
 Mankind is like a king or queen in exile, and we cannot be happy until we have recovered our true state. What would you expect the Queen of a kingdom and the Beauty of the realm to feel when she wakes to find herself a laundress in a foreign land? A woman's struggle with her sense of worth points to something glorious that she /was/ designed to be. The great emptiness we feel points to the great place we /were/ created for. It's true. All those legends and fairy tales of the undiscovered Princess and the Beauty hidden as a maid are more accurate than we thought. There's a /reason/ little girls resonate with them so. 
  - Stasi Eldredge, _Captivating_
@@ -1689,9 +1690,8 @@ So the bear wiped his ass with the rabbit.
 Whats black and loud?
 stevie wonder answering the iron
 %
-What do you call a black jew?
-Niggardly.
-(look it up)
+Q: What do you call a black jew?
+A: Niggardly. (look it up)
 %
 A guy comes in to the unemployment office, walks up to the counter, and says "Man, I hate taking welfare. All I want is a regular job, y'know?"
 
@@ -2661,6 +2661,136 @@ Liberal, n: One who supports aggressive war so long as the UN approves.
 %
 My new NGO: The Social Security Assasins (SSA): more money for the rest of us! 
 %
+Ah, I miss the days when TENEX roamed the earth and we had to fight woolly mammoths for food...
+ - Skeezics Boondoggle on rescue@
+%
+Political correctness is intellectual terrorism
+ - facebook
+%
+VMS is such a well-designed OS. Or rather, it's such a designed OS. As opposed to something that evolved from "Look at what I can do" sessions.
+ - Jonathan on #geeks
+%
+Dear women, 
+[...]
+Stop getting drunk and being absolutely retarded- if we've seen one pair of drunk whores' tits we've seen them all so please put them away in public.
+    Sincerely, your fellow female, Smam
+
+Dear Smam,
+You're wrong. So very, very wrong.
+    Sincerely, Boon
+
+- SA
+%
+Dear Mother Nature,
+
+I *pray* for global warming, you diseased whore.
+
+Love you-not your actions,
+Dream in the Door
+
+- SA
+%
+Q: What did the librarian say to the individual asking for a book on suicide? 
+A: "Fuck off! You won't bring it back." 
+%
+Q: How many feminists does it take to screw in a lightbulb?
+A: Just one, and that's not funny!
+A: None, they can't change anything!
+A: Two: One to change the lightbulb and one to iron my shirt.
+A: Three: One to cook my dinner, one to hold my beer, and one to suck my dick while I change the lightbulb.
+%
+A man and a little girl are standing at the edge of a dark forest at night. The little girl looks up at the man and says in a tiny little voice, "I'm scared."
+The man looks down at the little girl and says, "You're scared? What about me? I gotta walk outta here alone!"
+%
+Q: What's the secret of making a woman orgasm every single time? 
+A: Who cares?
+%
+Three guys meet at a bar and chat it up for a while. They end up talking about their cars, and the first guy says, "Well, I'm an astronaut, so I drive a Saturn." And the second guy says, "Well, I am a pimp, so I drive a cheap Escort." And the third guy says, "I got you both beat. I'm a proctologist, so I drive a brown Probe."
+%
+Q: What's brown and floats through space?
+A: The Captains Log.
+%
+Q: What's the leading cause of paedophilia?
+A: Sexy kids.
+%
+Two logic gates walk into a bar - or, not.
+%
+There's a group of monks selling flowers in the gardens of the Playboy Mansion. They were making a good living until Hugh Hefner chased them off. The leader of the monks said, "If it was anyone else, we might have gottern away with it because  only Hugh can prevent florist friars."
+%
+Heisenberg is driving along in the city, when he notices flashing lights behind him. He pulls over, and a policeman emerges from the car and walks over to him and motions for him to roll his window down.
+
+"Is there a problem, officer?"
+"Do you have any idea how fast you were going?" the officer replies.
+Heisenberg says "No, but I know where I am."
+%
+Q: What do you do when you come across an alligator?
+A: Wipe it off and apologize. 
+%
+A young couple decides to go to Scotland on vacation. One night they decide to stay over in a small town to get to know some of the locals. That night they head down to the tavern to have some drinks. A little time goes by and this old man comes over to them.
+
+"Aye, m' name is MacGregor," he says. Then he takes a shot. He orders another shot from the bar then looks back to the couple. "Ya see that fence out there?" he asks as he points out the window. "Cut it, posted it, put it up wit me own two hands. Think they call me MacGregor the fencemaker, but no, no they don't." He takes the shot.
+
+A few more minutes go by and MacGregor orders another shot and looks to the young couple. He asks "You see this bar? Measured it, cut it, varnished it, put it up wit me own two hands. Ya think they call me MacGregor the barmaker, but no, no they don't." Takes his shot.
+
+The couple has no clue what to think of this drunk old man. But he is doing no harm and it's good to learn more about the locals. Another few minutes go by and MacGregor orders another shot and looks to them again, "See that cabinet behind the bar? Same ting. Ya think they call me MacGregor the cabinet maker, but NO, no they don't." Takes his shot. Then he orders a double, looks to the couple and with a tear in his eye he says," Ahhh, but you fuck one goat."
+%
+Q: How many surrealists does it take to screw in a lightbulb?
+A: Popsicle.
+%
+Nine out of ten people enjoy gang rape.
+%
+Q: How many altos does it take to change a light bulb?
+A: None, they can't get up that high 
+
+Q: How many sopranos does it take to change a lightbulb?
+A: Just one. She holds it in place, and everything revolves around her.
+%
+Q: What did the black kid get on his SATs? 
+A: BBQ sauce.
+%
+Q: How do you know when a hippie's been sleeping on your couch?
+A: He's still there. 
+
+Q: What kind of cigarettes does a hippie smoke?
+A: Yours. 
+
+Q: Why do so many hippies live in Portland?
+A: There's no work there. 
+
+Q: What's orange and red and looks good on hippies?
+A: FIRE. 
+
+Q: What do you call a hippie whose girlfriend broke up with him?
+A: Homeless. 
+
+Q: How many hippies does it take to screw in a lightbulb? 
+A: None, they just follow it around for 30 years after it burns out. 
+%
+Q: What did the snail say while on the turtle's back?
+A: Wheeeeee!
+%
+Q: How is broccoli like anal sex?
+A: If you're forced to have it as a kid, you probably won't like it as an adult. 
+%
+This joke is best said out loud. 
+Q: Whats 5*4*3*2*1?
+A: FIVE!
+  (FIVE! = 5! = 5*4*3*2*1)
+%
+[After getting dumped...] Don't go visit her. First of all, it will hurt like a mofo. Secondly, girls are evil and will do shitty things like hug you, cuddle with you, tell you how much they miss you, or hit you with pepper spray.
+ - lushka16 on SA
+%
+I pissed myself in a dream once, I woke up and it turns out that dreams really do come true. 
+ - Toastershark, SA
+%
+Cum Dragon posted:
+
+One quiet night I took my lady down to the lake for a romantic evening. We laid out the blanket and whispered to each other for just over an hour under the cover of the short-needle pines native to our area. I commented about a pungent smell there by the shore; it was the smell of decay. 
+
+Then I felt the warm tingling that lets daddy know it's time to fuck. I firmly gripped my Fuckstick and made sure my aim was true. Soon, she was properly mounted. With each mighty thrust I felt the strangely rewarding sensation of my lover's body collapsing and snapping under mine. Crunch, crack, crunch, slurp, squish. After several minutes of frenzied pounding and penetrating, it was time to Cum. 
+
+I allowed my eyes to be diverted from the moon (it's where I get my power) so that I might look into my darling's eyes while climaxing, but mere seconds before the magic ooze was to spasmodically erupt from my Dicksword, I came to a terrible realization. It was not my girlfriend that I had brought to the friendly shores of Tower Lake that night. No. It was, in fact, a cantaloupe that I had purchased that very same day. I don't know that there is a word to describe the way I felt that night, as I violently released my primal juices into the mushy remains of the brutalized fruit, but I know i'm not sorry. Thats for damn sure. I'm a Melon Fucker.
+%
 Porn laughs at monogamy.
  - oneangrygirl.net
 %
@@ -2721,3 +2851,4 @@ People routinely assume that pornography is such a difficult and divisive issue 
 Language is probably the most conservative social behaviour that there is. 
  - Dr King, Linguistics 345, lecture 20080403
 %
+
