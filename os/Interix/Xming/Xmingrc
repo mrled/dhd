@@ -1,0 +1,56 @@
+# Xming Server Resource File
+# 
+# This file is read only as ~/Xmingrc - not .Xmingrc. Gah. Very litte of (this version of) this file 
+# is Interix-specific, but at least xterm.bat is.
+# 
+# Some shit: 
+# Xming throws a fit if comments are #blah. You MUST use a between the # and text. WTF Xming. 
+# Do not put quotation marks of any kind in Xmingrc
+# If you remove a Menu entry, you must also remove any references to it. THE REVERSE IS ALSO TRUE. 
+# 
+TrayIcon ",101"
+Menu localhost {
+	# Access control commands
+	"ac status" execd "xhost.bat"
+	# where xhost.bat contains...
+	# @echo off
+	# xhost
+	# pause
+	"ac on" exec "xhost -"
+	"ac off" exec "xhost +"
+	# shells etc
+	# cygwin execd "C:\cygwin\bin\bash --login -i"
+	# EsounD exec "G:\esound\esd -tcp -public"
+	"tail the log" execd "tail.bat"
+	# where tail.bat contains...
+	# @echo off
+	# tail -f %TEMP%\Xming.2.log
+	msdos execd "C:\WINDOWS\system32\cmd"
+	xcalc exec xcalc
+	xeyes exec "xeyes"
+}
+Menu apps {
+	localhost menu localhost
+    &xterm execd "xterm.bat"
+	separator
+	"&Reload Xmingrc" reload
+	&Usage execd "Xming :999 -help"
+}
+Menu aot {
+	"&Always on Top" alwaysontop
+	separator
+}
+RootMenu apps
+DefaultSysMenu aot atstart
+SysMenu {
+	xterm putty atstart
+}
+IconDirectory "C:\WINDOWS\system32\"
+Icons {
+	xterm "shell32.dll,131"
+}
+Styles {
+	oclock noframe
+}
+SilentExit
+Debug "Done parsing the configuration file."
