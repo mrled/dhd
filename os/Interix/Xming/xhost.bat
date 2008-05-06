@@ -1,0 +1,3 @@
+@echo off
+xhost
+pause
