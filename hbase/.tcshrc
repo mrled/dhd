@@ -311,3 +311,4 @@ endif #complete the prompt
 
 alias get_dhd = "svn co http://mrled.org/svn/dhd ~/doc/remote/dhd"
 alias get_mr  = "git-clone git://git.kitenet.net/mr ~/opt/src/mr"
+alias init_mr = "ln -sf ~/doc/remote/dhd/hbase/.mrconfig ~/.mrconfig && ~/doc/remote/dhd/hbase/local/bin/mr checkout"
