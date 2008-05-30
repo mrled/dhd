@@ -39,6 +39,9 @@ checkout = svn co svn+ssh://mrled@mrled.org/home/mrled/svn/tucpa
 [doc/remote/uenc]
 checkout = svn co svn+ssh://mrled@mrled.org/home/mrled/svn/uenc
 
+#[doc/remote/gdhd]
+#checkout = git clone ssh://mrled@mrled.org/~/svn/gdhd.git/
+
 [opt/src/mr]
 checkout = 
     git clone git://git.kitenet.net/mr && 

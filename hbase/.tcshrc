@@ -172,6 +172,7 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
 
     alias pu pushd
     alias po popd
+    alias dush "du -sh"
     alias ff "find . -name '\!*' -print"
     alias trash 'mv $argv ~/.Trash/'
     alias tailmes 'tail -f /var/log/messages'
@@ -312,3 +313,8 @@ endif #complete the prompt
 alias get_dhd = "svn co http://mrled.org/svn/dhd ~/doc/remote/dhd"
 alias get_mr  = "git-clone git://git.kitenet.net/mr ~/opt/src/mr"
 alias init_mr = "ln -sf ~/doc/remote/dhd/hbase/.mrconfig ~/.mrconfig && ~/doc/remote/dhd/hbase/local/bin/mr checkout"
+
+alias ikimake "umask 022 && /usr/local/bin/ikiwiki --verbose ~/doc/remote/wikiwc/data ~/Sites/Documents/wiki --url=http://AndrAIa.local/wiki && umask 077"
+
+
+

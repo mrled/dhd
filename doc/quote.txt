@@ -739,8 +739,7 @@ Geography according to SCO: US borders Canada; Texas is in US; thus Texas has a 
 %
 Wise man say: A skilled troll is a master baiter.
 %
-The Awful Forums > Discussion > Debate and Discussion > Hot Topic: Election 2004 > The "OK, what the fuck do we do now" thread
-(Note: DURING the time that votes were still being counted)
+The Awful Forums > Discussion > Debate and Discussion > Hot Topic: Election 2004 > The "OK, what the fuck do we do now" (Note: DURING the time that votes were still being counted)
 
 democrat (angry about how Bush seems to be winning): Seriously. Isn't it our constitutional right to revolt?
 republican: you'll need guns first.
@@ -2732,7 +2731,9 @@ A young couple decides to go to Scotland on vacation. One night they decide to s
 
 A few more minutes go by and MacGregor orders another shot and looks to the young couple. He asks "You see this bar? Measured it, cut it, varnished it, put it up wit me own two hands. Ya think they call me MacGregor the barmaker, but no, no they don't." Takes his shot.
 
-The couple has no clue what to think of this drunk old man. But he is doing no harm and it's good to learn more about the locals. Another few minutes go by and MacGregor orders another shot and looks to them again, "See that cabinet behind the bar? Same ting. Ya think they call me MacGregor the cabinet maker, but NO, no they don't." Takes his shot. Then he orders a double, looks to the couple and with a tear in his eye he says," Ahhh, but you fuck one goat."
+The couple has no clue what to think of this drunk old man. But he is doing no harm and it's good to learn more about the locals. Another few minutes go by and MacGregor orders another shot and looks to them again, "See that cabinet behind the bar? Same ting. Ya think they call me MacGregor the cabinet maker, but NO, no they don't." Takes his shot. 
+
+Then he orders a double, looks to the couple and with a tear in his eye he says, "Ahhh, but you fuck one goat...."
 %
 Q: How many surrealists does it take to screw in a lightbulb?
 A: Popsicle.
@@ -2851,4 +2852,58 @@ People routinely assume that pornography is such a difficult and divisive issue 
 Language is probably the most conservative social behaviour that there is. 
  - Dr King, Linguistics 345, lecture 20080403
 %
+I asked my friend Andrew Wilson if he has a Wii yet, and he retorted: "NO, because I'm a grown-up!" Funny stuff. I'm assuming his wife won't let him buy one.
+ - Steve Yegge's blog
+%
+In his essay "El escritor argentino y la tradición" Borges notes that the very absence of camels in the Koran was proof enough that it was an Arabian work, inferring that only someone trying to write an "Arab" work would purposefully include a camel.
+ - wikipedia
+%
+"Dictatorships foster oppression, dictatorships foster servitude, dictatorships foster cruelty; more abominable is the fact that they foster idiocy."
+ - Jorge Luis Borges
+%
+The older I grow, the less important the comma becomes. Let the reader catch his own breath.
+— Elizabeth Clarkson Zwart
+%
+Power corrupts. PowerPoint corrupts absolutely.
+%
+And of course the older a bureaucracy gets, the more secretive it becomes ... we're lucky that the UK government does actually admit it exists. 
+ - Mike Meredith on geeks@
+%
+I've learned to back up my data several times.  :)
+ - wa2egp@att.net on rescue@
+%
+I've just added 1TB to the stash, although the actual critical data is about 5-10GB tops. The rest is basically a level four cache between my CPU and the Internet :)
+ - Peter Corlett on rescue@
+%
+$DEITIES preserve us from datacenters run by -interior-decorators-...
+ - Sandwich Maker on rescue@
+%
+So maybe that’s why [Bill Gates] is able to truly understand mass disease in Africa. We look at the huge numbers and go numb. Gates looks at them and runs the moral algorithm: Preventable death = bad; preventable death x 1 million people = 1 million times as bad.
 
+We tend to think that the way to address disease and death is to have more empathy. But maybe that’s precisely wrong. Perhaps we should avoid leaders who “feel your pain,” because their feelings will crap out at, you know, eight people.
+ - Clive Thomson in Wired
+%
+"The first step towards recovery is to turn your personal tradedy into a weapon for making others horribly uncomfortable."
+%
+Unintentionally comedic facebook wall posts, Installment One: 
+"Also, my abs are still hurting, and now my back is too. I can't figure this out for the life of me. Maybe I've been going to the gym in my sleep."
+ - Femme on someone else's facebook wall
+%
+Q: Do sixty year old men wear boxers or briefs?
+A: Depends...
+%
+Never buy hosting from a site that has stock photos of happy multiracial people on the front page.
+That means that marketing drones, instead of techies, are in charge. 
+ - such a nice boy, SA
+%
+As someone who doesn't live there, I must admit the US political system is vastly amusing (sorry!).
+ - Mike Meredith on geeks@
+%
+I keep hearing people say things to that extent.  "If only $foo would
+happen, people would see just how wasteful/expensive/expansive/etc the
+federal government is!"  Anyone in need of one more example or indicator
+thereof is likely already too dim to see that next one.
+ - jp on geeks@
+%
+"Government should be weak, amateurish and ridiculous.  At present, it fulfills only a third of the role." -- Edward Abbey
+%

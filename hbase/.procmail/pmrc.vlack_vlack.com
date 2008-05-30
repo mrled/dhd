@@ -10,10 +10,13 @@ PMDIR=$HOME/.procmail
 #DOMAIN=howe\.textdrive\.com
 
 
+#:0 hc
+#! varchive@vlack.com
+#:0 hc
+#! fullvarchive@mrled.org
+
 :0 hc
-! varchive@vlack.com
-:0 hc
-! fullvarchive@mrled.org
+/users/home/mledbetter/Backup/Maildir
 
 
 ### Locking methods:
@@ -69,15 +72,10 @@ SPR=2147483647
 
 ### specifics:
 
-# gmail
-#:0
-#* ^X-Original-To:.*vlack\+gmail\@vlack.com
-#.INBOX.relayed/
-
 # neuric forwarded stuff
-:0
+#:0
 * .*vlack\+neuric\@vlack\.com
-.INBOX.Archive.Neuric/
+#.INBOX.Archive.Neuric/
 
 # spam mail for completing offers and such
 #:0
@@ -92,13 +90,16 @@ SPR=2147483647
 * $ $SPR^0 .*vlack+f\.retailreportcard
 # previously used for fusioncash.com: 
 * $ $SPR^0 ^X-Original-To:.*offers 
+* $ $SPR^0 ^To:.*vlack\@howe\.textdrive\.com
+* $ $SPR^0 ^To:.*vlack.*marin\.joyent\.us
+* $ $SPR^0 ^To:.*mledbetter\@marin\.joyent\.us
 /dev/null
 
 
 # todos. now if only I would check them...
-:0
-* ^X-Original-To:.*vlack\+todo
-.INBOX.todo/
+#:0
+#* ^X-Original-To:.*vlack\+todo
+#.INBOX.todo/
 
 ### my lists stuff. based on 
 	## Jamie Wilkinson's http://spacepants.org/dot.procmailrc
@@ -108,8 +109,7 @@ SPR=2147483647
 {
 	# MAILMAN REMINDERS
 	# to quote young Jeffrey:
-	# "I'm so completely not interested in receiving these at
-	# the end of every month"
+	# "I'm so completely not interested in receiving these at the end of every month"
 	:0:
 	* ^From: .*mailman-owner@
 	* ^Subject: .* mailing list memberships reminder
@@ -245,8 +245,9 @@ SPR=2147483647
 ## then, anything going to vlack+y. addresses I can put somewhere else... so that I'll
 ## be sure to keep those addresses which I've used around in the future. 
 ## finally, plain vlack+ addresses can go ... err .. somewhere. To the inbox for now. 
+
 :0
-* ^To: vlack\+.*\@ # matches vlack+[anything]@[anything]
+* ^To: vlack\+
 .INBOX.temp/
 
 

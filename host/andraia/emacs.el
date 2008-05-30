@@ -43,19 +43,19 @@
 
 
 ;; Load Enhanced Carbon Emacs plugin
-(unless (or (boundp 'enhanced-carbon-emacs)
-	    (boundp 'aquamacs-version))
-  (defun load-local-site-start (site-lisp-directory)
-    "Load site-start.el from a given site-lisp directory"
-    (let ((current-default-directory default-directory))
-      (setq default-directory site-lisp-directory)
-      (normal-top-level-add-subdirs-to-load-path)
-      (setq default-directory current-default-directory)
-      (setq load-path (cons site-lisp-directory load-path))
-      (load (concat site-lisp-directory "/site-start.el"))
-      ))
-  (load-local-site-start 
-   "/Library/Application Support/emacs/ec-emacs/site-lisp"))
+;; (unless (or (boundp 'enhanced-carbon-emacs)
+;; 	    (boundp 'aquamacs-version))
+;;   (defun load-local-site-start (site-lisp-directory)
+;;     "Load site-start.el from a given site-lisp directory"
+;;     (let ((current-default-directory default-directory))
+;;       (setq default-directory site-lisp-directory)
+;;       (normal-top-level-add-subdirs-to-load-path)
+;;       (setq default-directory current-default-directory)
+;;       (setq load-path (cons site-lisp-directory load-path))
+;;       (load (concat site-lisp-directory "/site-start.el"))
+;;       ))
+;;   (load-local-site-start 
+;;    "/Library/Application Support/emacs/ec-emacs/site-lisp"))
 
 
 (setq       TeX-command-list '(("BibTeX" "bibtex %s" TeX-run-BibTeX nil nil)
