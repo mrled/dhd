@@ -97,9 +97,13 @@ if ($?prompt) then # this is how we determine if we're in an interactive shell
         # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
         setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
         set winc = "/cygdrive/c"
-    else if ( -d /dev/fs ) then # SFU/SUA
+    else if ( -d /dev/fs ) then # SFU/SUA/Interix
         set winc = "/dev/fs/C"
         setenv SVN_SSH /usr/local/bin/ssh
+        
+        #skd="/dev/fs/J/Neuric/Apps/puTTY"
+        #alias ssh "if ( -d $sdk ) ssh -i /dev/fs/J/Neuric/Apps/puTTY/id_rsa"
+        alias ssh "ssh -i /dev/fs/J/Neuric/Apps/puTTY/id_rsa"
         if ( -f /usr/examples/win32/aliases.csh ) source /usr/examples/win32/aliases.csh
         alias df /bin/df -Fk 
         alias du /bin/du -k
@@ -313,7 +317,6 @@ endif #complete the prompt
 alias get_dhd = "svn co http://mrled.org/svn/dhd ~/doc/remote/dhd"
 alias get_mr  = "git-clone git://git.kitenet.net/mr ~/opt/src/mr"
 alias init_mr = "ln -sf ~/doc/remote/dhd/hbase/.mrconfig ~/.mrconfig && ~/doc/remote/dhd/hbase/local/bin/mr checkout"
-
 alias ikimake "umask 022 && /usr/local/bin/ikiwiki --verbose ~/doc/remote/wikiwc/data ~/Sites/Documents/wiki --url=http://AndrAIa.local/wiki && umask 077"
 
 
