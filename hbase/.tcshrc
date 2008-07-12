@@ -38,7 +38,7 @@ foreach x ( \
     /sw/{,s}bin /opt/local/{,s}bin \
     /usr/pkg/{,s}bin \
     /usr/nekoware/{,s}bin /usr/freeware/bin \
-    /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin \
+    /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin /usr/sfw/bin \
     \
     /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin \
     /opt/gcc.3.3/bin /opt/ast/bin \
