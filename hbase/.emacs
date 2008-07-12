@@ -11,14 +11,14 @@
 
 ;; other packages: load these before host-specific emacs file
 (add-to-list 'load-path
-;             "~/opt/emacs/site-lisp"
+             "~/opt/emacs/site-lisp"
              "~/doc/remote/dhd/hbase/emacs"
              "/usr/local/share/emacs/site-lisp")
 
 ; if I have a host-specific emacs file, load it. 
-(if (file-exists-p 
-  (setq host-specific-init-file (concat "~/doc/remote/dhd/host/" host-name "/emacs.el")))
-    (load-file host-specific-init-file))
+;(if (file-exists-p 
+;  (setq host-specific-init-file (concat "~/doc/remote/dhd/host/" host-name "/emacs.el")))
+;    (load-file host-specific-init-file))
 (if (file-exists-p 
   (setq elisprc "~/doc/remote/dhd/hbase/emacs/eshellrc.el"))
     (load-file elisprc))

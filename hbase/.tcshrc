@@ -32,7 +32,7 @@ set p=() # Make the $PATH not suck:
 # my stuff always belongs to me. 
 foreach x ( \
     ~/opt/alternatives /opt/alternatives \
-    ~/opt/{,s}bin \
+    ~/opt/{,s}bin ~/opt/perl/bin \
     ~/doc/remote/dhd/hbase/local/bin ~/doc/remote/dhd/os/$uname/bin \
     \
     /sw/{,s}bin /opt/local/{,s}bin \
