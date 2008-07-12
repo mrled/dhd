@@ -53,6 +53,8 @@ end
 set path = ( $p )
 unset p x
 
+setenv PERL5LIB "~/opt/perl/share/perl/5.8:~/opt/perl/share/perl/5.8.4:~/opt/perl/lib/perl5:~/opt/perl/lib/perl/5.8.4"
+
 umask 077 #stop reading my files!!
 setenv CVS_RSH ssh
 
