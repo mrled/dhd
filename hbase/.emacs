@@ -12,8 +12,8 @@
 ;; other packages: load these before host-specific emacs file
 (add-to-list 'load-path
              "~/opt/emacs/site-lisp"
-             "~/doc/remote/dhd/hbase/emacs"
-             "/usr/local/share/emacs/site-lisp")
+             "~/doc/remote/dhd/hbase/emacs")
+;             "/usr/local/share/emacs/site-lisp")
 
 ; if I have a host-specific emacs file, load it. 
 ;(if (file-exists-p 
@@ -51,7 +51,7 @@
  (cons (expand-file-name "/usr/share/emacs/info")
        Info-directory-list))
 
-(require 'motion-and-kill-dwim)
+;(require 'motion-and-kill-dwim)
 
 
 ; for the love of mercy, indent the same way every time!

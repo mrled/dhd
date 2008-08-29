@@ -47,6 +47,9 @@ if $( type -P gls  ); then alias ls=gls;   fi
 if $( type -P gsed ); then alias sed=gsed; fi
 if $( type -P gdu  ); then alias du=gdu;   fi
 
+## Defaults which can be overridden in the system-specific configurations below
+export psargs="ax"
+
 if [ -d /cygdrive ]; then    # Cygwin
     # it inherits the Windows path, so if your Windows path has this set, 
     #  then it will be wrong:
@@ -65,8 +68,7 @@ elif [ $uname = "Darwin" ]; then # Mac OS X
     test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
-    alias psa="ps -ef"
-    alias psaf="ps -ef|grep -i \!*"
+    export psargs="-ef"
 fi
 
 if [ $winc ]; then # we are on Windows somehow
@@ -102,8 +104,10 @@ alias ppath='echo $PATH | sed "s/:/\n/g"'
 alias pupath='echo $PATH | sed "s/:/\n/g" | sort | uniq'
 alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
-alias psa="ps ax"
-alias psaf='ps ax|grep -i \!*'
+alias psa="ps $psargs"
+function psaf { 
+    psa | grep -i $1 
+}
 
 alias ..='cd ..'
 alias c=clear
@@ -146,8 +150,9 @@ export VISUAL="$myeditor"
 export FSEDIT="$myeditor"
 unset myeditor
 
+bind '"\ep": history-search-backward'
+bind '"\en": history-search-forward'
 
 # Setting the default prompt
 export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
-
 
