@@ -112,11 +112,11 @@ alias m=more
 alias l=less
 alias wh=which
 
-alias sed='cmd_sed'
-alias du='cmd_du'
+alias sed='$cmd_sed'
+alias du='$cmd_du'
 
-alias ppath='echo $PATH | cmd_sed "s/:/\n/g"'
-alias pupath='echo $PATH | cmd_sed "s/:/\n/g" | sort | uniq'
+alias ppath='echo $PATH | $cmd_sed "s/:/\n/g"'
+alias pupath='echo $PATH | $cmd_sed "s/:/\n/g" | sort | uniq'
 alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
 alias psa="ps $psargs"
@@ -124,12 +124,12 @@ function psaf {
     psa | grep -i $1 
 }
 
-alias ls='cmd_ls -hF --color'
-alias lsa='cmd_ls -ahF --color'
-alias lsl='cmd_ls -alhF --color'
-alias lsli='cmd_ls -alhFi --color' # lsl+inodes
-alias l1='cmd_ls -1hF --color'
-alias llm='cmd_ls -lahrtF --color' # lists by last mod time
+alias ls='$cmd_ls -hF --color'
+alias lsa='$cmd_ls -ahF --color'
+alias lsl='$cmd_ls -alhF --color'
+alias lsli='$cmd_ls -alhFi --color' # lsl+inodes
+alias l1='$cmd_ls -1hF --color'
+alias llm='$cmd_ls -lahrtF --color' # lists by last mod time
 
 alias pu="pushd"
 alias po="popd"
