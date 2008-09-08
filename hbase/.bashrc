@@ -43,9 +43,13 @@ export PATH
 umask 077 #stop reading my files!!
 export CVS_RSH="ssh"
 
-if $( type -P gls  ); then alias ls=gls;   fi
-if $( type -P gsed ); then alias sed=gsed; fi
-if $( type -P gdu  ); then alias du=gdu;   fi
+export cmd_ls="ls"
+export cmd_sed="sed"
+export cmd_du="du"
+
+if [ $( type -P gls  ) ]; then cmd_ls=gls;   fi
+if [ $( type -P gsed ) ]; then cmd_sed=gsed; fi
+if [ $( type -P gdu  ) ]; then cmd_du=gdu;   fi
 
 ## Defaults which can be overridden in the system-specific configurations below
 export psargs="ax"
@@ -100,15 +104,6 @@ fi
 # Global Aliases #
 ##################
 
-alias ppath='echo $PATH | sed "s/:/\n/g"'
-alias pupath='echo $PATH | sed "s/:/\n/g" | sort | uniq'
-alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
-
-alias psa="ps $psargs"
-function psaf { 
-    psa | grep -i $1 
-}
-
 alias ..='cd ..'
 alias c=clear
 alias df="df -h"
@@ -117,12 +112,24 @@ alias m=more
 alias l=less
 alias wh=which
 
-alias ls='ls -hF --color'
-alias lsa='ls -ahF --color'
-alias lsl='ls -alhF --color'
-alias lsli='ls -alhFi --color' # lsl+inodes
-alias l1='ls -1hF --color'
-alias llm='ls -lahrtF --color' # lists by last mod time
+alias sed='cmd_sed'
+alias du='cmd_du'
+
+alias ppath='echo $PATH | cmd_sed "s/:/\n/g"'
+alias pupath='echo $PATH | cmd_sed "s/:/\n/g" | sort | uniq'
+alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
+
+alias psa="ps $psargs"
+function psaf { 
+    psa | grep -i $1 
+}
+
+alias ls='cmd_ls -hF --color'
+alias lsa='cmd_ls -ahF --color'
+alias lsl='cmd_ls -alhF --color'
+alias lsli='cmd_ls -alhFi --color' # lsl+inodes
+alias l1='cmd_ls -1hF --color'
+alias llm='cmd_ls -lahrtF --color' # lists by last mod time
 
 alias pu="pushd"
 alias po="popd"
