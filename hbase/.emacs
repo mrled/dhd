@@ -49,10 +49,7 @@
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
 (show-paren-mode t) ;; show matching paren when your curser is on a paren
-(tool-bar-mode 0)
 (global-font-lock-mode t) ;; syntax highlighting
-(menu-bar-mode nil) ;; menu bars suck (i wonder how this works under os x?)
-(global-hl-line-mode t) ;; Highlight the current line. 
 
 ;; trying to make Info behave
 (require 'info)
@@ -116,6 +113,9 @@
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
+  (tool-bar-mode 0)       ;; what is this again?
+  (menu-bar-mode nil)     ;; menu bars suck (does nothing under os x)
+  (global-hl-line-mode t) ;; Highlight the current line. 
   (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
   ;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
   )
