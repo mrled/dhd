@@ -1,6 +1,6 @@
 SHELL = /usr/local/bin/bash
 
-MAILDIR=$HOME/Maildir/ 
+MAILDIR=$HOME/.Maildir/ 
 DEFAULT=$MAILDIR 
 LOGFILE=$HOME/.procmail.log
 LOGABSTRACT = "all"
@@ -16,7 +16,7 @@ PMDIR=$HOME/.procmail
 #! fullvarchive@mrled.org
 
 :0 hc
-/users/home/mledbetter/Backup/Maildir
+/home/mledbetter/Backup/Maildir
 
 
 ### Locking methods:
@@ -95,11 +95,6 @@ SPR=2147483647
 * $ $SPR^0 ^To:.*mledbetter\@marin\.joyent\.us
 /dev/null
 
-
-# todos. now if only I would check them...
-#:0
-#* ^X-Original-To:.*vlack\+todo
-#.INBOX.todo/
 
 ### my lists stuff. based on 
 	## Jamie Wilkinson's http://spacepants.org/dot.procmailrc
