@@ -9,11 +9,22 @@
 ; my vars:
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
 
-;; other packages: load these before host-specific emacs file
-(add-to-list 'load-path
-             "~/opt/emacs/site-lisp"
-             "~/doc/remote/dhd/hbase/emacs")
-;             "/usr/local/share/emacs/site-lisp")
+;; Add the given path to the load-path variable.
+(defun add-to-load-path (path-string)
+  (message (format "Passed %S..." path-string))
+  (if (stringp path-string)
+      (when (file-exists-p path-string)
+        (message (format "Adding %S to load-path..." path-string))
+        (add-to-list 'load-path (expand-file-name path-string)))
+    (crs-add-to-load-path (car path-string))
+    (if (cdr path-string)
+        (crs-add-to-load-path (cdr path-string)))))
+(defun add-to-load-path-if-exists (dir)
+     (if (file-exists-p (expand-file-name dir))
+         (add-to-load-path (expand-file-name dir))))
+(add-to-load-path-if-exists "~/opt/emacs/site-lisp")
+(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
+(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
 
 ; if I have a host-specific emacs file, load it. 
 ;(if (file-exists-p 
@@ -92,7 +103,10 @@
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
 
 (when (eq window-system 'x)
-  (defvar myfont "-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
+  (defvar myfont 
+    ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
+    ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
+    "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1"))
 
 (unless (eq window-system nil) ;if we are NOT running in the console
   (setq default-frame-alist ; this actually sets the font and colours
@@ -162,21 +176,34 @@
     (set-buffer buf)
     (kill-region (point-min) (point-max))))
 
+;; from the illustrious & preeminent Sacha Chua
+(defun sacha/isearch-yank-current-word ()
+  "Pull current word from buffer into search string."
+  (interactive)
+  (save-excursion
+    (skip-syntax-backward "w_")
+    (isearch-yank-internal
+     (lambda ()
+       (skip-syntax-forward "w_")
+       (point)))))
+(global-set-key "\C-c" 'backward-kill-word) ; replaces the kill-region default
+
+
 
 ;; my own functions
-(defun mrled-insert-time ()
+(defun mrled/insert-time ()
   (interactive)
   (insert (format-time-string "%Y%m%d-%H%M")))
-(defun mrled-insert-time-spacey ()
+(defun mrled/insert-time-spacey ()
   (interactive)
   (insert (format-time-string "%Y-%m-%d %H:%M:%S")))
-(defun mrled-insert-time-long ()
+(defun mrled/insert-time-long ()
   (interactive)
   (insert (format-time-string "%Y%m%d-%H%M%S")))
-(defun mrled-insert-date ()
+(defun mrled/insert-date ()
   (interactive)
   (insert (format-time-string "%Y%m%d")))
-(defun mrled-insert-time-blos ()
+(defun mrled/insert-time-blos ()
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
 

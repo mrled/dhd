@@ -7,7 +7,6 @@
 # ...
 # and probably a lot more
 
-
 # All this stuff applies to ALL SESSIONS - not just interactive ones! 
 
 
@@ -30,7 +29,7 @@ set p=() # Make the $PATH not suck:
 # This way, I don't break OS-updates by "updating" my version of /bin/tar
 # with the new OS version of /bin/tar - /bin/tar always belongs to the OS, and 
 # my stuff always belongs to me. 
-foreach x ( \
+foreach binpath ( \
     ~/opt/alternatives /opt/alternatives \
     ~/opt/{,s}bin ~/opt/perl/bin \
     ~/doc/remote/dhd/hbase/local/bin ~/doc/remote/dhd/os/$uname/bin \
@@ -48,10 +47,10 @@ foreach x ( \
     /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
     /usr/games{,/bin} /usr/X11R6/{,s}bin  /usr/bin/X11 \
     )
-    if (-d $x) set p=( $p $x )
+    if (-d $binpath) set p=( $p $binpath )
 end
 set path = ( $p )
-unset p x
+unset p binpath
 
 setenv PERL5LIB "~/opt/perl/share/perl/5.8:~/opt/perl/share/perl/5.8.4:~/opt/perl/lib/perl5:~/opt/perl/lib/perl/5.8.4"
 
