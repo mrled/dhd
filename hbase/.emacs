@@ -44,7 +44,8 @@
       delete-old-versions t       ; don't ask me to delete old backups, just do it
       mouse-autoselect-window t   ; focus-follows-mouse in WINDOWS, NOT frames
       display-time-24hr-format t
-      display-time-day-and-date t)
+      display-time-day-and-date t
+      vc-follow-symlinks t)       ; don't ask ARE YOU SURE if symlink->version-controlled file
 (fset 'yes-or-no-p 'y-or-n-p) ; "yes or no" = "y or n"
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
@@ -206,6 +207,3 @@
 (defun mrled/insert-time-blos ()
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
-
-
-
