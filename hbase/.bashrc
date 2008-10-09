@@ -1,24 +1,14 @@
 # .bashrc
 
-export uname=`uname`
-export host=`hostname`
+#. ~/doc/dhd/hbase/.sh_ansi_color
 
-## PATH... should come before everything else
-# Future:
-#  I should include a util that: 
-#   - searches /etc /usr/etc /usr/local/etc /usr/nekoware/etc for execable files
-#   - links them to /usr/etcbin or something like that
-#   - man that is an abomination
-# NOTE: this method does NOT seem to be workable if a directory has spaces
+uname=`uname`
+host=`hostname`
+me=`whoami`
 
-# don't include: /usr/ucb /usr/sfw/bin
-# /opt/alternatives is where I put commands that I want to come BEFORE system-
-# supplied commands in /bin. e.g. on Interix, su, make, ksh, and tar are all
-# there, mostly as links to other commands such as /usr/pkg/bin/gtar. 
-# This way, I don't break OS-updates by "updating" my version of /bin/tar
-# with the new OS version of /bin/tar - /bin/tar always belongs to the OS, and 
-# my stuff always belongs to me. 
-
+## Set the path
+#   - not workable if the directory has spaces
+#   - put commands that should come before system commands in {,~}/opt/alternatives/
 PATH=
 dirs=
 dirs="${dirs} ~/opt/alternatives /opt/alternatives ~/opt/bin ~/opt/sbin"
@@ -40,19 +30,26 @@ for p in ${dirs}; do
 done
 export PATH
 
+
+#??export HOME TERM 
 umask 077 #stop reading my files!!
 export CVS_RSH="ssh"
 
-export cmd_ls="ls"
-export cmd_sed="sed"
-export cmd_du="du"
+cmd_ls="ls"
+ls_args="-hF"
+cmd_sed="sed"
+cmd_du="du"
+#export cmd_ls cmd_sed cmd_du # do I need to do this?
 
-if [ $( type -P gls  ) ]; then cmd_ls=gls;   fi
-if [ $( type -P gsed ) ]; then cmd_sed=gsed; fi
-if [ $( type -P gdu  ) ]; then cmd_du=gdu;   fi
+if   [ $( whereis gls ) ];     then cmd_ls=gls;   
+elif [ $( whereis colorls ) ]; then cmd_ls=colorls;
+                                   ls_args="${ls_args} -G"; fi
+if [ $( whereis gsed ) ]; then cmd_sed=gsed; fi
+if [ $( whereis gdu  ) ]; then cmd_du=gdu;   fi
 
 ## Defaults which can be overridden in the system-specific configurations below
 export psargs="ax"
+export psargs_user="j"
 
 if [ -d /cygdrive ]; then    # Cygwin
     # it inherits the Windows path, so if your Windows path has this set, 
@@ -73,6 +70,9 @@ elif [ $uname = "Darwin" ]; then # Mac OS X
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
     export psargs="-ef"
+elif [ $uname = "OpenBSD" ]; then # obsd
+    export PKG_PATH=ftp://ftp.openbsd.org/pub/OpenBSD/4.3/packages/sparc64/
+    psargs_user="j"
 fi
 
 if [ $winc ]; then # we are on Windows somehow
@@ -104,7 +104,7 @@ fi
 # Global Aliases #
 ##################
 
-alias ..='cd ..'
+alias ..="cd .."
 alias c=clear
 alias df="df -h"
 alias h=history
@@ -114,36 +114,52 @@ alias wh=which
 
 alias sed='$cmd_sed'
 alias du='$cmd_du'
+alias dush='$cmd_du -sh'
 
 alias ppath='echo $PATH | $cmd_sed "s/:/\n/g"'
 alias pupath='echo $PATH | $cmd_sed "s/:/\n/g" | sort | uniq'
 alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
 alias psa="ps $psargs"
+alias psaj="ps $psargs$psargs_user"
+alias psawcl="ps $psargs | wc -l"
+function psasys {
+    # if you are root, this will produce confusing results, since many system processes are of course run as root.
+    psaj | grep -v "$me" 
+}
+alias psasyswcl="psasys | wc -l"
 function psaf { 
-    psa | grep -i $1 
+    # (the second call to grep prevents this function from being returned as a hit)
+    psa | grep -i $1 | grep -v "grep -i $1"
+}
+function define {
+    wn "$1" -over
+}
+alias wno=define
+function ff {
+    find . -name "$1" -print
 }
 
-alias ls='$cmd_ls -hF --color'
-alias lsa='$cmd_ls -ahF --color'
-alias lsl='$cmd_ls -alhF --color'
-alias lsli='$cmd_ls -alhFi --color' # lsl+inodes
-alias l1='$cmd_ls -1hF --color'
-alias llm='$cmd_ls -lahrtF --color' # lists by last mod time
+alias ls="$cmd_ls $ls_args"
+alias lsa="$cmd_ls $ls_args -a"
+alias lsl="$cmd_ls $ls_args -al"
+alias lsli="$cmd_ls $ls_args -ali" # lsl+inodes
+alias l1="$cmd_ls $ls_args -1"
+alias lslm="$cmd_ls $ls_args -lart" # lsl+ sort by modified time (lastest at bottom)
+alias llm=lslm
 
 alias pu="pushd"
 alias po="popd"
-alias ff="find . -name '\!*' -print"
-alias tailmes='tail -f /var/log/messages'
+alias tailmes="tail -f /var/log/messages"
 alias mess="less /var/log/messages"
-alias dmesg='dmesg|less'
-alias define='wn \!* -over'
+alias dmesg="dmesg|less"
 alias .b=". ~/.bashrc"
 alias listen='netstat -a | grep LISTEN'
+alias wcl="wc -l"
 
-alias omg='echo wtf'
+alias omg="echo wtf"
 alias source=.
-alias .b='. ~/.bashrc'
+alias .b=". ~/.profile"
 
 ###################
 # Global Settings #
@@ -151,15 +167,24 @@ alias .b='. ~/.bashrc'
 
 # set my editor to be correct
 # (the -nw tells it not to open up a new window)
-export myeditor="emacs"
+myeditor="emacs"
 export EDITOR="$myeditor"
 export VISUAL="$myeditor"
 export FSEDIT="$myeditor"
-unset myeditor
 
-bind '"\ep": history-search-backward'
-bind '"\en": history-search-forward'
+# These functions are not supported under ksh!!
+#bind "\ep"=history-search-backward
+#bind "\en"=history-search-forward
 
 # Setting the default prompt
-export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
+#export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
+#export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
+# COLORS      bold,green           bold,blue         unbold,white
+#           \[\033[01;32m\]     \[\033[01;34m\]      \[\033[00m\]
+#      PS1="               \u@\h                \w \$             "
+export PS1="\[\033[01;37m\]\t \[\033[00;32m\]\w \033[01;34m\]\$ \[\033[00m\]"
+# COLORS:    bold,white         normal,green      bold,blue       normal,white 
+#export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
+#export PS1="\t \w \$ "
+
 
