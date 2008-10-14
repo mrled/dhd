@@ -186,7 +186,8 @@ export FSEDIT="$myeditor"
 # COLORS      bold,green           bold,blue         unbold,white
 #           \[\033[01;32m\]     \[\033[01;34m\]      \[\033[00m\]
 #      PS1="               \u@\h                \w \$             "
-export PS1="\[\033[01;37m\]\t \[\033[00;32m\]\w \033[01;34m\]\$ \[\033[00m\]"
+export PS1="\[\033[01;37m\]\t \033[01;34m\]\h\[\033[01;37m\]:\[\033[00;32m\]\w \033[01;34m\]\$ \[\033[00m\]"
+#                          \t              \h               :               \w              \$
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
 #export PS1="\t \w \$ "
