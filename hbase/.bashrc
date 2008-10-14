@@ -68,7 +68,7 @@ elif [ -d /dev/fs ]; then # SFU/SUA
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
     export windows=1
 elif [ $uname = "Darwin" ]; then # Mac OS X
-    test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
+    test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
     psargs="-ef"
