@@ -39,17 +39,20 @@ cmd_ls="ls"
 ls_args="-hF"
 cmd_sed="sed"
 cmd_du="du"
-#export cmd_ls cmd_sed cmd_du # do I need to do this?
 
-if   [ $( whereis gls ) ];     then cmd_ls=gls;   
-elif [ $( whereis colorls ) ]; then cmd_ls=colorls;
-                                   ls_args="${ls_args} -G"; fi
-if [ $( whereis gsed ) ]; then cmd_sed=gsed; fi
-if [ $( whereis gdu  ) ]; then cmd_du=gdu;   fi
+if   [ $( which gls ) ]; then
+    cmd_ls=gls
+    ls_args="${ls_args} --color"
+elif [ $( which colorls ) ]; then 
+    cmd_ls=colorls
+    ls_args="${ls_args} -G"
+fi
+if [ $( which gsed ) ]; then cmd_sed=gsed; fi
+if [ $( which gdu  ) ]; then cmd_du=gdu;   fi
 
 ## Defaults which can be overridden in the system-specific configurations below
-export psargs="ax"
-export psargs_user="j"
+psargs="ax"
+psargs_user="j"
 
 if [ -d /cygdrive ]; then    # Cygwin
     # it inherits the Windows path, so if your Windows path has this set, 
@@ -62,17 +65,18 @@ if [ -d /cygdrive ]; then    # Cygwin
 elif [ -d /dev/fs ]; then # SFU/SUA
     export winc="/dev/fs/C"
     export SVN_SSH="/usr/pkg/bin/ssh"
-    
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
     export windows=1
 elif [ $uname = "Darwin" ]; then # Mac OS X
     test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
-    export psargs="-ef"
+    psargs="-ef"
 elif [ $uname = "OpenBSD" ]; then # obsd
     export PKG_PATH=ftp://ftp.openbsd.org/pub/OpenBSD/4.3/packages/sparc64/
     psargs_user="j"
+elif [ $uname = "Linux"   ]; then
+    ls_args="${ls_args} --color" # assume GNU ls 
 fi
 
 if [ $winc ]; then # we are on Windows somehow
