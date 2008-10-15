@@ -23,16 +23,10 @@
      (if (file-exists-p (expand-file-name dir))
          (add-to-load-path (expand-file-name dir))))
 (add-to-load-path-if-exists "~/opt/emacs/site-lisp")
+(add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
+(add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
-
-; if I have a host-specific emacs file, load it. 
-;(if (file-exists-p 
-;  (setq host-specific-init-file (concat "~/doc/remote/dhd/host/" host-name "/emacs.el")))
-;    (load-file host-specific-init-file))
-(if (file-exists-p 
-  (setq elisprc "~/doc/remote/dhd/hbase/emacs/eshellrc.el"))
-    (load-file elisprc))
 
 ; settings (not custom variables)
 (setq visible-bell t              ; Is this vi? Should there be beeping? 
