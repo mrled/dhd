@@ -9,10 +9,11 @@ me=`whoami`
 ## Set the path
 #   - not workable if the directory has spaces
 #   - put commands that should come before system commands in {,~}/opt/alternatives/
+h="${HOME}"
 PATH=
 dirs=
-dirs="${dirs} ~/opt/alternatives /opt/alternatives ~/opt/bin ~/opt/sbin"
-dirs="${dirs} ~/doc/remote/dhd/opt/bin ~/doc/remote/dhd/os/$uname/bin"
+dirs="${dirs} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
+dirs="${dirs} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
 dirs="${dirs} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin"
 dirs="${dirs} /usr/pkg/bin /usr/pkg/sbin"
 dirs="${dirs} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
