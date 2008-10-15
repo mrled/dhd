@@ -28,6 +28,10 @@ B<mr> [options] config section ["parameter=[value]" ...]
 
 B<mr> [options] action [params ...]
 
+B<mr> [options] [online|offline]
+
+B<mr> [options] remember action [params ...]
+
 =head1 DESCRIPTION
 
 B<mr> is a Multiple Repository management tool. It can checkout, update, or
@@ -77,6 +81,11 @@ remote repository. Only supported for distributed revision control systems.
 
 The optional -m parameter allows specifying a commit message.
 
+=item push
+
+Pushes committed local changes to the remote repository. A no-op for
+centralized revision control systems.
+
 =item diff
 
 Show a diff of uncommitted changes.
@@ -125,6 +134,24 @@ To see the built-in library of shell functions contained in mr:
 
 The ~/.mrconfig file is used by default. To use a different config file,
 use the -c option.
+
+=item offline
+
+Advises mr that it is in offline mode. Any commands that fail in
+offline mode will be remembered, and retried when mr is told it's online.
+
+=item online
+
+Advices mr that it is in online mode again. Commands that failed while in
+offline mode will be re-run.
+
+=item remember
+
+Remember a command, to be run later when mr re-enters online mode. This
+implicitly puts mr into offline mode. The command can be any regular mr
+command. This is useful when you know that a command will fail due to being
+offline, and so don't want to run it right now at all, but just remember
+to run it when you go back online.
 
 =item help
 
@@ -196,6 +223,11 @@ a good speedup in updates without loading the machine too much.
 
 =head1 FILES
 
+The ~/.mrlog file contains commands that mr has remembered to run later,
+due to being offline. You can delete or edit this file to remove commands,
+or even to add other commands for 'mr online' to run. If the file is
+present, mr assumes it is in offline mode.
+
 B<mr> is configured by .mrconfig files. It starts by reading the .mrconfig
 file in your home directory, and this can in turn chain load .mrconfig files
 from repositories.
@@ -224,7 +256,9 @@ is an alias, and its value is the action to use.
 All other sections add repositories. The section header specifies the
 directory where the repository is located. This is relative to the directory
 that contains the mrconfig file, but you can also choose to use absolute
-paths.
+paths. (Note that you can use environment variables in section names; they
+will be passed through the shell for expansion. For example, 
+"[$HOSTNAME]", or "[${HOSTNAME}foo]")
 
 Within a section, each parameter defines a shell command to run to handle a
 given action. mr contains default handlers for "update", "status",
@@ -417,11 +451,13 @@ sub findcommand { #{{{
 
 sub action { #{{{
 	my ($action, $dir, $topdir, $subdir) = @_;
-
+	
 	$ENV{MR_CONFIG}=$configfiles{$topdir};
 	my $lib=exists $config{$topdir}{$subdir}{lib} ?
 	               $config{$topdir}{$subdir}{lib}."\n" : "";
 	my $is_checkout=($action eq 'checkout');
+
+	$ENV{MR_REPO}=$dir;
 
 	if ($is_checkout) {
 		if (-d $dir) {
@@ -436,8 +472,6 @@ sub action { #{{{
 			return action("checkout", $dir, $topdir, $subdir);
 		}
 	}
-
-	$ENV{MR_REPO}=$dir;
 
 	my $skiptest=findcommand("skip", $dir, $topdir, $subdir, $is_checkout);
 	my $command=findcommand($action, $dir, $topdir, $subdir, $is_checkout);
@@ -509,6 +543,14 @@ sub action { #{{{
 			print STDERR "mr $action: failed ($ret)\n" if $verbose;
 			if ($ret >> 8 != 0) {
 				print STDERR "mr $action: command failed\n";
+				if (-e "$ENV{HOME}/.mrlog" && $action ne 'remember') {
+					# recreate original command line to
+					# remember, and avoid recursing
+					my @orig=@ARGV;
+					@ARGV=('-n', $action, @orig);
+					action("remember", $dir, $topdir, $subdir);
+					@ARGV=@orig;
+				}
 			}
 			elsif ($ret != 0) {
 				print STDERR "mr $action: command died ($ret)\n";
@@ -717,6 +759,18 @@ sub selectrepos { #{{{
 	return @repos;
 } #}}}
 
+sub expandenv { #{{{
+	my $val=shift;
+	
+
+	if ($val=~/\$/) {
+		$val=`echo "$val"`;
+		chomp $val;
+	}
+	
+	return $val;
+} #}}}
+
 my %loaded;
 sub loadconfig { #{{{
 	my $f=shift;
@@ -777,7 +831,7 @@ sub loadconfig { #{{{
 		chomp;
 		next if /^\s*\#/ || /^\s*$/;
 		if (/^\[([^\]]*)\]\s*$/) {
-			$section=$1;
+			$section=expandenv($1);
 		}
 		elsif (/^(\w+)\s*=\s*(.*)/) {
 			my $parameter=$1;
@@ -794,6 +848,9 @@ sub loadconfig { #{{{
 			if ($parameter eq "include") {
 				print "mr: including output of \"$value\"\n" if $verbose;
 				unshift @lines, `$value`;
+				if ($?) {
+					print STDERR "mr: include command exited nonzero ($?)\n";
+				}
 				next;
 			}
 
@@ -900,7 +957,7 @@ sub modifyconfig { #{{{
 				$addfields->();
 			}
 
-			$section=$1;
+			$section=expandenv($1);
 
 			push @out, $_;
 		}
@@ -959,6 +1016,13 @@ sub dispatch { #{{{
 	elsif ($action eq 'register') {
 		register(@ARGV);
 	}
+	elsif ($action eq 'remember' ||
+	       $action eq 'offline' ||
+	       $action eq 'online') {
+		my @repos=selectrepos;
+		action($action, @{$repos[0]}) if @repos;
+		exit 0;
+	}
 
 	if (!$jobs || $jobs > 1) {
 		mrs($action, selectrepos());
@@ -973,7 +1037,7 @@ sub dispatch { #{{{
 sub help { #{{{
 	exec($config{''}{DEFAULT}{help}) || die "exec: $!";
 } #}}}
-	
+
 sub config { #{{{
 	if (@_ < 2) {
 		die "mr config: not enough parameters\n";
@@ -1013,7 +1077,12 @@ sub config { #{{{
 } #}}}
 
 sub register { #{{{
-	if (! $config_overridden) {
+	if ($config_overridden) {
+		# Find the directory that the specified config file is
+		# located in.
+		($directory)=abs_path($ENV{MR_CONFIG})=~/^(.*\/)[^\/]+$/;
+	}
+	else {
 		# Find the closest known mrconfig file to the current
 		# directory.
 		$directory.="/" unless $directory=~/\/$/;
@@ -1077,6 +1146,7 @@ sub expandaction { #{{{
 } #}}}
 
 sub getopts { #{{{
+	my @saved=@ARGV;
 	Getopt::Long::Configure("bundling", "no_permute");
 	my $result=GetOptions(
 		"d|directory=s" => sub { $directory=abs_path($_[1]) },
@@ -1091,6 +1161,12 @@ sub getopts { #{{{
 	if (! $result || @ARGV < 1) {
 		die("Usage: mr [-d directory] action [params ...]\n".
 		    "(Use mr help for man page.)\n");
+	}
+	
+	$ENV{MR_SWITCHES}="";
+	foreach my $option (@saved) {
+		last if $option eq $ARGV[0];
+		$ENV{MR_SWITCHES}.="$option ";
 	}
 } #}}}
 
@@ -1121,10 +1197,11 @@ sub init { #{{{
 sub main { #{{{
 	getopts();
 	init();
+
 	loadconfig(\*DATA);
 	loadconfig($ENV{MR_CONFIG});
 	#use Data::Dumper; print Dumper(\%config);
-
+	
 	my $action=expandaction(shift @ARGV);
 	dispatch($action);
 	showstats($action);
@@ -1207,7 +1284,7 @@ git_status = git status "$@" || true
 bzr_status = bzr status "$@"
 cvs_status = cvs status "$@"
 hg_status  = hg status "$@"
-darcs_status = darcs whatsnew -ls "$@"
+darcs_status = darcs whatsnew -ls "$@" || true
 
 svn_commit = svn commit "$@"
 git_commit = git commit -a "$@" && git push --all
@@ -1220,6 +1297,13 @@ git_record = git commit -a "$@"
 bzr_record = bzr commit "$@"
 hg_record  = hg commit -m "$@"
 darcs_record = darcs record -a -m "$@"
+
+svn_push = :
+git_push = git push "$@"
+bzr_push = bzr push "$@"
+cvs_push = :
+hg_push = hg push "$@"
+darcs_push = darcs push -a "$@"
 
 svn_diff = svn diff "$@"
 git_diff = git diff "$@"
@@ -1291,6 +1375,31 @@ help =
 	man -l "$tmp" || error "man failed"
 list = true
 config = 
+
+online =
+	if [ -s ~/.mrlog ]; then
+		info "running offline commands"
+		mv -f ~/.mrlog ~/.mrlog.old
+		if ! sh -e ~/.mrlog.old; then
+			error "offline command failed; left in ~/.mrlog.old"
+		fi
+		rm -f ~/.mrlog.old
+	else
+		info "no offline commands to run"
+	fi
+offline =
+	umask 077
+	touch ~/.mrlog
+	info "offline mode enabled"
+remember =
+	info "remembering command: 'mr $@'"
+	command="mr -d '$(pwd)' $MR_SWITCHES"
+	for w in "$@"; do
+		command="$command '$w'"
+	done
+	if [ ! -e ~/.mrlog ] || ! grep -q -F "$command" ~/.mrlog; then
+		echo "$command" >> ~/.mrlog
+	fi
 
 ed = echo "A horse is a horse, of course, of course.."
 T = echo "I pity the fool."
