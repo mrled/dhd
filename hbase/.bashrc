@@ -5,28 +5,31 @@
 uname=`uname`
 host=`hostname`
 me=`whoami`
+menum=`id -u`
 
 ## Set the path
 #   - not workable if the directory has spaces
 #   - put commands that should come before system commands in {,~}/opt/alternatives/
 h="${HOME}"
 PATH=
-dirs=
-dirs="${dirs} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
-dirs="${dirs} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
-dirs="${dirs} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin"
-dirs="${dirs} /usr/pkg/bin /usr/pkg/sbin"
-dirs="${dirs} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
-dirs="${dirs} /opt/csw/bin /opt/csw/sbin /opt/csw/flex/bin /opt/csw/flex/sbin /opt/csw/gcc4/bin"
-dirs="${dirs} /opt/csw/gcc4/sbin /opt/SUNWspro/bin /opt/SUNWspro/sbin"
-dirs="${dirs} /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin"
-dirs="${dirs} /opt/gcc.3.3/bin /opt/ast/bin"
-dirs="${dirs} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
-dirs="${dirs} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
-dirs="${dirs} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
-dirs="${dirs} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
+d=
+d="${d} /usr/local/texlive/2008/bin/universal-darwin"
+d="${d} /usr/local/ActivePerl-5.10/bin /usr/local/ActivePerl-5.10/sbin"
+d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
+d="${d} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
+d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin"
+d="${d} /usr/pkg/bin /usr/pkg/sbin"
+d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
+d="${d} /opt/csw/bin /opt/csw/sbin /opt/csw/flex/bin /opt/csw/flex/sbin /opt/csw/gcc4/bin"
+d="${d} /opt/csw/gcc4/sbin /opt/SUNWspro/bin /opt/SUNWspro/sbin"
+d="${d} /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin"
+d="${d} /opt/gcc.3.3/bin /opt/ast/bin"
+d="${d} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
+d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
+d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
+d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
 
-for p in ${dirs}; do
+for p in ${d}; do
     if [ -d ${p} ]; then PATH="${PATH}${p}:"; fi
 done
 export PATH
@@ -177,9 +180,10 @@ export EDITOR="$myeditor"
 export VISUAL="$myeditor"
 export FSEDIT="$myeditor"
 
-# These functions are not supported under ksh!!
-#bind "\ep"=history-search-backward
-#bind "\en"=history-search-forward
+# last character of prompt
+if [ $menum = 0 ]; then lcop='#'
+else                    lcop='>'
+fi
 
 # Setting the default prompt
 #export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
@@ -187,7 +191,7 @@ export FSEDIT="$myeditor"
 # COLORS      bold,green           bold,blue         unbold,white
 #           \[\033[01;32m\]     \[\033[01;34m\]      \[\033[00m\]
 #      PS1="               \u@\h                \w \$             "
-export PS1="\[\033[01;37m\]\t \033[01;34m\]\h\[\033[01;37m\]:\[\033[00;32m\]\w \033[01;34m\]\$ \[\033[00m\]"
+export PS1="\[\033[01;37m\]\t \033[01;34m\]\h\[\033[01;37m\]:\[\033[00;32m\]\w \033[01;34m\]$lcop \[\033[00m\]"
 #                          \t              \h               :               \w              \$
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
