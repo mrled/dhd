@@ -197,13 +197,18 @@ else                    lcop='>'
 fi
 
 # Setting the default prompt
-# Make sure that the PS1 value is surrounded by \[ and \] - otherwise you will get retarded line wrapping problems. mmmmkay?
-#export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
-#export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
+# Make sure that all of the non-printing characters in $PS1 are
+# surrounded by \[ and \] - otherwise you will get retarded line
+# wrapping problems. mmmmkay?
+# Also, note that you can use \e instead of \033 in recent
+# versions of bash. 
+# 
+#export PS1="\[\e[01;32m\]\u@\h\[\e[01;34m\] \w \$\[\e[00m\] "
+#export PS1="\[\e[01;32m\]\u@\h\[\e[01;34m\] \w \$\[\e[00m\] "
 # COLORS      bold,green           bold,blue         unbold,white
-#           \[\033[01;32m\]     \[\033[01;34m\]      \[\033[00m\]
-#      PS1="               \u@\h                \w \$             "
-export PS1="\[\033[01;37m\]\t \033[01;34m\]\h\[\033[01;37m\]:\[\033[00;32m\]\w \033[01;34m\]$lcop \[\033[00m\]\]"
+#           \[\e[01;32m\]     \[\e[01;34m\]      \[\e[00m\]
+#      PS1="              \u@\h              \w \$           "
+export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01;34m\]$lcop \[\e[00m\]"
 #                          \t              \h               :               \w              \$
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
