@@ -44,15 +44,15 @@ ls_args="-hF"
 cmd_sed="sed"
 cmd_du="du"
 
-if   [ $( which gls ) ]; then
+if   [ $( whereis gls ) ]; then
     cmd_ls=gls
     ls_args="${ls_args} --color"
-elif [ $( which colorls ) ]; then 
+elif [ $( whereis colorls ) ]; then 
     cmd_ls=colorls
     ls_args="${ls_args} -G"
 fi
-if [ $( which gsed ) ]; then cmd_sed=gsed; fi
-if [ $( which gdu  ) ]; then cmd_du=gdu;   fi
+if [ $( whereis gsed ) ]; then cmd_sed=gsed; fi
+if [ $( whereis gdu  ) ]; then cmd_du=gdu;   fi
 
 ## Defaults which can be overridden in the system-specific configurations below
 psargs="ax"
