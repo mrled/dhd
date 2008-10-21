@@ -170,6 +170,17 @@ alias source=.
 alias .b=". ~/.profile"
 
 ###################
+# Other Functions #
+###################
+# LaTeX stuff:
+function blx { #buildlatex
+    latex "$1".tex
+    dvipdf "$1".dvi "$1".pdf
+    open "$1".pdf
+}
+
+
+###################
 # Global Settings #
 ###################
 
@@ -186,12 +197,13 @@ else                    lcop='>'
 fi
 
 # Setting the default prompt
+# Make sure that the PS1 value is surrounded by \[ and \] - otherwise you will get retarded line wrapping problems. mmmmkay?
 #export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
 #export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
 # COLORS      bold,green           bold,blue         unbold,white
 #           \[\033[01;32m\]     \[\033[01;34m\]      \[\033[00m\]
 #      PS1="               \u@\h                \w \$             "
-export PS1="\[\033[01;37m\]\t \033[01;34m\]\h\[\033[01;37m\]:\[\033[00;32m\]\w \033[01;34m\]$lcop \[\033[00m\]"
+export PS1="\[\033[01;37m\]\t \033[01;34m\]\h\[\033[01;37m\]:\[\033[00;32m\]\w \033[01;34m\]$lcop \[\033[00m\]\]"
 #                          \t              \h               :               \w              \$
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
