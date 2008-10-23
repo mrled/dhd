@@ -88,6 +88,8 @@ l    psargs="-ef"
 elif [ $uname == "OpenBSD" ]; then # obsd
     export PKG_PATH="ftp://ftp3.usa.openbsd.org/pub/OpenBSD/4.3/packages/sparc64/"
     psargs_user="j"
+elif [ $uname == "Linux" ]; then # assume GNU userland
+    ls_args="${ls_args} --color"
 fi
 
 if [ $winc ]; then # we are on Windows somehow
