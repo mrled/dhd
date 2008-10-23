@@ -44,15 +44,24 @@ ls_args="-hF"
 cmd_sed="sed"
 cmd_du="du"
 
-if   [ $( whereis gls ) ]; then
+#### Annoying inter-OS issues
+# obsd & macosx: `/usr/bin/which -a` does the same as tcsh's `whence`
+# debian & macosx: `which asdf` returns false; obsd returns "command not found"
+#   this makes it impossible to rely on `which` in .bashrc - grr! 
+
+# Found solution: use `whence` on ksh, and either `hash` or `type` on bash
+
+if type -P gls >/dev/null; then 
     cmd_ls=gls
     ls_args="${ls_args} --color"
-elif [ $( whereis colorls ) ]; then 
+elif type -P colorls >/dev/null; then 
     cmd_ls=colorls
     ls_args="${ls_args} -G"
 fi
-if [ $( whereis gsed ) ]; then cmd_sed=gsed; fi
-if [ $( whereis gdu  ) ]; then cmd_du=gdu;   fi
+
+if type -P gsed >/dev/null; then cmd_sed=gsed; fi
+if type -P gdu  >/dev/null; then cmd_du=gdu;   fi
+
 
 ## Defaults which can be overridden in the system-specific configurations below
 psargs="ax"
@@ -71,16 +80,14 @@ elif [ -d /dev/fs ]; then # SFU/SUA
     export SVN_SSH="/usr/pkg/bin/ssh"
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
     export windows=1
-elif [ $uname = "Darwin" ]; then # Mac OS X
+elif [ $uname == "Darwin" ]; then # Mac OS X
     test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
-    psargs="-ef"
-elif [ $uname = "OpenBSD" ]; then # obsd
+l    psargs="-ef"
+elif [ $uname == "OpenBSD" ]; then # obsd
     export PKG_PATH="ftp://ftp3.usa.openbsd.org/pub/OpenBSD/4.3/packages/sparc64/"
     psargs_user="j"
-elif [ $uname = "Linux"   ]; then
-    ls_args="${ls_args} --color" # assume GNU ls 
 fi
 
 if [ $winc ]; then # we are on Windows somehow
@@ -118,7 +125,7 @@ alias df="df -h"
 alias h=history
 alias m=more
 alias l=less
-alias wh=which
+alias wh="type -a" # under ksh you want wh=whence
 
 alias sed='$cmd_sed'
 alias du='$cmd_du'
@@ -169,11 +176,21 @@ alias omg="echo wtf"
 alias source=.
 alias .b=". ~/.profile"
 
+# function wserv { 
+#     if   [ "$1" == help ]; then 
+#         echo "Use python's SimpleHTTPServer to serve files from the cwd."
+#         echo "wserv [-c] [PORTNO]"
+#         echo "The -c option serves the cwd with execute (CGI) permissions"
+#         echo "It uses port 8000 by default."
+#     elif [ "$1" == '-c' ]; then python -m CGIHTTPServer
+#     else                        python -m SimpleHTTPServer
+# }
+
 ###################
 # Other Functions #
 ###################
 # LaTeX stuff:
-function blx { #buildlatex
+function blix { #buildlatex
     latex "$1".tex
     dvipdf "$1".dvi "$1".pdf
     open "$1".pdf
@@ -183,6 +200,9 @@ function blx { #buildlatex
 ###################
 # Global Settings #
 ###################
+
+# Completion
+complete -cf sudo
 
 # set my editor to be correct
 # (the -nw tells it not to open up a new window)
