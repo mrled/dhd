@@ -178,6 +178,8 @@ alias omg="echo wtf"
 alias source=.
 alias .b=". ~/.profile"
 
+alias ssh="ssh -A"
+
 # function wserv { 
 #     if   [ "$1" == help ]; then 
 #         echo "Use python's SimpleHTTPServer to serve files from the cwd."
