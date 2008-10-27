@@ -522,7 +522,7 @@ Resume Bloopers
  - "Planned new corporate facility at $3 million over budget." Every hiring manager is searching for employees who exceed budgets by millions of dollars. 
  - "Directed $25 million anal shipping and receiving operations." Either this person is showcasing compulsively stubborn management qualities, or he has a challenging product packaging/storage problem. 
  - "Participated in the foamation of a new telecommunications company." This job seeker was also in charge of bubble control. 
- - "Promoted to district manger to oversee 37 retail storefronts." This is a common resume typo. There must be literally thousands of mangers looking for jobs in today's modern world. Here's a tip: Use your word-processing program's find/replace feature to quickly correct this common mistake. You can also modify your application's spelling dictionary so it won't recognize the word "manger." 
+ - "Promoted to district manger to oversee 37 retail storefronts." This is a common resume typo. There must be literally thousands of mangers looking for jobs in today's modern world. Here's a tip: Use your word-processing program's find/place feature to quickly correct this common mistake. You can also modify your application's spelling dictionary so it won't recognize the word "manger." 
  - "Experienced supervisor, defective with both rookies and seasoned professionals." Many of us have had a boss like this at some point in our careers, but you usually don't find them being so up-front about their leadership inadequacies. 
  - "I am seeking a salary commiserate with my training and experience." There are a couple problems with this statement. To begin with, salary requirements don't belong on a resume. Secondly, a salary should be "commensurate" with experience (meaning proportionate to), not "commiserate" with (meaning to express sympathy for). 
  - "Seeking a party-time position with potential for advancement." Sounds like a fun job. 
@@ -2714,7 +2714,7 @@ A: Sexy kids.
 %
 Two logic gates walk into a bar - or, not.
 %
-There's a group of monks selling flowers in the gardens of the Playboy Mansion. They were making a good living until Hugh Hefner chased them off. The leader of the monks said, "If it was anyone else, we might have gottern away with it because  only Hugh can prevent florist friars."
+There's a group of monks selling flowers in the gardens of the Playboy Mansion. They were making a good living until Hugh Hefner chased them off. The leader of the monks said, "If it was anyone else, we might have gottern away with it because only Hugh can prevent florist friars."
 %
 Heisenberg is driving along in the city, when he notices flashing lights behind him. He pulls over, and a policeman emerges from the car and walks over to him and motions for him to roll his window down.
 
@@ -3060,4 +3060,37 @@ extreme.  And companies actually base their future efforts on what these
 traders and analysts want to happen?  It's amazing America is in business
 at all, anymore.
  - Jonathan Patchke
+%
+Gangster #1: Go on, get out of here before I rape both of you.
+Gangster #2: Dude.
+Gangster #1: What? Come on, just an expression. Term of endearment. 
+%
+People are the most interesting content out there. If you’ve got a seriously shy nerd on your hands, try this: ask him how many folks are in his buddy list? How many friends does he have in Facebook? How many folks are following him on Twitter? LiveJournal? My guess is that, collectively, your nerd interacts with ten times more people than you think he does. He can do this because the interaction is via a system he understands — the computer.
+
+Your nerd knows that people are interesting. Just because he can’t look your best friend straight in the eye doesn’t mean he doesn’t want to know what makes her tick, but you need to be the social buffer — the translation layer. You need to find one common thread of interest between your nerd and your friend and then he’ll engage because he will have found relevance. 
+ - Rands In Repose: The Nerd Handbook
+   http://www.randsinrepose.com/archives/2007/11/11/the_nerd_handbook.html
+%
+> is he a retarded male counterpart of Helen Keller?
+He's a semi-retired professor, so essentially yes.
+ - SA
+%
+Basically, association of open source with open source zealots has made me an angry, bitter shell of a human being.
+ - Casao on SA
+%
+Defense is something you buy and keep loaded near the door or bed.
+ - jp on geeks@
+%
+Kristin said something very profound. "Love is like religion, in that both of them look idiotic from the outside and make perfect sense from within." Write that down. 
+ - Kristin DeGroot on facebook
+%
+1. YOUR REAL NAME
+Kristin
+
+2. YOUR GANGSTA NAME (first 3 letters of real name plus "izzle")
+Krizzle 
+ - Kristin DeGroot on facebook
+%
+Micah's Theorem - Any time having a meeting would be helpful, not having a meeting would be more helpful. 
+ - Micah
 %
