@@ -190,6 +190,30 @@ alias ssh="ssh -A"
 #     else                        python -m SimpleHTTPServer
 # }
 
+# Mac metadata files: .DS_Store and ._Doomsday.mkv for example
+function mmf { 
+    case $1 in 
+        list) 
+            find . -type f -name '._*'
+            find . -type f -name '.DS_Store'
+            ;;
+        rm) 
+            find . -type f -name '._*' -exec rm {} \;
+            find . -type f -name '.DS_Store' -exec rm {} \;
+            ;;
+    esac
+}
+
+# Server files over http. This rules. 
+# Serve all files under the directory this was run in. Does NOT serve an
+# index page; you have to directly request the files themselves.
+# Requires netcat as `nc`. 
+# From <http://www.linuxscrew.com/2007/09/06/web-server-on-bash-in-one-line/>
+function htserv {
+    port=$1
+    :;while [ $? -eq 0 ];do nc -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
+}
+
 ###################
 # Other Functions #
 ###################
