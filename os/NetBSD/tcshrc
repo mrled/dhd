@@ -1,6 +1,0 @@
-# netbsd tcsh-ness
-
-# netbsd prepends g to the gnu tools; eg 'gls'
-if ( -X gls ) then
-	set ls = "gls"
-endif

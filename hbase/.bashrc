@@ -89,6 +89,13 @@ elif [ $uname == "OpenBSD" ]; then # obsd
     export PKG_PATH="ftp://ftp3.usa.openbsd.org/pub/OpenBSD/4.3/packages/sparc64/"
     psargs_user="j"
 elif [ $uname == "Linux" ]; then # assume GNU userland
+    if [ -d /usr/portage ]; then
+        function ugrep {
+            grep "$1" /usr/portage/profiles/use.desc \
+                /usr/portage/profiles/use.local.desc
+        }
+        alias fnc 'find /etc -iname "._cfg????*"'
+    fi
     ls_args="${ls_args} --color"
 fi
 
