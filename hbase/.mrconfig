@@ -2,6 +2,14 @@
 # There is woefully not really any documentation on .mrconfig
 # You pretty much have to use mrconfig.complex in mr.git
 
+# Do NOT put blank lines after equals signs: 
+# lib = 
+#   asdf() {
+#   
+#       ls /usr/local/src
+#   }
+# this fails weirdly! No spaces, but comments are OK. (!?)
+
 [DEFAULT]
 # include all available libs
 include = cat ~/opt/src/mr/lib/* 2>/dev/null || true
@@ -22,7 +30,6 @@ lib =
             linkme "~/doc/uenc/hbase/$file"
         done
     }
-
     # on() checks whether the host I'm on is included in the cli-specified
     # values. A value can also have a username in it, ie "joey@dodo".
     # This is just used to simplify the functions below like trusted()
@@ -43,8 +50,10 @@ lib =
     trusted() {
         on mrled@andraia mrled@lola mrled@tika mrled@parker mrled@goldmoon
     }
+    wantgui() {
+        on mrled@andraia mrled@parker
+    }
     
-
 ## Public repositories 
 [doc/dhd]
 order = 1
@@ -82,11 +91,15 @@ checkout = git clone git://git.kitenet.net/mr
 #    cp ~/opt/src/mr/mr ~/doc/dhd/local/bin/
 #? update = git pull && cp ~/opt/src/mr/mr ~/doc/dhd/local/bin/
 push = error "This does not belong to you."
+
 [opt/src/conkeror]
 checkout = git clone git://repo.or.cz/conkeror.git
 push = error "This does not belong to you."
+skip = ! wantgui
+
 [opt/src/emacs]
 checkout = cvs -d ':pserver:anonymous@cvs.savannah.gnu.org:/cvsroot/emacs' co -d emacs
+skip = ! on mrled@andraia
 
 
 #[]
