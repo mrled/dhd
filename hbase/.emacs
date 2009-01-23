@@ -1,13 +1,17 @@
 ; mrl's emacs file
-; see:
+
 ;    http://bc.tech.coop/emacs.html
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
 ;    http://www.student.northpark.edu/pemente/emacs_tabs.htm
 
-; "If you are an idiot, then you should use Emacs." 
+; "If you are an idiot, you should use Emacs." 
 
 ; my vars:
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
+
+;; paths that Emacs should look for executables, since (LAME) bashrc isn't being read. 
+(setq exec-path (split-string ":/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/sw/bin:/sw/sbin" path-separator))
+(setenv "PATH" (mapconcat 'identity exec-path ":"))
 
 ;; Add the given path to the load-path variable.
 (defun add-to-load-path (path-string)
@@ -27,6 +31,11 @@
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
+(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
+(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/apel")
+(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/flim")
+(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/semi")
+(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/wl")
 
 ; settings (not custom variables)
 (setq visible-bell t              ; Is this vi? Should there be beeping? 
@@ -34,27 +43,60 @@
       initial-scratch-message nil ; inhibit splash
       make-backup-files t         ; Enable backup files
       version-control t           ; Enable backup versioning 
-      backup-directory-alist (quote ((".*" . "~/Backup/emacs/"))) ; Save bckups
+      backup-directory-alist (quote ((".*" . "~/Backup/emacs/"))) ; Save backups
       delete-old-versions t       ; don't ask me to delete old backups, just do it
       mouse-autoselect-window t   ; focus-follows-mouse in WINDOWS, NOT frames
       display-time-24hr-format t
       display-time-day-and-date t
-      vc-follow-symlinks t)       ; don't ask ARE YOU SURE if symlink->version-controlled file
+      vc-follow-symlinks t       ; don't ask ARE YOU SURE if symlink->version-controlled file
+      truncate-partial-width-windows nil) ; do NOT change behavior of truncate-lines (see toggle-truncate-lines) when working in C-x 3 horizontally split windows
 (fset 'yes-or-no-p 'y-or-n-p) ; "yes or no" = "y or n"
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
 (show-paren-mode t) ;; show matching paren when your curser is on a paren
 (global-font-lock-mode t) ;; syntax highlighting
 
-;; trying to make Info behave
-(require 'info)
-(add-to-list 'Info-directory-list "/usr/share/emacs/info")
-;; "/usr/local/share/emacs/info" "/opt/csw/share/info")
-(setq Info-directory-list
- (cons (expand-file-name "/usr/share/emacs/info")
-       Info-directory-list))
+(require 'motion-and-kill-dwim)
+(require 'hide-lines)
 
-;(require 'motion-and-kill-dwim)
+(autoload 'markdown-mode "markdown-mode.el"
+   "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
+
+;; w3/w3m stuff
+(require 'w3m-load)
+;(require 'mime-w3m) 
+(setq w3m-coding-system 'utf-8
+      w3m-file-coding-system 'utf-8
+      w3m-file-name-coding-system 'utf-8
+      w3m-input-coding-system 'utf-8
+      w3m-output-coding-system 'utf-8
+      w3m-terminal-coding-system 'utf-8)
+(setq browse-url-browser-function 'w3m-browse-url)
+(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+;; optional keyboard short-cut
+; (global-set-key "\C-xm" 'browse-url-at-point)
+
+
+;; wanderlust (mail) stuff
+(autoload 'wl "wl" "Wanderlust" t)
+(autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
+(autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
+
+;; fixing emacs' built in stuff like C-x m
+(autoload 'wl-user-agent-compose "wl-draft" nil t)
+(if (boundp 'mail-user-agent)
+    (setq mail-user-agent 'wl-user-agent))
+(if (fboundp 'define-mail-user-agent)
+    (define-mail-user-agent
+      'wl-user-agent
+      'wl-user-agent-compose
+      'wl-draft-send
+      'wl-draft-kill
+      'mail-send-hook))
+
+;; the rest of wl stuff goes in ~/.wl (lame)
 
 
 ; for the love of mercy, indent the same way every time!
@@ -87,9 +129,8 @@
 ;; now I also need 
 (when (or (eq window-system 'mac) (eq window-system 'ns))
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
-  (setq mac-option-modifier 'meta)
-  (setq mac-command-key-is-meta 'alt) ;wait what does this do again
-  (setq mac-command-modifier 'alt) ;otherwise cmd AND opt are meta. 
+  (setq mac-option-modifier 'alt)
+  (setq mac-command-modifier 'meta)
   (modify-frame-parameters (selected-frame) '((active-alpha . 0.9))) ;transparency - foreground
   (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.9))) ;transparency - background
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
@@ -117,8 +158,8 @@
 
 ;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs
-(global-set-key "\C-w" 'backward-kill-word) ; replaces the kill-region default
-(global-set-key "\C-c\C-w" 'kill-region)    ; rebinds kill-region to my space
+;(global-set-key "\C-w" 'backward-kill-word) ; replaces the kill-region default
+;(global-set-key "\C-c\C-w" 'kill-region)    ; rebinds kill-region to my space
 ; you should use the "\C-c" "name"space for defining your own keys
 ;(global-set-key "\C-cr"    'revert-buffer)
 (global-set-key "\C-c\C-r" 'revert-buffer)
@@ -126,9 +167,6 @@
 
 (global-set-key [(meta down)] 'forward-block-dwim)
 (global-set-key [(meta up)]  'backward-block-dwim)
-
-(global-set-key "\C-c\C-d" 'wordnet-current-word)
-
 
 
 ;; no-word: use antiword to view .doc in emacs
@@ -165,6 +203,9 @@
         (beginning-of-buffer)
         (read-string "Press Enter to continue...")))))
 
+(global-set-key "\C-c\C-d" 'wordnet-current-word)
+
+
 (defun clear-buffer (buf)
   "Clear a buffer"
   (save-excursion
@@ -181,7 +222,7 @@
      (lambda ()
        (skip-syntax-forward "w_")
        (point)))))
-(global-set-key "\C-c" 'backward-kill-word) ; replaces the kill-region default
+;(global-set-key "\C-c" 'backward-kill-word) ; replaces the kill-region default
 
 
 
