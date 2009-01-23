@@ -35,6 +35,7 @@ mac os x: umount: use `hdiutil detach` or `drutil eject`
 cygwin: ssh: DOMAIN\\username@host
 serial ports: cu: `sudo cu -l /dev/ttyS1 -s 9600`. ~# sends break, ~. disconnects
 emacs: delete not deleting? M-x normal-erase-is-backspace-mode
-
 macosx: update hosts: sudo niload -v -m hosts . < /etc/hosts
 openssl: connect to imaps `openssl s_client -commect server:993 [-tls1|ssl3]`
+ssh: ssh -t: makes ssh execute any screen-based program w/ or w/o local tty; necessary for `ssh <host> screen`
+win: hold alt+clickdrag in at least visual studio for rectangle select. 

@@ -370,8 +370,7 @@ A: "Fag."
 An Italian, a Frenchman and a Canadian are on an airplane together; First Class! They start chatting.
 The Italian, with his grappa, says: "Last night, I made love with my wife for 3 horus. And in the morning she said she'd never leave me."
 The Frenchman, with his red wine, says (smirking): Last night, I made love with my wife for 6 hours, and in the morning she said she'd never love another man."
-The Canadian just drank his beer. After a while the Italian and Frenchman smiled at each other. "So what did YOUR wife say in the morning?"
-The Canadian looked up, smiled and said: "Don't stop."
+The Canadian just drank his beer. After a while the Italian and Frenchman smiled at each other. "So what did YOUR wife say in the The Canadian looked up, smiled and said: "Don't stop."
 %
 Why do mermaids wear sea shells?
 Because b-shells were to small, and d-shells were to big.
@@ -1932,9 +1931,6 @@ The generation of random numbers is too important to be left to chance.
 Between takes on A New Hope, Lucas was explaining to Harrison Ford how to deliver a particular line. In what was perhaps the most prophetic moment of the shoot, Ford responded, "George, you can write this shit, but you sure as hell can't say it."
  - according to an SA poster, anyway. I'd love for this to be true. 
 %
-Hollaback Girl, n, A term that Gwen Stefani apparently just made the fuck up and tries to pass on as regular slang. "Ohh look at me I'm Gwen Stefani blah blah blah blah HOLLABACK GIRL blah blah blah"
- - UrbanDictionary (this is not actually correct. I've heard that Stefani was using cheerleader slang for backup cheerleaders. She wasn't. She was the lead. Of course, this could be just as much bullshit as the first story.)
-%
 In my opinion, Gwen has a history of sketchy lyrics. If you'll remeber "I screen my phone calls, no matter who calls." That makes absolutely no sense. She screens her calls without regard to the caller? 
 ...
 But she's hot, so I let it slide. :)
@@ -2289,8 +2285,7 @@ Fog Lamps, n.:
         of automobiles; used on dry, clear nights to indicate that the
         driver's brain is in a fog.  See also "Idiot Lights".
 %
-Anarchy may not be a better form of government, but it's better than no
-government at all.
+Anarchy may not be a better form of government, but it's better than no government at all.
 %
 Don't hate yourself in the morning -- sleep till noon.
 %
@@ -2429,6 +2424,8 @@ Sounds like a sysadmin tool to me. :-)
  - The Lone Sysadmin weblog
 %
 Grey's Law: Any sufficiently advanced incompetence is indistinguishable from malice.
+%
+Blumentritt's Law: Any sufficiently advanced aim in Counter Strike is indistinguishable from hackery.
 %
 <@jsharp> When the teeth bite your thigh and it makes you want to cry.....that's a moray.
  - #geeks
@@ -2693,8 +2690,8 @@ Q: What did the librarian say to the individual asking for a book on suicide?
 A: "Fuck off! You won't bring it back." 
 %
 Q: How many feminists does it take to screw in a lightbulb?
-A: Just one, and that's not funny!
 A: None, they can't change anything!
+A: Just one, and that's not funny!
 A: Two: One to change the lightbulb and one to iron my shirt.
 A: Three: One to cook my dinner, one to hold my beer, and one to suck my dick while I change the lightbulb.
 %
@@ -2868,6 +2865,7 @@ The older I grow, the less important the comma becomes. Let the reader catch his
 — Elizabeth Clarkson Zwart
 %
 Power corrupts. PowerPoint corrupts absolutely.
+- right after PowerPoint fucked up my damn Spanish presentatioin, gah. 
 %
 And of course the older a bureaucracy gets, the more secretive it becomes ... we're lucky that the UK government does actually admit it exists. 
  - Mike Meredith on geeks@
@@ -2902,10 +2900,7 @@ That means that marketing drones, instead of techies, are in charge.
 As someone who doesn't live there, I must admit the US political system is vastly amusing (sorry!).
  - Mike Meredith on geeks@
 %
-I keep hearing people say things to that extent.  "If only $foo would
-happen, people would see just how wasteful/expensive/expansive/etc the
-federal government is!"  Anyone in need of one more example or indicator
-thereof is likely already too dim to see that next one.
+I keep hearing people say things to that extent.  "If only $foo would happen, people would see just how wasteful/expensive/expansive/etc the federal government is!"  Anyone in need of one more example or indicator thereof is likely already too dim to see that next one.
  - jp on geeks@
 %
 "Government should be weak, amateurish and ridiculous.  At present, it fulfills only a third of the role." -- Edward Abbey
@@ -2940,9 +2935,9 @@ MILITANT AGNOSTIC
 I don't know and you don't either. 
  - bumper sticker
 %
-    "Patriotism is for suckers. Citizenship is a business relationship, and that is IT! It's give and take. What can the country do for me, in return for my support."    — FatSean. 
+"Patriotism is for suckers. Citizenship is a business relationship, and that is IT! It's give and take. What can the country do for me, in return for my support."    — FatSean. 
 %
-    "There are 1011 stars in the galaxy. That used to be a huge number. But it's only a hundred billion. It's less than the national deficit! We used to call them astronomical numbers. Now we should call them economical numbers."    — Richard P. Feynman (1918-88). 
+"There are 1011 stars in the galaxy. That used to be a huge number. But it's only a hundred billion. It's less than the national deficit! We used to call them astronomical numbers. Now we should call them economical numbers."    — Richard P. Feynman (1918-88). 
 %
 "Libertarians are Republicans that like getting high and watching porn.
 Greens are Democrats that can't get a trade union job or don't work at all.
@@ -2961,7 +2956,7 @@ I wake up and decide not to bother god on his day off by praying that today will
 I warn you that myspace is one of the banes of my existence.
  - SenatorIvy
 %
-    Yeah, it was a total nightmare getting my mom to change scripting hosts. She was all like, "My cmdlets are throwing all kinds of permission errors" and I was like, "Moooom, you're running in USER CONTEXT".
+Yeah, it was a total nightmare getting my mom to change scripting hosts. She was all like, "My cmdlets are throwing all kinds of permission errors" and I was like, "Moooom, you're running in USER CONTEXT".
 
     GEEEEZ
 
@@ -2981,7 +2976,7 @@ Until a man is twenty-five, he still thinks, every so often, that under the righ
 Hiro used to feel that way too, but then he ran into Raven. In a way, this is liberating. He no longer has to worry about trying to be the baddest motherfucker in the world. The position is taken.
 The crowning touch, the one thing that puts true world-class-badmotherfuckerdom totally out of reach, of course, is the hydrogen bomb. If it weren't for the hydrogen bomb, a man could still aspire. Maybe find Raven's Achilles' heel. Sneak up, get a drop, slip a mickey, pull a fast one. But Raven's nuclear umbrella kind of puts the world title out of reach.
 
-Which is okay. Sometimes it's all right just ot be a little bad. To know your limitations.
+Which is okay. Sometimes it's all right just to be a little bad. To know your limitations.
 
 Make do with what you've got."
 - Neal Stephenson, Snow Crash
@@ -2993,7 +2988,6 @@ The Politicians' Fallacy:
 Something must be done. 
 This is something. 
 Therefore, we must do it.
-
 - the film "Yes, Mister"
 %
 If you’re a consumer looking to protect your privacy, get a personal shredder and have a discussion with your family members about what should be shredded before being thrown away. If your family refuses to comply, you might consider relocating them. If they are not particularly noisy, you might find another great use for a dumpster with a lock on the lid. 
@@ -3087,12 +3081,12 @@ Kristin said something very profound. "Love is like religion, in that both of th
 %
 1. YOUR REAL NAME
 Kristin
-
 2. YOUR GANGSTA NAME (first 3 letters of real name plus "izzle")
 Krizzle 
  - Kristin DeGroot on facebook
 %
-Micah's Theorem - Any time having a meeting would be helpful, not having a meeting would be more helpful. 
+Micah's First Law - Any time it would be helpful to have a meeting, it would be more helpful to not have a meeting.
+Micah's Second Law - Any time it would be helpful for the government to act, it would be more helpful for the government to not act. 
  - Micah
 %
 Hate: a special kind of love given to people who suck.
@@ -3109,21 +3103,213 @@ If you're not making art with the intention of having it copied, you're not real
 %
  I don't know how to know who to trust, but I know who not to trust: old people. Our parents. Grownups. When they think of someone being spied on, they think of someone else, a bad guy. When they think of someone being caught and sent to a secret prison, it's someone else -- someone brown, someone young, someone foreign.
 
-"They forget what it's like to be our age. To be the object of suspicion all the time! How many times have you gotten on the bus and had every person on it give you a look like you'd been gargling turds and skinning puppies? 
+They forget what it's like to be our age. To be the object of suspicion all the time! How many times have you gotten on the bus and had every person on it give you a look like you'd been gargling turds and skinning puppies? 
 
-"What's worse, they're turning into adults younger and younger out there. Back in the day, they used to say 'Never trust anyone over 30.' I say, 'Don't trust any bastard over 25!'"
+What's worse, they're turning into adults younger and younger out there. Back in the day, they used to say 'Never trust anyone over 30.' I say, 'Don't trust any bastard over 25!'"
 
-That got a laugh, and she laughed too. She was pretty, in a weird, horsey way, with a long face and a long jaw. "I'm not really kidding, you know? I mean, think about it. Who elected these ass-clowns? Who let them invade our city? Who voted to put the cameras in our classrooms and follow us around with creepy spyware chips in our transit passes and cars? It wasn't a 16-year-old. We may be dumb, we may be young, but we're not scum."
+That got a laugh, and she laughed too. She was pretty, in a weird, horsey way, with a long face and a long jaw. "I'm not really kidding, you know? I mean, think about it. Who elected these ass-clowns? Who let them invade our city? Who voted to put the cameras in our classrooms and follow us around with creepy spyware chips in our transit passes and cars? It wasn't a 16-year-old. We may be dumb, we may be young, but we're not scum.
 
  - Ange in Cory Doctorow's "Little Brother"
 %
 If I can't dance, I don't want to be a part of your revolution.
- - Emma Goldman%
+ - Emma Goldman
 %
 Boobs are sort of... incidental. 
  - Nate Laughlin
 %
 So, if you wanna see a movie that's sort of like "Mad Maxine Beyond Thunderdome Escapes From Glasgow 28 Years Later", then this flick [Doomsday] is ultimately for you.
 %
+pixel_juice: Also, what "authorizes" the display? Does the display have some cert that tells the Macbook "hey man, I'm cool" or is it that you can only have a limited number of displays registered for display? Aw this is all so stupid, it hurts my brain.
+katre50: Go read up on how HDCP works, then come back and get mad.
+- http://jwz.livejournal.com/966540.html
+%
+People who work on social network sites, part 2: It's great that all of you are OpenID providers now. it's completely useless that none of you are OpenID consumers. What the hell, people.
+- jwz
+%
+I wash myself in the shower with Comet and steel wool. I scrape the stubble off my face with a Ka-Bar and use gasoline for aftershave. Then I comb my hair with a live wolverine. I put crystal meth in my coffee. When I go to work, I chase down cars on foot, drag the drivers out, kill them, and then take their cars to work. When I take a smoke break, I burn styrofoam and inhale the fumes. When I go hunting, I just stare at the deer. They follow me home and climb into my freezer. Because they know. They know. 
+- Regular Daddy on SA
+%
+Q: Why do you have to restart after updating Acrobat? 
+A: If I had to guess, I'd say it's because they use a kernel mode driver to write directly to the screen buffer, so that they can be sure to avoid using any display code that might potentially have been optimized to perform decently.
+- Zhentar on SA
+%
+These guys [Anarchy99] have cash and booze and girls... they're like the Kennedy's except they want LESS government. 
+- Rifftrax for XXX
+%
+The right is wrong and the left is just stupid. 
+- Hannah
+%
+The problem is... you can’t stop Piracy. It is going to happen. Pirates are some of the most clever, intelligent and virginal-with-no-reason-to-leave-their-room people you will ever meet. There won’t be a better mousetrap, because the mice are smarter than the engineers...
+- http://coyote.blogs.tentonhammer.com/?p=351
+%
+Which is why all plants are chicks too - with the exception of the cactus which is just about as manly as a frigging plant can GET. A cactus kicks the living hell out of other plants and the rides off into the sunset with some sexy rose in order to deflower her.
+- http://coyote.blogs.tentonhammer.com/
+%
+Oh god yes. "The network" is apparently the source of everyone's woes. Usually this is code for "some particular website that we don't control is slow." Occasionally it translates as "Windows takes too long to boot and I'm impatient." The network is occasionally seen causing trouble with its mischievous cohort, "the server."
+- guppy on SA
+%
+Saki, "The Square Egg", 1924
+British (Burman-born) short story author (1870 - 1916)
+%
+As a retailer, it'd make sense for us to fall in with the BUY STUFF, AMERICA conga line. But by now, you know that we at Woot never do things the "normal", "sensible", "rational", "intelligent" way. We're not about to follow the herd over a cliff. When we go over a cliff, it's because of our own poor judgment, not someone else's. That's been our credo since about five minutes ago, when we first thought of it. And we've stayed true to it ever since. 
+- Woot.com
+%
+If ye love wealth better than liberty, the tranquility of servitude better than the animating contest of freedom, go home from us in peace. We ask not your counsels or arms. Crouch down and lick the hands which feed you. May your chains set lightly upon you, and may posterity forget that ye were our countrymen. — Samuel Adams, speech at the Philadelphia State House, August 1, 1776. 
+%
+If yo having server problems, I feel bad for you son. I've got 99 problems but access ain't one.
+HIT ME.
+ - Kovac on irc://irc.synirc.net/#sysadmin
+%
+"History doesn't repeat itself, but it does rhyme." -- Mark Twain
+%
+I'm glad Rome existed to spawn so many lovely games.
+ - juvemuffin on hpj
+%
+01:46 <@doc> my boss managed to do an amazing thing tonight
+01:46 <@jimmy> not be a total cock?
+01:46 <@doc> not that amazing
+ - #geeks
+%
+Write a wise saying and your name will live forever
+-- anonymous
+%
+"If we had met five years ago, you wouldn't have found a more staunch defender of the newspaper industry than me . . . 
+"I was winning awards, getting raises, lecturing college classes, appearing on TV shows, and judging journalism contests . . .
+"And then I wrote some stories that made me realize how sadly misplaced my bliss had been. The reason I'd enjoyed such smooth sailing for so long hadn't been, as I'd assumed, because I was careful and diligent and good at my job . . .  The truth was that, in all those years, I hadn't written anything important enough to suppress."
+From "The Mighty Wurlitzer Plays On" by Gary Webb, published as Chapter 14 of Into the Buzzsaw, Edited by Kristina Borjesson. 
+%
+Please don't commercialize this. 
+ - Jay-Z on No Hook on the American Gangster album
+%
+Gah. When the fuck did they put a price on happiness and art?
+ - "Amy" on Amanda Fucking Palmer's blog: <http://blog.amandapalmer.net/post/66586355/the-man-strikes-again-youtube-wars>
+%
+I will assume you've played Mario Kart, or you've at least watched someone else play it. Mario Kart is the ultimate racing game in terms of sacrificing realism for fun. It bears so little resemblance to reality that it's a wonder it tickles our senses at all. The Karts skid around with impossible coefficients of friction, righting themselves from any wrong position, and generally making a mockery of the last four centuries of advances in physics.
+
+It's really fun.
+ - Steve Yegge: http://steve-yegge.blogspot.com/2008/12/programmers-view-of-universe-part-2.html
+%
+> Not Safe For My Emotional Well Being
+
+NSFMEWB. Like the first time I was tricked into clicking on the goatse.cx site. Man. That's one internet merit badge that you don't want.
+ - codinghorror.com
+%
+>I believe it's pretty presumptuous to believe any self respecting newby would want to ask a question of snotty, self serving, assholes like you.
+
+Good. Because you are exactly the type of person we want to shoo away.
+ - M. Simon, commentor on codinghorror.com
+%
+There is science, logic, reason; there is thought verified by experience. And then there is California.
+— Edward Abbey
+%
+School is not a treadmill that ends in a career. If you want to make videogames, be a rock star, write novels, build robots, or do other cool shit, teach yourself this stuff in your spare time. Make indie games/mods, learn to play an instrument and compose music on your own, write daily, get a programmable micro controller and some motors, and do this stuff when you're not attending class. College and high school are great times to do this kind of stuff, but they're not going to teach you how to do this stuff at a professional level.
+ - Sigma-X: <http://forums.somethingawful.com/showthread.php?threadid=3048341#post354581956>
+%
+Aggregate advice for all writers: You Are Not E.E. Cummings.
+-m
+%
+The next time you decide to stab me in the back, have the guts to do it to my face. 
+ - Malcom Reynolds
+%
+A government is a body of people, usually - notably - ungoverned. 
+ - Shepherd Book quoting Malcom Reynolds
+%
+Rohit's Rule of Design: Bad design should make you physically ill.
+%
+Zach:  I'm chillin at Cafe Barrone in Menlo Park
+Zach:  right next to this fountain
+Zach:  and there is a really hot blonde college girl with a tiny Vaio
+Zach:  across from me
+Zach:  I know, not your type
+Zach:  not mine either except for the Vaio and the extended battery
+Zach:  I'm watching her type right now.....
+ - http://blog.netnerds.net/about/
+%
+Ethan O'Toole:   Servers should be headless, unless you are talking 4 wyse terminals.
+Lionel Peterson: I thought you were going to say "to match the end-users"!
+ - rescue@sunhelp.org list
+%
+Once the decision-making power reaches a certain level of importance, then if you want your leadership to behave in a competent manner, then you MUST punish them for screwing up, regardless of whether they made a mistake or whether they were deliberately misbehaving.
+- mOdQuArK! on /.
+%
+Is there any moral difference between trying to kill someone and failing and trying to kill someone and succeeding?
+ - User:The Squicks on wikipedia
+%
+=== Post 1:
+At the company I work for, I do phone tech support for our anti-virus product (I wont name it for fear of reprisal from anyone who might use it).
+
+And I swear some of our users are insane, literally insane. One man threatened us with "dragons" in an email if we didn't remove our software from his machine, "the kind that lay eggs", I am not sure what other kind of dragon there is. Tomorrow when I get in, ill make sure to post some other excerpts from my current/past tickets. 
+
+=== Post 2:
+So from my post a few pages back only had a fraction of the insanity this email had, the full crazy email, only imagine it in text so big you can read it across the room.
+
+quote:
+
+    get the @#$%^&* "program" out of my computer, now!
+
+    you @#$^&* think you are clever by putting the word "change" so I can't "remove" it, huh, you @#$%^&*.
+
+    you *&^%$#@ have until 5:00 pm mst to remove it, or I will be sending you "dragons", which "lay eggs" so the next tme you send out your *&^%$#@ junk, the eggs will hatch in their computers, and destroy them, but you will get blamed for it and get the @#$%%^&&* "sued" out of youself, or go to "cyber jail. ha, ha,ha! "blaaaah" suckor!
+
+- Jowogra <http://forums.somethingawful.com/showthread.php?threadid=3022717&userid=0&perpage=40&pagenumber=9#post353574031>
+%
+The way I see it, things like Hollywood, The Whole God Damn Music Industry and Web 2.0 cash cows, are industries that through some weird economy artifact became embarrassingly profitable for what they are. We are used to this and so we assume that it's perfectly natural to spend billions of dollars promoting some fucking pop band, or sinking ungodly amounts of cash into a movie productions or giving $50M to 3 kids working out of paul graham's basement. We may enter a world where:
+
+- Becoming a rock star is about as profitable as being local symphony orchestra violinist
+- Actors are going to be on the same pay-scale as the production's tax accountant
+- Web 2.0 founder rock stars are going to have to settle for the micro-ISV lifestyle
+- It /just may/ no longer actually be tenable to make a legitimate career out of writing celebrity gossip columns.
+
+
+Boo fucking hoo.
+%
+The People's Communist Republic of WikipediaⓀ, commonly shortened to simply Wikipedia, is a massively multiplayer online role-playing game (MMORPG) in which participants play editors of a hypothetical online encyclopedia. The goal is to try to insert misinformation that is randomly assigned at signup, while preventing any contrary information from being entered by others. Players with similar misinformation will generally form "guilds" in order to aid one another. 
+- ED
+%
+http://www.malwarebytes.org/
+
+That program is the center of IT elitism.
+
+I look like a genius when I swoop in, run a scan and swoop back out. If I had a rope with a USB key at the end I could literally swing in and fix the problem. 
+ - Theageofdust on SA
+%
+I personally see virus/malware cleaning as the 21st century equivalent of shoveling out a cesspool. Would you do that for free? So, yeah...good point.   
+ - Powedered Toast Man on SA
+%
+To fix a car:
+
+- Knowledge of a thousand different parts.
+- Able to diagnose problems by sound or the customers' description.
+- Tools. Different parts need different things. Even that thing you have to do something doesn't always work, so you have to get a longer thing to do it.
+- Place to work. Crawling under a car isn't always so easy. Maybe their garage lets them go down some steps so they can stand up and work under your car, or they have a platform that raises the car way up.
+- Alignments and balance? Putting on a new tire? The car guy always says they have to use special equipment to do that. Not just basic tools, but expensive, specialized equipment.
+- Willingness to get really dirty.
+
+To build a house:
+
+- Tons of knowledge, plus keeping up to date on all the codes.
+- Again, lots of tools. Tons of them.
+- Lots of time.
+- A partner to help lift many things.
+
+To fix a computer:
+
+- Access to google.com
+- Not be blind
+- A working hand.
+
+That's about it.
+
+Any special tools? A $15 USB memory stick helps. Will you get dirty? Nope. Could you break something worth hundreds of dollars? Probably not. Could you lose an eye or a limb if not careful? Doubtful.
+
+- Xenomorph on SA
+%
+This is normally a column about technology and technology business but I can’t help noticing that the global economy is in the toilet and not much rational thought is going into fixing the problem.  I don’t mean to insult the bozos currently pretending to run our economy or the new group of bozos about to take their places when the Obama Administration starts up this month, but my Mom could do a heck of a lot better job than either group and she’s 84 years old. 
+...
+So here’s the problem.  Coming out of a credit bubble we have no credit.  People and businesses that HAVE money won’t lend any of it to people and business who DON’T HAVE money so the economy suffers, enters a period of deflation, everything goes to hell and we lose our houses.  After that we’re set up for an eventual period of inflation that none of us will be prepared to handle, etc., etc.  Against this the government’s idea is to spend a lot of money to stimulate the economy, putting even more financial stress on our kids and their kids through $1 trillion deficits into the sunset.  And all of this is justified because of two ideas: 1) we don’t know anything else to do, and; 2) this way the same people who made the bubble are benefitting from its aftermath. 
+
+- Cringely
+%
 Microsoft PowerOhBoyDoWeLoveLongCommandLinesWithCapitalLettersShell
 %
+

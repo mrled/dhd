@@ -14,7 +14,6 @@ h="${HOME}"
 PATH=
 d=
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
-d="${d} /usr/local/ActivePerl-5.10/bin /usr/local/ActivePerl-5.10/sbin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin"
@@ -186,6 +185,11 @@ alias source=.
 alias .b=". ~/.profile"
 
 alias ssh="ssh -A"
+function uptor {
+    scp "$@" vlack.ath.cx:/zebes/brinstar/torrent/.watch/
+}
+alias rmtor="rm *.torrent"
+alias lstor="ls *.torrent"
 
 # function wserv { 
 #     if   [ "$1" == help ]; then 

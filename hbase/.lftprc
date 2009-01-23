@@ -1,2 +1,3 @@
-set ssl:key-file 	~/.ssh/id_rsa
-set csh:history 	true
+set ssl:key-file         	~/.ssh/id_rsa
+#set csh:history            true
+set cmd:default-protocol    sftp
