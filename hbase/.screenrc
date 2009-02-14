@@ -8,7 +8,7 @@ nonblock on         # if a window goes unresponsive, don't block whole session
 #bind 0 select 10    # window 0 refers to window 10
 
 shell -$SHELL       # make every shell a login shell
-
+defscrollback 100000 # default is a mere 100 lines of suck. 
 
 
 #### emacs keybindings for navigation in copy mode
@@ -46,6 +46,7 @@ hardstatus on
 hardstatus alwayslastline 
 #hardstatus string "%w %==]===-"
 hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
+#hardstatus alwayslastline "%{-b ck} %?%-w%?%{+b}%n%f %t%{-b} %?%+w%? %= %l %D %d/%m/%Y %0c "
 
 #hardstatus string "%w%=%m/%d %c"
 

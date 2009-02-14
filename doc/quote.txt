@@ -3312,4 +3312,88 @@ So here’s the problem.  Coming out of a credit bubble we have no credit.  Peop
 %
 Microsoft PowerOhBoyDoWeLoveLongCommandLinesWithCapitalLettersShell
 %
+Discussions that are meant to be helpful and informative shouldn't be carried out over the internet
+- some Andrew Waller on facebook
+%
+>>At least once a month I resolve a ticket by plugging something in or turning it on.
+>At least once a day here. University campus. So much for the techno-centric generation.
+They are majoring in MySpace.   
+- Elected by Dogs on SA
+%
+<Lum> That "magic touch" is IMO usually a case of the user not wanting to cut corners and be lazy when someone is watching, lest the tech then blame the fault on their failure to follow the correct procedure and not fix the "problem".
+<Karanth> While this is the logical explanation, it's far more fun to let users believe in you as a minor technical deity. They're generally nicer to you in the future.   
+<Dyscrasia> Nearly everyone in my office complains about the "magic touch". One of the women that works on our database servers called it her "aura".   
+- SA
+%
+"Everything on the web is dynamic. That means we are only paying you to hit those magic buttons to make it work. We will replace you if you ask too many questions." - My Boss, right after I was hired at 16 to build a web page
 
+"Here is your first assignment. We need a fully dynamic HTML site running on this PWS on the receptionists' Windows 95 box by the end of next week. We need all of our inventory photographed and available for purchase. I will need you to make the pricing easy to change for everything all at once." -Boss 10 minutes before I quit
+
+"What is SQL? No, no. It has to be HTML. And it has to be dynamic. Having other servers is just overkill. It only needs to handle around half a million people." -Boss 5 minutes before I quit.
+
+"No. You will do it our way. You are not going to make this so that only you can maintain the pricing. You know what needs to be done. Now do it." -The last line my boss said before I quit.
+
+"Hey, Arsten. Yeah. Can you come back? We'll throw in an extra dollar an hour because we realise that you are young and inexperienced and probably didn't realize the experience you were throwing away working here." - My Boss two weeks after I flipped him the bird. 
+- Arsten on SA
+%
+I also keep score of every time [the office manager] forwards me an email from someone else and just adds "FYI" or "Look into this." I get a point every time he does, I get five points for every other copy of that email I've already gotten from someone else. I also get ten points for every time he's forwarding my own email back to me.
+
+I'm winning.
+- Jerk McJerkface on SA
+%
+Fun fact: The eight commandment really reads "thou shalt not steal, unless it's monster cable" - the version currently used is a mistranslation.   
+ - Veritron on SA
+%
+the media, the advocates and pandering politicians have erupted in an outpouring of seeming joy at the alleged proof that America remains a racist country
+ - Dallas Morning News columnist Heather MacDonald regarding the reaction of the media to the Jena Six incident
+%
+<dfn_doe> ...I can almost certainly guarantee this method would be more reliable than a zip drive. 
+<Sergeant Rock> Writing the data out in binary using a warm pencil on a stick of butter is more reliable than using a zip drive.   
+<Starbucks> Writing the data using Pepperoni for 1 and Ham for 0 on a pizza and storing it in a fat persons fridge is more reliable than using Zip Drives.   
+<Sergeant Rock> Pineapples are traditionally the zeros in the DominosFS system. Don't you know anything about open-sauce?   
+- SA
+%
+The one boy that's really liked me and he's a demon robot. What does that say about me? 
+- Willow on Buffy
+%
+I wish to go to Amsterdam someday. You know what's legal there, right? Everything.
+- Abraham Zamora on fb
+%
+I know that principal principle Floutie would have said "Kids need understanding", "Kids are human beings". That's the kind of wooly-headed liberal thinking that leads to being eaten. 
+- Principal Snyder at Sunnydale High
+%
+r.stricklin wrote: 
+> I have three PCI R/390s, two MCA R/390s, two RS/370s (and one
+> prototype), a 7437, and a two-chassis MP3000 H70. I also have the
+> remains of an AT/370, sadly intact but for the 370 processor.
+
+Bill Bradford wrote: 
+> *falls over*
+> 
+> all I have is a Hercules install on a Mac Mini. 8-(
+
+r.stricklin wrote: 
+> Hey, that's pretty cool, too. My dad has an HP, with Vista. Let's be objective about this.
+- geeks@
+%
+Having written several programs with progress bars, I can tell you that progress bars are a way that programmers get back at users for lacking common sense. 
+- Chro on SA
+%
+boo_radley: I am not a High Priest of the System, so I can't do much in the database. I asked one of the High Priests to set up the query that I needed, and I was told "You can't just **get data** out of the database." Turn-around time for my request is 50 hours, and it's "not a big priority".   
+
+Ryouga Inverse: :lol: This is pretty much the greatest thing I've ever heard. What the hell is the thing for, then?
+
+"You can't just *transfer data* across the network!" 
+
+Morlock: This badly needs to be a custom title.   
+
+Midelne: For a custom title I would have to assume that it would incorporate Boromir in some nerdy glasses with the slowly-typing text "One does not simply GET DATA from the database".
+
+- SA
+%
+I didn't screw up, I was just testing your disaster recovery plan.
+- brc64 on SA
+%
+... and then I was being chased by an improperly filled in answer bubble screaming "NONE OF THE ABOVE!".
+- Buffy
+%

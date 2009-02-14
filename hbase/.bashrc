@@ -184,6 +184,11 @@ alias omg="echo wtf"
 alias source=.
 alias .b=". ~/.profile"
 
+# attach to session if extant, otherwise create a new one
+alias screen="screen -D -R" 
+alias scl="screen -list"
+alias scw="screen -wipe"
+
 alias ssh="ssh -A"
 function uptor {
     scp "$@" vlack.ath.cx:/zebes/brinstar/torrent/.watch/

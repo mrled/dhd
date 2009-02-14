@@ -31,7 +31,7 @@
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
-(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
+;(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/apel")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/flim")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/semi")
@@ -65,6 +65,7 @@
    (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
 
 ;; w3/w3m stuff
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/w3m")
 (require 'w3m-load)
 ;(require 'mime-w3m) 
 (setq w3m-coding-system 'utf-8
@@ -72,9 +73,11 @@
       w3m-file-name-coding-system 'utf-8
       w3m-input-coding-system 'utf-8
       w3m-output-coding-system 'utf-8
-      w3m-terminal-coding-system 'utf-8)
-(setq browse-url-browser-function 'w3m-browse-url)
+      w3m-terminal-coding-system 'utf-8
+      w3m-use-cookies t
+      browse-url-browser-function 'w3m-browse-url)
 (autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+
 ;; optional keyboard short-cut
 ; (global-set-key "\C-xm" 'browse-url-at-point)
 
@@ -97,6 +100,14 @@
       'mail-send-hook))
 
 ;; the rest of wl stuff goes in ~/.wl (lame)
+
+;; gnus stuff
+(setq gnus-nntp-server nil
+      gnus-select-method '(nntp "news.astraweb.com")
+      ;gnus-check-new-newsgroups nil
+      gnus-save-newsrc-file nil ; http://www.gnus.org/manual/gnus_11.html#SEC11
+      gnus-read-newsrc-file nil ; same
+      gnus-always-read-dribble-file t)
 
 
 ; for the love of mercy, indent the same way every time!
@@ -164,6 +175,7 @@
 ;(global-set-key "\C-cr"    'revert-buffer)
 (global-set-key "\C-c\C-r" 'revert-buffer)
 (global-set-key (kbd "C-c o") 'occur)
+(global-set-key (kbd "C-c C-k") 'copy-region-as-kill)
 
 (global-set-key [(meta down)] 'forward-block-dwim)
 (global-set-key [(meta up)]  'backward-block-dwim)
