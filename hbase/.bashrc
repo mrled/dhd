@@ -184,27 +184,75 @@ alias omg="echo wtf"
 alias source=.
 alias .b=". ~/.profile"
 
-# attach to session if extant, otherwise create a new one
-alias screen="screen -D -R" 
-alias scl="screen -list"
-alias scw="screen -wipe"
+# screen stuff
+cmd_screen=`type -P screen`
+if [ $cmd_screen ]; then
+    default_session_name="camelot" # this is used later on too
+    
+    # attach to session if extant, otherwise create a new one
+    function scr {
+        if [ $1 ]; then
+            sessionname="$1"
+        else
+            sessionname="$default_session_name"
+        fi
+        $cmd_screen -D -R -S "$sessionname"
+    }
+
+    #alias screen="screen -D -R" 
+    alias scrl="$cmd_screen -list"
+    alias scrw="$cmd_screen -wipe"
+fi
 
 alias ssh="ssh -A"
+
+# Torrent &c stuff
 function uptor {
     scp "$@" vlack.ath.cx:/zebes/brinstar/torrent/.watch/
 }
 alias rmtor="rm *.torrent"
 alias lstor="ls *.torrent"
 
-# function wserv { 
-#     if   [ "$1" == help ]; then 
-#         echo "Use python's SimpleHTTPServer to serve files from the cwd."
-#         echo "wserv [-c] [PORTNO]"
-#         echo "The -c option serves the cwd with execute (CGI) permissions"
-#         echo "It uses port 8000 by default."
-#     elif [ "$1" == '-c' ]; then python -m CGIHTTPServer
-#     else                        python -m SimpleHTTPServer
-# }
+
+# GUI stuff
+if [ $TERM_PROGRAM == "Apple_Terminal" ]; then
+    alias newterm='osascript -e "tell application \"Terminal\" to do script \"\""'
+    function remote {
+        if [ $2 ]; then 
+            sessionname="$2"
+        else 
+            sessionname="$default_session_name"
+        fi
+        #osascript -e 'tell application "Terminal" to do script "ssh -t "$1" \"screen -D -R -S $sessionname\""'
+        ssh -t "$1" "screen -D -R -S $sessionname"
+    }
+#    term=
+# This must come after the $TERM_PROGRAM check, because in Mac OS X, $DISPLAY is always
+# set if you have X11 installed, since it opens X11 automagically if you open an X app. 
+elif [ $DISPLAY ]; then
+    alias term=xterm
+    if type -P urxvt >/dev/null; then # AKA rxvt-unicode
+        alias term=urxvt
+    elif type -P rxvt >/dev/null; then
+        alias term=rxvt
+    fi
+
+    # intended to be used like `remterm [user@]host [session]`
+    # example: remote mrled@vlack.ath.cx rtorrent
+    # sets the title and ssh's to first argument, and optionally  uses
+    # the named screen session - if no such session exists, it uses my
+    # default session name which is defined somewhere above
+    # works for rxvt and xterm at least
+    function remote { 
+        if [ $2 ]; then
+            sessionname="$2"
+        else 
+            sessionname="$default_session_name"
+        fi
+        term -T "$1" -e ssh -t "$1" "screen -D -R -S \"$sessionname\""
+    }
+    # you can check all sessions on a remote host with `ssh $host screen -ls`
+fi
 
 # Mac metadata files: .DS_Store and ._Doomsday.mkv for example
 function mmf { 

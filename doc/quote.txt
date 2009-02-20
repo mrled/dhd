@@ -3397,3 +3397,90 @@ I didn't screw up, I was just testing your disaster recovery plan.
 ... and then I was being chased by an improperly filled in answer bubble screaming "NONE OF THE ABOVE!".
 - Buffy
 %
+A YOSPOS Valentine 2009
+
+roses are red
+violets are blue
+i'm gonna route my packets
+right into you
+- flyboi
+
+root@heart:~$ ln -S you my.valentine   
+- Baron von Bytecode
+
+are you saying your love is only symbolic? 
+better make it a HARD link :quagmire:
+- Imnsvale
+
+i gnu you were the one for me at first look   
+- lazar wulf
+meet my in a bathroom stall man
+- lazar wulf 
+
+roses are red
+violets are blue
+in my /dev/heart
+i can't rm you
+- Echophonic
+
+all I got for valentine's day was 402 Payment Required :(
+- Luigi Thirty
+
+roses are red
+violets are blue
+will you be my boyfriend
+cause i use mac too 
+- Coffee Quack
+
+roses are red
+violets are blue
+linux is sweet
+and so is gnu 
+- clamiamx
+
+roses with thorns
+violets in ditches
+what the fuck RMS porn??
+YOSPOS BITCHES 
+- Mysterious Aftertaste
+
+mac users are gay
+these rhymes are heinous
+but not as bad as
+mac penis in ur anus 
+- BeefOfAges
+%
+I like you. You're funny, and you're nicely shaped; and frankly, it's ludicrous to have these interlocking bodies and not... interlock. 
+- Anya the one thousand year old demon turned high school->college student on Buffy
+%
+... some truly spectacular kickings of my ass.
+- Spike on Buffy
+%
+Anya: You haven't called. Not once. 
+Xander: You said you were over me.
+Anya: You just accepted that? I only said that because I thought that's what you wanted to hear. 
+Xander: Well that's the funny thing about me. I tend to hear the actual words people say and accept them at face value. 
+Anya: That's *stupid*.
+Xander: I accept that. 
+- Buffy
+%
+Evil, good... these are moral absolutes that predate the fermentation of malt, and fine hops. 
+- some douchebag on Buffy
+%
+I'm suffering the afterness of a bad night of... badness.
+- Buffy
+%
+Willow: ...make love...
+Xander: Wild monkey love, or tender, Sarah McLachlan love?
+%
+I'm a firm believer that passwords should be assigned, not chosen. Asking a user to choose a password is bad because it's both abstract and technical. What other times do you let users make abstract technical decisions for themselves? Passwords should be no different.   
+- Factor Mystic on SA
+%
+Funny story: while opening an account at Wamu, the banker asked me to give myself a PIN. I asked him how many digits it needed to be. He said that it could be 4, but up to ten. He recommended that I used 10 for the best security, and he remarked that's how long his was.
+
+I asked him if his PIN was his phone number. He said it wasn't. Then I said, "well, then, it's you're parents phone number." He looked at me, paused for a few seconds, and then said "Well, I guess I have to change it now."
+- Jerk McJerkface on SA
+%
+The major difference between a thing that might go wrong and a thing that cannot possibly go wrong is that when a thing that cannot possibly go wrong goes wrong it usually turns out to be impossible to get at and repair.
+- Douglas Adams
+%
