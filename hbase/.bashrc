@@ -215,17 +215,19 @@ alias lstor="ls *.torrent"
 
 
 # GUI stuff
-if [ $TERM_PROGRAM == "Apple_Terminal" ]; then
-    alias newterm='osascript -e "tell application \"Terminal\" to do script \"\""'
-    function remote {
-        if [ $2 ]; then 
-            sessionname="$2"
-        else 
-            sessionname="$default_session_name"
-        fi
-        #osascript -e 'tell application "Terminal" to do script "ssh -t "$1" \"screen -D -R -S $sessionname\""'
-        ssh -t "$1" "screen -D -R -S $sessionname"
-    }
+if [ $TERM_PROGRAM ]; then 
+    if [ $TERM_PROGRAM == "Apple_Terminal" ]; then
+        alias newterm='osascript -e "tell application \"Terminal\" to do script \"\""'
+        function remote {
+            if [ $2 ]; then 
+                sessionname="$2"
+            else 
+                sessionname="$default_session_name"
+            fi
+            #osascript -e 'tell application "Terminal" to do script "ssh -t "$1" \"screen -D -R -S $sessionname\""'
+            ssh -t "$1" "screen -D -R -S $sessionname"
+        } 
+    fi
 #    term=
 # This must come after the $TERM_PROGRAM check, because in Mac OS X, $DISPLAY is always
 # set if you have X11 installed, since it opens X11 automagically if you open an X app. 
