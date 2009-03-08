@@ -1,7 +1,7 @@
 nethack on          # :)
 autodetach on       # detach on hangup
 startup_message off # suppress splash
-escape ^]^]          # I really wish this could be ' or . yarg! C-q is quoted-insert in emacs. I used to use C-t, but that's the default prefix in stumpwm so...
+escape ^]]          # I really wish this could be ' or . yarg! C-q is quoted-insert in emacs. I used to use C-t, but that's the default prefix in stumpwm so...
 nonblock on         # if a window goes unresponsive, don't block whole session
 
 #bind c screen 1     # window numbering starts at 1, not 0
