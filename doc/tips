@@ -39,3 +39,5 @@ macosx: update hosts: sudo niload -v -m hosts . < /etc/hosts
 openssl: connect to imaps `openssl s_client -commect server:993 [-tls1|ssl3]`
 ssh: ssh -t: makes ssh execute any screen-based program w/ or w/o local tty; necessary for `ssh <host> screen`
 win: hold alt+clickdrag in at least visual studio for rectangle select. 
+macosx: sudo ln -s /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport /usr/local/sbin/airport
+
