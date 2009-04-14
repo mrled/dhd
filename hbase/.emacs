@@ -10,7 +10,7 @@
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
 
 ;; paths that Emacs should look for executables, since (LAME) bashrc isn't being read. 
-(setq exec-path (split-string ":/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/sw/bin:/sw/sbin" path-separator))
+(setq exec-path (split-string ":/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/sw/bin:/sw/sbin:~/opt/bin" path-separator))
 (setenv "PATH" (mapconcat 'identity exec-path ":"))
 
 ;; Add the given path to the load-path variable.
@@ -26,7 +26,8 @@
 (defun add-to-load-path-if-exists (dir)
      (if (file-exists-p (expand-file-name dir))
          (add-to-load-path (expand-file-name dir))))
-(add-to-load-path-if-exists "~/opt/emacs/site-lisp")
+(add-to-load-path-if-exists "~/opt/share/emacs")
+(add-to-load-path-if-exists "~/opt/share/emacs/site-lisp")
 (add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
@@ -59,10 +60,23 @@
 (require 'motion-and-kill-dwim)
 (require 'hide-lines)
 
+;; for stumpwm
+(defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
+(require 'stumpwm-mode)
+
+
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
 (setq auto-mode-alist
    (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
+
+; because markdown-mode + longlines-mode = fucked up [return] key
+(add-hook 'markdown-mode-hook
+          (function (lambda ()
+                      (local-set-key [return] 'newline))))
+; I'll probably be interested in flyspell and longlines if I'm in markdown...
+(add-hook 'markdown-mode-hook 'flyspell-mode)
+(add-hook 'markdown-mode-hook 'longlines-mode)
 
 ;; w3/w3m stuff
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/w3m")
@@ -75,8 +89,31 @@
       w3m-output-coding-system 'utf-8
       w3m-terminal-coding-system 'utf-8
       w3m-use-cookies t
-      browse-url-browser-function 'w3m-browse-url)
+      browse-url-browser-function 'w3m-browse-url
+      w3m-use-title-buffer-name t)4                ; html title is buffer name
 (autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+
+
+; this lets you do C-c y (and C-c C-y) to invoke a YubNub command with 
+; emacs-w3m in the current w3m buffer, or, if the current buffer is not
+; a w3m buffer, the last-opened w3m buffer. 
+; If you prefix it with the universal argument (C-u C-c y), it will 
+; use a *clone* of the buffer (just like doing C-c C-t from within w3m)
+; It would probably be ideal if that were not the case, but ah well. 
+; Note that this is a function of browse-url.
+; from <http://www.yubnub.org/yubnub-emacs.txt>
+(defun yubnub (command)
+  "Use `browse-url' to submits a command to yubnub and opens
+result in an external browser defined in `browse-url-browser-function'.
+
+To get started  `M-x yubnub <RET> ls <RET>' will return a list of 
+all yubnub commands."
+  (interactive "sYubNub: ")
+  (browse-url 
+   (concat "http://yubnub.org/parser/parse?command=" command)))
+(global-set-key "\C-cy"    'yubnub)
+(global-set-key "\C-c\C-y" 'yubnub)
+
 
 ;; optional keyboard short-cut
 ; (global-set-key "\C-xm" 'browse-url-at-point)
