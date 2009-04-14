@@ -32,7 +32,7 @@
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
-;(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
+(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/apel")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/flim")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/semi")
@@ -55,15 +55,12 @@
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
 (show-paren-mode t) ;; show matching paren when your curser is on a paren
-(global-font-lock-mode t) ;; syntax highlighting
+(global-font-lock-mode t) ;; syntax
 
 (require 'motion-and-kill-dwim)
 (require 'hide-lines)
-
-;; for stumpwm
-(defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
-(require 'stumpwm-mode)
-
+(require 'tail)
+(require 'highlight-tail)
 
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
@@ -79,8 +76,7 @@
 (add-hook 'markdown-mode-hook 'longlines-mode)
 
 ;; w3/w3m stuff
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/w3m")
-(require 'w3m-load)
+;(require 'w3m-load)
 ;(require 'mime-w3m) 
 (setq w3m-coding-system 'utf-8
       w3m-file-coding-system 'utf-8
@@ -90,9 +86,8 @@
       w3m-terminal-coding-system 'utf-8
       w3m-use-cookies t
       browse-url-browser-function 'w3m-browse-url
-      w3m-use-title-buffer-name t)4                ; html title is buffer name
+      w3m-use-title-buffer-name t)                ; html title is buffer name
 (autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-
 
 ; this lets you do C-c y (and C-c C-y) to invoke a YubNub command with 
 ; emacs-w3m in the current w3m buffer, or, if the current buffer is not
@@ -187,7 +182,11 @@ all yubnub commands."
   (defvar myfont 
     ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
     ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
-    "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1"))
+    "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
+
+    ;; for stumpwm
+    (defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
+    (require 'stumpwm-mode))
 
 (unless (eq window-system nil) ;if we are NOT running in the console
   (setq default-frame-alist ; this actually sets the font and colours
