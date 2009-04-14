@@ -21,17 +21,24 @@ d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
 d="${d} /opt/csw/bin /opt/csw/sbin /opt/csw/flex/bin /opt/csw/flex/sbin /opt/csw/gcc4/bin"
 d="${d} /opt/csw/gcc4/sbin /opt/SUNWspro/bin /opt/SUNWspro/sbin"
+
 d="${d} /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin"
 d="${d} /opt/gcc.3.3/bin /opt/ast/bin"
 d="${d} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
+
 d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
-d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
+
+#d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
+d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
 d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
 
 for p in ${d}; do
     if [ -d ${p} ]; then PATH="${PATH}${p}:"; fi
 done
 export PATH
+unset d h
+
+export MANPATH="${MANPATH}:/opt/local/share/man"
 
 
 #??export HOME TERM 
@@ -81,6 +88,12 @@ elif [ -d /dev/fs ]; then # SFU/SUA
     export windows=1
 elif [ $uname == "Darwin" ]; then # Mac OS X
     test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
+    function hideapp {
+        APPLICATION="$1"
+        osascript -e "tell application \"System Events\" to set visible of process \"$APPLICATION\" to false"
+    }
+    # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
+    alias switchx="osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript"
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
 l    psargs="-ef"
@@ -184,6 +197,10 @@ alias omg="echo wtf"
 alias source=.
 alias .b=". ~/.profile"
 
+# emacsy goodness
+# note: this requires/assumes emacs23
+alias e="/usr/local/bin/emacsclient -a /usr/local/bin/emacs"
+
 # screen stuff
 cmd_screen=`type -P screen`
 if [ $cmd_screen ]; then
@@ -208,50 +225,73 @@ alias ssh="ssh -A"
 
 # Torrent &c stuff
 function uptor {
-    scp "$@" vlack.ath.cx:/zebes/brinstar/torrent/.watch/
+    scp "$@" younix.us:/zebes/brinstar/torrent/.watch/
 }
 alias rmtor="rm *.torrent"
 alias lstor="ls *.torrent"
 
 
+# Bulk replace file extensions on all files in current directory
+# Use it like "changext html php" to move everything ending in .html to filename.php
+function changext {
+    oldext="$1"
+    newext="$2"
+    /bin/ls -1 *.$oldext | sed 's/\(.*\)\.$oldext/mv \"\1.$oldext\"  \"\1.$newext\"/' | /bin/sh
+}
+
+
 # GUI stuff
 if [ $TERM_PROGRAM ]; then 
-    if [ $TERM_PROGRAM == "Apple_Terminal" ]; then
-        alias newterm='osascript -e "tell application \"Terminal\" to do script \"\""'
-        function remote {
-            if [ $2 ]; then 
-                sessionname="$2"
-            else 
-                sessionname="$default_session_name"
-            fi
-            #osascript -e 'tell application "Terminal" to do script "ssh -t "$1" \"screen -D -R -S $sessionname\""'
-            ssh -t "$1" "screen -D -R -S $sessionname"
-        } 
+    function remote {
+        if [ $2 ]; then 
+            sessionname="$2"
+        else 
+            sessionname="$default_session_name"
+        fi
+        #osascript -e 'tell application "Terminal" to do script "ssh -t "$1" \"screen -D -R -S $sessionname\""'
+        ssh -t "$1" "screen -D -R -S $sessionname"
+    } 
+
+    if   [ $TERM_PROGRAM == "Apple_Terminal" ]; then
+        alias aterm='osascript -e "tell application \"Terminal\" to do script \"\""'
+    elif [ $TERM_PROGRAM == "iTerm.app" ]; then
+        alias iterm='osascript -e "tell application \"iTerm\" to do script \"\""'
+        alias iterm='osascript -e "tell application \"iTerm\" \
+            -e "activate"
+            -e "set myterm to (make new terminal)"
+            -e "tell myterm" 
+                -e "set mysession to (make new session at the end of sessions)"
+                -e "tell my session"
+                    -e "exec command /bin/bash"
+            -e "end tell" -e "end tell" -e "end tell"'
+
+#osascript -e 'tell app "iTerm"' -e 'activate' -e 'set myterm to (make new terminal)' -e 'tell myterm' -e 'set mysession to (make new session at the end of sessions)' -e 'tell mysession' -e 'exec command "/bin/tcsh"' -e 'write text "INSERT SHELL COMMAND HERE"' -e 'end tell' -e 'end tell' -e 'end tell' 
     fi
+
 #    term=
 # This must come after the $TERM_PROGRAM check, because in Mac OS X, $DISPLAY is always
 # set if you have X11 installed, since it opens X11 automagically if you open an X app. 
 elif [ $DISPLAY ]; then
-    alias term=xterm
-    if type -P urxvt >/dev/null; then # AKA rxvt-unicode
-        alias term=urxvt
-    elif type -P rxvt >/dev/null; then
-        alias term=rxvt
-    fi
+    term=xterm
+    # if type -P urxvt >/dev/null; then # AKA rxvt-unicode
+    #     term=urxvt
+    # elif type -P rxvt >/dev/null; then
+    #     term=rxvt
+    # fi
 
-    # intended to be used like `remterm [user@]host [session]`
+    # intended to be used like `remote [user@]host [session]`
     # example: remote mrled@vlack.ath.cx rtorrent
     # sets the title and ssh's to first argument, and optionally  uses
     # the named screen session - if no such session exists, it uses my
     # default session name which is defined somewhere above
-    # works for rxvt and xterm at least
+    # works for (u)rxvt and xterm at least
     function remote { 
         if [ $2 ]; then
             sessionname="$2"
         else 
             sessionname="$default_session_name"
         fi
-        term -T "$1" -e ssh -t "$1" "screen -D -R -S \"$sessionname\""
+        $term -T "$1" -e ssh -t "$1" "screen -D -R -S \"$sessionname\""
     }
     # you can check all sessions on a remote host with `ssh $host screen -ls`
 fi
@@ -286,7 +326,7 @@ function htserv {
 # LaTeX stuff:
 function blix { #buildlatex
     latex "$1".tex
-    dvipdf "$1".dvi "$1".pdf
+    dvipdf "$1".dvi "$1".pdf && rm "$1".dvi
     open "$1".pdf
 }
 
@@ -297,6 +337,12 @@ function blix { #buildlatex
 
 # Completion
 complete -cf sudo
+
+# glob filenames in a case-insensitive manner
+# NOT the same as tab-complete case insensitively - you must add
+#   set completion-ignore-case on
+# in .inputrc for that.
+shopt -s nocaseglob 
 
 # set my editor to be correct
 # (the -nw tells it not to open up a new window)

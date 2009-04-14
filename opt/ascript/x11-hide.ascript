@@ -1,0 +1,3 @@
+# Note that this works whether X11.app has keyboard shortcuts enabled or not
+
+tell application "System Events" to set visible of process "X11" to false

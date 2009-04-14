@@ -1,0 +1,8 @@
+# this script is much more useful when bound to a key in my window manager
+# Note that this is designed to mimic alt-tab when X11 takes up full screen
+# AND when keyboard shortcuts are disabled! 
+
+tell application "System Events" 
+    keystroke "a" using {command down,option down}
+    key code 48 using {command down}
+end tell

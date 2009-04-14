@@ -1,0 +1,8 @@
+# this script is much more useful when bound to a key in my window manager
+# Note that this is designed to mimic cmd-opt-shift-space when X11 takes up full screen
+# AND when keyboard shortcuts are disabled! 
+# I use cmd-opt-shift-spacejas    
+
+tell application "System Events" 
+    key code 49 using {command down,shift down}
+end tell

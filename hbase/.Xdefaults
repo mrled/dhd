@@ -1,6 +1,6 @@
 XTerm*font:                     -nil-profont-medium-r-normal--12-120-72-72-c-60-iso8859-1
-XTerm*scrollbar:                True
-XTerm*rightScrollBar:           True
+!XTerm*scrollbar:                True
+!XTerm*rightScrollBar:           True
 XTerm*background:               Black
 XTerm*foreground:               White
 !XTerm*jumpScroll:               False
@@ -13,7 +13,7 @@ XTerm*saveLines:                100000
 Rxvt*font:                     -nil-profont-medium-r-normal--12-120-72-72-c-60-iso8859-1
 Rxvt*boldFont:                 -nil-profont-medium-r-normal--12-120-72-72-c-60-iso8859-1
 
-!Rxvt*scrollBar:                False
+Rxvt*scrollBar:                False
 !Rxvt*scrollBar_right:          True
 Rxvt*background:               Black
 Rxvt*foreground:               White
