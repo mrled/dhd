@@ -1,0 +1,24 @@
+; -*- mode: lisp; mode: stumpwm -*-
+
+(in-package :stumpwm)
+
+;; Key bindings
+; Note: use *root-map* to use the prefix key, where C-x becomes C-tC-x
+;       use *top-map* to do without it, where C-x is C-x
+
+;(define-key *root-map* (kbd "C-s") "exec open /Applications/Spaces.app")
+(define-key *top-map* (kbd "M-h") 
+  "exec osascript ~/doc/dhd/opt/ascript/x11-hide.ascript")
+(define-key *top-map* (kbd "M-TAB") 
+  "exec osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript")
+(define-key *top-map* (kbd "C-M-SPC")
+  "exec osascript ~/doc/dhd/opt/ascript/switch-lang-input.ascript")
+
+
+(defcommand paste-x-selection () (:rest)
+  "Universal rat-less X paste."
+  (let ((cmd (concatenate 'string "insert " (get-x-selection))))
+    (eval-command cmd)))
+(define-key *root-map* (kbd "y") "paste-x-selection")
+
+
