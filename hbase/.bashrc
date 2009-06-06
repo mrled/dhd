@@ -231,6 +231,23 @@ alias rmtor="rm *.torrent"
 alias lstor="ls *.torrent"
 
 
+# This is intended to be used in situations like album art scans, 
+# where you have several image files that should be converted to
+# one PDF so that iTunes can store it. 
+# Note that you have to specify a filetype, not individual files. 
+# It will convert all files of that filetype in the cwd. 
+# Additionally, make sure there are no other PDFs files hanging
+# around unless you want them assimilated into the final pdf too.
+function convert2pdf {
+    filetype="$1"
+    oldpdfs=""
+    for oldfile in *.$filetype; do 
+        convert "$oldfile" "$oldfile.pdf"
+        #oldpdfs="${oldpdfs} \"${oldfile}.pdf\""
+    done
+    pdftk *.pdf cat output Final.pdf
+}
+
 # Bulk replace file extensions on all files in current directory
 # Use it like "changext html php" to move everything ending in .html to filename.php
 function changext {
@@ -375,3 +392,11 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01
 #export PS1="\t \w \$ "
 
 
+## Setting up symlinks after svn/git checkouts
+
+#function .link {
+#    if [ "$1" = "dhd" ]; then
+#        important_dotfiles=".emacs .lftprc
+#    if [ $1 = "ssl" ]; then
+#        mkdir -p ~/.w3
+#}
