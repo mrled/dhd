@@ -176,6 +176,11 @@ function ff {
     find . -name "$1" -print
 }
 
+function gpush {
+    git commit $@
+    git push
+}
+
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
 alias lsl="$cmd_ls $ls_args -al"
@@ -222,10 +227,13 @@ if [ $cmd_screen ]; then
 fi
 
 alias ssh="ssh -A"
+# this way it won't save ssh host keys to ~/.ssh/known_hosts
+alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 # Torrent &c stuff
 function uptor {
-    scp "$@" younix.us:/zebes/brinstar/torrent/.watch/
+    scp "$@" younix.us:/chozo/torrent/.watch/
 }
 alias rmtor="rm *.torrent"
 alias lstor="ls *.torrent"
@@ -347,6 +355,25 @@ function blix { #buildlatex
     open "$1".pdf
 }
 
+function tname { 
+    for f in $@; do 
+        strings $f|head -n1|sed 's/.*name[1234567890]*://g' | sed 's/12:piece.*//g'
+    done
+}
+
+function ttrac {
+    for f in $@; do 
+        strings $f|head -n1|sed 's/d8:announce[1234567890]*://g' | sed 's/10:creat.*//g'
+    done
+}
+
+function thead {
+    for f in $@; do 
+        strings $f | head -n1
+    done
+}
+
+
 
 ###################
 # Global Settings #
@@ -360,6 +387,7 @@ complete -cf sudo
 #   set completion-ignore-case on
 # in .inputrc for that.
 shopt -s nocaseglob 
+shopt -s checkwinsize
 
 # set my editor to be correct
 # (the -nw tells it not to open up a new window)
