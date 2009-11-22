@@ -1,5 +1,7 @@
+// -*- mode: javascript -*-
+
 function reinit() { load_rc_file("/Users/mrled/.conkeror.js"); }
-add_command("reinit", reinit, []);
+add_command("mrlreinit", reinit, []);
 
 require("global-overlay-keymap.js");
 define_sticky_modifier("escape", MOD_META);
@@ -12,3 +14,6 @@ define_sticky_modifier("escape", MOD_META);
 //add_webjump("a", "http://www.amazon.com/s?field-keywords=%s");
 require("daemon.js");
 
+require("session.js");
+
+session_auto_save_auto_load = true;
