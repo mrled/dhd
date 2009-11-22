@@ -37,6 +37,7 @@
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/flim")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/semi")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/wl")
+(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/erc")
 
 ; settings (not custom variables)
 (setq visible-bell t              ; Is this vi? Should there be beeping? 
@@ -73,7 +74,12 @@
                       (local-set-key [return] 'newline))))
 ; I'll probably be interested in flyspell and longlines if I'm in markdown...
 (add-hook 'markdown-mode-hook 'flyspell-mode)
-(add-hook 'markdown-mode-hook 'longlines-mode)
+;(add-hook 'markdown-mode-hook 'longlines-mode)
+(global-set-key (kbd "C-c C-l") 'longlines-mode)
+(global-set-key (kbd "C-c l")   'longlines-mode)
+
+; irc
+(load-file "~/doc/uenc/hbase/ercrc.el")
 
 ;; w3/w3m stuff
 ;(require 'w3m-load)
@@ -290,3 +296,22 @@ all yubnub commands."
 (defun mrled/insert-time-blos ()
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
+
+
+; Hey cool. from <http://travisjeffery.com/post/102468146/monitoring-emacs-init-el-load-times>
+(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
+
+; Search the load path for a file
+; <http://www.emacswiki.org/emacs/SearchingLoadPath>
+(defmacro project-filter (var condition list)
+  `(loop for ,var in ,list when ,condition collect ,var))
+
+(defun scour-load-path-for (filename)
+  "Search for a file throughout the load-path"
+  (interactive)
+  (let ((files (project-filter dir (file-exists-p (directory-file-name dir))
+				   load-path)))
+    (loop for dir in files
+	  when (member filename (directory-files dir))
+	  return (format "%s/%s" (directory-file-name dir)
+			 filename))))
