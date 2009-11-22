@@ -41,3 +41,4 @@ ssh: ssh -t: makes ssh execute any screen-based program w/ or w/o local tty; nec
 win: hold alt+clickdrag in at least visual studio for rectangle select. 
 macosx: sudo ln -s /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport /usr/local/sbin/airport
 
+ssh: ssh-keygen -l -f /etc/ssh/ssh_host_rsa_key #show fingerprint for ssh host key

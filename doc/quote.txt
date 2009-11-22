@@ -611,7 +611,7 @@ Unknown poster 2: To do battle with the tree people.
 %
 imagine if there was a whole army of bees coming from the ocean and they
 flew out of the sea and flew around stinging people but they could not
-fly very fast because their wings were wet fromt he water (because they
+fly very fast because their wings were wet from the water (because they
 are from the ocean) also how could the bees even breathe underwater
 honestly i do not think you have thought this all the way though
 %
@@ -1182,7 +1182,6 @@ Raptors were so cool before Jurrassic park and then they became all mainstream a
 %
 The Mac software ecosystem is lousy with note-taking and personal organization apps, all of which promise to WORK JUST LIKE YOU THINK! or ACTUALLY MAKE YOUR BRAIN GET BIGGER! or whatever. (Also, their user communities have all been infiltrated by the GTD cultists, who cruise around in vans looking for users to abduct and brainwash. Seriously.)
  - "Matt" on the joyent.com forums
-   (I disagree with the single nonparenthetical sentence, though)
 %
  "We must take an unmovable stance on all issues where the Bible speaks plainly. What if people don't like such dogmatism? It is necessary anyway. Sound doctrine divides, it confronts, it seperates, it judges, it convicts, it reproves, it rebukes, it exhorts, it refutes error. None of those things is very highly esteemed in modern thought. But the health of the church depends on our holding firmly to the truth, for where strong convictions are not tolerated, discernment cannot survive." 
 - John MacArthur, "Reckless Faith"
@@ -1944,7 +1943,7 @@ Compared to any decent Mac app, the results look like a Soviet tractor built on 
 %
 Reid: "I was just going to put my ear softly in your butthole."
 Will: "Oh, well if I had known you were going to put your face up to my buttocks, I would have been more gentle"
- - Reid (Porter) was apparently trying to listen to Will (Esler's) farts (at Hampton House). 
+ - Hampton
 %
 An airplane was about to crash. There were 5 passengers on board, but only 4 parachutes.
 
@@ -3306,7 +3305,7 @@ Any special tools? A $15 USB memory stick helps. Will you get dirty? Nope. Could
 %
 This is normally a column about technology and technology business but I can’t help noticing that the global economy is in the toilet and not much rational thought is going into fixing the problem.  I don’t mean to insult the bozos currently pretending to run our economy or the new group of bozos about to take their places when the Obama Administration starts up this month, but my Mom could do a heck of a lot better job than either group and she’s 84 years old. 
 ...
-So here’s the problem.  Coming out of a credit bubble we have no credit.  People and businesses that HAVE money won’t lend any of it to people and business who DON’T HAVE money so the economy suffers, enters a period of deflation, everything goes to hell and we lose our houses.  After that we’re set up for an eventual period of inflation that none of us will be prepared to handle, etc., etc.  Against this the government’s idea is to spend a lot of money to stimulate the economy, putting even more financial stress on our kids and their kids through $1 trillion deficits into the sunset.  And all of this is justified because of two ideas: 1) we don’t know anything else to do, and; 2) this way the same people who made the bubble are benefitting from its aftermath. 
+So here's the problem.  Coming out of a credit bubble we have no credit.  People and businesses that HAVE money won't lend any of it to people and business who DON'T HAVE money so the economy suffers, enters a period of deflation, everything goes to hell and we lose our houses.  After that we're set up for an eventual period of inflation that none of us will be prepared to handle, etc., etc.  Against this the government's idea is to spend a lot of money to stimulate the economy, putting even more financial stress on our kids and their kids through $1 trillion deficits into the sunset.  And all of this is justified because of two ideas: 1) we don’t know anything else to do, and; 2) this way the same people who made the bubble are benefitting from its aftermath. 
 
 - Cringely
 %
@@ -3610,7 +3609,7 @@ Q: What's the difference between your wages and your penis?
 A: I can find you lots of women to blow your wages.
 - The Office (UK)
 %
-Any fool can criticize, condemn and complain… and most fools do. 
+Any fool can criticize, condemn and complain... and most fools do. 
 - Dale Carnegie
 %
 We called it the Rubber Duck method of debugging.  It goes like this:
@@ -3682,7 +3681,7 @@ The impossible often has a kind of integrity to it which the merely improbable l
 DOWNLOAD THIS ALBUM NOW.
 
 it will ruin your life in the best way possible.
-- killingthebest on the new hpj
+- killingthebest on the new hpj re: Paramore
 %
 I don't care if the music I play is like a greatest hits album for classical music. THERE'S A REASON IT'S SO POPULAR AND IT'S NOT BECAUSE IT WAS WELL MARKETED TO THE TARGET AUDIENCE OF THE 1800's.
 - Alizee on SA
@@ -3739,7 +3738,7 @@ Used to use GoToAssist for my team, got a much, much better price out of NTR (I 
 There’s nothing worse to watch than an actor who is:
 a) Holding a coffee cup with no liquid in it
 b) Lugging a suitcase that is empty
-c) Wielding a gun like they’re an idiot girl.
+c) Wielding a gun like they're an idiot girl.
 - Felicia Day <http://feliciaday.com/blog/sxsw-and-austin-trip>
 %
 Humility is not something I struggle with.
@@ -3782,17 +3781,762 @@ Be evil.
 <@xParatus> what the fuck, internet
 -#sysadmin
 %
-01:21 < twitter> mrled: Trent Reznor (trent_reznor): Just hung out with some 
-                 cool fans, played a show that felt great and there's only one 
-                 thing missing...
-01:21 < twitter> mrled: Trent Reznor (trent_reznor): This "being madly in love" 
-                 thing is weird.  Feels bad being apart.
-01:21 < twitter> mrled: Trent Reznor (trent_reznor): It's true - I've gone 
-                 soft.  Sorry everyone.
+<twitter> Trent Reznor (trent_reznor): Just hung out with some 
+          cool fans, played a show that felt great and there's only one 
+          thing missing...
+<twitter> Trent Reznor (trent_reznor): This "being madly in love" 
+          thing is weird.  Feels bad being apart.
+<twitter> Trent Reznor (trent_reznor): It's true - I've gone 
+          soft.  Sorry everyone.
 %
 Never be in the company of anyone with whom you would not want to die.
 - Fremen Saying
 %
 When asked by a woman from Attica, "Why are you Spartan women the only ones who can rule men?", she said: "Because we are also the only ones who give birth to men." 
 - Plutarch
+%
+@kennokishi I heard @feliciaday plays an Oregon Trail MMORPG. She’s a level 80 Assassin named Dysentery.
+@firedancergirl@feliciaday Chuck Norris Is Felicia’s half brother.
+@tcabeen Chuck Norris fears only one thing: Felicia Day.
+@awrittenfad The Boogieman checks under his bed for Chuck Norris. Chuck Norris checks under the bed for Felicia Day
+@mattzog Felicia Day is so cute people describe buttons as resembling HER.
+@TheBroox #RickAstley will give you up for Felicia Day.
+@dougadams Day dreams are named that because they all involve@FeliciaDay.
+@COMEDIANISDEAD@feliciaday dreams in pixel
+@Captain_Jester Sunflowers always face@feliciaday
+@melleBrad Pitt and Angelina Jolie tried to adopt@feliciaday, but she adopted them instead.
+@sarahlucielle It’s rumored Felicia Day does not have blood. Instead her heart pumps silky, fresh milk.
+@ChaseClark Felicia Day rushed to hospital after suffering screen burn-in on her face from sleeping with her Kindle.
+@thisisbree@FeliciaDay CAN touch MC Hammer. And does. Frequently.
+@swinky Crayola once named a crayon after Felicia Day, but had to recall it after it started setting kids on fire.
+@steverose@deliciafay Wonder Woman wears Felicia Day PJs
+
+- #feliciadayrumors, http://feliciaday.com/blog/feliciadayrumors
+%
+Twilight - coldly calculated to pander to /your/ shrieking demographic.
+- RiffTrax
+%
+Sorry to barge in. I'm afraid we have a slight... apocalypse. 
+- Giles
+%
+I'm the thing that monsters have nightmares about.
+- Buffy
+%
+<&Nitrogen> jsut told my coworker that
+<&Nitrogen> he's all "OK"
+<@sparkle> so you're all "PROBE-SCSI-ALL"?
+- #sysadmin
+%
+A friend of mine dragged me to a Philadelphia Scientology protest, I was very interested to learn that there were actually legitimate reasons to hate Scientology as I always hated them out of sheer principle.
+- Salpula on PBP
+%
+Dawn: Everything is different for me now!
+Anyanka: That's because you're part of something larger. Like being swallowed - by something larger.
+- Buffy
+%
+Martin Scorsese should have been kicked in the balls with a flaming steel-toed boot for making "The Departed." And I'm sorry, but if you thought Departed was good, you are a fucking retard.
+- someone on hpj
+%
+"Of the more flagrant faults in man...Forbidding older children from climbing trees or jumping fences when their natural inclination is to do so."  --Josef Pilates, "Your Health" (1934) 
+%
+< cerby> @, #, pretty soon a twitter post is going to look like fucking perl
+- #sysadmin
+%
+<@jacktrip> i got kicked off a private golf course friday
+< kinghotpants> are you brown
+<@jacktrip> because i wasn't wearing khakis
+<@jacktrip> i was actually wearing sparkly blue basketball shorts and a cowboy hat
+- #sysadmin
+%
+<&Nitrogen> dtrace is sex.
+<&Nitrogen> strace is like paying for it froma crackwhore
+- #sysadmin
+%
+If lawyers are disbarred and clergymen defrocked, doesn't it follow that electricians can be delighted, musicians denoted, cowboys deranged, models deposed and dry cleaners depressed?
+
+Laundry workers could decrease, eventually becoming depressed and depleted! Even more, bedmakers will be debunked, baseball players will be debased, landscapers will be deflowered, bulldozer operators will be degraded, software engineers will be detested, and even musical composers will eventually decompose.
+%
+    I no longer believe that freedom and democracy are compatible... The 1920s were the last decade in American history during which one could be genuinely optimistic about politics. Since 1920, the vast increase in welfare beneficiaries and the extension of the franchise to women — two constituencies that are notoriously tough for libertarians — have rendered the notion of "capitalist democracy" into an oxymoron... I do not despair because I no longer believe that politics encompasses all possible futures of our world. In our time, the great task for libertarians is to find an escape from politics in all its forms — from the totalitarian and fundamentalist catastrophes to the unthinking demos that guides so-called "social democracy."
+- Peter Thiel in an April 2009 essay for _Cato Unbound_
+  <http://en.wikipedia.org/wiki/Peter_Thiel>
+%
+Atlas Shrugged is 90210 with trains.  
+- Zero Credibility on SA
+%
+Gunn: We can switch [offices] if you don't like the... kung pow or whatever.
+Wesley: Feng Shui
+Gunn: What's that mean again?
+Wesley: That people will believe anything.
+- Angel
+%
+Newsflash - you're not cute when I'm angry.
+- Angel
+%
+Jennifer stood there, quietly ovulating.
+- Adam Cadre (Lyttle Lytton)
+%
+Buffy, you must learn to stop scoffing at the darkest secrets of the universe.
+- Giles (in the comix)
+%
+All killing and no kissing makes Buffy a sad slayer.
+- Buffy (comix)
+%
+Some guy: You're making me so hot right now. 
+Fred: Wow. Turned on by a woman holding an enormous gun. What a surprise.
+- Angel
+%
+Having combined mail accounts is right up there with couples that leave the bathroom door open when one of them is taking a dump. Some do it, but that just ain't right.   
+- kitten smoothie on SA
+%
+Hanners: I don't understand how you can bear to look at all those horrible images. 
+Pintsize: Think of it as extreme anthropology. Internet fetish art is the modern equivalent of cave paintings.
+- QC
+%
+they see me postin, they hatin, moderatin, tryin to catch me chattin dirty
+- xParatus on #sysadmin
+%
+Since I have a system that can do it [X3: Terran Conflict] now, I might take it downstairs and hook it up to the HDTV in the living room, turn out the lights, and tell my wife "I have a date with outer space, and she puts out."
+- doctormidnight on PBP
+%
+The parties are advised to chill.
+- Judge Alex Kozinski, final ruling on the Mattel v Aqua case
+  http://www.cnn.com/2003/LAW/01/27/scotus.barbie.song/
+%
+Joanna Wuertz is mowing the laundry
+- found on facebook
+%
+For a demon, I never did think that much about the nature of evil.
+- Spike
+%
+The Internet in the hands of mankind is like a taser in the hands of a child. Lord help us, we're just not that bright. 
+- "Doug" here: http://blog.washingtonpost.com/securityfix/2008/03/they_told_you_not_to_reply.html
+%
+Midelne: <snip long story.> Dear sweet god, I think I'm going to end up driving twenty-one miles one way to support illiteracy.  
+Arsten: Don't. Find a high-profile need in your location and make him go hurfblurfing to his manager, then go "I was dealing with mountain lions and you couldn't read my fucking emails. Go burn." I do that when it's necessary. And, despite the evil I exude, I still giggle like a school girl when I get home after doing it.   
+- SA
+%
+A true ruler is as moral as a hurricane.
+- Illyria (Angel)
+%
+"Attack me, I do this myself, but attack me rather than the path I follow and which I point out to anyone who asks me where I think it lies... is it any less the right way because I am staggering from side to side!" 
+- Leo Tolstoy
+%
+I sound pretty good looking.
+- Nathan Fillion on twitter
+%
+From a kitten's book of etiquette, this lesson I take
+You don't have to be embarrassed when you make a mistake
+You pull yourself together, and you brush off your hat,
+And tell the watching crowd, "you know, I meant to do that!"
+— Catherine Faber and Arlene "Callie" Hills, "I Meant To Do That" 
+%
+One of the 27 similarities between girls and fish is that they're both attracted to shiny objects.
+- Uncle Barney, "How I Met Your Mother"
+%
+Wow. Who knew being in a committed heterosexual relationship could make a guy so gay.
+- Uncle Barney, "How I Met Your Mother"
+%
+I like to keep a little bit of sexy in my front pants pocket, just in case. If I put it in my back pocket, it looks like I pooped 'em.
+- @NathanFillion
+%
+I've done so good today. I've got like a soul boner.
+- Uncle Barney
+%
+You know what Marshall needs to do? He needs to stop being sad. 
+When I get sad, I stop being sad, and be awesome instead.
+True story. 
+- Uncle Barney
+%
+Aunt Lily: We'll all have a wedding dress campout! It'll be fun!
+Uncle Barney: I can't go. I have this thing...
+Aunt Lily: What thing?
+Uncle Barney: A penis? 
+- How I Met Your Mother
+%
+Craig Fergusson: Are you a vegetarian?
+Alyson Hannigan: I'm... I wasn't, I was sort of a "cute"-aterian - I didn't eat the cute animals. 
+%
+ahh that's right, you like to sweat and cry when you eat your food :P
+- Ricky Salinas on Erick's choice in hot sauces
+%
+LizardBeam : The Forecast is Evil
+LizardBeam : (With a Chance of Doom)
+- synirc.net/#partyhard
+%
+Okay, I admit it, the command line is harder than the GUI. GUI-based administrative tools walk you through a process and offer tons of online help and wizards while they’re at it. The command line is definitely an acquired taste. But may I offer a very heartfelt bit of advice? 
+/Acquire/ the taste. You'll be glad you did. 
+- Mark Minasi, Mastering Windows Server 2003
+%
+I used to have a boss named Rock. Rock had earned a degree in astrophysics from Cal Tech and had never had a job in which he used his knowledge of the heavens. Once I asked him whether he regretted getting the degree. "Actually, my degree in astrophysics has proved to be very valuable," he said. "Some things in this world are just hard. When I am struggling with something, I sometimes think 'Damn, this is hard for me. I wonder if I am stupid,' and then I remember that I have a degree in astrophysics from Cal Tech; I must not be stupid." 
+
+Before going any farther [in this book], assure yourself that you are not stupid and that some things are hard. Armed with this silly affirmation and a well-rested mind, you are ready to conquer Cocoa.
+- Aaron Hillegass, "Cocoa Programming for Mac OS X"
+
+[ Yeah, doesn't seem like it works as well with a Liberal Arts degree from UT though. ;p ]
+%
+When here is no room in hell, the dead will walk the earth.
+- Dawn of the Dead (the remake, anyway)
+%
+I wanted to get you a card that said, 'If you meet a bear I hope it doesn't maul you in the face, because I think you're kinda cute', but I couldn't find one.
+- Caleb Allen to girlfriend Jessica Bates
+%
+If you turn your server on and the lights don’t dim, then you haven’t put enough RAM in the system!
+- Mark Minasi, Mastering Windows Server 2003
+%
+Okay, I have to sheepishly admit that as an American I live in the land of Defaultia—that is, all of the default language and regional (currency, date format, keyboard configuration) settings are American. So as a Defaultian I don’t honestly have much in the way of advice here, sorry.
+- Mark Minasi, Mastering Windows Server 2003
+%
+Lame joke of the day:
+  "You're using the time machine for /backups/!?"
+  - A Sysadmin At CERN
+- <http://saintaardvarkthecarpeted.com/blog/2009-08/lame_joke_of_the_day.html>
+%
+American Idol without Paula is like @nationfillion without a middle finger
+- @JewelStaite
+%
+For some reason I can post Tweets from Tweetie but not Twitter in my browser. MY WORLD IS CRUMBLING! WHY??!?! *sob* #needscoffee
+- @feliciaday http://twitter.com/feliciaday/status/3166978594
+%
+Ted: We all did stuff we regret in college... Junior year, Marshall grew a soul patch, wore a rasta hat, and asked everybody to call him M J Smooth. 
+Uncle Marshall: I don't regret that for one second. 
+- himym
+%
+Uncle Barney on Scarlotte Johanson: Nobody does that many Woody Allen movies without serious daddy issues. 
+- himym
+%
+I’m aiming for 0.75 posts a day. Daily would be nice but I sometimes suffer from ranter’s block. :-)
+- Bob Plankers on The Lone Sysadmin
+%
+You can always tell a really good idea by the enemies it makes. 
+- programmers axiom. Or maybe it was invented by Rick Cook for his books.
+%
+I don't LOVE. HER. I just... missherwhenshesnotaroundithinkaboutherallthetimeandiimagineusonedayrunningtowardseachotherinslowmotion.
+- Uncle Barney
+%
+I'm cuddly, bitch. Deal with it. 
+- Uncle Marshall
+%
+She is EXACTLY the droid I'm looking for, if you know what I mean.
+- @shanenickerson
+%
+Do you guys realize that the only difference between my real life and a porno is my real life has better lighting?
+- Uncle Barney
+%
+Women. Can't live with 'em / they will not go out with me. 
+- Vork on the Guild
+%
+A computer once beat me at chess, but it was no match for me at kick boxing.
+
+Actually, my cd was released in 1985, in return for two German missionaries and a Dutch urologist.
+
+At my lemonade stand I used to give the first glass away free and charge five dollars for the second glass. The refill contained the antidote.
+
+England is better only because I stand out there as 'unusual'.
+
+He taught me never to smile, which helps me when I visit disaster sites.
+
+How many people here have telekenetic powers? Raise my hand.
+
+I discovered my wife in bed with another man, and I was crushed. So I said, 'Get off me, you two!'
+
+I got some new underwear the other day. Well, new to me.
+
+I once had a large gay following, but I ducked into an alleyway and lost him.
+
+I was sleeping the other night, alone, thanks to the exterminator.
+
+I was the kid next door's imaginary friend.
+
+I was walking down fifth avenue today and I found a wallet, and I was gonna keep it, rather than return it, but I thought: well, if I lost a hundred and fifty dollars, how would I feel? And I realized I would want to be taught a lesson.
+
+I was with this girl the other night and from the way she was responding to my skillful caresses, you would have sworn that she was conscious from the top of her head to the tag on her toes. 
+
+I'm a great lover, I'll bet. 
+
+In our school you were searched for guns and knifes on the way in and if you didn't have any, they gave you some.
+
+My classmates would copulate with anything that moved, but I never saw any reason to limit myself. 
+
+My jokes are in my head and I have a duplicate copy of my jokes in a lot of British comics' heads, where they are safe.
+
+My mother was like a sister to me, only we didn't have sex quite so often.
+
+People always ask me, "Where were you when Kennedy was shot?" Well, I don't have an alibi.
+
+Probably the worst time in a person's life is when they have to kill a family member because they are the devil. But otherwise it's been a pretty good day.
+
+Some mornings it just doesn't seem worth it to gnaw through the leather straps.
+
+The way I understand it, the Russians are sort of a combination of evil and incompetence... sort of like the Post Office with tanks. 
+
+Well, my brother says Hello. So, hooray for speech therapy. 
+
+When I wake up in the morning, I just can't get started until I've had that first, piping hot pot of coffee. Oh, I've tried other enemas. 
+
+When I was a kid I used to pray every night for a new bicycle. Then I realised that the Lord doesn't work that way so I stole one and asked Him to forgive me. 
+
+You don't appreciate a lot of stuff in school until you get older. Little things like being spanked every day by a middle-aged woman: Stuff you pay good money for in later life. 
+
+You know what I hate? Indian givers... no, I take that back. 
+
+- Emo Philips
+%
+Women: You can't live with them, and you can't get them to dress up in a skimpy little Nazi costume and beat you with a warm squash or something. 
+- Emo Philips
+%
+I think there's an IQ test you have to fail to want to get a job there.
+- Lum on SA
+%
+wine is for people who want to run terrible software (windows apps) on a terrible operating system (linux)
+- br on SA
+%
+"A man with one watch knows the time; a man with two is never sure." 
+... I had fortune cookies for breakfast.
+- Parker on Leverage
+%
+One of my pet peeves, aside from possessive apostrophes on plural nouns and the belief that the virus-afflicted in 28 Days/Weeks Later are zombies (helllo-ooo, they aren’t dead), is when someone emails me an Excel document that contains information that has nothing to do with spreadsheet functionality. You use a spreadsheet as a text editor, really? What do you brush your teeth with, a CHAINSAW?
+- Linda on The Omni Mouth
+%
+There are a few of you out there that this does not apply to. Deadlines don’t really come into play for you, because you never wait until the last minute to do anything. **You are freaks**. No offense (well, maybe some).
+- Creativityist, http://www.creativityist.com/2009/08/10/deadlines-can-be-lifelines-the-creative-habit/
+%
+In my experience if something seems too good to be true, it's best to shoot it just in case.
+- Fiona on Burn Notice
+%
+Perhaps shows like this should put little disclaimers on them at the beginning, like "side dive, double fisted slo-motion gun action for entertainment purposes only and performed by professionals. Please do not attempt this in a gunfight, as it is not actually very useful or safe. We will not accept responsibility for the cap in your ass if you do."
+- boilsandblindingtorment.com
+%
+Truthfully, I’ve been slacking like a motherfucker, and that’s hard work. Takes up a lot of my time.
+- boilsandblindingtorment.com
+%
+I just wish I were more like you. You know, except for the part about being all into science.
+- Harmony to Fred on Angel
+%
+Because, friends, when page views run your life, you get dumb. Fast. And you start making *terrible* decisions.
+- Merlin Mann, http://www.43folders.com/2009/04/10/free-me
+%
+Two bytes are in a bar. One says to the other, "I'm not feeling that well. I think I have a parity error". The other byte responds, "I thought you looked a bit off!"
+%
+Beowulf was actually just Viking viral marketing.
+- Penelope Gains on QC
+%
+Ok so today I did quickbooks and only wanted to murder someone like once.
+- Erick
+%
+Money, man. It's like the main ingredient of crazy.
+- Someone on Epitaph One
+%
+Reg Larkin
+Brain Power Distribution:
+
+Loving God............ 15%
+Being a Mommy....... 10%
+Loving Will............. 13%... Read More
+Extra Mommy Duty... 10%
+Loving Eli............... 12%
+Doing Work............ 3%
+Mental Journey to the
+7th Dimension......... 7%
+More Mommy Stuff... 10%
+Family & Friends....... 5%
+Housework............ 5%
+MommyMommyMommy 10%
+Court Date......... "Sorry, Ma'am, You Have Used All Your Allotted Brain Power. Please Pay the Appropriate Penalties As Required by Regulation 197C (1.3) Sec.22 Para.32b (subsec.84, sub-para.9). You Are Legally Liable For Any Revisions To This Regulation Which Have Not Yet Been Published.
+- Reg Larkin
+%
+@IMKristenBell: watching dolly parton on charlie rose. shes very well spoken, & her boobs are literally spilling out under her armpits. its glorious.
+%
+We should call you a paragraph because you're too short to be an ese
+- Overheard @ Kerbey Lane; white dude talking to short mexican dude
+%
+Maybe we could define a new kind of organization that combined the efforts of individuals without requiring them to be interchangeable. Arguably a market is such a form of organization, though it may be more accurate to describe a market as a degenerate case—as what you get by default when organization isn't possible.
+- Paul Graham, http://www.paulgraham.com/head.html
+%
+One of my friends' characters once killed the head of a school "just for the principal of the thing".  
+- ItalicSquirrels on SA
+%
+@wilw: And now, a very short horror story: One time, I had to configure CUPS for several different computers on a LAN in my house.
+%
+Don’t step too close, now, or you’ll get my sheer unrelenting genius all over you, and that stuff will stain. (via The Omni Mouth.)
+%
+"This War on Terrorism is going to RULE. I can't wait til its over and there's no more terrorism!" 
+
+"I know! Remember when the US had a drug problem, and then we declared the War on Drugs, and now you can't buy drugs anymore? It'll be just like that!"
+%
+there's a sensual, almost sinful pleasure in the act of owning a domain name and letting it lapse
+- @charliejane
+%
+"Cool people are so wrong about many things." 
+- Lynda Barry
+%
+What struck me was this: young people seem to do the downloading, old people seem to do the anti-download complaining. I’ve seen claims that in the UK alone, £1.2bn is lost to illegal downloads. And I think there’s a fallacy there. It’s a bit like Rolex claiming lost revenues because people are buying rip-off Rolexes for $25. Does Rolex really think that someone who pays $25 for a “Rolex” is actually a potential customer for a $25,000 watch? I saw similar claims made for software purchases in India. So let’s put this in context. Does anyone really think that someone, anyone, downloads Cliff Richard illegally? Puh-leese.
+- http://confusedofcalcutta.com/2009/09/07/thinking-about-downloads/
+%
+Whatever you may have been told, the internet was not actually created to become a new distribution mechanism for failing entertainment industries.
+- http://confusedofcalcutta.com/2009/09/07/thinking-about-downloads/
+%
+1: How did you get through [the test questions] so quick?
+2: Sarcasm. Sarcasm is how we got through the questions.
+- overheard & Barnes & Noble
+%
+You see, sexual intercourse (and i'm actually turning into a woman as I say this) is about expressing something.
+- Xander
+%
+Logan: I thought our story was epic, you know? You and me. 
+Veronica: Epic how? 
+Logan: Spanning years, and continents. Lives ruined and blood shed. Epic. 
+Logan: But summer's almost here, and we won't see each other at all. And then you'll leave town, and then... it's over. 
+Veronica: Logan... 
+Logan: I'm sorry about last summer. You know, if I could do it over... 
+Veronica: Come on. Ruined lives? Bloodshed? You really think a relationship should be that hard? 
+Logan: No one writes songs about the ones that come easy.
+- Veronica Mars
+%
+Wallace: That might play with the masses, but underneath that angry young woman shell, there's a slightly less angry young woman who's just dying to bake me something. You're a marshmallow, Veronica Mars. A twinkie!
+- Veronica Mars
+%
+I mean, isn't just joining the Navy alone gay enough to get you thrown out of the Navy?
+- Seth on Veronica Mars
+%
+Sacks: Sheriff would like to have a word with you.
+Logan: And I'd like to be the cream filling of an Olsen twins sandwich, but...
+- Veronica Mars
+%
+@serafinowicz: I feel weird about paying for expensive water, but I just love the taste of tears.
+%
+@serafinowicz: People who moan about the iPhone's predictive text can go to he'll.
+%
+@jxpx777: Looking at the source of the iTunes download page, I notice that Apple uses class="sosumi" for it's legal disclaimers and links. Win!
+%
+The gateway is opening. 
+Hell's own womb will disgorge the horde. 
+And they will eat this earth.
+- Fray
+%
+Phil Stracchino: I don't care how much simpler it made the legal paperwork at the time, a corporation IS NOT A PERSON and does not have a person's rights.
+Jonathan Patschke: I'd like to see someone attempt to marry a corporation in a location where the government recognizes marriage "between two persons, regardless of gender" as a form of civil disobedience.
+Shannon Hendrix: I thought Barack Obama married General Motors earlier this year?
+Lionel Peterson: I believe he at least 'got to third base' with GM, not sure about the commitment between the two parties though... ;^)
+- geeks@
+%
+Basically we've discovered (again) that by insulating people from long-term harm, they make stupid short-term decisions (see also: socialism, welfare, and bail-outs).
+- Jonathan Patschke
+%
+There are other differences between CEOs mentioned and mafia bosses:
+
+Mafia bosses have been known to run efficient operations, show respect, and have at least some honor.
+- Shannon Hendrix
+%
+Any sufficiently advanced bug is indistinguishable from a feature.
+- Rich Kulaweic, Page 14, Linux Journal, October, 2009
+%
+Now maybe people would say they'd never install a tracking device in their significant other's car, but I think that's just because they don't know how.
+- Veronica Mars
+%
+Math, sweetie. Me + idea = good.
+- Keith Mars
+%
+"I think giving someone a flask is a nice way of saying - hey, I think you seem like a drunk on the go. You strike me as needing liquor at all times. This would be good for your car."
+- Jessica Gallegos on fb
+%
+We're young, single men in their sexual prime. And the only reason we're not out there going hog-wild is because of your FEELINGS? What are we, on The View?
+- Dick Casablancas
+%
+How *did* people find sex before there was an Internet?
+- Veronica Mars
+%
+Veronica: I just want to get to a place with you where we can be really... intimate. 
+Logan: That's what the female praying mantis says before she bites the male's head off.
+- Veronica Mars
+%
+I just feel like you have this wadded up Maxim magazine where you're heart's supposed to be.
+- Veronica Mars
+%
+Can we be done? I've got things to do. 
+Red-headed things.
+- Dick Casablancas
+%
+If there's a justification for my actions right now, it's this: I have gone. completely. crazy. 
+- Veronica Mars
+%
+Look. If we're not going to have an empty sexual encounter, I've kind of got stuff to do, so...
+- Dick Casablancas
+%
+ME? I'm not ordering good boy while wishing I ordered bad boy.
+- Veronica Mars
+%
+Look at you. You're single, and you're very nice. There's a correlation. 
+- Some rocker dude on Veronica Mars
+%
+See, the point of the Internet is to make money off stupid people.
+- Max on Veronica Mars
+%
+"The dollar is worth exactly what you are willing to give in order to get it. Obedience is the most valuable currency."
+- Shepard Fairey
+%
+i before e except when I forget.
+- http://www.leancrew.com/all-this/
+%
+@EthanSuplee: I'm in a pretty big fight with google, I know it knows what I'm looking for but its being stubborn and literal. #conversationwithlaptop
+%
+@TFLN: i hope kanye doesn't show up to patrick swayze's funeral...
+@TFLN: "i'll let you get back to your funeral in a minute...but michael jackson had the best death of the year. just sayinnn ".
+%
+Micah R Ledbetter takes prophylactic measures against anaphylactic shock.
+%
+Bio: I hate that this thing can ask people what they're doing. It makes them think that everything they do is important.
+- from SenatorIvy's Twitter
+%
+"Did your therapist decide you need to be more accepting of people for who they are? Know who preaches that garbage? Losers."
+- Cordy
+%
+A child is not something you add into your life and go along. It's a gigantic expense. It's like you went into a showroom and someone showed you a beach house and a baby. You had to choose. Just for budget purposes, you really need to look at that kid as a giant liability. Your family will have to accept that you will have to change the way you live.
+- BLinkman987 <http://forums.somethingawful.com/showthread.php?threadid=3175682>
+%
+It's AT&T, who are seemingly so aggressively stupid that only witchcraft and fairydust keep them in business :v
+- Gtab on SA
+%
+@SarahKSilverman: Um, my boobs are down here.
+%
+I'm killing for two now. 
+- Dexter
+%
+On a Dish network forum somewhere, they had an announcement about new HD channels. One of them was a goddamn shopping channel. The fuck? Who needs an HD shopping channel?!?
+- topenga on SA
+%
+.PST password security is horrible and can be broken in under a second by any number of freeware tools. I have to do this periodically for one of our more absent-minded users. Most recently I encouraged him to stop changing the password so we could just look up the hash from last time. He objected that it was not secure to keep anything protected by a single permanent, unchanging password.
+
+I swear, single tear of pride ran down my cheek. Sure, it's irrelevent with a PST given the ease of password cracking, and sure he still writes the hash down on a post-it note and sticks it in his cupboard with the other three password-postits he uses, but he's getting the conceptual end of it. This must be what it feels like when your godchild graduates kindergarten or something.
+- Midelne on SA
+%
+@jugulum: "I like big buffers and I cannot lie / and you other coders can't deny ..."
+@jugulum: "... When a String walks in, with a 32-bit field, and a char * floating near, you checksum."
+%
+I wouldn't do that, there's a non-insignificant probability of an antimatter event occurring if an gigabit ethernet packet is received before it is sent.
+- Mr Chips on SA
+%
+In his book Bagombo Snuff Box: Uncollected Short Fiction, Vonnegut listed eight rules for writing a short story:
+
+Use the time of a total stranger in such a way that he or she will not feel the time was wasted.
+Give the reader at least one character he or she can root for.
+Every character should want something, even if it is only a glass of water.
+Every sentence must do one of two things—reveal character or advance the action.
+Start as close to the end as possible.
+Be a Sadist. No matter how sweet and innocent your leading characters, make awful things happen to them—in order that the reader may see what they are made of.
+Write to please just one person. If you open a window and make love to the world, so to speak, your story will get pneumonia.
+Give your readers as much information as possible as soon as possible. To hell with suspense. Readers should have such complete understanding of what is going on, where and why, that they could finish the story themselves, should cockroaches eat the last few pages.
+Vonnegut qualifies the list by adding that Flannery O’Connor broke all these rules except the first, and that great writers tend to do that.
+- wikipedia
+%
+@hotdogsladies: Exclusive: Are Fake Hypothetical Questions Just Easy Link Bait for Dumbasses? Find out "after the jump" »
+%
+@hotdogsladies: "No matter how good you get at regular expressions, Usenet will periodically show you alarming things in people's butts." ~ Blaise Pascal
+%
+@hotdogsladies: FACT: Japanese has 29 phrases for "disturbingly detailed sex request," but not one word for "myths of the Eskimo-Aleut languages."
+%
+Finishing the sentence “I’ll never buy a Mac because” with anything but “it doesn’t meet my needs” means you don’t get to accuse /Apple users/ of making irrational purchasing decisions based on slavish adherence to an ideology.
+- http://cleversimon.com/post/199236957/microsofts-grinning-robots-or-the-brotherhood-of-the
+%
+I believe OmniDazzle began as a fun project several months ago when all of Omni started using 30″ Cinema Displays. People were occasionally losing their cursors in the giant eyeball-straining expanse of screen, which is truly a bizarre phenomenon and one you can’t really complain about without sounding obnoxious (”Oh dear, my massive diamond ring makes my hand too heavy!”).
+- The Omni Mouth
+%
+Flash is the example of what happens when the mantra of "It doesn't need to be optimized when we have so much computing power to throw at things" is taken to an absurd extreme.
+- Ryouga Inverse
+%
+It's funny. When you date someone, it's like you're taking a course in who that person is. And then when you break up, all that information becomes useless... it's like the emotional equivalent of an English degree.
+- Ted Mosby
+%
+The problem with eating and driving - which I love to do - is not being able to emply the 10-2 hand position on the wheel. It's a matter of public safety. But there's always a sacrifice. 
+- Dexter
+%
+Unemployed divas who live in glass houses - RENT FREE - shouldn't throw stones. 
+- Castle
+%
+But one day I’ll be wrong. And if there’s one thing I hate more than being wrong it is having dismissed as trivial that which has defeated me.
+- Guy English
+%
+In any case, we can at least take heart in one thing: the world has a problem where the best solution is cake.
+- BoingBoing on fashion models
+%
+We're like the only industrialized country without socialized apple care. Pathetic.
+- TheState on SA
+%
+In some ways, all my books are autobiographical... To varying degrees, I’m always writing autobiography. I’m not a journalist, going out into the world and objectively reporting back what I see. I’m a fiction writer, at least on my good days. It’s all little slivers and bits of me. It’s all the product of manic introspection. I can never truly know any mind but my own, so how could I ever hope to write a mind, a character, who is not me to some degree or another? And I expect I’ve said that before, in the blog and in other interviews.
+- Caitlin R Kiernan 
+http://subterraneanpress.com/index.php/magazine/summer-2009/interview-feeding-the-tree-an-interview-with-caitlin-r-kiernan-by-anita-niker/
+%
+obama, i'm really happy for you, and imma let you finish, but arafat had the most undeserving Nobel peace prize of all time
+- Sam Chang on FB
+%
+@texburgher: I want to believe Julie when she says her cramps are so bad she can't go get me a drink, but between you and me, I think she's ovary acting. 
+%
+@jackholt: My chalance: let me show you the non- of it.
+%
+@ErsatzMoe: That Muslim girl was the prettiest girl I've seen all week. I guess you could say she was "the bomb".
+%
+@Mike_FTW: Realizing that I just spent an hour and a half happily sorting screws by color, thread and size to what used to be my 'fucking' music. 
+%
+@Zaius13: Rumor has it that Matthew Broderick and Sarah Jessica Parker split up because he kept looking her in the mouth
+%
+@theduty: ok, but here's the part I can't figure out.
+
+if you could literally be ANYTHING you wanted inside the matrix...why was Morpheus still black? 
+%
+@badbanana: I don't like morning people. And, quite frankly, I'm not a huge fan of afternoon people. 
+%
+@navanax: I made macaroni and cheese from scratch, with real cheese. It cost about $18.00. Now I can only afford the Kraft kind. I’m the Irony Chef.
+%
+@Remiel: Clicking Close [X] on a Flash ad feels like accepting a paper towel from a homeless guy who just randomly jizzed in my face.
+%
+@adamisacson: Fond as I am of Obama, I think Beyoncé's music video has done about as much for world peace. I hope someone points that out.
+%
+@Aimee_B_Loved: I'm still pulling for Ann Coulter to win the Nobel Piece of Shit Prize.
+%
+@fireland: Your lust for power doomed 700 men to a watery grave. Yes, you sank my battleship—but at what cost to your soul? Now go to your room.
+%
+@sween: I bet the best part of being an orphan is whenever someone makes a "Your Mom" joke being able to say "Ha! I don't HAVE a mom! IN YOUR FACE!"
+%
+@sween: The Fifth Horseman of the Apocalypse will be Stuff-You-Spend-Too-Much-Time-Worrying-About. Yes, he knows his name ends with a preposition.
+%
+@sween: Female camels wear tight pants because they enjoy redundancy.
+%
+@sween: 
+"This porridge is too hot!"
+
+"This bed is too soft!"
+
+"This sex is too fast!"
+
+Goldilocks.
+
+Worst. Date. Ever.
+%
+@jephjacques: Yo mama so fat you have extremely bad eating habits and neuroses about food and eating and it is ruining your marriage.
+%
+@hotdogsladies: Whenever the server that runs Katy Perry crashes, they briefly fail over to an animated GIF of Zooey Deschanel that pretends to like girls.
+@hotdogsladies: [It's probably almost impossible for you to guess when I'm trying to write something in a cafe that's playing Pro Tools-based pop music]
+%
+"Mom, I love you more than airhockey, pictures, and nails." - James. Is that a lot in the eyes of a 4 year old boy?
+- Amy Rang on fb
+%
+Don Larpe: the vast majority of people do not have email on their phones. 
+io_burn: I don't know if I'd call that type of sub-human filth "people" :smug:. 
+- SA
+%
+What you are imparting to your clients is not necessarily how to become better computer users, but how to do their work with skill and quality. That requires a different kind of teaching.
+- techjob2.html
+%
+Casao: I like to picture Zeus running a datacenter any time someone mentions cloud computing. It makes me smile.
+g3k: I picture a bunch of marketing guys sitting in a room coming up with retarded Web 3.0 technobabble.
+Casao: That's why you're angry and bitter instead of laughing it up.
+- SA
+%
+Trust me, it's infinitely more fun to hate things by yourself. It gets bandwagoney when other people jump on board. Give it a try!
+- JGTheSpy on SA
+%
+Rock a Bye Baby
+In yo mad drop
+Fucking dem niggaz
+Shooting dem cops
+When the bough breaks
+I be rubbing my tits
+And homies and ballers
+Be sucking my clit
+- Helen Killer of regretsy.com 
+%
+There are just some people I don't want to interact with. 
+
+A lot of those people happen to be taller, prettier, and more charismatic than me.
+- Codex on The Guild
+%
+Sounds like a fun game, I'm in. Does this mean I have to get a twitter? I have boundaries.
+- Hannah in response to my LinkedIn invitation
+%
+"Poorly-chosen words are the most effective contraceptive known to man." - Lil' Sis of Diesel Sweeties
+%
+I am so buzzing on America right now
+- Aunt Robyn
+%
+"I guess Canada's not SO bad. If they play their cards right, maybe they can even become a state someday."
+- Uncle Barney
+%
+I do this [double space after period] when the font I'm typing in is screwed up and I can't be bothered to change it back, because I can never convince myself that the tiny sliver of space some fonts allocate for a space following a period that looks like it's the same size as the space between the letters in a word is really going to come across on the other side looking like a space. So I double it up, because heavens, just imagine receiving an email in which the author had neglected to place a space after a period in electronic communication in our industry -- they'd be ostracized.
+- Midelne on SA
+%
+The nature of the personal computer is simply not fully understood by companies like Apple (or anyone else for that matter). Apple makes the arrogant assumption of thinking that it knows what you want and need. It, unfortunately, leaves the “why” out of the equation — as in “why would I want this?” The Macintosh uses an experimental pointing device called a “mouse”. There is no evidence that people want to use these things. I don’t want one of these new fangled devices.
+- John C. Dvorak on the original Mac. Apparently he's been a professional fucking idiot for over 25 years.
+%
+Don't forget, we used to (maybe still do?) have a very active gaggle of PUA losers on SA. They can help you with your chode crystals and pussy pedals and whatever other fucking pokemon dating techniques they use.
+- Lincoln`s Wax on SA
+%
+It's hard for me to get inside the mindset of someone who would do this, but my only guess is that they feel it's the only way. They've given up on the idea that they have anything to offer another person, so they're looking for any way to cheat the system. The remote possibility of a brief, fleeting moment of intimacy with a woman who isn't even invested is the highest they believe they can aspire to, and the only reason they don't hire a prostitute is because they'd at least like to believe they accomplished something if not anything good.
+
+It's a fresh cut of sad sandwiched between two slices of horrifying, with a spread of misogyny to taste.
+- Rocketlex on SA
+%
+Is it wrong to say I love our killer robot?
+- Sheldon on Big Bang Theory
+%
+On two occasions I have been asked,—"Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?" In one case a member of the Upper, and in the other a member of the Lower, House put this question. I am not able rightly to apprehend the kind of confusion of ideas that could provoke such a question.
+
+- Babbage (1864), Passages from the Life of a Philosopher, ch. 5 "Difference Engine No. 1"
+%
+People often forget what lousy results sentience has had in most humans, and I often wonder why they assume a true AI would be devoid of these quirks.
+- Midelne on SA
+%
+This statement is, to use a technical expression, "a big fat pile of marketing".
+As in, "Look out! Don't step in the marketing!"
+- Daniel Rutter
+%
+Hey baby want to play AvP? I'll be the facehugger.
+- Daniel
+%
+"Lesson learned: sanity checking doesn't, possibly because the world is not sane." 
+- #sysadmin on the SomethingAwful irc net
+%
+Reminds me of this time I was in Game Universe (local independent game shop), I heard a mother promise her child a Nintendo PlayStation 360 for their birthday. My inner nerd was horrified. And sad for the child.
+- Kilonum on SA
+%
+... people claim to hate The Nightmare Before Christmas when they mean to say Hot Topic.
+- haveblue on SA
+%
+That's a good diagram, it's true, but where's the arrow that brings your company outside the box and shifts my paradigms though?
+%
+Hasta La Vista, Boramir!
+- Joss Whedon <http://whedonesque.com/comments/22240#more>
+%
+quote:
+Dear Sirs/Ma'ams,
+
+I am Joss Whedon, the mastermind behind Titan A.E., Parenthood (not the movie) (or the new series) (or the one where 'hood' was capitalized 'cause it was a pun), and myriad other legendary tales. I have heard through the 'grapevine' that the Terminator franchise is for sale, and I am prepared to make a pre-emptive bid RIGHT NOW to wrap this dealio up. This is not a joke, this is not a scam, this is not available on TV. I will write a check TODAY for $10,000, and viola! Terminator off your hands.
+
+No, you didn't miscount. That's four -- FOUR! -- zeroes after that one. That's to show you I mean business. And I mean show business. Nikki Finke says the Terminator concept is played. Well, here's what I have to say to Nikki Finke: you are a fine journalist and please don't ever notice me. The Terminator story is as formative and important in our culture -- and my pretend play -- as any I can think of. It's far from over. And before you Terminator-Owners (I have trouble remembering names) rush to cash that sweet cheque, let me give you a taste of what I could do with that franchise:
+
+1) Terminator... of the Rings! Yeah, what if he time-travelled TOO far... back to when there was dragons and wizards? (I think it was the Dark Ages.) Hasta La Vista, Boramir! Cool, huh? "Now you gonna be Gandalf the Red!" RRRRIP! But then he totally helps, because he's a cyborg and he doesn't give a s#&% about the ring -- it has no power over him! And he can carry it AND Frodo AND Sam AND f@%& up some orcs while he's doing it. This stuff just comes to me. I mean it. (I will also offer $10,000 for the Lord of the Rings franchise).
+
+2) More Glau. Hey. There's a reason they're called "Summer" movies.
+
+3) Can you say... musical? Well don't. Even I know that's an awful idea.
+
+4) Christian Bale's John Connor will get a throat lozenge. This will also help his Batwork (ten grand for that franchise too, btw.)
+
+5) More porn. John Connor never told Kyle Reese this, but his main objective in going to the past was to get some. What if there's a lot of future-babies that have to be made? Cue wah-wah pedal guitar -- and dollar signs!
+
+6) The movies will stop getting less cool.
+
+Okay. There's more -- this brain don't quit! (though it has occasionally been fired) -- but I think you get my drift. I really believe the Terminator franchise has only begun to plumb the depths of questioning the human condition during awesome stunts, and I'd like to shepherd it through the next phase. The money is there, but more importantly, the heart is there. But more importantly, money. Think about it. End this bloody bidding war before it begins, and put the Terminator in the hands of someone who watched the first one more than any other movie in college, including "Song of Norway" (no current franchise offer). Sincerely, Joss Whedon.
+
+- Joss Whedon http://whedonesque.com/comments/22240#more
+%
+Sometimes people are layered like that. There's something totally different underneath than what's on the surface. But sometimes, there's a third, even deeper level, and that one is the same as the top surface one. Like with pie.
+- Joss Whedon, Zack Whedon, Maurissa Tancharoen, and Jed Whedon
+%
+AutoArgus: This user has a Phd, but the second they get infront of a computer, the ancient caveman impulses apparently come out -hard-
+Dragyn: My mind read that like a haiku. I think I like it that way.
+- SA
+%
+"TSA security is a piece of rather expensive public performance art." - boingboing commentor
+%
+When I was a kid I had to use an orthographic dictionary. Made out of paper.
+- @magicmadzik when commenting on Wil Wheaton's blog
 %
