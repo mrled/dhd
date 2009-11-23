@@ -29,6 +29,7 @@ d="${d} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
 d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
 
 #d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
+d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
 d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
 d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
 
@@ -38,7 +39,7 @@ done
 export PATH
 unset d h
 
-export MANPATH="${MANPATH}:/opt/local/share/man"
+#export MANPATH="${MANPATH}:/opt/local/share/man"
 
 
 #??export HOME TERM 
@@ -238,6 +239,10 @@ function uptor {
 alias rmtor="rm *.torrent"
 alias lstor="ls *.torrent"
 
+alias nzb="hellanzb"
+alias nzbstart="hellanzb -D"
+alias nzbsite="hellanzb enqueuenewzbin"
+alias nzbfile="hellanzb enqueue"
 
 # This is intended to be used in situations like album art scans, 
 # where you have several image files that should be converted to
