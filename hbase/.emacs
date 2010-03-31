@@ -1,4 +1,4 @@
-j; mrl's emacs file
+; mrl's emacs file
 
 ;    http://bc.tech.coop/emacs.html
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
@@ -300,7 +300,7 @@ all yubnub commands."
 
 
 ; Hey cool. from <http://travisjeffery.com/post/102468146/monitoring-emacs-init-el-load-times>
-(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
+;(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
 
 ; Search the load path for a file
 ; <http://www.emacswiki.org/emacs/SearchingLoadPath>
