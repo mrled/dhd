@@ -1,4 +1,4 @@
-; mrl's emacs file
+j; mrl's emacs file
 
 ;    http://bc.tech.coop/emacs.html
 ;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
@@ -31,6 +31,10 @@
 (add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
+(add-to-load-path-if-exists "~/.dhd/opt/emacs")
+(add-to-load-path-if-exists (concat "~/.dhd/host/" host-name "/emacs/"))
+;(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
+(add-to-load-path-if-exists "~/doc/uenc/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/apel")
@@ -77,9 +81,6 @@
 ;(add-hook 'markdown-mode-hook 'longlines-mode)
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
-
-; irc
-(load-file "~/doc/uenc/hbase/ercrc.el")
 
 ;; w3/w3m stuff
 ;(require 'w3m-load)
