@@ -159,7 +159,10 @@ all yubnub commands."
 (when (eq window-system 'w32)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
   (setq pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe")
-  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+;  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+   (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+;   (defvar myfont "-outline-Consolas-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+
 
   ; let Emacs use the special win keys, don't pass them to the OS
   ; you can also use :
@@ -175,6 +178,10 @@ all yubnub commands."
   ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, 
   ; so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
+
+
+
+
 
 ;; now I also need 
 (when (or (eq window-system 'mac) (eq window-system 'ns))
