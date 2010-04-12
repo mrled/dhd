@@ -139,20 +139,21 @@ all yubnub commands."
 
 ;; the rest of wl stuff goes in ~/.wl (lame)
 
-;; gnus stuff
-(setq gnus-nntp-server nil
-      gnus-select-method '(nntp "news.astraweb.com")
-      ;gnus-check-new-newsgroups nil
-      gnus-save-newsrc-file nil ; http://www.gnus.org/manual/gnus_11.html#SEC11
-      gnus-read-newsrc-file nil ; same
-      gnus-always-read-dribble-file t)
-
-
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
 (setq default-tab-width 4) ; when tab char on disk, display as 4 chars wide
 (define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop) ; [TAB]key = tab2tab-stop
 (setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)) ;; tab = 4 spaces, not 8
+
+; When opening two files of the same name from different directories
+; like me/file.txt and you/file.txt
+; default is to have file.txt<1> and file.txt<2>
+; this makes it so you have file.txt:me and file.txt:you - rad.
+(require 'uniquify) 
+(setq 
+  uniquify-buffer-name-style 'post-forward
+  uniquify-separator ":")
+
 
 
 (when (eq window-system 'w32)

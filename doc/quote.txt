@@ -3765,13 +3765,12 @@ hanging out in high school makes you as insecure as your old high school self. w
 Erick: Man, I'm really productive. I should have a girl break up with me every month. 
 Me: Yeah, and twice around tax season. 
 %
-15:10 <@mrled> hannahrl: oh now here is the best lyric I have ever heard
-15:10 <@mrled> hannahrl: let's have some fun, this beat is sick
-15:11 <@mrled> hannahrl: i want to take a ride on your disco stick
-15:11 < hannahrl> mrled: wow
-15:11 <@mrled> hannahrl: WHAT. THE. HELL.
-15:11 < hannahrl> mrled: i mean, who hasn't thought that before.
-15:11 < hannahrl> mrled: seriously.
+15:10 <@mrled>    oh now here is the best lyric I have ever heard
+15:10 <@mrled>    let's have some fun, this beat is sick
+15:11 <@mrled>    i want to take a ride on your disco stick
+15:11 < hannahrl> wow
+15:11 < hannahrl> i mean, who hasn't thought that before.
+15:11 < hannahrl> seriously.
 %
 Knowledge is power. 
 Power corrupts.
@@ -3803,21 +3802,21 @@ When asked by a woman from Attica, "Why are you Spartan women the only ones who 
           donkey noise.
 - #sysadmin on synirc
 %
-@kennokishi I heard @feliciaday plays an Oregon Trail MMORPG. She’s a level 80 Assassin named Dysentery.
-@firedancergirl@feliciaday Chuck Norris Is Felicia’s half brother.
-@tcabeen Chuck Norris fears only one thing: Felicia Day.
-@awrittenfad The Boogieman checks under his bed for Chuck Norris. Chuck Norris checks under the bed for Felicia Day
-@mattzog Felicia Day is so cute people describe buttons as resembling HER.
-@TheBroox #RickAstley will give you up for Felicia Day.
-@dougadams Day dreams are named that because they all involve@FeliciaDay.
-@COMEDIANISDEAD@feliciaday dreams in pixel
-@Captain_Jester Sunflowers always face@feliciaday
-@melleBrad Pitt and Angelina Jolie tried to adopt@feliciaday, but she adopted them instead.
-@sarahlucielle It’s rumored Felicia Day does not have blood. Instead her heart pumps silky, fresh milk.
-@ChaseClark Felicia Day rushed to hospital after suffering screen burn-in on her face from sleeping with her Kindle.
-@thisisbree@FeliciaDay CAN touch MC Hammer. And does. Frequently.
-@swinky Crayola once named a crayon after Felicia Day, but had to recall it after it started setting kids on fire.
-@steverose@deliciafay Wonder Woman wears Felicia Day PJs
+@kennokishi: I heard @feliciaday plays an Oregon Trail MMORPG. She’s a level 80 Assassin named Dysentery.
+@firedancergirl: @feliciaday Chuck Norris Is Felicia’s half brother.
+@tcabeen: Chuck Norris fears only one thing: Felicia Day.
+@awrittenfad: The Boogieman checks under his bed for Chuck Norris. Chuck Norris checks under the bed for Felicia Day
+@mattzog: Felicia Day is so cute people describe buttons as resembling HER.
+@TheBroox: #RickAstley will give you up for Felicia Day.
+@dougadams: Day dreams are named that because they all involve @FeliciaDay.
+@COMEDIANISDEAD: @feliciaday dreams in pixel
+@Captain_Jester: Sunflowers always face @feliciaday
+@melle: Brad Pitt and Angelina Jolie tried to adopt @feliciaday, but she adopted them instead.
+@sarahlucielle: It’s rumored Felicia Day does not have blood. Instead her heart pumps silky, fresh milk.
+@ChaseClark: Felicia Day rushed to hospital after suffering screen burn-in on her face from sleeping with her Kindle.
+@thisisbree: @FeliciaDay CAN touch MC Hammer. And does. Frequently.
+@swinky: Crayola once named a crayon after Felicia Day, but had to recall it after it started setting kids on fire.
+@steverose: @deliciafay Wonder Woman wears Felicia Day PJs
 
 - #feliciadayrumors, http://feliciaday.com/blog/feliciadayrumors
 %
@@ -4547,4 +4546,163 @@ Dragyn: My mind read that like a haiku. I think I like it that way.
 %
 When I was a kid I had to use an orthographic dictionary. Made out of paper.
 - @magicmadzik when commenting on Wil Wheaton's blog
+%
+Does anyone really want the ACLU fighting for gun rights? They'd really suck at it. I'd rather my gun rights be left to those who understand guns. Give them money. They defend your rights.
+- wherein Ransom on SA gives me insight I hadn't considered
+%
+I received some particularly hostile responses from individuals involved in the fetish scene who seemed concerned that I wasn't treating sexual deviation with the reverence it deserved.
+- http://www.stewarthomesociety.org/neoism/necro.htm
+%
+I do not believe that you have the right to override an encryption. Because if you have the right to do it, everybody can do it. For whatever benign reason you have, somebody else has got one even more benign. But once you let one person deal in a digital copy -- and I don’t have to tell you; you know far better than I that, unlike in analog, the ten thousandth copy is as pure as the original -- it is a big problem. So once you let the barriers down for your perfectly sensible reason, you gotta let it down for everybody.
+
+I don’t want to get into the definition of morality. I never said anything was immoral in what I was saying. I said it is wrong to take something that belongs to somebody else.
+- Jack Valenti
+  http://tech.mit.edu/V124/N20/ValentiIntervie.20f.html
+%
+"Every normal man must be tempted at times to spit upon his hands, hoist the black flag, and begin slitting throats." -- H.L. Mencken
+%
+Science isn't a democracy, it's a tyranny of facts.
+- Deteriorata on SA
+%
+I tried something new today for coping with Rod and took an issue directly to him as though I were asking for suggestions. We need to have a phone jack installed in each location at the point of demarcation for a modem that will be used to manage the new T1s that are being brought in, and since we have no centralized collection of information about the phone system whatsoever I'm going to need to go to each location, find a suitable line, and connect the pairs to the jack. Not rocket science.
+
+Rod was insisting that I use the phone lines our old phone company tech used to use to dial into our phone system, which may or may not still be active and are also connected to decaying toggle-switches that swap between an internal-only and external-only phone line for the maintenance dial-in. I suggested that instead of calling up his old buddy who wired the phone systems (Hi Dennis!) and hiring him for several days to figure out what those numbers are and whether they're still used and wiring up more badly-labeled-in-Sharpie switches that users would have to be trained on, we should just piggyback on an existing fax line and turn the fax off on the rare occasions that our ISP needs to dial into the modem. Over the next ten minutes his argument shifted so many times that he eventually ended up literally drawing me a picture of how to do exactly what I'd suggested we do in the first place, then sitting back with a satisfied smile.
+
+I guess I win, but somehow this really feels like losing.
+- Midelne on SA
+%
+Today I emailed my boss for approval on a project a coworker and I have been working on. I had CC'd my coworker and he decided to run my email through a thesaurus, added in some dumb misused 'big words' and he sent it to my boss for approval as well. He even had spelling mistakes, but whatever. Anyway, his approval won but the emails were the exact same just worded slightly different with more adjectives. I think I have a Rod working with me as well 
+
+After the new episode of The Office tonight, I am going to drink myself to sleep. Fuck life. 
+- Serious Business on SA
+%
+As a non American I often have a lot of trouble telling the difference between the democrats and republicans. So Democrats pretend to like gays while republicans don't even bother?
+- taupoke on SA
+%
+<sniep> my servers are all named after computer parts so that users sound like retards asking for anything
+<sniep> "i need full access to ram!"
+<sniep> "why is megabytes broken?!?"
+<sniep> "who rebooted hard drive??!??"
+- http://qdb.us/294682
+
+%
+As a side note, I really hope you are not implying that these cities [Sodom & Gommorah] were rightly destroyed by God because men were marrying men and women were marrying women.  First of all, it's not biblically accurate.  Second of all, if that's what you think gays and lesbians deserve, I think you have strayed from the two most important commandments, according to Jesus, which are surprisingly not:
+1. Don't be gay
+2. Burn down cities where people are gay
+
+But actually,
+1. Love the Lord your God with all your heart, with all your mind, and with all your strength and
+2. Love your neighbor as yourself.
+
+- Grace Pettis
+%
+You know, the funny thing about alien vs predator requiem is that, when you listen to the audio commentary, they are convinced they made a good movie.
+They just have no idea.
+- reinofevil on SA
+%
+I feel like I am part of these machines, this technology, but the limitation still stands. I'm praying that I may have access to them. I interact with these machines... so I think that will be my life all day. 
+
+When I wake up in the morning and start working with the computer... if I'm in a room where there's power and there is the machine, then I don't feel like eating. Up tonight, late night, that's when I don't feel like sleeping. I can do best at night because I have nothing that interrupts me. I'm free. 
+
+I've been hearing of hackers I guess but if I happen to be one - at least in Uganda - I'd feel better.
+
+Fred, interviewed by Johnny Long (displayed in his Defcon 17 talk), is a native Ugandan who doesn't own a computer, but repairs laptops in return for time on the machines after he's done fixing them
+%
+"Documentation is like sex: when it is good, it is very, very good; and when it is bad, it is better than nothing."
+-- Dick Brandon
+%
+"Just ignore her and she'll lose her witchy powers."
+- Rick Castle
+%
+"I don't know where you got this work ethic, but it certainly was not from me."
+- Rick Castle
+%
+I think it's pretty cool the way you filled in the story there. I think I must be rubbing off on you.
+
+... 
+
+That sounded dirtier than I meant it.
+- Rick Castle
+%
+<&nitrogen> so helium walks into a bar. bartender states, "we don't serve noble gasses here!" helium doesn't react.
+%
+@samhey: Watching my daughter slowly pour her milk all over the kitchen floor, I can only assume that one of her homies got shot.
+%
+@Just_Alison: Please keep me aboobied of the situation. Oh God. I meant "abreast." That doesn't sound right anymore, either. Bosoms? Shit. Tits. Sorry!
+%
+you prematurely ejaculated your feelings without any emotional foreplay. she has chafing.
+- slinkimalinki on SA
+%
+Roses are red,
+Herpes is too,
+I got it first,
+And then gave it to you.
+%
+Shyness is cowardice, a fear of an exciting life.
+- Garth Vader on SA
+% 
+Keeping your mouth shut all day may keep you from looking like an idiot in public, but it will never get you laid.
+- IcedPee on SA
+%
+I'm 26 and feel like I'm rapidly approaching my "Use By" date.
+- Illegal Clown on SA
+%
+I make my super-shy friends come out with me and have whole "shot-down" nights. The goal is to go to a nearby city and challenge each other to use the worst pickup lines or fake quirks possible, to ensure swift and brutal rejection. The funny thing is, sometimes you get further than you think, which makes them think, "Hey, if I did okay with that retarded accent and talking so much about the Khmer Rouge, I bet I could do GREAT if I just act like myself!"
+
+It's a fun, stupid way to get shy people to realize that talking to people doesn't have to (and shouldn't) be a big deal.
+- Pharmaskittle on SA
+%
+fee fi fo fum if i see a girl i think i'll run
+- MatrixSchmatrix on AwfulYearbook
+%
+I'm just a geek, and I'm just this guy, you know? No one's following me around with a camera hoping to catch me not wearing underwear under my skirt. I know, I've tried. Sigh.
+- Wil Wheaton http://wilwheaton.typepad.com/wwdnbackup/2009/02/what-to-expect-if-you-follow-me-on-twitter-or-how-im-going-to-disappoint-you-in-6-quick-steps.html
+%
+@texburgher I don't understand. This beard now consumes my face, cheeks, chin, and neck; yet, somehow, I still can't write regular expressions.
+%
+@clapifyoulikeme: Democrats don't have *time* to be soft on crime and terrorism. We're too busy being soft on getting shit done.
+%
+Lady Gaga is too perfect an expression of IRL trolling for me not to love her. 
+- CK07 on SA
+%
+After years of trying to cloud the public mind by calling it "piracy" instead of "unauthorised downloading," key copyright industry reps are starting to realize that "piracy" actually sounds kind of cool. So now they're lobbying for the even less intellectually rigorous term "theft," which describes an entirely different offence, enumerated in an altogether different section of the lawbooks.
+
+This has all the dishonesty of calling everything you don't like "terrorism" (or as my friend Ian Brown says, it's like rebranding jaywalking as "road rape").
+
+- Cory Doctorow <http://www.boingboing.net/2010/03/18/entertainment-indust-6.html>
+%
+I'd bet that some enterprising soul at Western Union decided to scoop a bit more profit by charging extra for punctuation, costs be damned. Customers, of course, responded with "WHAT THE FUCK QUERY THAT IS RIDICULOUS STOP NOT PAYING FOR THAT SHIT STOP"
+- Space Gopher
+%
+TiCKET RECEIVED:
+
+Cannot find my wallet.
+
+RESOLUTION: Is it in your pocket?
+
+RESPONSE: No. It's usually in my back right pocket.
+
+RESOLUTION 2: Are your pants on correctly?
+
+RESPONSE 2: Hahaha, the wallet was in the FRONT LEFT pocket today, and oddly enough, the zipper is in the back of my pants today. This is why I am in sales and you are in the Clothing Technology department hope I am better at sales.
+
+- Phuzion on SA
+%
+I wonder if the iPad design specs included being able to withstand full pelvic thrust, and susequent "happy ending" for a 290lb fanboi.
+- [ed] in #sysadmin
+%
+Most of this is negative, and it reflects my feeling about the iPad, which is generally negative, even though I have a lot of fun discovering the problems with the device. It feels so nice to use. It's so pretty and the touches are so incredibly thoughtful and theatric. I feel like it's a great Hollywood movie that I control. That's coool. I like using it the way I like driving my BMW.  
+- http://www.scripting.com/stories/2010/04/06/isIpadAGamechanger.html
+%
+This is one of the odd things about our particular place in the history of art and technology: a program that allows someone to create music from pre-recorded loops is itself a first-class creation; the music that is pieced together from those loops may be enjoyable, but it has an innately lower creative value unless re-contextualized (for example, released by a hot record label, with no mention made of the software used to create the song). 
+- http://al3x.net/2010/04/05/ipad-openness-moderates.html
+%
+i got 99 donuts cuz a bitch ate one.
+- Josiah
+%
+It's weird seeing a picture of a desk without a computer on it. 
+
+I'm not sure but I suspect people actually had to do work in offices back then.
+
+- The Remote Viewer on SA (YOSPOSYOSPOSLOL)
 %

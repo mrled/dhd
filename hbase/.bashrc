@@ -136,6 +136,12 @@ if [ $surf ]; then # we have a web browser!
     alias firefox=$surf
 fi
 
+# Neuric Aliases:
+neuric="~/doc/neuric"
+alias snu="svn update $neuric/{Neuric,Documentation,Training}"
+alias sns="svn status $neuric/{Neuric,Documentation,Training} | grep -v '^\?'"
+alias snsa="svn status $neuric/{Neuric,Documentation,Training}"
+alias cdn="cd $neuric"
 
 ##################
 # Global Aliases #
