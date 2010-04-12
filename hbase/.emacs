@@ -31,6 +31,10 @@
 (add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
+(add-to-load-path-if-exists "~/.dhd/opt/emacs")
+(add-to-load-path-if-exists (concat "~/.dhd/host/" host-name "/emacs/"))
+;(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
+(add-to-load-path-if-exists "~/doc/uenc/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/apel")
@@ -77,9 +81,6 @@
 ;(add-hook 'markdown-mode-hook 'longlines-mode)
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
-
-; irc
-(load-file "~/doc/uenc/hbase/ercrc.el")
 
 ;; w3/w3m stuff
 ;(require 'w3m-load)
@@ -159,7 +160,10 @@ all yubnub commands."
 (when (eq window-system 'w32)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
   (setq pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe")
-  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+;  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+   (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+;   (defvar myfont "-outline-Consolas-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+
 
   ; let Emacs use the special win keys, don't pass them to the OS
   ; you can also use :
@@ -175,6 +179,10 @@ all yubnub commands."
   ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, 
   ; so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
+
+
+
+
 
 ;; now I also need 
 (when (or (eq window-system 'mac) (eq window-system 'ns))
@@ -300,7 +308,7 @@ all yubnub commands."
 
 
 ; Hey cool. from <http://travisjeffery.com/post/102468146/monitoring-emacs-init-el-load-times>
-(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
+;(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
 
 ; Search the load path for a file
 ; <http://www.emacswiki.org/emacs/SearchingLoadPath>
