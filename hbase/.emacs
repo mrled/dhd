@@ -31,6 +31,10 @@
 (add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
 (add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
+(add-to-load-path-if-exists "~/.dhd/opt/emacs")
+(add-to-load-path-if-exists (concat "~/.dhd/host/" host-name "/emacs/"))
+;(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
+(add-to-load-path-if-exists "~/doc/uenc/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/apel")
@@ -139,26 +143,30 @@ all yubnub commands."
 
 ;; the rest of wl stuff goes in ~/.wl (lame)
 
-;; gnus stuff
-(setq gnus-nntp-server nil
-      gnus-select-method '(nntp "news.astraweb.com")
-      ;gnus-check-new-newsgroups nil
-      gnus-save-newsrc-file nil ; http://www.gnus.org/manual/gnus_11.html#SEC11
-      gnus-read-newsrc-file nil ; same
-      gnus-always-read-dribble-file t)
-
-
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
 (setq default-tab-width 4) ; when tab char on disk, display as 4 chars wide
 (define-key text-mode-map (kbd "TAB") 'tab-to-tab-stop) ; [TAB]key = tab2tab-stop
 (setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)) ;; tab = 4 spaces, not 8
 
+; When opening two files of the same name from different directories
+; like me/file.txt and you/file.txt
+; default is to have file.txt<1> and file.txt<2>
+; this makes it so you have file.txt:me and file.txt:you - rad.
+(require 'uniquify) 
+(setq 
+  uniquify-buffer-name-style 'post-forward
+  uniquify-separator ":")
+
+
 
 (when (eq window-system 'w32)
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
   (setq pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe")
-  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+;  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
+   (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+;   (defvar myfont "-outline-Consolas-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+
 
   ; let Emacs use the special win keys, don't pass them to the OS
   ; you can also use :
@@ -174,6 +182,10 @@ all yubnub commands."
   ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, 
   ; so as long as I've installed ProFontWindows and can use it, this should work too
   (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
+
+
+
+
 
 ;; now I also need 
 (when (or (eq window-system 'mac) (eq window-system 'ns))
@@ -299,7 +311,7 @@ all yubnub commands."
 
 
 ; Hey cool. from <http://travisjeffery.com/post/102468146/monitoring-emacs-init-el-load-times>
-(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
+;(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
 
 ; Search the load path for a file
 ; <http://www.emacswiki.org/emacs/SearchingLoadPath>
