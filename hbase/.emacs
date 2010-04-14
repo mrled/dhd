@@ -79,7 +79,7 @@
 (global-set-key (kbd "C-c l")   'longlines-mode)
 
 ; irc
-(load-file "~/doc/uenc/hbase/ercrc.el")
+;(load-file "~/doc/uenc/hbase/ercrc.el")
 
 ;; w3/w3m stuff
 ;(require 'w3m-load)
