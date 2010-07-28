@@ -249,7 +249,7 @@ From South Park, Episode 214 "Chef Aid"
  - Johnny Cochrane: Ladies and Gentlemen of this deposed jury, Chef's attorney would certainly want you to believe his client wrote Stinky Britches ten years ago, and they make a good case. Hell, I almost felt pity myself. But Ladies and Gentlemen of this deposed jury, I have one final thing I want you to consider.
  - [Walks up to a chart stand]
  - Johnny Cochrane: Ladies and Gentlemen, (Pulls down picture of Chewbacca) this is Chewbacca. Chewbacca is a Wooky from the planet Kishic, but Chewbacca lives on the planet Endor. Now think about it. That does not make sense.
- - Gerald (Whispering): Dammit.
+i - Gerald (Whispering): Dammit.
  - Chef (Whispering): What?
  - Gerald (Whispering): He's using the Chewbacca defense.
  - Johnny Cochrane: Why would a Wooky, an eight-foot-tall Wooky, want to live on Endor with a bunch of two-foot-tall Ewoks. That does not make sense. But more important, you have to ask yourself what does this have to do with this case.
@@ -3720,7 +3720,7 @@ Those people who think they know everything are a great annoyance to those of us
 - Isaac Asimov
 %
 I'm not comfortable having people in my home that aren't delivering me Thai food.
-- Dollhouse, the character that Wash's (Firefly) actor plays in 1x11 (don't look it up or you will give away SECRET PLOT)
+- Dollhouse
 %
 < three> do any of you know a tool to cause packet loss for linux
 <~highmeh> http://downloads.channel.aol.com/linuxproducts
@@ -4138,7 +4138,7 @@ Brain Power Distribution:
 
 Loving God............ 15%
 Being a Mommy....... 10%
-Loving Will............. 13%... Read More
+Loving Will............. 13%
 Extra Mommy Duty... 10%
 Loving Eli............... 12%
 Doing Work............ 3%
@@ -4462,7 +4462,7 @@ Sounds like a fun game, I'm in. Does this mean I have to get a twitter? I have b
 "Poorly-chosen words are the most effective contraceptive known to man." - Lil' Sis of Diesel Sweeties
 %
 I am so buzzing on America right now
-- Aunt Robyn
+- Aunt Robin
 %
 "I guess Canada's not SO bad. If they play their cards right, maybe they can even become a state someday."
 - Uncle Barney
@@ -4695,7 +4695,8 @@ Most of this is negative, and it reflects my feeling about the iPad, which is ge
 - http://www.scripting.com/stories/2010/04/06/isIpadAGamechanger.html
 %
 This is one of the odd things about our particular place in the history of art and technology: a program that allows someone to create music from pre-recorded loops is itself a first-class creation; the music that is pieced together from those loops may be enjoyable, but it has an innately lower creative value unless re-contextualized (for example, released by a hot record label, with no mention made of the software used to create the song). 
-- http://al3x.net/2010/04/05/ipad-openness-moderates.html
+- http://al3x.net/2010/04/05/ipad-openness-moderates.h
+tml
 %
 i got 99 donuts cuz a bitch ate one.
 - Josiah
@@ -4705,4 +4706,101 @@ It's weird seeing a picture of a desk without a computer on it.
 I'm not sure but I suspect people actually had to do work in offices back then.
 
 - The Remote Viewer on SA (YOSPOSYOSPOSLOL)
+%
+has anyone considered the possibility that linux is perfectly fitted to its users, which are themselves poorly designed?
+- Trig Discipline in YOSPOS
+%
+in sweden the internet goes like this 101000111000111
+
+in norway the internet goes like dis 1Ø11Ø11ØØØ11Ø1Ø
+
+(you might wanna paste that into something that can handle unicode.)
+%
+jacktrip : A Freudian slip is when you say one thing but fuck your mother.
+- #sysadmin
+%
+There is no such thing as a DBA for [Microsoft] SQL Server; the D stands for Database.
+- porktree on SA
+%
+"Innovation, innovate, and the concept of doing what everyone else did 20
+ years ago are registered trademarks of Microsoft Corporation.  Other
+ buzzwords, euphemisms, and blatant lies are trademarks of their respective
+ owners."
+
+	- James Simmons
+%
+Gross generalizations tend to be incorrect.
+%
+This is up there with the fume-huffers who have to ruin wonderful images of NASA by going “think of all the people we could feed with this money”, you know, because every time you send a rocket into space, billions of tiny strings attached to it yank sandwiches out of the mouths of toddlers throughout the third world.
+- Jason Scott
+%
+@badbanana: Too much coffee this morning. I'm having a hard time falling asleep in this meeting.
+%
+And no, lets not start another editor conversation.  The editor war is over, we all lost.
+- Negromancer on SA
+%
+I don't know whether to just be regular appalled, or go with full on despair for the human race.
+- lightinchains
+%
+Kristin DeGroot is definitely a different person than I was two years ago, when I started college. I like to think I'm just two years cooler.
+- facebook
+%
+@broslife: Bro...relax...its not that your girlfriend doesn't love you. She just finds me more sexually attractive.
+%
+I had a customer tell my girlfriend that "the guy back there with the cute butt can come fix my computer sometime."
+
+I was relayed the message, but without the "cute butt" and double-entendre.
+
+I caught her in the lobby and asked how I could help her at home.  She replied that I could go over most any weeknight as her husband works late.   I asked what kind of computer she had and what the problems were.   She said it's not getting a lot of use and could use a good cleaning while slightly humping the air. 
+
+At that point in time I turned beet red, stammered something incomprehensible, then fled back to my desk.
+
+My girlfriend and the rest of the tellers were laughing their asses off.
+- Spermy Smurf on SA
+%
+Ron: "I was drifting in darkness, and I heard a voice - 'only dead fish go with the flow'." 
+Cacey: "The voice of Sarah Palin." 
+Ron: "Or maybe God."
+- Party Down
+%
+May 24, 2010
+Scene from an Airport
+I've gotten to the front of the security line and handed the TSA officer my ID and ticket.
+TSA Officer: (Looks at my ticket. Looks at my ID. Looks at me. Smiles.)
+Me: (Smiles back.)
+TSA Officer: (Looks at my ID. Looks at me. Smiles.)
+Me: (Tips hat. Smiles back.)
+TSA Officer: A beloved name from the blogosphere.
+Me: And I always thought that I slipped through these lines anonymously.
+TSA Officer: Don't worry. No one will notice. This isn't the sort of job that rewards competence, you know.
+Me: Have a good day.
+
+- Schneier on Security
+  http://www.schneier.com/blog/archives/2010/05/scene_from_an_a.html
+%
+@Moltz: "Move, dumbass. Oh, nice, idiot. What the... ? Are you fucking blind? Oh, that's great. Why not signal *after* you turn? GOD." - Me, driving.
+@secretsquirrel: "Move, dumbass. Oh, nice, idiot. What the... ? Are you fucking blind? Oh, that's great. Why not signal *after* you turn. GOD." - Me, sexing
+%
+@Just_Alison: My love of walking around barefoot far outweighs the consequences; like stepping on broken glass or looking like I'd still vote for Nader.
+%
+Holy shit. 
+Jen just mentioned offhand to Robin that all of the documents in her "Modality" folder also had "Modality" in the filename.
+Robin takes this seriously, replies that it's probably good that way in case someone were to move the document elsewhere, and suggests that Jen renames the folder. 
+The mindfuck that you'd have to undergo just to be Robin is probably worth fifty or sixty grand in hard drugs. 
+%
+McFunkerson: And that reminds me to share a story, after I got my iPhone 4 I made a call to my wife with all 4 windows down in my car, driving through traffic, with the a/c blasting. When asked she said she couldn't tell, and that the call was pretty clear. 
+
+wizard sticks: You do realize that's [windows down + a/c blasting] pointless, right?
+
+hippieman: The fuck!
+It allows you to be both temperature cool as well as sunglasses bikini babes cool. 
+The word you are looking for is "inefficient" you still feel the cool air of the A/C on your face, as you do the cool "my hand is riding the wind up and down" thing out the window.
+
+- SA: The iPhone Thread
+%
+...America's most popular threesome, two dudes and an Xbox...
+- oktrends <http://blog.okcupid.com/index.php/2010/07/07/the-biggest-lies-in-online-dating/>
+%
+“There ought to be a room in this house to swear in. It’s dangerous to have to repress an emotion like that…Under certain circumstances, profanity provides a relief denied even to prayer.”
+- Mark Twain
 %

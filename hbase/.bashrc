@@ -50,6 +50,7 @@ cmd_ls="ls"
 ls_args="-hF"
 cmd_sed="sed"
 cmd_du="du"
+cmd_grep="grep"
 
 #### Annoying inter-OS issues
 # obsd & macosx: `/usr/bin/which -a` does the same as tcsh's `whence`
@@ -88,6 +89,7 @@ elif [ -d /dev/fs ]; then # SFU/SUA
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
     export windows=1
 elif [ $uname == "Darwin" ]; then # Mac OS X
+    # many of these are thanks to <http://superuser.com/questions/52483/terminal-tips-and-tricks-for-mac-os-x>
     test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
     function hideapp {
         APPLICATION="$1"
@@ -95,6 +97,21 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     }
     # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
     alias switchx="osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript"
+    # Launch QuickLook from the command line (^c will kill it and return to prompt)
+    alias ql='qlmanage -p 2>/dev/null'
+    function pman {
+        man -t "${1}" | open -f -a /Applications/Preview.app
+    }
+    function pman2 {
+        # doesn't ask if you want to save the manpage when you close the window in preview
+        # on the other hand, i couldn't get it to work fuck it
+        man -t "${1}" | ps2pdf - - | open -g -f -a /Applications/Preview.app 
+    }
+    function bman {
+        man $* | col -b | bcat
+    }
+    # misc helpful commands: pbcopy/pbpaste, mdfind (-live for real time), afconvert, textutil
+    # SetFile $file -a V # sets file invisible
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
 l    psargs="-ef"
@@ -188,6 +205,27 @@ function gpush {
     git push
 }
 
+# NOT WORKING grr
+#function maildir2mbox {
+#    MAILDIR="$1"
+#    MBOX="$2"
+#    touch "$MBOX"
+#    for msg in "$MAILDIR/*"; do
+#        J=`grep "^From:" $msg|grep "@"|head -n1|sed s/From:/'From '/`
+#        echo "$J `date +'%c'`" >> "$MBOX"
+#        cat $msg >> "$MBOX"
+#        echo >> "$MBOX"
+#    done
+#}
+
+function maildir2mbox {
+    MDIR="$1"
+    MBOX="$2"
+    for msg in "$MDIR"/*; do 
+        formail -I Status: <"$msg" >> "$MBOX"
+    done
+}
+
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
 alias lsl="$cmd_ls $ls_args -al"
@@ -208,6 +246,8 @@ alias wcl="wc -l"
 alias omg="echo wtf"
 alias source=.
 alias .b=". ~/.profile"
+
+alias grep="$cmd_grep --color=auto"
 
 # emacsy goodness
 # note: this requires/assumes emacs23
@@ -237,13 +277,25 @@ alias ssh="ssh -A"
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+function uploadid { 
+    # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
+    cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
+}
+
 
 # Torrent &c stuff
-function uptor {
-    scp "$@" younix.us:/chozo/torrent/.watch/
+function seedbox {
+    for torrent in *.torrent; do
+        scp "${torrent}" younix.us:~/.torincoming/
+    done
+    for nzb in *.nzb; do
+        scp "${nzb}" younix.us:~/.nzbincoming/
+    done
 }
-alias rmtor="rm *.torrent"
-alias lstor="ls *.torrent"
+alias rmseed="rm *.torrent *.nzb"
+alias lsseed="ls *.torrent *.nzb"
+alias lseed=lsseed
+alias rseed=rmseed
 
 alias nzb="hellanzb"
 alias nzbstart="hellanzb -D"
@@ -390,8 +442,11 @@ function thead {
 # Global Settings #
 ###################
 
-# Completion
+## Completion
 complete -cf sudo
+# SSH tab completion of hosts that exist in .ssh/config (via superuser.com)
+complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
+
 
 # glob filenames in a case-insensitive manner
 # NOT the same as tab-complete case insensitively - you must add
