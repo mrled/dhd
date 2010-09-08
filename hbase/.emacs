@@ -67,10 +67,10 @@
 (require 'tail)
 (require 'highlight-tail)
 
-(autoload 'markdown-mode "markdown-mode.el"
-   "Major mode for editing Markdown files" t)
-(setq auto-mode-alist
-   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
+;(autoload 'markdown-mode "markdown-mode.el"
+;   "Major mode for editing Markdown files" t)
+;(setq auto-mode-alist
+;   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
 
 ; because markdown-mode + longlines-mode = fucked up [return] key
 (add-hook 'markdown-mode-hook
@@ -323,3 +323,10 @@ all yubnub commands."
 	  when (member filename (directory-files dir))
 	  return (format "%s/%s" (directory-file-name dir)
 			 filename))))
+
+; this is probably horribly embarrassing but I am so fucking sick of different fucking modes redefinig my fucking spacebar fuck
+(defun mrled/eight-fucking-spaces ()
+  (interactive)
+  (insert "        "))
+(global-set-key "\C-c\C-t" 'mrled/eight-fucking-spaces)
+(global-set-key "\C-ct"    'mrled/eight-fucking-spaces)
