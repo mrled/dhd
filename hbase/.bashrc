@@ -28,7 +28,6 @@ d="${d} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
 
 d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
 
-#d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
 d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
 d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
 d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
@@ -39,10 +38,6 @@ done
 export PATH
 unset d h
 
-#export MANPATH="${MANPATH}:/opt/local/share/man"
-
-
-#??export HOME TERM 
 umask 077 #stop reading my files!!
 export CVS_RSH="ssh"
 
@@ -106,9 +101,6 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
         # doesn't ask if you want to save the manpage when you close the window in preview
         # on the other hand, i couldn't get it to work fuck it
         man -t "${1}" | ps2pdf - - | open -g -f -a /Applications/Preview.app 
-    }
-    function bman {
-        man $* | col -b | bcat
     }
     # misc helpful commands: pbcopy/pbpaste, mdfind (-live for real time), afconvert, textutil
     # SetFile $file -a V # sets file invisible
@@ -200,7 +192,10 @@ function ff {
     find . -name "$1" -print
 }
 
-# smbclient (-U username) //server/share (password) #launches the client... DO NOT PUT A TRAILING / AFTER THE SHARE OR IT WILL BE A GIANT GAY BABY ABOUT IT
+function bman {
+    man $* | col -b | bcat
+}
+
 
 function smbputhelp {
 cat <<EOF
@@ -221,6 +216,8 @@ prompt
 mput some files
 exit
 DONEWITHTHAT
+Note that you should never put a trailing / after the share or
+smbclient will be a giant fucking gay baby about it
 
 FUTURE: 
 - Grab all the things I need, and pass everything else on to smbclient.
@@ -255,19 +252,6 @@ function gpush {
     git push
 }
 
-# NOT WORKING grr
-#function maildir2mbox {
-#    MAILDIR="$1"
-#    MBOX="$2"
-#    touch "$MBOX"
-#    for msg in "$MAILDIR/*"; do
-#        J=`grep "^From:" $msg|grep "@"|head -n1|sed s/From:/'From '/`
-#        echo "$J `date +'%c'`" >> "$MBOX"
-#        cat $msg >> "$MBOX"
-#        echo >> "$MBOX"
-#    done
-#}
-
 function maildir2mbox {
     MDIR="$1"
     MBOX="$2"
@@ -290,7 +274,6 @@ alias tailmes="tail -f /var/log/messages"
 alias mess="less /var/log/messages"
 alias dmesg="dmesg|less"
 alias .b=". ~/.bashrc"
-alias listen='netstat -a | grep LISTEN'
 alias wcl="wc -l"
 
 alias omg="echo wtf"
@@ -347,10 +330,10 @@ alias lsseed="ls *.torrent *.nzb"
 alias lseed=lsseed
 alias rseed=rmseed
 
-alias nzb="hellanzb"
-alias nzbstart="hellanzb -D"
-alias nzbsite="hellanzb enqueuenewzbin"
-alias nzbfile="hellanzb enqueue"
+#alias nzb="hellanzb"
+#alias nzbstart="hellanzb -D"
+#alias nzbsite="hellanzb enqueuenewzbin"
+#alias nzbfile="hellanzb enqueue"
 
 # This is intended to be used in situations like album art scans, 
 # where you have several image files that should be converted to
@@ -461,6 +444,9 @@ function htserv {
 ###################
 # Other Functions #
 ###################
+function listen {
+    netstat -an | grep LISTEN | grep tcp
+}
 # LaTeX stuff:
 function blix { #buildlatex
     latex "$1".tex
