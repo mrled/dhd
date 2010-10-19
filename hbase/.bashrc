@@ -489,7 +489,9 @@ function rse {
 ## Completion
 complete -cf sudo
 # SSH tab completion of hosts that exist in .ssh/config (via superuser.com)
-complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
+if [ -f ~/.ssh/config ]; then
+    complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
+fi
 
 
 # glob filenames in a case-insensitive manner
@@ -528,6 +530,8 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
 #export PS1="\t \w \$ "
+
+unset lcop
 
 
 ## Setting up symlinks after svn/git checkouts
