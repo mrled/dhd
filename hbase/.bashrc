@@ -31,6 +31,7 @@ d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/op
 d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
 d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
 d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
+d="${d} /usr/local/archiveopteryx/bin /usr/local/archiveopteryx/sbin"
 
 for p in ${d}; do
     if [ -d ${p} ]; then PATH="${PATH}${p}:"; fi
