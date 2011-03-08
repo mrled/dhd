@@ -255,10 +255,43 @@ function gpush {
 function maildir2mbox {
     MDIR="$1"
     MBOX="$2"
-    for msg in "$MDIR"/*; do 
+    for msg in "$MDIR"/{cur,tmp,new}/*; do 
         formail -I Status: <"$msg" >> "$MBOX"
     done
 }
+
+# Important! this function assumes that you have no mbox files in already in your maildir!
+# (That would be dumb of you, but I figured you could use fair warning anyway.)
+# Also, I assume you're in the mbox root
+function maildirtree2mboxes {
+    maildir2mbox . Inbox.mbox
+    # you have to do the exec call to 'bash -lc' because otherwise it won't find our
+    # maildir2mbox function that we just so cleverly defined, argh
+    find . -type d -depth 1 ! -path './tmp' ! -path './new' ! -path './cur' ! -path './courierimapkeywords' -exec bash -lc 'maildir2mbox "{}" "{}.mbox"' \;
+    # if the file is hidden, unhide it
+    for mboxfile in .*.mbox; do 
+        mv "$mboxfile" "`basename \"$mboxfile\"|sed 's/^.//'`"
+    done
+}
+
+# expects to be called like this: 
+# maildirtree2mboxes-all-users /home .maildir
+function maildirtree2mboxes-all-users {
+    homedirs="$1"
+    # the standard maildir name, usually something like Maildir or .mail
+    maildirname="$2" 
+    cd "$homedirs"
+    for user in *; do cd "$user/$maildirname"; maildirtree2mboxes; cd ../..; done
+}
+
+# maybe this is too specific to script in here, but here's how i got the enron email
+# leak into mbox files, one per folder:
+    # mybasedir=`pwd` find . -type d -exec bash -c 'cd {}; for item in *; do if [ -f "$item" ]; then /usr/bin/formail -I Status: < "$item" >> "`basename {}`.mbox"; fi; done; cd "$mybasedir"' \;
+# for the next step - renaming the mbox files to contain their relevant path info - 
+# i started with this: 
+    # find . -name \*mbox -exec mv {} `echo {}|sed -e 's#/#__#g'` \;
+# but it just will never work because of the subshell. Ended up with this solution instead:
+    # for mboxfile in $( find . -name \*.mbox ); do mv "$mboxfile" $( echo "$mboxfile" | sed s#./## | sed s#/#__#g ); done
 
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
@@ -444,8 +477,11 @@ function htserv {
 ###################
 # Other Functions #
 ###################
-function listen {
-    netstat -an | grep LISTEN | grep tcp
+function listens {
+    netstat -an | grep LISTEN | grep 'tcp|udp' | awk '{ print $1, "\t", $4 }' | sort
+}
+function connections {
+    netstat -a | grep 'tcp|udp'
 }
 # LaTeX stuff:
 function blix { #buildlatex
@@ -525,7 +561,7 @@ fi
 # COLORS      bold,green           bold,blue         unbold,white
 #           \[\e[01;32m\]     \[\e[01;34m\]      \[\e[00m\]
 #      PS1="              \u@\h              \w \$           "
-export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01;34m\]$lcop \[\e[00m\]"
+export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01;34m\]$lcop \[\e[00m\]"
 #                          \t              \h               :               \w              \$
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
@@ -533,12 +569,3 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01
 
 unset lcop
 
-
-## Setting up symlinks after svn/git checkouts
-
-#function .link {
-#    if [ "$1" = "dhd" ]; then
-#        important_dotfiles=".emacs .lftprc
-#    if [ $1 = "ssl" ]; then
-#        mkdir -p ~/.w3
-#}
