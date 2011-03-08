@@ -7,7 +7,7 @@
 ; "If you are an idiot, you should use Emacs." 
 
 ; my vars:
-(setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default. CHANGE if it does. 
+(setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default? 
 
 ;; paths that Emacs should look for executables, since (LAME) bashrc isn't being read. 
 (setq exec-path (split-string ":/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/sw/bin:/sw/sbin:~/opt/bin" path-separator))
@@ -44,6 +44,7 @@
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/erc")
 
 ; settings (not custom variables)
+;;;; fix the visible bell! w/ ring-bell-function or something
 (setq visible-bell t              ; Is this vi? Should there be beeping? 
       inhibit-startup-message t   ; inhibit startup
       initial-scratch-message nil ; inhibit splash
@@ -109,7 +110,7 @@
 ; from <http://www.yubnub.org/yubnub-emacs.txt>
 (defun yubnub (command)
   "Use `browse-url' to submits a command to yubnub and opens
-result in an external browser defined in `browse-url-browser-function'.
+;; result in an external browser defined in `browse-url-browser-function'.
 
 To get started  `M-x yubnub <RET> ls <RET>' will return a list of 
 all yubnub commands."
@@ -123,25 +124,6 @@ all yubnub commands."
 ;; optional keyboard short-cut
 ; (global-set-key "\C-xm" 'browse-url-at-point)
 
-
-;; wanderlust (mail) stuff
-(autoload 'wl "wl" "Wanderlust" t)
-(autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
-(autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
-
-;; fixing emacs' built in stuff like C-x m
-(autoload 'wl-user-agent-compose "wl-draft" nil t)
-(if (boundp 'mail-user-agent)
-    (setq mail-user-agent 'wl-user-agent))
-(if (fboundp 'define-mail-user-agent)
-    (define-mail-user-agent
-      'wl-user-agent
-      'wl-user-agent-compose
-      'wl-draft-send
-      'wl-draft-kill
-      'mail-send-hook))
-
-;; the rest of wl stuff goes in ~/.wl (lame)
 
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
@@ -192,8 +174,7 @@ all yubnub commands."
   (add-to-list 'exec-path "/sw/bin") ;add fink's path
   (setq mac-option-modifier 'alt)
   (setq mac-command-modifier 'meta)
-  (modify-frame-parameters (selected-frame) '((active-alpha . 0.9))) ;transparency - foreground
-  (modify-frame-parameters (selected-frame) '((inactive-alpha . 0.9))) ;transparency - background
+  (global-set-key "\M-h" 'ns-do-hide-emacs)
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
 
 (when (eq window-system 'x)
@@ -214,8 +195,8 @@ all yubnub commands."
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
-  (tool-bar-mode 0)       ;; what is this again?
-  (menu-bar-mode nil)     ;; menu bars suck (does nothing under os x)
+  (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
+  ;(menu-bar-mode nil)  ; this used to do nothing under osx but since emacs23 it DOES, so define it in a window-system section above instead
   (global-hl-line-mode t) ;; Highlight the current line. 
   (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
   ;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
@@ -268,9 +249,7 @@ all yubnub commands."
         (switch-to-buffer "*wordnet*")
         (beginning-of-buffer)
         (read-string "Press Enter to continue...")))))
-
 (global-set-key "\C-c\C-d" 'wordnet-current-word)
-
 
 (defun clear-buffer (buf)
   "Clear a buffer"
@@ -290,8 +269,6 @@ all yubnub commands."
        (point)))))
 ;(global-set-key "\C-c" 'backward-kill-word) ; replaces the kill-region default
 
-
-
 ;; my own functions
 (defun mrled/insert-time ()
   (interactive)
@@ -309,9 +286,6 @@ all yubnub commands."
   (interactive) 
   (insert (format-time-string "%Y-%m-%d-%H-%M")))
 
-
-; Hey cool. from <http://travisjeffery.com/post/102468146/monitoring-emacs-init-el-load-times>
-;(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
 
 ; Search the load path for a file
 ; <http://www.emacswiki.org/emacs/SearchingLoadPath>
