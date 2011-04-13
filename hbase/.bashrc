@@ -24,8 +24,10 @@ d="${d} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
 
 #d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
 #d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
+
 d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
 d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
+d="${d} /usr/local/archiveopteryx/bin /usr/local/archiveopteryx/sbin"
 
 # mingw/msys stuff
 #d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
@@ -42,7 +44,6 @@ for p in ${d}; do
 done
 export PATH
 unset d h
-
 #export MANPATH="${MANPATH}:/opt/local/share/man"
 
 uname=`uname`
@@ -58,6 +59,7 @@ cmd_ls="ls"
 ls_args="-hF"
 cmd_sed="sed"
 cmd_du="du"
+cmd_grep="grep"
 
 #### Annoying inter-OS issues
 # obsd & macosx: `/usr/bin/which -a` does the same as tcsh's `whence`
@@ -101,6 +103,7 @@ elif [ -d /dev/fs ]; then # SFU/SUA
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
     export windows=1
 elif [ $uname == "Darwin" ]; then # Mac OS X
+    # many of these are thanks to <http://superuser.com/questions/52483/terminal-tips-and-tricks-for-mac-os-x>
     test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
     function hideapp {
         APPLICATION="$1"
@@ -108,6 +111,18 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     }
     # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
     alias switchx="osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript"
+    # Launch QuickLook from the command line (^c will kill it and return to prompt)
+    alias ql='qlmanage -p 2>/dev/null'
+    function pman {
+        man -t "${1}" | open -f -a /Applications/Preview.app
+    }
+    function pman2 {
+        # doesn't ask if you want to save the manpage when you close the window in preview
+        # on the other hand, i couldn't get it to work fuck it
+        man -t "${1}" | ps2pdf - - | open -g -f -a /Applications/Preview.app 
+    }
+    # misc helpful commands: pbcopy/pbpaste, mdfind (-live for real time), afconvert, textutil
+    # SetFile $file -a V # sets file invisible
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
 l    psargs="-ef"
@@ -196,7 +211,10 @@ function ff {
     find . -name "$1" -print
 }
 
-# smbclient (-U username) //server/share (password) #launches the client... DO NOT PUT A TRAILING / AFTER THE SHARE OR IT WILL BE A GIANT GAY BABY ABOUT IT
+function bman {
+    man $* | col -b | bcat
+}
+
 
 function smbputhelp {
 cat <<EOF
@@ -217,6 +235,8 @@ prompt
 mput some files
 exit
 DONEWITHTHAT
+Note that you should never put a trailing / after the share or
+smbclient will be a giant fucking gay baby about it
 
 FUTURE: 
 - Grab all the things I need, and pass everything else on to smbclient.
@@ -256,6 +276,47 @@ function .b {
     . ~/.bashrc
 }
 
+function maildir2mbox {
+    MDIR="$1"
+    MBOX="$2"
+    for msg in "$MDIR"/{cur,tmp,new}/*; do 
+        formail -I Status: <"$msg" >> "$MBOX"
+    done
+}
+
+# Important! this function assumes that you have no mbox files in already in your maildir!
+# (That would be dumb of you, but I figured you could use fair warning anyway.)
+# Also, I assume you're in the mbox root
+function maildirtree2mboxes {
+    maildir2mbox . Inbox.mbox
+    # you have to do the exec call to 'bash -lc' because otherwise it won't find our
+    # maildir2mbox function that we just so cleverly defined, argh
+    find . -type d -depth 1 ! -path './tmp' ! -path './new' ! -path './cur' ! -path './courierimapkeywords' -exec bash -lc 'maildir2mbox "{}" "{}.mbox"' \;
+    # if the file is hidden, unhide it
+    for mboxfile in .*.mbox; do 
+        mv "$mboxfile" "`basename \"$mboxfile\"|sed 's/^.//'`"
+    done
+}
+
+# expects to be called like this: 
+# maildirtree2mboxes-all-users /home .maildir
+function maildirtree2mboxes-all-users {
+    homedirs="$1"
+    # the standard maildir name, usually something like Maildir or .mail
+    maildirname="$2" 
+    cd "$homedirs"
+    for user in *; do cd "$user/$maildirname"; maildirtree2mboxes; cd ../..; done
+}
+
+# maybe this is too specific to script in here, but here's how i got the enron email
+# leak into mbox files, one per folder:
+    # mybasedir=`pwd` find . -type d -exec bash -c 'cd {}; for item in *; do if [ -f "$item" ]; then /usr/bin/formail -I Status: < "$item" >> "`basename {}`.mbox"; fi; done; cd "$mybasedir"' \;
+# for the next step - renaming the mbox files to contain their relevant path info - 
+# i started with this: 
+    # find . -name \*mbox -exec mv {} `echo {}|sed -e 's#/#__#g'` \;
+# but it just will never work because of the subshell. Ended up with this solution instead:
+    # for mboxfile in $( find . -name \*.mbox ); do mv "$mboxfile" $( echo "$mboxfile" | sed s#./## | sed s#/#__#g ); done
+
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
 alias lsl="$cmd_ls $ls_args -al"
@@ -286,6 +347,8 @@ alias wcl="wc -l"
 alias omg="echo wtf"
 alias source=.
 
+alias grep="$cmd_grep --color=auto"
+
 # emacsy goodness
 # note: this requires/assumes emacs23
 alias e="/usr/local/bin/emacsclient -a /usr/local/bin/emacs"
@@ -314,18 +377,30 @@ alias ssh="ssh -A"
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+function uploadid { 
+    # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
+    cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
+}
+
 
 # Torrent &c stuff
-function uptor {
-    scp "$@" younix.us:/chozo/torrent/.watch/
+function seedbox {
+    for torrent in *.torrent; do
+        scp "${torrent}" younix.us:~/.torincoming/
+    done
+    for nzb in *.nzb; do
+        scp "${nzb}" younix.us:~/.nzbincoming/
+    done
 }
-alias rmtor="rm *.torrent"
-alias lstor="ls *.torrent"
+alias rmseed="rm *.torrent *.nzb"
+alias lsseed="ls *.torrent *.nzb"
+alias lseed=lsseed
+alias rseed=rmseed
 
-alias nzb="hellanzb"
-alias nzbstart="hellanzb -D"
-alias nzbsite="hellanzb enqueuenewzbin"
-alias nzbfile="hellanzb enqueue"
+#alias nzb="hellanzb"
+#alias nzbstart="hellanzb -D"
+#alias nzbsite="hellanzb enqueuenewzbin"
+#alias nzbfile="hellanzb enqueue"
 
 function manualman {
 # this is basically the function that man uses to view its manpages
@@ -448,6 +523,12 @@ function htserv {
 ###################
 # Other Functions #
 ###################
+function listens {
+    netstat -an | grep LISTEN | grep 'tcp|udp' | awk '{ print $1, "\t", $4 }' | sort
+}
+function connections {
+    netstat -a | grep 'tcp|udp'
+}
 # LaTeX stuff:
 function blix { #buildlatex
     latex "$1".tex
@@ -478,14 +559,26 @@ function strip-comments {
         grep -v '^#' $f | grep -v '^ *#' | grep -v '^$'
     done
 }
+# from http://www.robmeerman.co.uk/unix
+# red stderr - prepend to a command to have its stderr output in red
+function rse {
+    # We need to wrap each phrase of the command in quotes to preserve arguments that contain whitespace
+    # Execute the command, swap STDOUT and STDERR, colour STDOUT, swap back
+    ((eval $(for phrase in "$@"; do echo -n "'$phrase' "; done)) 3>&1 1>&2 2>&3 | sed -e "s/^\(.*\)$/$(echo -en \\033)[31;1m\1$(echo -en \\033)[0m/") 3>&1 1>&2 2>&3
+}
 
 
 ###################
 # Global Settings #
 ###################
 
-# Completion
+## Completion
 complete -cf sudo
+# SSH tab completion of hosts that exist in .ssh/config (via superuser.com)
+if [ -f ~/.ssh/config ]; then
+    complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
+fi
+
 
 # glob filenames in a case-insensitive manner
 # NOT the same as tab-complete case insensitively - you must add
@@ -518,18 +611,11 @@ fi
 # COLORS      bold,green           bold,blue         unbold,white
 #           \[\e[01;32m\]     \[\e[01;34m\]      \[\e[00m\]
 #      PS1="              \u@\h              \w \$           "
-export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01;34m\]$lcop \[\e[00m\]"
+export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01;34m\]$lcop \[\e[00m\]"
 #                          \t              \h               :               \w              \$
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
 #export PS1="\t \w \$ "
 
+unset lcop
 
-## Setting up symlinks after svn/git checkouts
-
-#function .link {
-#    if [ "$1" = "dhd" ]; then
-#        important_dotfiles=".emacs .lftprc
-#    if [ $1 = "ssl" ]; then
-#        mkdir -p ~/.w3
-#}
