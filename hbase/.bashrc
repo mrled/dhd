@@ -98,7 +98,7 @@ if [ -d /cygdrive ]; then    # Cygwin
     export windows=1
 #elif [ $uname == "windows32" ]; then #MinGW/MSYS
 #elif [ $uname == "*MINGW*" ]; then #MinGW/MSYS # this syntax doesn't seem to work
-elif [ $uname == "Msys" ]; then
+elif [[ $uname == MINGW* ]]; then
     ls_args="${ls_args} --color"
     export windows=1
 elif [ -d /dev/fs ]; then # SFU/SUA
@@ -357,16 +357,15 @@ alias grep="$cmd_grep --color=auto"
 function e {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
     macosxemacs="/Applications/Emacs/emacsformacosx.com/Emacs for Mac OS X.app"
-    if [ $uname == "Msys" ]; then
+    if [[ $uname == MINGW* ]]; then
         EmacsW32dir="/c/Program Files/Emacs"
         if [ -d "/c/Program Files (x86)/Emacs" ]; then
             EmacsW32dir="/c/Program Files (x86)/Emacs"
         fi
-
         if [ "$1" ]; then
-            "${EmacsW32dir}/emacs/bin/emacsclient.exe" -n "$1"
+            "${EmacsW32dir}/emacs/bin/emacsclientw.exe" -n "$1"
         else 
-            "${EmacsW32dir}/emacs/bin/emacsclient.exe"
+            "${EmacsW32dir}/emacs/bin/emacsclientw.exe" -n
         fi
     elif [ -d "$macosxemacs"  ]; then
         if [ "$1" ]; then
