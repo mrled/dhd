@@ -13,10 +13,11 @@ menum=`id -u`
 h="${HOME}"
 PATH=
 d=
+d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
-d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin"
+d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
 d="${d} /opt/csw/bin /opt/csw/sbin /opt/csw/flex/bin /opt/csw/flex/sbin /opt/csw/gcc4/bin"
@@ -31,7 +32,6 @@ d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/op
 d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
 d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
 d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
-d="${d} /usr/local/archiveopteryx/bin /usr/local/archiveopteryx/sbin"
 
 for p in ${d}; do
     if [ -d ${p} ]; then PATH="${PATH}${p}:"; fi
@@ -544,6 +544,9 @@ myeditor="emacs"
 export EDITOR="$myeditor"
 export VISUAL="$myeditor"
 export FSEDIT="$myeditor"
+
+# fucking CPAN
+export PERL_MM_USE_DEFAULT=1
 
 # last character of prompt
 if [ $menum = 0 ]; then lcop='#'
