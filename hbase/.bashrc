@@ -98,7 +98,7 @@ if [ -d /cygdrive ]; then    # Cygwin
     export windows=1
 #elif [ $uname == "windows32" ]; then #MinGW/MSYS
 #elif [ $uname == "*MINGW*" ]; then #MinGW/MSYS # this syntax doesn't seem to work
-elif [ `uname -o` == "Msys" ]; then
+elif [ $uname == "Msys" ]; then
     ls_args="${ls_args} --color"
     export windows=1
 elif [ -d /dev/fs ]; then # SFU/SUA
@@ -355,7 +355,9 @@ alias grep="$cmd_grep --color=auto"
 
 # emacsy goodness
 function e {
-    if [ `uname -o` == "Msys" ]; then
+# note: emacsclient -n returns without waiting for you to kill the buffer in emacs
+    macosxemacs="/Applications/Emacs/emacsformacosx.com/Emacs for Mac OS X.app"
+    if [ $uname == "Msys" ]; then
         EmacsW32dir="/c/Program Files/Emacs"
         if [ -d "/c/Program Files (x86)/Emacs" ]; then
             EmacsW32dir="/c/Program Files (x86)/Emacs"
@@ -365,6 +367,13 @@ function e {
             "${EmacsW32dir}/emacs/bin/emacsclient.exe" -n "$1"
         else 
             "${EmacsW32dir}/emacs/bin/emacsclient.exe"
+        fi
+    elif [ -d "$macosxemacs"  ]; then
+        if [ "$1" ]; then
+            "$macosxemacs/Contents/MacOS/bin/emacsclient" -n "$1"
+        else
+            # check to see if there is an Emacs for Mac OS X.app process
+            /usr/bin/open "$macosxemacs"
         fi
     elif [ -f /usr/local/bin/emacsclient ]; then
     # I believe this next bit requires Emacs23 under Unix: 
