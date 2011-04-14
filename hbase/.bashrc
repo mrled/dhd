@@ -34,9 +34,13 @@ d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
 d="${d} /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32"
 #d="${d} /c/opt/bin /c/opt/sbin"
 d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
+# Remember: spaces in here won't work even if escaped w/ '\'! 
+# I had to make C:\ProgramFiles with Junction.exe from sysinternals.
+d="${d} /c/ProgramFiles/Emacs/emacs/bin"
 # BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
 # you might not want to add it here
 d="${d} /c/opt/bin /c/opt/sbin"
+# this should go last becausae it has some things that won't work with MinTTY like vim and sh.exe
 d="${d} /c/opt/git/bin"
 
 for p in ${d}; do
@@ -350,8 +354,27 @@ alias source=.
 alias grep="$cmd_grep --color=auto"
 
 # emacsy goodness
-# note: this requires/assumes emacs23
-alias e="/usr/local/bin/emacsclient -a /usr/local/bin/emacs"
+function e {
+    if [ `uname -o` == "Msys" ]; then
+        EmacsW32dir="/c/Program Files/Emacs"
+        if [ -d "/c/Program Files (x86)/Emacs" ]; then
+            EmacsW32dir="/c/Program Files (x86)/Emacs"
+        fi
+
+        if [ "$1" ]; then
+            "${EmacsW32dir}/emacs/bin/emacsclient.exe" -n "$1"
+        else 
+            "${EmacsW32dir}/emacs/bin/emacsclient.exe"
+        fi
+    elif [ -f /usr/local/bin/emacsclient ]; then
+    # I believe this next bit requires Emacs23 under Unix: 
+        if [ "$1" ]; then
+            /usr/local/bin/emacsclient -a /usr/local/bin/emacs "$1"
+        else 
+            /usr/local/bin/emacsclient -a /usr/local/bin/emacs
+        fi
+    fi
+}
 
 # screen stuff
 cmd_screen=`type -P screen`
