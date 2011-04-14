@@ -12,6 +12,14 @@ case $SHELL in
 		. $HOME/.bashrc
 	fi
 	;;
+*/bin/sh*)
+# this is because MINGW doesn't properly change its $SHELL variable to bash, even when it is        
+    if [ `/bin/uname -o` == "Msys" ]; then
+	    if [ -f $HOME/.bashrc -a -r $HOME/.bashrc ]; then
+		    . $HOME/.bashrc
+	    fi
+    fi
+	;;
 esac
 
 

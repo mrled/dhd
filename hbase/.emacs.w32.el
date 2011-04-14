@@ -1,1 +1,4 @@
+; just copy this to your homedir in Windows... 
+; you can't make symlinks that work reliably with all programs in Windows, and hardlinks
+; keep just getting unlinked, so this is just easier. 
 (load-file "~/.dhd/hbase/.emacs")

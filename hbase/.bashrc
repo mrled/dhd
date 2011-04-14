@@ -2,43 +2,60 @@
 
 #. ~/doc/dhd/hbase/.sh_ansi_color
 
-uname=`uname`
-host=`hostname`
-me=`whoami`
-menum=`id -u`
-
 ## Set the path
 #   - not workable if the directory has spaces
 #   - put commands that should come before system commands in {,~}/opt/alternatives/
 h="${HOME}"
 PATH=
 d=
+d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
-d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin"
+d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
 d="${d} /opt/csw/bin /opt/csw/sbin /opt/csw/flex/bin /opt/csw/flex/sbin /opt/csw/gcc4/bin"
 d="${d} /opt/csw/gcc4/sbin /opt/SUNWspro/bin /opt/SUNWspro/sbin"
 
+# This is all for SFU/SUA, which means I'll probably never need it again.
 d="${d} /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin"
 d="${d} /opt/gcc.3.3/bin /opt/ast/bin"
 d="${d} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
 
-d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
+#d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
+#d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
 
-d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
 d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
 d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
-d="${d} /usr/local/archiveopteryx/bin /usr/local/archiveopteryx/sbin"
+
+# mingw/msys stuff
+#d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
+d="${d} /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32"
+#d="${d} /c/opt/bin /c/opt/sbin"
+d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
+# Remember: spaces in here won't work even if escaped w/ '\'! 
+# I had to make C:\ProgramFiles with Junction.exe from sysinternals.
+d="${d} /c/ProgramFiles/Emacs/emacs/bin"
+# BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
+# you might not want to add it here
+d="${d} /c/opt/bin /c/opt/sbin"
+# this should go last becausae it has some things that won't work with MinTTY like vim and sh.exe
+d="${d} /c/opt/git/bin"
 
 for p in ${d}; do
     if [ -d ${p} ]; then PATH="${PATH}${p}:"; fi
 done
 export PATH
 unset d h
+#export MANPATH="${MANPATH}:/opt/local/share/man"
 
+uname=`uname`
+host=`hostname`
+me=`whoami`
+menum=`id -u`
+
+#??export HOME TERM 
 umask 077 #stop reading my files!!
 export CVS_RSH="ssh"
 
@@ -78,6 +95,11 @@ if [ -d /cygdrive ]; then    # Cygwin
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     export CYGWIN="binmode ntsec stty"	# I don't know what this does
     export winc="/cygdrive/c"
+    export windows=1
+#elif [ $uname == "windows32" ]; then #MinGW/MSYS
+#elif [ $uname == "*MINGW*" ]; then #MinGW/MSYS # this syntax doesn't seem to work
+elif [ $uname == "Msys" ]; then
+    ls_args="${ls_args} --color"
     export windows=1
 elif [ -d /dev/fs ]; then # SFU/SUA
     export winc="/dev/fs/C"
@@ -253,13 +275,51 @@ function gpush {
     git push
 }
 
+function .b {
+    . ~/.profile
+    . ~/.bashrc
+}
+
 function maildir2mbox {
     MDIR="$1"
     MBOX="$2"
-    for msg in "$MDIR"/*; do 
+    for msg in "$MDIR"/{cur,tmp,new}/*; do 
         formail -I Status: <"$msg" >> "$MBOX"
     done
 }
+
+# Important! this function assumes that you have no mbox files in already in your maildir!
+# (That would be dumb of you, but I figured you could use fair warning anyway.)
+# Also, I assume you're in the mbox root
+function maildirtree2mboxes {
+    maildir2mbox . Inbox.mbox
+    # you have to do the exec call to 'bash -lc' because otherwise it won't find our
+    # maildir2mbox function that we just so cleverly defined, argh
+    find . -type d -depth 1 ! -path './tmp' ! -path './new' ! -path './cur' ! -path './courierimapkeywords' -exec bash -lc 'maildir2mbox "{}" "{}.mbox"' \;
+    # if the file is hidden, unhide it
+    for mboxfile in .*.mbox; do 
+        mv "$mboxfile" "`basename \"$mboxfile\"|sed 's/^.//'`"
+    done
+}
+
+# expects to be called like this: 
+# maildirtree2mboxes-all-users /home .maildir
+function maildirtree2mboxes-all-users {
+    homedirs="$1"
+    # the standard maildir name, usually something like Maildir or .mail
+    maildirname="$2" 
+    cd "$homedirs"
+    for user in *; do cd "$user/$maildirname"; maildirtree2mboxes; cd ../..; done
+}
+
+# maybe this is too specific to script in here, but here's how i got the enron email
+# leak into mbox files, one per folder:
+    # mybasedir=`pwd` find . -type d -exec bash -c 'cd {}; for item in *; do if [ -f "$item" ]; then /usr/bin/formail -I Status: < "$item" >> "`basename {}`.mbox"; fi; done; cd "$mybasedir"' \;
+# for the next step - renaming the mbox files to contain their relevant path info - 
+# i started with this: 
+    # find . -name \*mbox -exec mv {} `echo {}|sed -e 's#/#__#g'` \;
+# but it just will never work because of the subshell. Ended up with this solution instead:
+    # for mboxfile in $( find . -name \*.mbox ); do mv "$mboxfile" $( echo "$mboxfile" | sed s#./## | sed s#/#__#g ); done
 
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
@@ -269,23 +329,61 @@ alias l1="$cmd_ls $ls_args -1"
 alias lslm="$cmd_ls $ls_args -lart" # lsl+ sort by modified time (lastest at bottom)
 alias llm=lslm
 
+function lsibash {
+# sometimes (eg on Windows) you need to use hardlinks rather than symlinks
+# to link your dotfiles from where they are in dhd/hbase/ into ~/
+# this just lets you check to make sure they're still all the same inode
+# i.e. the same file on disk. 
+    ls -1i ~/.bashrc ~/.dhd/hbase/.bashrc
+    ls -1i ~/.profile ~/.dhd/hbase/.profile
+    ls -1i ~/.inputrc ~/.dhd/hbase/.inputrc
+    ls -1i ~/.emacs ~/.dhd/hbase/.emacs
+}
+
 alias pu="pushd"
 alias po="popd"
 alias tailmes="tail -f /var/log/messages"
 alias mess="less /var/log/messages"
 alias dmesg="dmesg|less"
-alias .b=". ~/.bashrc"
+alias listen='netstat -a | grep LISTEN'
 alias wcl="wc -l"
 
 alias omg="echo wtf"
 alias source=.
-alias .b=". ~/.profile"
 
 alias grep="$cmd_grep --color=auto"
 
 # emacsy goodness
-# note: this requires/assumes emacs23
-alias e="/usr/local/bin/emacsclient -a /usr/local/bin/emacs"
+function e {
+# note: emacsclient -n returns without waiting for you to kill the buffer in emacs
+    macosxemacs="/Applications/Emacs/emacsformacosx.com/Emacs for Mac OS X.app"
+    if [ $uname == "Msys" ]; then
+        EmacsW32dir="/c/Program Files/Emacs"
+        if [ -d "/c/Program Files (x86)/Emacs" ]; then
+            EmacsW32dir="/c/Program Files (x86)/Emacs"
+        fi
+
+        if [ "$1" ]; then
+            "${EmacsW32dir}/emacs/bin/emacsclient.exe" -n "$1"
+        else 
+            "${EmacsW32dir}/emacs/bin/emacsclient.exe"
+        fi
+    elif [ -d "$macosxemacs"  ]; then
+        if [ "$1" ]; then
+            "$macosxemacs/Contents/MacOS/bin/emacsclient" -n "$1"
+        else
+            # check to see if there is an Emacs for Mac OS X.app process
+            /usr/bin/open "$macosxemacs"
+        fi
+    elif [ -f /usr/local/bin/emacsclient ]; then
+    # I believe this next bit requires Emacs23 under Unix: 
+        if [ "$1" ]; then
+            /usr/local/bin/emacsclient -a /usr/local/bin/emacs "$1"
+        else 
+            /usr/local/bin/emacsclient -a /usr/local/bin/emacs
+        fi
+    fi
+}
 
 # screen stuff
 cmd_screen=`type -P screen`
@@ -335,6 +433,18 @@ alias rseed=rmseed
 #alias nzbstart="hellanzb -D"
 #alias nzbsite="hellanzb enqueuenewzbin"
 #alias nzbfile="hellanzb enqueue"
+
+function manualman {
+# this is basically the function that man uses to view its manpages
+# if you know the path to a manpage file (like /usr/share/man/man1/ls.1)
+# you can view it directly with this function.
+# this is particularly useful on MSYS for Windows because currently
+# (20110413) there is a groff command but no man command for MSYS.
+# (note that you will have to `mingw-get install msys-groff` first though)
+    if [ `type -P groff` ]; then
+        groff -Tascii -pet -mandoc -P-c "$1" | less -irs
+    fi
+}
 
 # This is intended to be used in situations like album art scans, 
 # where you have several image files that should be converted to
@@ -445,8 +555,11 @@ function htserv {
 ###################
 # Other Functions #
 ###################
-function listen {
-    netstat -an | grep LISTEN | grep tcp
+function listens {
+    netstat -an | grep LISTEN | grep 'tcp|udp' | awk '{ print $1, "\t", $4 }' | sort
+}
+function connections {
+    netstat -a | grep 'tcp|udp'
 }
 # LaTeX stuff:
 function blix { #buildlatex
@@ -473,6 +586,11 @@ function thead {
     done
 }
 
+function strip-comments {
+    for f in $@; do
+        grep -v '^#' $f | grep -v '^ *#' | grep -v '^$'
+    done
+}
 # from http://www.robmeerman.co.uk/unix
 # red stderr - prepend to a command to have its stderr output in red
 function rse {
@@ -480,7 +598,6 @@ function rse {
     # Execute the command, swap STDOUT and STDERR, colour STDOUT, swap back
     ((eval $(for phrase in "$@"; do echo -n "'$phrase' "; done)) 3>&1 1>&2 2>&3 | sed -e "s/^\(.*\)$/$(echo -en \\033)[31;1m\1$(echo -en \\033)[0m/") 3>&1 1>&2 2>&3
 }
-
 
 
 ###################
@@ -509,6 +626,9 @@ export EDITOR="$myeditor"
 export VISUAL="$myeditor"
 export FSEDIT="$myeditor"
 
+# fucking CPAN
+export PERL_MM_USE_DEFAULT=1
+
 # last character of prompt
 if [ $menum = 0 ]; then lcop='#'
 else                    lcop='>'
@@ -526,7 +646,7 @@ fi
 # COLORS      bold,green           bold,blue         unbold,white
 #           \[\e[01;32m\]     \[\e[01;34m\]      \[\e[00m\]
 #      PS1="              \u@\h              \w \$           "
-export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01;34m\]$lcop \[\e[00m\]"
+export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01;34m\]$lcop \[\e[00m\]"
 #                          \t              \h               :               \w              \$
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
@@ -534,12 +654,3 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\w \[\e[01
 
 unset lcop
 
-
-## Setting up symlinks after svn/git checkouts
-
-#function .link {
-#    if [ "$1" = "dhd" ]; then
-#        important_dotfiles=".emacs .lftprc
-#    if [ $1 = "ssl" ]; then
-#        mkdir -p ~/.w3
-#}

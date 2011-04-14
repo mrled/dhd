@@ -4,9 +4,11 @@
 
 echo "en0: wired:       `ifconfig en0|grep netmask|cut -d\  -f2`"
 echo "en1: wireless:    `ifconfig en1|grep netmask|cut -d\  -f2`"
-if [ "$1" == "e" ]; then
-    echo "external ip:      `curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g'`"
-fi
+echo "external IPv4:    `curl -s ipv4.icanhazip.com`"
+echo "external IPv6:    `curl -s ipv6.icanhazip.com`"
+#if [ "$1" == "e" ]; then
+#    echo "external ip:      `curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g'`"
+#fi
 
 
 
