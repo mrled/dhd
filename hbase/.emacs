@@ -68,6 +68,9 @@
 (require 'tail)
 (require 'highlight-tail)
 
+; I feel like it should do this for me, ugh
+(server-start)
+
 ;(autoload 'markdown-mode "markdown-mode.el"
 ;   "Major mode for editing Markdown files" t)
 ;(setq auto-mode-alist
