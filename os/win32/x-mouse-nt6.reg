@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Control Panel\Desktop]
+"UserPreferencesMask"=hex:9f,3e,07,80,12,00,00,00
+"ActiveWndTrkTimeout"=dword:00000096
+
+; the ActiveWndTrkTimeout is the time in milliseconds that it takes for 
+; the focus to change; dword:00000096 is 150ms in decimal. 
