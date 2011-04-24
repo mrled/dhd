@@ -68,10 +68,20 @@
 (require 'tail)
 (require 'highlight-tail)
 
+
+; I feel like it should do this for me, ugh
+(server-start)
+
+
+; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
 (setq auto-mode-alist
    (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
+;(autoload 'markdown-mode "markdown-mode.el"
+;   "Major mode for editing Markdown files" t)
+;(setq auto-mode-alist
+;   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
 
 ; because markdown-mode + longlines-mode = fucked up [return] key
 (add-hook 'markdown-mode-hook
