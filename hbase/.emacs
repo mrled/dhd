@@ -68,10 +68,10 @@
 (require 'tail)
 (require 'highlight-tail)
 
-;(autoload 'markdown-mode "markdown-mode.el"
-;   "Major mode for editing Markdown files" t)
-;(setq auto-mode-alist
-;   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
+(autoload 'markdown-mode "markdown-mode.el"
+   "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
 
 ; because markdown-mode + longlines-mode = fucked up [return] key
 (add-hook 'markdown-mode-hook
@@ -82,6 +82,7 @@
 ;(add-hook 'markdown-mode-hook 'longlines-mode)
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
+(setq line-move-visual nil) ; necessary I think b/c of something longlines does.
 
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
@@ -306,5 +307,10 @@ all yubnub commands."
 (defun mrled/eight-fucking-spaces ()
   (interactive)
   (insert "        "))
-(global-set-key "\C-c\C-t" 'mrled/eight-fucking-spaces)
-(global-set-key "\C-ct"    'mrled/eight-fucking-spaces)
+(defun mrled/four-fucking-spaces ()
+  (interactive)
+  (insert "        "))
+(global-set-key "\C-c\C-t" 'mrled/four-fucking-spaces)
+(global-set-key "\C-ct"    'mrled/four-fucking-spaces)
+(global-set-key "\C-c\C-T" 'mrled/eight-fucking-spaces)
+(global-set-key "\C-cT"    'mrled/eight-fucking-spaces)
