@@ -358,14 +358,17 @@ function e {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
     macosxemacs="/Applications/Emacs/emacsformacosx.com/Emacs for Mac OS X.app"
     if [[ $uname == MINGW* ]]; then
-        EmacsW32dir="/c/Program Files/Emacs"
-        if [ -d "/c/Program Files (x86)/Emacs" ]; then
-            EmacsW32dir="/c/Program Files (x86)/Emacs"
+        # try /c/opt/ntemacs24 first. then try the EmacsW32 possible locations.
+        emacsdir="/c/opt/ntemacs24"
+        if [ -d "/c/Program Files (x86)/Emacs/emacs" ]; then emacsdir="/c/Program Files (x86)/Emacs/emacs"
+        elif [ -d "/c/Program Files/Emacs/emacs" ]; then emacsdir="/c/Program Files/Emacs/emacs"
         fi
+        # note that patched emacs from EmacsW32 lets you run emacsclientw.exe whether you give it a filename or not
+        # but that unpatched emacs requires you to run runemacs.exe first and then emacsclientw.exe subsequently
         if [ "$1" ]; then
-            "${EmacsW32dir}/emacs/bin/emacsclientw.exe" -n "$1"
-        else 
-            "${EmacsW32dir}/emacs/bin/emacsclientw.exe" -n
+            "${emacsdir}/bin/emacsclientw.exe" -n --alternate-editor="${emacsdir}/bin/runemacs.exe"
+        else
+            "${emacsdir}/bin/emacsclientw.exe" -n --alternate-editor="${emacsdir}/bin/runemacs.exe" "$1"
         fi
     elif [ -d "$macosxemacs"  ]; then
         if [ "$1" ]; then
@@ -381,6 +384,8 @@ function e {
         else 
             /usr/local/bin/emacsclient -a /usr/local/bin/emacs
         fi
+    else 
+        echo "Couldn't find emacs. Make sure it's installed and this function knows about it."
     fi
 }
 
