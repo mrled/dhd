@@ -24,7 +24,10 @@ rem   (cmd syntax is bullshit.)
 set MYPATH=
 call :s_check_exists C:\opt\local\bin
 call :s_check_exists C:\opt\ntemacs24\bin
+call :s_check_exists C:\Program Files\Emacs\emacs
+call :s_check_exists C:\Program Files (x86)\Emacs\emacs
 call :s_check_exists C:\opt\git\bin
+call :s_check_exists C:\opt\SysinternalsSuite
 call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files (x86)\PuTTY
 
