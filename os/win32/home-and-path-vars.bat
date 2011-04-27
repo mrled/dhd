@@ -25,8 +25,12 @@ set MYPATH=
 call :s_check_exists C:\opt\local\bin
 call :s_check_exists C:\opt\ntemacs24\bin
 call :s_check_exists C:\opt\git\bin
+call :s_check_exists C:\opt\svn\bin
+call :s_check_exists C:\opt\SysinternalsSuite
 call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files (x86)\PuTTY
+call :s_check_exists C:\Program Files\7-Zip
+call :s_check_exists C:\Program Files (x86)\7-Zip
 
 setx PATH %MYPATH%
 set MYPATH=
