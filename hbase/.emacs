@@ -30,7 +30,6 @@
 (add-to-load-path-if-exists "~/opt/share/emacs/site-lisp")
 (add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
-(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
 (add-to-load-path-if-exists "~/.dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/.dhd/host/" host-name "/emacs/"))
 ;(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
@@ -71,20 +70,23 @@
 ; I feel like it should do this for me, ugh
 (server-start)
 
-;(autoload 'markdown-mode "markdown-mode.el"
-;   "Major mode for editing Markdown files" t)
-;(setq auto-mode-alist
-;   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
+
+; markdown shit
+(autoload 'markdown-mode "markdown-mode.el"
+   "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
 
 ; because markdown-mode + longlines-mode = fucked up [return] key
 (add-hook 'markdown-mode-hook
           (function (lambda ()
                       (local-set-key [return] 'newline))))
-; I'll probably be interested in flyspell and longlines if I'm in markdown...
-(add-hook 'markdown-mode-hook 'flyspell-mode)
+;; I'll probably be interested in flyspell and longlines if I'm in markdown...
+;(add-hook 'markdown-mode-hook 'flyspell-mode)
 ;(add-hook 'markdown-mode-hook 'longlines-mode)
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
+(setq line-move-visual nil) ; necessary I think b/c of something longlines does.
 
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
@@ -309,5 +311,10 @@ all yubnub commands."
 (defun mrled/eight-fucking-spaces ()
   (interactive)
   (insert "        "))
-(global-set-key "\C-c\C-t" 'mrled/eight-fucking-spaces)
-(global-set-key "\C-ct"    'mrled/eight-fucking-spaces)
+(defun mrled/four-fucking-spaces ()
+  (interactive)
+  (insert "        "))
+(global-set-key "\C-c\C-t" 'mrled/four-fucking-spaces)
+(global-set-key "\C-ct"    'mrled/four-fucking-spaces)
+(global-set-key "\C-c\C-T" 'mrled/eight-fucking-spaces)
+(global-set-key "\C-cT"    'mrled/eight-fucking-spaces)

@@ -4739,7 +4739,7 @@ Gross generalizations tend to be incorrect.
 This is up there with the fume-huffers who have to ruin wonderful images of NASA by going “think of all the people we could feed with this money”, you know, because every time you send a rocket into space, billions of tiny strings attached to it yank sandwiches out of the mouths of toddlers throughout the third world.
 - Jason Scott
 %
-@badbanana: Too much coffee this morning. I'm having a hard time falling asleep in this meeting.
+@badbanana: Too much coffee this morning. I'm having a hard time falling asleep in this meeting.v
 %
 And no, lets not start another editor conversation.  The editor war is over, we all lost.
 - Negromancer on SA
@@ -4954,4 +4954,48 @@ We are big fans of physics. As such, we have chosen to work within its laws. And
 ...haters' hatred notwithstanding
 - Ben Godwin
 %
+The last time I remembered having it was when I used it to push a Twitter message up to the TV screen on the dance floor, so everyone knew I was there.
 
+http://www.darkreading.com/blog/229219572/why-i-m-quitting-security-part-1.html
+%
+I think I'm in love with that second chick, and not just for her body, but also for her brains, and also for the way she's beating up the other chick with white dwarf explosions that she somehow has in her hands.
+- http://meganamram.tumblr.com/post/2790388489/chick-fight
+%
+If they make you walk like something ewoks are going to smash between two logs, then maybe high heels are not for you.
+-@sween
+%
+And I’d just like to point out again that people who say “backslash” (or who write that copy for commercials) should be strung up, the flesh stripped from their bones, and their entrails fed to wolves. It’s 2011, folks. None of you have ever worked at a DOS terminal, so the word “backslash” shouldn’t even be in your vocabulary. ↩
+- Dr Drang, http://www.leancrew.com/all-this/2011/04/finger-memory-failure/
+%
+Radio! It still exists! Who knew.
+- jwz, http://www.dnalounge.com/backstage/log/2011/04/19.html
+%
+... but since so much sexual slang involves meat—"hot dog," "sausage," "burger," "beef injection," "another beef injection," and so on—I thought this would be a fine occasion to point out that there are plenty of veggie alternatives:
+
+Vegetarian-Friendly Sex Slang
+Peeling the banana.
+Tossing the salad.
+Squeezing the melons.
+Zeroing in on a grown man's nuts and nutsack.
+Putting Monsanto in yoursanto.
+Ordering the split pea soup.
+Sorry, that's got ham.
+
+Cornholing others.
+
+- http://blog.okcupid.com/index.php/10-charts-about-sex/
+%
+...Now that Perl 6 is competing with Duke Nukem for non-delivery times...
+- Roger Donaldson on http://www.jwz.org/blog/2011/04/a-badge-for-the-software-industrys-failures/
+%
+Why is it that any time I post a "this is fucked up" story, someone asks, "why is anyone surprised?"
+
+Do I type in a surprised tone of voice?
+
+Is the internet presumed to be composed entirely of surprising things?
+
+- jwz, http://www.jwz.org/blog/2011/04/dropbox-doesnt-actually-encrypt-your-files/
+%
+Why does adding the phrase "on the internet" suddenly imply that it's OK to be lax about trust? 
+- Spideroak, https://spideroak.com/blog/20110423133455-engineering-matters
+%
