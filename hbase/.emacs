@@ -30,7 +30,6 @@
 (add-to-load-path-if-exists "~/opt/share/emacs/site-lisp")
 (add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
-(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
 (add-to-load-path-if-exists "~/.dhd/opt/emacs")
 (add-to-load-path-if-exists (concat "~/.dhd/host/" host-name "/emacs/"))
 ;(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
@@ -68,7 +67,6 @@
 (require 'tail)
 (require 'highlight-tail)
 
-
 ; I feel like it should do this for me, ugh
 (server-start)
 
@@ -78,17 +76,13 @@
    "Major mode for editing Markdown files" t)
 (setq auto-mode-alist
    (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
-;(autoload 'markdown-mode "markdown-mode.el"
-;   "Major mode for editing Markdown files" t)
-;(setq auto-mode-alist
-;   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
 
 ; because markdown-mode + longlines-mode = fucked up [return] key
 (add-hook 'markdown-mode-hook
           (function (lambda ()
                       (local-set-key [return] 'newline))))
-; I'll probably be interested in flyspell and longlines if I'm in markdown...
-(add-hook 'markdown-mode-hook 'flyspell-mode)
+;; I'll probably be interested in flyspell and longlines if I'm in markdown...
+;(add-hook 'markdown-mode-hook 'flyspell-mode)
 ;(add-hook 'markdown-mode-hook 'longlines-mode)
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
