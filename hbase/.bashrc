@@ -565,6 +565,11 @@ function listens {
 function connections {
     netstat -a | grep 'tcp|udp'
 }
+function routes {
+    # works for macosx
+    route -n get default
+}
+
 # LaTeX stuff:
 function blix { #buildlatex
     latex "$1".tex
