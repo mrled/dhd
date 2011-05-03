@@ -36,7 +36,9 @@ d="${d} /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32"
 d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
 # Remember: spaces in here won't work even if escaped w/ '\'! 
 # I had to make C:\ProgramFiles with Junction.exe from sysinternals.
-d="${d} /c/ProgramFiles/Emacs/emacs/bin"
+# d="${d} /c/ProgramFiles/Emacs/emacs/bin"
+d="${d} /c/opt/ntemacs24/bin"
+d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite"
 # BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
 # you might not want to add it here
 d="${d} /c/opt/bin /c/opt/sbin"
@@ -345,7 +347,6 @@ alias po="popd"
 alias tailmes="tail -f /var/log/messages"
 alias mess="less /var/log/messages"
 alias dmesg="dmesg|less"
-alias listen='netstat -a | grep LISTEN'
 alias wcl="wc -l"
 
 alias omg="echo wtf"
@@ -565,6 +566,38 @@ function listens {
 function connections {
     netstat -a | grep 'tcp|udp'
 }
+function sshbackdoor {
+    username=`whoami`
+    otherhost="-"
+    port=1034
+    wait=0
+    while getopts "u:h:p:w:"; do
+        case $opt in 
+            u) 
+                username=$OPTARG
+                ;;
+            h)
+                otherhost=$OPTARG
+                ;;
+            p) 
+                port=$OPTARG
+                ;;
+            w)
+                if [[ $OPTARG != [0-9]* ]]; then
+                    echo "The -w option must be an integer, in seconds, to wait. (Defaults to 0.)"
+                    exit
+                fi
+                wait=$OPTARG
+                ;;
+            esac
+        done
+    if [ "$otherhost" -eq "-" ]; then 
+        echo "You must at least provide a host with the -h option."
+        exit
+    fi
+    sleep $wait && nohup ssh -f -N -R $port:localhost:22 $username@$otherhost
+}
+
 # LaTeX stuff:
 function blix { #buildlatex
     latex "$1".tex
