@@ -596,6 +596,9 @@ function sshbackdoor {
         exit
     fi
     sleep $wait && nohup ssh -f -N -R $port:localhost:22 $username@$otherhost
+function routes {
+    # works for macosx
+    route -n get default
 }
 
 # LaTeX stuff:
