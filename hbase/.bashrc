@@ -566,37 +566,6 @@ function listens {
 function connections {
     netstat -a | grep 'tcp|udp'
 }
-function sshbackdoor {
-    username=`whoami`
-    otherhost="-"
-    port=1034
-    wait=0
-    while getopts "u:h:p:w:"; do
-        case $opt in 
-            u) 
-                username=$OPTARG
-                ;;
-            h)
-                otherhost=$OPTARG
-                ;;
-            p) 
-                port=$OPTARG
-                ;;
-            w)
-                if [[ $OPTARG != [0-9]* ]]; then
-                    echo "The -w option must be an integer, in seconds, to wait. (Defaults to 0.)"
-                    exit
-                fi
-                wait=$OPTARG
-                ;;
-            esac
-        done
-    if [ "$otherhost" -eq "-" ]; then 
-        echo "You must at least provide a host with the -h option."
-        exit
-    fi
-    sleep $wait && nohup ssh -f -N -R $port:localhost:22 $username@$otherhost
-}
 function routes {
     # works for macosx
     route -n get default
