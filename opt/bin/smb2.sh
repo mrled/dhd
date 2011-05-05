@@ -1,6 +1,8 @@
 #!/bin/bash
 
-smbclient=`env smbclient`
+_smbclient=smbclient
+_smbclientopts=
+#_smbclientopts="--authentication-file=~mledbetter/.netrc.smbclient"
 thiscmd=`basename $0`
 USAGE="Usage: '$thiscmd [cp|ls|help|echo]' [URL]."
 URLFORMAT="URLs must be in form [user@]host[:share[/path/to/somewhere]]."
@@ -48,7 +50,7 @@ _parse() {
     # now determine if we have a "user@server" string, or just a "server" string
     echo $userserver | grep \@ >/dev/null
     if [ "$?" -eq "0" ]; then #username present
-        USER=`echo $userserver | awk 'BEGIN {FS="@"}; {print $1}'`
+        username=`echo $userserver | awk 'BEGIN {FS="@"}; {print $1}'`
         server=`echo $userserver | awk 'BEGIN {FS="@"}; {print $2}'`
     else #no username present so the whole string is just the server
         server=$userserver
@@ -56,7 +58,7 @@ _parse() {
 }
 _echo() {
     _parse $*
-    echo "User:  $USER"
+    echo "User:  $username"
     echo "Host:  $server"
     echo "Share: $share"
     echo "Path:  $remotepath"
@@ -66,12 +68,13 @@ _cp() {
 }
 _ls() {
     _parse $*
-    if [ x$remotepath = "x" ]; then #no remotepath, just list shares
-        $smbclient -L $server
+    if ! [ -z "$username" ]; then #we are not anonymous
+        _smbclientopts="$smbclientopts --user=$username"
+    fi
+    if [ -z "$share" ]; then #no share, just list shares
+        $_smbclient $_smbclientopts -L $server
     else #there is a remotepath, view it
-        $smbclient //$server/share <<EOF
-cd $path
-prompt
+        $_smbclient $_smbclientopts //$server/$share -D $remotepath <<EOF
 ls
 exit
 EOF
