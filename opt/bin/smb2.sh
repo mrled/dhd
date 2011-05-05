@@ -30,6 +30,7 @@ _parse() {
         if [ "$?" -eq "0" ]; then #path present
             share=`echo $sharepath | awk 'BEGIN {FS="/"}; {print $1}'`
             remotepath=`echo $sharepath | sed "s/$share\///"`
+            _smbclientopts="$_smbclientopts -D \"$remotepath\""
         else #no path present, so the whole string is just the share
             share=$sharepath
         fi
@@ -51,6 +52,7 @@ _parse() {
     echo $userserver | grep \@ >/dev/null
     if [ "$?" -eq "0" ]; then #username present
         username=`echo $userserver | awk 'BEGIN {FS="@"}; {print $1}'`
+        _smbclientopts="$_smbclientopts --user=$username"
         server=`echo $userserver | awk 'BEGIN {FS="@"}; {print $2}'`
     else #no username present so the whole string is just the server
         server=$userserver
@@ -63,18 +65,55 @@ _echo() {
     echo "Share: $share"
     echo "Path:  $remotepath"
 }
+_put() {
+}
+_get() {
+}
 _cp() {
+    # figure out which argument is remote
+    echo $1 | grep : >/dev/null
+    if [ "$?" -eq "0" ]; then arg1remote=1; fi
+    echo $2 | grep : >/dev/null
+    if [ "$?" -eq "0" ]; then arg2remote=1; fi
+
+    if [ -z $arg1remote ] && [ -z $arg2remote ]; then # both are remote
+        echo "When copying files, you cannot copy from a remote server to a remote"
+        echo "server due to a limitation of smbclient."
+        exit
+    elif ! [ -z $arg1remote ] && ! [ -z $arg2remote ]; then # neither are remote
+        echo "You are using the cp function, but have not provided any remote URLs"
+        echo "to copy to or from."
+        echo $URLFORMAT
+        exit
+    elif ! [ -z $arg1remote ]; then #arg1 is remote; we are downloading
+        remotefile="$2"
+        _parse "$1"
+        $_smbclient $_smbclientopts //$server/$share <<EOF
+prompt
+mget $remotefile
+exit
+EOF
+    elif ! [ -z $arg2remote ]; then #arg2 is remote; we are uploading
+        localfile="$1"
+        _parse "$2"
+        $_smbclient $_smbclientopts //$server/$share <<EOF
+prompt
+mput $localfile
+exit
+EOF
+    else
+        echo "Something must have gone wrong; we should never have gotten here."
+        exit
+    fi
+
     return
 }
 _ls() {
     _parse $*
-    if ! [ -z "$username" ]; then #we are not anonymous
-        _smbclientopts="$smbclientopts --user=$username"
-    fi
     if [ -z "$share" ]; then #no share, just list shares
         $_smbclient $_smbclientopts -L $server
     else #there is a remotepath, view it
-        $_smbclient $_smbclientopts //$server/$share -D $remotepath <<EOF
+        $_smbclient $_smbclientopts //$server/$share <<EOF
 ls
 exit
 EOF
