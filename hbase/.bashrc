@@ -41,7 +41,7 @@ d="${d} /c/opt/ntemacs24/bin"
 d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite"
 # BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
 # you might not want to add it here
-d="${d} /c/opt/bin /c/opt/sbin"
+d="${d} /c/opt/bin /c/opt/sbin /c/opt/local/bin /c/opt/local/sbin"
 # this should go last becausae it has some things that won't work with MinTTY like vim and sh.exe
 d="${d} /c/opt/git/bin"
 
