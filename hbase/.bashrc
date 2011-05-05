@@ -11,7 +11,7 @@ d=
 d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
-d="${d} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
+d="${d} $h/doc/dhd/opt/bin $h/.dhd/opt/bin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -36,10 +36,12 @@ d="${d} /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32"
 d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
 # Remember: spaces in here won't work even if escaped w/ '\'! 
 # I had to make C:\ProgramFiles with Junction.exe from sysinternals.
-d="${d} /c/ProgramFiles/Emacs/emacs/bin"
+# d="${d} /c/ProgramFiles/Emacs/emacs/bin"
+d="${d} /c/opt/ntemacs24/bin"
+d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite"
 # BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
 # you might not want to add it here
-d="${d} /c/opt/bin /c/opt/sbin"
+d="${d} /c/opt/bin /c/opt/sbin /c/opt/local/bin /c/opt/local/sbin"
 # this should go last becausae it has some things that won't work with MinTTY like vim and sh.exe
 d="${d} /c/opt/git/bin"
 
@@ -345,7 +347,6 @@ alias po="popd"
 alias tailmes="tail -f /var/log/messages"
 alias mess="less /var/log/messages"
 alias dmesg="dmesg|less"
-alias listen='netstat -a | grep LISTEN'
 alias wcl="wc -l"
 
 alias omg="echo wtf"
@@ -560,10 +561,10 @@ function htserv {
 # Other Functions #
 ###################
 function listens {
-    netstat -an | grep LISTEN | grep 'tcp|udp' | awk '{ print $1, "\t", $4 }' | sort
+    netstat -an | grep LISTEN | grep 'tcp\|udp' | awk '{ print $1, "\t", $4 }' | sort
 }
 function connections {
-    netstat -a | grep 'tcp|udp'
+    netstat -a | grep 'tcp\|udp'
 }
 function routes {
     # works for macosx
