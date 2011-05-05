@@ -11,7 +11,7 @@ d=
 d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
-d="${d} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
+d="${d} $h/doc/dhd/opt/bin $h/.dhd/opt/bin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -565,37 +565,6 @@ function listens {
 }
 function connections {
     netstat -a | grep 'tcp|udp'
-}
-function sshbackdoor {
-    username=`whoami`
-    otherhost="-"
-    port=1034
-    wait=0
-    while getopts "u:h:p:w:"; do
-        case $opt in 
-            u) 
-                username=$OPTARG
-                ;;
-            h)
-                otherhost=$OPTARG
-                ;;
-            p) 
-                port=$OPTARG
-                ;;
-            w)
-                if [[ $OPTARG != [0-9]* ]]; then
-                    echo "The -w option must be an integer, in seconds, to wait. (Defaults to 0.)"
-                    exit
-                fi
-                wait=$OPTARG
-                ;;
-            esac
-        done
-    if [ "$otherhost" -eq "-" ]; then 
-        echo "You must at least provide a host with the -h option."
-        exit
-    fi
-    sleep $wait && nohup ssh -f -N -R $port:localhost:22 $username@$otherhost
 }
 function routes {
     # works for macosx
