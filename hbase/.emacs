@@ -86,7 +86,7 @@
 ;(add-hook 'markdown-mode-hook 'longlines-mode)
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
-(setq line-move-visual nil) ; necessary I think b/c of something longlines does.
+(setq line-move-visual nil) ; necessary I think b/c of something markdown-mode does
 
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")

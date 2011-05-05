@@ -12,4 +12,4 @@ assoc .el=EmacsFile
 assoc .mdwn=txtfile
 assoc .nfo=txtfile
 
-
+pause
