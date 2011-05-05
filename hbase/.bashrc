@@ -560,10 +560,10 @@ function htserv {
 # Other Functions #
 ###################
 function listens {
-    netstat -an | grep LISTEN | grep 'tcp|udp' | awk '{ print $1, "\t", $4 }' | sort
+    netstat -an | grep LISTEN | grep 'tcp\|udp' | awk '{ print $1, "\t", $4 }' | sort
 }
 function connections {
-    netstat -a | grep 'tcp|udp'
+    netstat -a | grep 'tcp\|udp'
 }
 function routes {
     # works for macosx
