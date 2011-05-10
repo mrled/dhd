@@ -418,6 +418,9 @@ function uploadid {
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
     cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
 }
+function fingerprint {
+    for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$keyfile"; done
+}
 
 
 # Torrent &c stuff
