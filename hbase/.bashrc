@@ -622,10 +622,20 @@ function rse {
 
 ## Completion
 complete -cf sudo
-# SSH tab completion of hosts that exist in .ssh/config (via superuser.com)
-if [ -f ~/.ssh/config ]; then
-    complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
-fi
+# via <http://hints.macworld.com/article.php?story=20080317085050719>
+function _complete_ssh_hosts {
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    sshkh=
+    sshcnf=
+    comp_ssh_hosts=`
+        if [ -f ~/.ssh/known_hosts ]; then sed -e 's/^  *//' -e '/^$/d' -e 's/[, ].*//' -e '/\[/d' ~/.ssh/known_hosts | sort -u; fi
+        if [ -f ~/.ssh/config ]; then grep '^[Hh]ost ' ~/.ssh/config | awk '{print $2}'; fi
+        `
+    COMPREPLY=( $(compgen -W "${comp_ssh_hosts}" -- $cur))
+    return 0
+}
+complete -F _complete_ssh_hosts ssh
 
 
 # glob filenames in a case-insensitive manner
