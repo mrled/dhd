@@ -38,7 +38,7 @@ d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
 # I had to make C:\ProgramFiles with Junction.exe from sysinternals.
 # d="${d} /c/ProgramFiles/Emacs/emacs/bin"
 d="${d} /c/opt/ntemacs24/bin"
-d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite"
+d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite /c/opt/nirsoft_package/NirSoft /c/opt/nirsoft64"
 # BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
 # you might not want to add it here
 d="${d} /c/opt/bin /c/opt/sbin /c/opt/local/bin /c/opt/local/sbin"
@@ -417,6 +417,12 @@ alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 function uploadid { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
     cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
+}
+function rfingerprint {
+    for argument in $@; do
+        echo "SSH keys for $argument"
+        ssh $argument 'for keyfile in /etc/ssh/*key; do ssh-keygen -lf $keyfile; done'
+    done
 }
 
 
