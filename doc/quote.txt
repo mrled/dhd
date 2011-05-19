@@ -4951,4 +4951,6 @@ We are big fans of physics. As such, we have chosen to work within its laws. And
 ...haters' hatred notwithstanding
 - Ben Godwin
 %
-
+There are no polite answers to questions of the form "Why does Excel do X?"
+- someone on superuser.com
+%
