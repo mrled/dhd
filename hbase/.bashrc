@@ -418,13 +418,15 @@ function uploadid {
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
     cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
 }
+function fingerprint {
+    for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$publickey"; done
+}
 function rfingerprint {
     for argument in $@; do
         echo "SSH keys for $argument"
-        ssh $argument 'for keyfile in /etc/ssh/*key; do ssh-keygen -lf $keyfile; done'
+        ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'
     done
 }
-
 
 # Torrent &c stuff
 function seedbox {
@@ -652,8 +654,9 @@ export EDITOR="$myeditor"
 export VISUAL="$myeditor"
 export FSEDIT="$myeditor"
 
-# fucking CPAN
+# fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
+if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # last character of prompt
 if [ $menum = 0 ]; then lcop='#'

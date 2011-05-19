@@ -41,6 +41,7 @@
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/semi")
 (add-to-load-path-if-exists "/usr/share/emacs/site-lisp/wl")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/erc")
+(add-to-load-path-if-exists "~/opt/src/zenburn-el")
 
 ; settings (not custom variables)
 ;;;; fix the visible bell! w/ ring-bell-function or something
