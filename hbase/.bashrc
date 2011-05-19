@@ -11,7 +11,7 @@ d=
 d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
-d="${d} $h/doc/dhd/opt/bin $h/doc/dhd/os/$uname/bin"
+d="${d} $h/doc/dhd/opt/bin $h/.dhd/opt/bin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -36,10 +36,12 @@ d="${d} /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32"
 d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
 # Remember: spaces in here won't work even if escaped w/ '\'! 
 # I had to make C:\ProgramFiles with Junction.exe from sysinternals.
-d="${d} /c/ProgramFiles/Emacs/emacs/bin"
+# d="${d} /c/ProgramFiles/Emacs/emacs/bin"
+d="${d} /c/opt/ntemacs24/bin"
+d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite"
 # BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
 # you might not want to add it here
-d="${d} /c/opt/bin /c/opt/sbin"
+d="${d} /c/opt/bin /c/opt/sbin /c/opt/local/bin /c/opt/local/sbin"
 # this should go last becausae it has some things that won't work with MinTTY like vim and sh.exe
 d="${d} /c/opt/git/bin"
 
@@ -98,7 +100,7 @@ if [ -d /cygdrive ]; then    # Cygwin
     export windows=1
 #elif [ $uname == "windows32" ]; then #MinGW/MSYS
 #elif [ $uname == "*MINGW*" ]; then #MinGW/MSYS # this syntax doesn't seem to work
-elif [ $uname == "Msys" ]; then
+elif [[ $uname == MINGW* ]]; then
     ls_args="${ls_args} --color"
     export windows=1
 elif [ -d /dev/fs ]; then # SFU/SUA
@@ -345,7 +347,6 @@ alias po="popd"
 alias tailmes="tail -f /var/log/messages"
 alias mess="less /var/log/messages"
 alias dmesg="dmesg|less"
-alias listen='netstat -a | grep LISTEN'
 alias wcl="wc -l"
 
 alias omg="echo wtf"
@@ -357,16 +358,18 @@ alias grep="$cmd_grep --color=auto"
 function e {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
     macosxemacs="/Applications/Emacs/emacsformacosx.com/Emacs for Mac OS X.app"
-    if [ $uname == "Msys" ]; then
-        EmacsW32dir="/c/Program Files/Emacs"
-        if [ -d "/c/Program Files (x86)/Emacs" ]; then
-            EmacsW32dir="/c/Program Files (x86)/Emacs"
+    if [[ $uname == MINGW* ]]; then
+        # try /c/opt/ntemacs24 first. then try the EmacsW32 possible locations.
+        emacsdir="/c/opt/ntemacs24"
+        if [ -d "/c/Program Files (x86)/Emacs/emacs" ]; then emacsdir="/c/Program Files (x86)/Emacs/emacs"
+        elif [ -d "/c/Program Files/Emacs/emacs" ]; then emacsdir="/c/Program Files/Emacs/emacs"
         fi
-
+        # note that patched emacs from EmacsW32 lets you run emacsclientw.exe whether you give it a filename or not
+        # but that unpatched emacs requires you to run runemacs.exe first and then emacsclientw.exe subsequently
         if [ "$1" ]; then
-            "${EmacsW32dir}/emacs/bin/emacsclient.exe" -n "$1"
-        else 
-            "${EmacsW32dir}/emacs/bin/emacsclient.exe"
+            "${emacsdir}/bin/emacsclientw.exe" -n --alternate-editor="${emacsdir}/bin/runemacs.exe"
+        else
+            "${emacsdir}/bin/emacsclientw.exe" -n --alternate-editor="${emacsdir}/bin/runemacs.exe" "$1"
         fi
     elif [ -d "$macosxemacs"  ]; then
         if [ "$1" ]; then
@@ -382,6 +385,8 @@ function e {
         else 
             /usr/local/bin/emacsclient -a /usr/local/bin/emacs
         fi
+    else 
+        echo "Couldn't find emacs. Make sure it's installed and this function knows about it."
     fi
 }
 
@@ -412,6 +417,9 @@ alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 function uploadid { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
     cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
+}
+function fingerprint {
+    for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$keyfile"; done
 }
 
 
@@ -556,11 +564,16 @@ function htserv {
 # Other Functions #
 ###################
 function listens {
-    netstat -an | grep LISTEN | grep 'tcp|udp' | awk '{ print $1, "\t", $4 }' | sort
+    netstat -an | grep LISTEN | grep 'tcp\|udp' | awk '{ print $1, "\t", $4 }' | sort
 }
 function connections {
-    netstat -a | grep 'tcp|udp'
+    netstat -a | grep 'tcp\|udp'
 }
+function routes {
+    # works for macosx
+    route -n get default
+}
+
 # LaTeX stuff:
 function blix { #buildlatex
     latex "$1".tex
