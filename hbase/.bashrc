@@ -626,8 +626,9 @@ export EDITOR="$myeditor"
 export VISUAL="$myeditor"
 export FSEDIT="$myeditor"
 
-# fucking CPAN
+# fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
+if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # last character of prompt
 if [ $menum = 0 ]; then lcop='#'
