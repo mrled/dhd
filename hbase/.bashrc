@@ -38,7 +38,7 @@ d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
 # I had to make C:\ProgramFiles with Junction.exe from sysinternals.
 # d="${d} /c/ProgramFiles/Emacs/emacs/bin"
 d="${d} /c/opt/ntemacs24/bin"
-d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite"
+d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite /c/opt/nirsoft_package/NirSoft /c/opt/nirsoft64"
 # BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
 # you might not want to add it here
 d="${d} /c/opt/bin /c/opt/sbin /c/opt/local/bin /c/opt/local/sbin"
@@ -419,9 +419,14 @@ function uploadid {
     cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
 }
 function fingerprint {
-    for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$keyfile"; done
+    for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$publickey"; done
 }
-
+function rfingerprint {
+    for argument in $@; do
+        echo "SSH keys for $argument"
+        ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'
+    done
+}
 
 # Torrent &c stuff
 function seedbox {
@@ -619,10 +624,20 @@ function rse {
 
 ## Completion
 complete -cf sudo
-# SSH tab completion of hosts that exist in .ssh/config (via superuser.com)
-if [ -f ~/.ssh/config ]; then
-    complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
-fi
+# via <http://hints.macworld.com/article.php?story=20080317085050719>
+function _complete_ssh_hosts {
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    sshkh=
+    sshcnf=
+    comp_ssh_hosts=`
+        if [ -f ~/.ssh/known_hosts ]; then sed -e 's/^  *//' -e '/^$/d' -e 's/[, ].*//' -e '/\[/d' ~/.ssh/known_hosts | sort -u; fi
+        if [ -f ~/.ssh/config ]; then grep '^[Hh]ost ' ~/.ssh/config | awk '{print $2}'; fi
+        `
+    COMPREPLY=( $(compgen -W "${comp_ssh_hosts}" -- $cur))
+    return 0
+}
+complete -F _complete_ssh_hosts ssh
 
 
 # glob filenames in a case-insensitive manner
