@@ -221,57 +221,6 @@ function bman {
     man $* | col -b | bcat
 }
 
-
-function smbputhelp {
-cat <<EOF
-This wrapper was designed because the syntax for smbclient is a huge piece of shit. Seriously. Who the hell decided to emulate the user friendliness of ftp for the love.
-
-USAGE: 
-You might use this script like so:
-smbput file1 (file2...fileN) //server/share/path/to/somewhere
-To see the available shares on a server, use:
-smbclient -L //server
-
-Samba includes its own smbget command, for which I will refer
-the user to its own manual.
-If you want to see smbclient's own silly syntax, here's some:
-smbclient [-U username|-N] //server/share [password] <<DONEWITHTHAT
-cd /path/to/somewhere
-prompt
-mput some files
-exit
-DONEWITHTHAT
-Note that you should never put a trailing / after the share or
-smbclient will be a giant fucking gay baby about it
-
-FUTURE: 
-- Grab all the things I need, and pass everything else on to smbclient.
-  (That would certainly be the correct thing to do.) 
-- Pass the -N argument to smbclient unless the user specifically 
-  provides a username on the command line.
-- Possibly support URL syntax instead of this shit
-  (e.g. smb://[username[:password]@]server/share/path/)
-- I have no idea how good my error handling is at present. (Probably
-  awesome because I've put zero thought into it.) Investigate. 
-
-EOF
-}
-
-function smbput {
-    serverstring=${!#} # ${!#} is the final arg 
-    # we are expecting a serverstring like //micah-pc/Users/Micah/Downloads
-    server=`echo $serverstring | awk 'BEGIN {FS="/"}; {print $3}'`
-    share=`echo  $serverstring | awk 'BEGIN {FS="/"}; {print $4}'`
-    destination=`echo $serverstring | sed s/"\/\/$server\/$share\/"//`
-
-    smbclient -U $user $server/$share $password <<EOF
-prompt
-cd $destination
-mput $files
-exit
-EOF
-}
-
 function gpush {
     git commit $@
     git push
