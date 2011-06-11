@@ -146,37 +146,6 @@ elif [ $uname == "Linux" ]; then # assume GNU userland
     ls_args="${ls_args} --color"
 fi
 
-if [ $winc ]; then # we are on Windows somehow
-    # psh. I do all this and then realize that I should just use 
-    # `runwin32 explorer` instead. 
-    export windir="$winc/WINDOWS"
-    export wins32="$winc/WINDOWS/system32"
-    export progfiles="$winc/Program\ Files"
-    export surf="$progfiles/Mozilla\ Firefox/firefox.exe"
-    alias explorer="$windir/explorer.exe" # you *must* use \ paths and quote *everything*
-    alias explore=explorer
-    alias expl=explorer
-    alias hh="$windir/hh.exe"
-    alias regedit="$windir/regedit.exe"
-    alias ifconfig="$wins32/ipconfig.exe"
-    alias mstsc="$wins32/mstsc.exe"
-    alias fsutil="$wins32/fsutil.exe"
-    alias net="$wins32/net.exe"
-    alias netsh="$wins32/netsh.exe"
-fi
-
-if [ $surf ]; then # we have a web browser!
-    alias surf=$surf
-    alias firefox=$surf
-fi
-
-# Neuric Aliases:
-neuric="~/doc/neuric"
-alias snu="svn update $neuric/{Neuric,Documentation,Training}"
-alias sns="svn status $neuric/{Neuric,Documentation,Training} | grep -v '^\?'"
-alias snsa="svn status $neuric/{Neuric,Documentation,Training}"
-alias cdn="cd $neuric"
-
 ##################
 # Global Aliases #
 ##################
@@ -215,15 +184,6 @@ function define {
 alias wno=define
 function ff {
     find . -name "$1" -print
-}
-
-function bman {
-    man $* | col -b | bcat
-}
-
-function gpush {
-    git commit $@
-    git push
 }
 
 function .b {
@@ -279,17 +239,6 @@ alias lsli="$cmd_ls $ls_args -ali" # lsl+inodes
 alias l1="$cmd_ls $ls_args -1"
 alias lslm="$cmd_ls $ls_args -lart" # lsl+ sort by modified time (lastest at bottom)
 alias llm=lslm
-
-function lsibash {
-# sometimes (eg on Windows) you need to use hardlinks rather than symlinks
-# to link your dotfiles from where they are in dhd/hbase/ into ~/
-# this just lets you check to make sure they're still all the same inode
-# i.e. the same file on disk. 
-    ls -1i ~/.bashrc ~/.dhd/hbase/.bashrc
-    ls -1i ~/.profile ~/.dhd/hbase/.profile
-    ls -1i ~/.inputrc ~/.dhd/hbase/.inputrc
-    ls -1i ~/.emacs ~/.dhd/hbase/.emacs
-}
 
 alias pu="pushd"
 alias po="popd"
@@ -390,11 +339,6 @@ alias rmseed="rm *.torrent *.nzb"
 alias lsseed="ls *.torrent *.nzb"
 alias lseed=lsseed
 alias rseed=rmseed
-
-#alias nzb="hellanzb"
-#alias nzbstart="hellanzb -D"
-#alias nzbsite="hellanzb enqueuenewzbin"
-#alias nzbfile="hellanzb enqueue"
 
 function manualman {
 # this is basically the function that man uses to view its manpages
