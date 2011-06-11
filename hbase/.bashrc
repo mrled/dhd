@@ -1,9 +1,7 @@
 # .bashrc
 
-#. ~/doc/dhd/hbase/.sh_ansi_color
-
 ## Set the path
-#   - not workable if the directory has spaces
+#   - not workable if the directory has spaces (!!)
 #   - put commands that should come before system commands in {,~}/opt/alternatives/
 h="${HOME}"
 PATH=
@@ -11,7 +9,7 @@ d=
 d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
-d="${d} $h/doc/dhd/opt/bin $h/.dhd/opt/bin"
+d="${d} $h/.dhd/opt/bin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -97,17 +95,12 @@ if [ -d /cygdrive ]; then    # Cygwin
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     export CYGWIN="binmode ntsec stty"	# I don't know what this does
     export winc="/cygdrive/c"
-    export windows=1
-#elif [ $uname == "windows32" ]; then #MinGW/MSYS
-#elif [ $uname == "*MINGW*" ]; then #MinGW/MSYS # this syntax doesn't seem to work
 elif [[ $uname == MINGW* ]]; then
     ls_args="${ls_args} --color"
-    export windows=1
 elif [ -d /dev/fs ]; then # SFU/SUA
     export winc="/dev/fs/C"
     export SVN_SSH="/usr/pkg/bin/ssh"
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
-    export windows=1
 elif [ $uname == "Darwin" ]; then # Mac OS X
     # many of these are thanks to <http://superuser.com/questions/52483/terminal-tips-and-tricks-for-mac-os-x>
     test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
@@ -116,7 +109,7 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
         osascript -e "tell application \"System Events\" to set visible of process \"$APPLICATION\" to false"
     }
     # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
-    alias switchx="osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript"
+    alias switchx="osascript ~/.dhd/opt/ascript/x11-cmd-tab.ascript"
     # Launch QuickLook from the command line (^c will kill it and return to prompt)
     alias ql='qlmanage -p 2>/dev/null'
     function pman {
@@ -222,15 +215,6 @@ function maildirtree2mboxes-all-users {
     cd "$homedirs"
     for user in *; do cd "$user/$maildirname"; maildirtree2mboxes; cd ../..; done
 }
-
-# maybe this is too specific to script in here, but here's how i got the enron email
-# leak into mbox files, one per folder:
-    # mybasedir=`pwd` find . -type d -exec bash -c 'cd {}; for item in *; do if [ -f "$item" ]; then /usr/bin/formail -I Status: < "$item" >> "`basename {}`.mbox"; fi; done; cd "$mybasedir"' \;
-# for the next step - renaming the mbox files to contain their relevant path info - 
-# i started with this: 
-    # find . -name \*mbox -exec mv {} `echo {}|sed -e 's#/#__#g'` \;
-# but it just will never work because of the subshell. Ended up with this solution instead:
-    # for mboxfile in $( find . -name \*.mbox ); do mv "$mboxfile" $( echo "$mboxfile" | sed s#./## | sed s#/#__#g ); done
 
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
