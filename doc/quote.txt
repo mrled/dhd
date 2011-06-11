@@ -5094,3 +5094,13 @@ Or maybe motor oil? You know. For irony.
 
 -m
 %
+from "Things Fall Apart", by Chinua Achebe. Obierika has done Okonkwo a great favor. 
+
+"I do not know how to thank you," said Okonkwo.
+"I can tell you," said Obierika. "Kill one of your sons for me." 
+"That will not be enough," said Okonkwo.
+"Then kill yourself," said Obierika.
+"Forgive me," said Okonkwo, smiling. "I shall not talk about thanking you any more." 
+%
+
+
