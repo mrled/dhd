@@ -1,9 +1,0 @@
-#!/bin/csh
-
-# OK this is not a registry file, but it's my list of cli magic that I must do every time I install a new Mac OS X machine: 
-
-# make focus follow the mouse, in Terminal.app only
-defaults write com.apple.Terminal FocusFollowsMouse -string YES
-
-# make hidden applications gray in the Dock
-defaults write com.apple.Dock showhidden -bool yes
