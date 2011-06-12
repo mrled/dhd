@@ -48,15 +48,13 @@ for p in ${d}; do
 done
 export PATH
 unset d h
-#export MANPATH="${MANPATH}:/opt/local/share/man"
 
 uname=`uname`
 host=`hostname`
 me=`whoami`
 menum=`id -u`
 
-#??export HOME TERM 
-umask 077 #stop reading my files!!
+umask 077
 export CVS_RSH="ssh"
 
 cmd_ls="ls"
@@ -113,29 +111,15 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     # Launch QuickLook from the command line (^c will kill it and return to prompt)
     alias ql='qlmanage -p 2>/dev/null'
     function pman {
-        man -t "${1}" | open -f -a /Applications/Preview.app
+        man -t $* | ps2pdf - - | open -g -f -a /Applications/Preview.app 
     }
-    function pman2 {
-        # doesn't ask if you want to save the manpage when you close the window in preview
-        # on the other hand, i couldn't get it to work fuck it
-        man -t "${1}" | ps2pdf - - | open -g -f -a /Applications/Preview.app 
-    }
-    # misc helpful commands: pbcopy/pbpaste, mdfind (-live for real time), afconvert, textutil
-    # SetFile $file -a V # sets file invisible
 elif [ $uname = "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
-l    psargs="-ef"
+    psargs="-ef"
 elif [ $uname == "OpenBSD" ]; then # obsd
     export PKG_PATH="ftp://ftp3.usa.openbsd.org/pub/OpenBSD/4.3/packages/sparc64/"
     psargs_user="j"
 elif [ $uname == "Linux" ]; then # assume GNU userland
-    if [ -d /usr/portage ]; then
-        function ugrep {
-            grep "$1" /usr/portage/profiles/use.desc \
-                /usr/portage/profiles/use.local.desc
-        }
-        alias fnc 'find /etc -iname "._cfg????*"'
-    fi
     ls_args="${ls_args} --color"
 fi
 
@@ -162,11 +146,10 @@ alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d
 alias psa="ps $psargs"
 alias psaj="ps $psargs$psargs_user"
 alias psawcl="ps $psargs | wc -l"
-function psasys {
-    # if you are root, this will produce confusing results, since many system processes are of course run as root.
+function psother {
+    # return all processes except my own
     psaj | grep -v "$me" 
 }
-alias psasyswcl="psasys | wc -l"
 function psaf { 
     # (the second call to grep prevents this function from being returned as a hit)
     psa | grep -i $1 | grep -v "grep -i $1"
@@ -275,7 +258,7 @@ function e {
 # screen stuff
 cmd_screen=`type -P screen`
 if [ $cmd_screen ]; then
-    default_session_name="camelot" # this is used later on too
+    default_session_name="camelot" # totally arbitrary session name
     
     # attach to session if extant, otherwise create a new one
     function scr {
@@ -345,10 +328,8 @@ function manualman {
 # around unless you want them assimilated into the final pdf too.
 function convert2pdf {
     filetype="$1"
-    oldpdfs=""
     for oldfile in *.$filetype; do 
         convert "$oldfile" "$oldfile.pdf"
-        #oldpdfs="${oldpdfs} \"${oldfile}.pdf\""
     done
     pdftk *.pdf cat output Final.pdf
 }
@@ -360,63 +341,6 @@ function changext {
     newext="$2"
     /bin/ls -1 *.$oldext | sed 's/\(.*\)\.$oldext/mv \"\1.$oldext\"  \"\1.$newext\"/' | /bin/sh
 }
-
-
-# GUI stuff
-if [ $TERM_PROGRAM ]; then 
-    function remote {
-        if [ $2 ]; then 
-            sessionname="$2"
-        else 
-            sessionname="$default_session_name"
-        fi
-        #osascript -e 'tell application "Terminal" to do script "ssh -t "$1" \"screen -D -R -S $sessionname\""'
-        ssh -t "$1" "screen -D -R -S $sessionname"
-    } 
-
-    if   [ $TERM_PROGRAM == "Apple_Terminal" ]; then
-        alias aterm='osascript -e "tell application \"Terminal\" to do script \"\""'
-    elif [ $TERM_PROGRAM == "iTerm.app" ]; then
-        alias iterm='osascript -e "tell application \"iTerm\" to do script \"\""'
-        alias iterm='osascript -e "tell application \"iTerm\" \
-            -e "activate"
-            -e "set myterm to (make new terminal)"
-            -e "tell myterm" 
-                -e "set mysession to (make new session at the end of sessions)"
-                -e "tell my session"
-                    -e "exec command /bin/bash"
-            -e "end tell" -e "end tell" -e "end tell"'
-
-#osascript -e 'tell app "iTerm"' -e 'activate' -e 'set myterm to (make new terminal)' -e 'tell myterm' -e 'set mysession to (make new session at the end of sessions)' -e 'tell mysession' -e 'exec command "/bin/tcsh"' -e 'write text "INSERT SHELL COMMAND HERE"' -e 'end tell' -e 'end tell' -e 'end tell' 
-    fi
-
-#    term=
-# This must come after the $TERM_PROGRAM check, because in Mac OS X, $DISPLAY is always
-# set if you have X11 installed, since it opens X11 automagically if you open an X app. 
-elif [ $DISPLAY ]; then
-    term=xterm
-    # if type -P urxvt >/dev/null; then # AKA rxvt-unicode
-    #     term=urxvt
-    # elif type -P rxvt >/dev/null; then
-    #     term=rxvt
-    # fi
-
-    # intended to be used like `remote [user@]host [session]`
-    # example: remote mrled@vlack.ath.cx rtorrent
-    # sets the title and ssh's to first argument, and optionally  uses
-    # the named screen session - if no such session exists, it uses my
-    # default session name which is defined somewhere above
-    # works for (u)rxvt and xterm at least
-    function remote { 
-        if [ $2 ]; then
-            sessionname="$2"
-        else 
-            sessionname="$default_session_name"
-        fi
-        $term -T "$1" -e ssh -t "$1" "screen -D -R -S \"$sessionname\""
-    }
-    # you can check all sessions on a remote host with `ssh $host screen -ls`
-fi
 
 # Mac metadata files: .DS_Store and ._Doomsday.mkv for example
 function mmf { 
@@ -456,34 +380,29 @@ function routes {
     route -n get default
 }
 
-# LaTeX stuff:
-function blix { #buildlatex
-    latex "$1".tex
-    dvipdf "$1".dvi "$1".pdf && rm "$1".dvi
-    open "$1".pdf
+function tinfo { # bittorrent info
+    case $1 in
+        name)
+            for f in $@; do 
+                strings $f|head -n1|sed 's/.*name[1234567890]*://g' | sed 's/12:piece.*//g'
+            done
+            ;;
+        trac)
+            for f in $@; do 
+                strings $f|head -n1|sed 's/d8:announce[1234567890]*://g' | sed 's/10:creat.*//g'
+            done
+            ;;
+        head)
+            for f in $@; do 
+                strings $f | head -n1
+            done
+            ;;
+    esac
 }
 
-function tname { 
-    for f in $@; do 
-        strings $f|head -n1|sed 's/.*name[1234567890]*://g' | sed 's/12:piece.*//g'
-    done
-}
-
-function ttrac {
-    for f in $@; do 
-        strings $f|head -n1|sed 's/d8:announce[1234567890]*://g' | sed 's/10:creat.*//g'
-    done
-}
-
-function thead {
-    for f in $@; do 
-        strings $f | head -n1
-    done
-}
-
-function strip-comments {
+function strip-comments { 
     for f in $@; do
-        grep -v '^#' $f | grep -v '^ *#' | grep -v '^$'
+        grep -v '^#' $f | grep -v '^ *#' | grep -v '^ *$'
     done
 }
 # from http://www.robmeerman.co.uk/unix
