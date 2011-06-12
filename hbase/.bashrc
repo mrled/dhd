@@ -1,6 +1,6 @@
 # .bashrc
 
-## Set the path
+## Set the path to inclode only directories that exist on this system.
 #   - not workable if the directory has spaces (!!)
 #   - put commands that should come before system commands in {,~}/opt/alternatives/
 h="${HOME}"
@@ -139,8 +139,8 @@ alias sed='$cmd_sed'
 alias du='$cmd_du'
 alias dush='$cmd_du -sh'
 
-alias ppath='echo $PATH | $cmd_sed "s/:/\n/g"'
-alias pupath='echo $PATH | $cmd_sed "s/:/\n/g" | sort | uniq'
+# print the path, one item per line
+alias ppath='echo $PATH | $cmd_sed "s/:/\n/g"' 
 alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
 
 alias psa="ps $psargs"
