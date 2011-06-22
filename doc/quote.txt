@@ -5036,12 +5036,26 @@ I hate this decade.
 
 - Aiden. The vampire. 
 %
+Since "Acerbic Half-Informed Opinion" is my Team American Drink superpower, I was happy to chime in. 
+- American Drink
+%
+...you have to understand that to these people, you aren't you. You are stuff they found in a box.
+- http://www.ftrain.com/nanolaw.html
+%
+XML is like violence. If it doesn't solve your problem, just use more.
+%
+"Interoperating only with yourself is just a standards-compliant form of masturbation."
+- Mark Pilgrim
+%
 "BBEdit and the Ugly Unix Twins"
 - Watts Martin, referring of course to Vim and Emacs
 - http://chipotle.tumblr.com/post/5207966724/text-editor-intervention
 %
 This is 2008. Don't write a text editor; you're reinventing fire.
 - Ben Straub, http://stackoverflow.com/questions/154245/editing-a-text-buffer
+%
+Printers are the cold dead-eyed predators of the IT world. 
+- SmellsOfFriendship on SA
 %
 Received a CD-R in the post today. It contained a 700MB zip file. Inside the zip was a folder containing thirty smaller zip files. Inside each was one part of a multi-part zip.
 
@@ -5058,4 +5072,13 @@ NEW NAME FOR THE CROTCH AREA:
 "grindquarters." you are welcome.
 
 - http://ohheymary.tumblr.com/post/5352226522/new-name-for-the-crotch-area
+%
+One does not seriously attack the expertise of a scientist using the undefined phrase 'butt-head'.
+- Court opinion in dicta
+  Sagan v. Apple Computer, Inc., 874 F.Supp. 
+  1072 (USDC C.D. Cal. 1994), CV 94-2180 LGB (BRx)
+  1994 U.S. Dist. LEXIS 20154
+%
+Once again, I resolved to earn The Fuck You Money, so I can one day open my very own classic 80s arcade, where quarters matter and the jukebox doesn't play anything released after 1987.
+- Wil Wheaton
 %
