@@ -113,7 +113,7 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     function pman {
         man -t $* | ps2pdf - - | open -g -f -a /Applications/Preview.app 
     }
-elif [ $uname = "SunOS"  ]; then # Solaris
+elif [ $uname == "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
     psargs="-ef"
 elif [ $uname == "OpenBSD" ]; then # obsd
@@ -216,6 +216,7 @@ alias wcl="wc -l"
 
 alias omg="echo wtf"
 alias source=.
+alias shl="echo $SHLVL"
 
 alias grep="$cmd_grep --color=auto"
 
@@ -341,6 +342,15 @@ function changext {
     newext="$2"
     /bin/ls -1 *.$oldext | sed 's/\(.*\)\.$oldext/mv \"\1.$oldext\"  \"\1.$newext\"/' | /bin/sh
 }
+
+function remote {
+    if [ $2 ]; then 
+        sessionname="$2"
+    else 
+        sessionname="$default_session_name"
+    fi
+    ssh -t "$1" "screen -D -R -S $sessionname"
+} 
 
 # Mac metadata files: .DS_Store and ._Doomsday.mkv for example
 function mmf { 
