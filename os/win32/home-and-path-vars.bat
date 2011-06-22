@@ -30,6 +30,9 @@ call :s_check_exists C:\opt\svn\bin
 call :s_check_exists C:\opt\SysinternalsSuite
 call :s_check_exists C:\opt\nirsoft64
 call :s_check_exists C:\opt\nirsoft_package
+call :s_check_exists C:\opt\Console2
+call :s_check_exists C:\opt\UnxUtils\bin
+call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
 call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files (x86)\PuTTY
 call :s_check_exists C:\Program Files\7-Zip
