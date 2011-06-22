@@ -416,16 +416,36 @@ alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 function uploadid { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
-    cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
+    userathost="$1"
+    cat ~/.ssh/id_rsa.pub | ssh $userathost 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys'
 }
+alias ssh-uploadid="uploadid"
 function fingerprint {
     for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$publickey"; done
 }
+alias ssh-fingerprint="fingerprint"
 function rfingerprint {
     for argument in $@; do
         echo "SSH keys for $argument"
         ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'
     done
+}
+alias ssh-rfingerprint="rfingerprint"
+
+# wake-on-lan information so I don't have to always remember it
+function magicp { 
+    target=${1:? "Usage: magicp <target>, where <target> is a host that I know about"}
+    if   [[ $target == "andraia-wifi" ]]; then
+        wakeonlan 00:1f:f3:d8:40:e6 
+    elif [[ $target == "andraia-wired" ]]; then
+        wakeonlan 00:1f:5b:ca:32:40 
+    elif [[ $target == "andraia" ]]; then
+        wakeonlan 00:1f:f3:d8:40:e6         
+        wakeonlan 00:1f:5b:ca:32:40 
+    else
+        echo "I don't know about host \"$target\" yet"
+        echo "You can use \`wakeonlan <macaddr>\` to wake it up."
+    fi
 }
 
 # Torrent &c stuff
