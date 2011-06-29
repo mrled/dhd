@@ -5246,6 +5246,9 @@ An IPv4 address space walks into a bar: "A strong CIDR please. I'm exhausted." #
 Saying that I would lick ranch dressing out of Dumbledore's beard is a statement of culinary rather than literary taste.
 - @biorhythmist
 %
+Finally, the simulation hypothesis builds on this and suggests that if we are already living in a cyberspatial history simulation (and not a philosopher's hedonic thought experiment)...
+- Charlie Stross, http://www.antipope.org/charlie/blog-static/2011/06/reality-check-1.html
+%
 I finally found an old piece of crap PC. It was inherited by our company and monitors an HVAC system at one of our locations. I told them it could die at any moment and they said "If we didn't even know about it then it's not that important."
 
 I don't know how many times I've thought like that, but it's strange to hear users say it.
