@@ -283,7 +283,7 @@ alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 function uploadid { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
     userathost="$1"
-    cat ~/.ssh/id_rsa.pub | ssh $userathost 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys'
+    cat ~/.ssh/id_rsa.pub | ssh $* 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys'
 }
 alias ssh-uploadid="uploadid"
 function fingerprint {
