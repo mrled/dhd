@@ -443,6 +443,9 @@ function rse {
     ((eval $(for phrase in "$@"; do echo -n "'$phrase' "; done)) 3>&1 1>&2 2>&3 | sed -e "s/^\(.*\)$/$(echo -en \\033)[31;1m\1$(echo -en \\033)[0m/") 3>&1 1>&2 2>&3
 }
 
+# silly progress spinner from @climagic
+roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
+
 
 ###################
 # Global Settings #
