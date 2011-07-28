@@ -276,6 +276,9 @@ if [ $cmd_screen ]; then
     alias scrw="$cmd_screen -wipe"
 fi
 
+##
+## Remote Commands
+##
 alias ssh="ssh -A"
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
@@ -313,6 +316,11 @@ function magicp {
         echo "You can use \`wakeonlan <macaddr>\` to wake it up."
     fi
 }
+
+esxtop() {
+    ssh antimony -t TERM=xterm esxtop
+}
+
 
 # Torrent &c stuff
 function seedbox {
