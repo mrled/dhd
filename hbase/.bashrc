@@ -113,6 +113,19 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     function pman {
         man -t $* | ps2pdf - - | open -g -f -a /Applications/Preview.app 
     }
+    # see: 
+    # cd "$vmfdir"
+    # for vmbin in $(find . -maxdepth 1 -type f -perm +=x); do echo "$vmbin"; done
+    vmfdir="/Library/Application Support/VMware Fusion"
+    if [ -d "$vmfdir" ]; then
+        for vmbin in vm-support.tool vmnet-bridge vmnet-cli vmnet-dhcpd vmnet-natd \
+            vmnet-netifup vmnet-sniffer vmrun vmss2core vmware-authd vmware-cloneBootCamp \
+            vmware-licenseTool vmware-ntfs vmware-rawdiskAuthTool vmware-rawdiskCreator \
+            vmware-usbArbitratorTool vmware-vdiskmanager vmware-vmx vmware-vmx-debug
+        do
+            alias $vmbin="\"$vmfdir/$vmbin\""
+        done
+    fi
 elif [ $uname == "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
     psargs="-ef"
@@ -282,7 +295,7 @@ alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 function uploadid { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
-    cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'cat - >> ~/.ssh/authorized_keys'
+    cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'mkdir -p ~/.ssh/ ; cat - >> ~/.ssh/authorized_keys'
 }
 function fingerprint {
     for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$publickey"; done
@@ -423,6 +436,15 @@ function rse {
     ((eval $(for phrase in "$@"; do echo -n "'$phrase' "; done)) 3>&1 1>&2 2>&3 | sed -e "s/^\(.*\)$/$(echo -en \\033)[31;1m\1$(echo -en \\033)[0m/") 3>&1 1>&2 2>&3
 }
 
+sprunge() {
+    curl -F 'sprunge=<-' http://sprunge.us
+}
+
+matrix() { # shows matrix code. via @climagic
+    TR_CMD=tr
+    type -P gtr > /dev/null && TR_CMD=gtr
+    while [ 1 ]; do dd if=/dev/urandom bs=$(($COLUMNS * 3)) count=1 2> /dev/null| $TR_CMD -c "[:digit:]" " " | GREP_COLOR="1;32" grep --color "[^ ]"; sleep 0.3; done
+}
 
 ###################
 # Global Settings #
