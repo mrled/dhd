@@ -5036,12 +5036,26 @@ I hate this decade.
 
 - Aiden. The vampire. 
 %
+Since "Acerbic Half-Informed Opinion" is my Team American Drink superpower, I was happy to chime in. 
+- American Drink
+%
+...you have to understand that to these people, you aren't you. You are stuff they found in a box.
+- http://www.ftrain.com/nanolaw.html
+%
+XML is like violence. If it doesn't solve your problem, just use more.
+%
+"Interoperating only with yourself is just a standards-compliant form of masturbation."
+- Mark Pilgrim
+%
 "BBEdit and the Ugly Unix Twins"
 - Watts Martin, referring of course to Vim and Emacs
 - http://chipotle.tumblr.com/post/5207966724/text-editor-intervention
 %
 This is 2008. Don't write a text editor; you're reinventing fire.
 - Ben Straub, http://stackoverflow.com/questions/154245/editing-a-text-buffer
+%
+Printers are the cold dead-eyed predators of the IT world. 
+- SmellsOfFriendship on SA
 %
 Received a CD-R in the post today. It contained a 700MB zip file. Inside the zip was a folder containing thirty smaller zip files. Inside each was one part of a multi-part zip.
 
@@ -5058,6 +5072,15 @@ NEW NAME FOR THE CROTCH AREA:
 "grindquarters." you are welcome.
 
 - http://ohheymary.tumblr.com/post/5352226522/new-name-for-the-crotch-area
+%
+One does not seriously attack the expertise of a scientist using the undefined phrase 'butt-head'.
+- Court opinion in dicta
+  Sagan v. Apple Computer, Inc., 874 F.Supp. 
+  1072 (USDC C.D. Cal. 1994), CV 94-2180 LGB (BRx)
+  1994 U.S. Dist. LEXIS 20154
+%
+Once again, I resolved to earn The Fuck You Money, so I can one day open my very own classic 80s arcade, where quarters matter and the jukebox doesn't play anything released after 1987.
+- Wil Wheaton
 %
 And someone tell me the last time telling someone how to design their text resulted in that site changing. The text stays justified, green on black, and full of vitrol.
 - Jason Scott on his blog's page design
@@ -5223,6 +5246,9 @@ An IPv4 address space walks into a bar: "A strong CIDR please. I'm exhausted." #
 Saying that I would lick ranch dressing out of Dumbledore's beard is a statement of culinary rather than literary taste.
 - @biorhythmist
 %
+Finally, the simulation hypothesis builds on this and suggests that if we are already living in a cyberspatial history simulation (and not a philosopher's hedonic thought experiment)...
+- Charlie Stross, http://www.antipope.org/charlie/blog-static/2011/06/reality-check-1.html
+%
 I finally found an old piece of crap PC. It was inherited by our company and monitors an HVAC system at one of our locations. I told them it could die at any moment and they said "If we didn't even know about it then it's not that important."
 
 I don't know how many times I've thought like that, but it's strange to hear users say it.
@@ -5257,4 +5283,25 @@ I've got some terrible news: FOX
 %
 I prefer to describe my muscles as understated and unpretentious. Subtle.
 - Jon Riley on fb
+%
+This leads me to maybe the most depressing thing I ever thought. You know who’d be good at guerrilla war? Ugh, I can’t say it. No, it has to be said. You know who’d be good at guerrilla war? Cheerleaders. What with the social skills and the pillow talk thing and…it’s too depressing and I’m not going to go on about it, but it had to be said. Jesus, what a world.
+- The War Nerd: http://exiledonline.com/wn-osama-porn/
+%
+"God forbid we should ever be two years without a new social network."
+
+- Thomas Jefferson
+%
+Fear of the file system practically defines novice users...
+- John Siracusa, http://arstechnica.com/apple/reviews/2011/07/mac-os-x-10-7.ars/6
+%
+..evil begets stupidity.
+- Paul Graham, http://www.paulgraham.com/apple.html
+%
+It's not quite as bad as it sounds, merely almost as bad as it sounds.
+- http://mjg59.dreamwidth.org/4957.html
+%
+The interesting thing about meeting RMS is that you're not able to fix the bugs you find.
+- pjc50.livejournal.com
+%
+“For while the particular four-letter word being litigated here is perhaps more distasteful than most others of its genre, it is nevertheless often true that one man’s vulgarity is another man’s lyric.” -Justice John M. Harlan II
 %

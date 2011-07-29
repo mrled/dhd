@@ -289,23 +289,50 @@ if [ $cmd_screen ]; then
     alias scrw="$cmd_screen -wipe"
 fi
 
+##
+## Remote Commands
+##
 alias ssh="ssh -A"
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 function uploadid { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
-    cat ~/.ssh/rsa.bigger.key.pub | ssh $1 'mkdir -p ~/.ssh/ ; cat - >> ~/.ssh/authorized_keys'
+    cat ~/.ssh/id_rsa.pub | ssh $* 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys'
 }
+alias ssh-uploadid="uploadid"
 function fingerprint {
     for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$publickey"; done
 }
+alias ssh-fingerprint="fingerprint"
 function rfingerprint {
     for argument in $@; do
         echo "SSH keys for $argument"
         ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'
     done
 }
+alias ssh-rfingerprint="rfingerprint"
+
+# wake-on-lan information so I don't have to always remember it
+function magicp { 
+    target=${1:? "Usage: magicp <target>, where <target> is a host that I know about"}
+    if   [[ $target == "andraia-wifi" ]]; then
+        wakeonlan 00:1f:f3:d8:40:e6 
+    elif [[ $target == "andraia-wired" ]]; then
+        wakeonlan 00:1f:5b:ca:32:40 
+    elif [[ $target == "andraia" ]]; then
+        wakeonlan 00:1f:f3:d8:40:e6         
+        wakeonlan 00:1f:5b:ca:32:40 
+    else
+        echo "I don't know about host \"$target\" yet"
+        echo "You can use \`wakeonlan <macaddr>\` to wake it up."
+    fi
+}
+
+esxtop() {
+    ssh antimony -t TERM=xterm esxtop
+}
+
 
 # Torrent &c stuff
 function seedbox {
@@ -445,6 +472,8 @@ matrix() { # shows matrix code. via @climagic
     type -P gtr > /dev/null && TR_CMD=gtr
     while [ 1 ]; do dd if=/dev/urandom bs=$(($COLUMNS * 3)) count=1 2> /dev/null| $TR_CMD -c "[:digit:]" " " | GREP_COLOR="1;32" grep --color "[^ ]"; sleep 0.3; done
 }
+# silly progress spinner from @climagic
+roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
 
 ###################
 # Global Settings #
