@@ -113,6 +113,19 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     function pman {
         man -t $* | ps2pdf - - | open -g -f -a /Applications/Preview.app 
     }
+    # see: 
+    # cd "$vmfdir"
+    # for vmbin in $(find . -maxdepth 1 -type f -perm +=x); do echo "$vmbin"; done
+    vmfdir="/Library/Application Support/VMware Fusion"
+    if [ -d "$vmfdir" ]; then
+        for vmbin in vm-support.tool vmnet-bridge vmnet-cli vmnet-dhcpd vmnet-natd \
+            vmnet-netifup vmnet-sniffer vmrun vmss2core vmware-authd vmware-cloneBootCamp \
+            vmware-licenseTool vmware-ntfs vmware-rawdiskAuthTool vmware-rawdiskCreator \
+            vmware-usbArbitratorTool vmware-vdiskmanager vmware-vmx vmware-vmx-debug
+        do
+            alias $vmbin="\"$vmfdir/$vmbin\""
+        done
+    fi
 elif [ $uname == "SunOS"  ]; then # Solaris
     export CC="/opt/csw/gcc4/bin/gcc"
     psargs="-ef"
@@ -276,13 +289,15 @@ if [ $cmd_screen ]; then
     alias scrw="$cmd_screen -wipe"
 fi
 
+##
+## Remote Commands
+##
 alias ssh="ssh -A"
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 function uploadid { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
-    userathost="$1"
     cat ~/.ssh/id_rsa.pub | ssh $* 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys'
 }
 alias ssh-uploadid="uploadid"
@@ -313,6 +328,11 @@ function magicp {
         echo "You can use \`wakeonlan <macaddr>\` to wake it up."
     fi
 }
+
+esxtop() {
+    ssh antimony -t TERM=xterm esxtop
+}
+
 
 # Torrent &c stuff
 function seedbox {
@@ -443,9 +463,17 @@ function rse {
     ((eval $(for phrase in "$@"; do echo -n "'$phrase' "; done)) 3>&1 1>&2 2>&3 | sed -e "s/^\(.*\)$/$(echo -en \\033)[31;1m\1$(echo -en \\033)[0m/") 3>&1 1>&2 2>&3
 }
 
+sprunge() {
+    curl -F 'sprunge=<-' http://sprunge.us
+}
+
+matrix() { # shows matrix code. via @climagic
+    TR_CMD=tr
+    type -P gtr > /dev/null && TR_CMD=gtr
+    while [ 1 ]; do dd if=/dev/urandom bs=$(($COLUMNS * 3)) count=1 2> /dev/null| $TR_CMD -c "[:digit:]" " " | GREP_COLOR="1;32" grep --color "[^ ]"; sleep 0.3; done
+}
 # silly progress spinner from @climagic
 roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
-
 
 ###################
 # Global Settings #
