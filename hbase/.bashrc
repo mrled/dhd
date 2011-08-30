@@ -233,6 +233,8 @@ alias shl="echo $SHLVL"
 
 alias grep="$cmd_grep --color=auto"
 
+alias ddate="date +%Y%m%d"
+
 # emacsy goodness
 function e {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
