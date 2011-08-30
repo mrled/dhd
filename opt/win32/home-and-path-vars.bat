@@ -23,6 +23,7 @@ rem   (cmd syntax is bullshit.)
 
 set MYPATH=
 
+call :s_check_exists %HOME%\.dhd\win32bin
 call :s_check_exists C:\opt\local\bin
 call :s_check_exists C:\opt\ntemacs24\bin
 call :s_check_exists C:\opt\git\bin
