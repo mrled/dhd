@@ -452,7 +452,8 @@ function tinfo { # bittorrent info
 
 function strip-comments { 
     for f in $@; do
-        grep -v '^#' $f | grep -v '^ *#' | grep -v '^ *$'
+        grep -v '^[	| ]*#'  $f | grep -v '^[	| ]*$' 
+        #grep -v '^[:blank:]*#' $f | grep -v '^[:blank:]*$'
     done
 }
 # from http://www.robmeerman.co.uk/unix
