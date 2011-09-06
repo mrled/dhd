@@ -106,27 +106,6 @@
       w3m-use-title-buffer-name t)                ; html title is buffer name
 (autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
 
-; this lets you do C-c y (and C-c C-y) to invoke a YubNub command with 
-; emacs-w3m in the current w3m buffer, or, if the current buffer is not
-; a w3m buffer, the last-opened w3m buffer. 
-; If you prefix it with the universal argument (C-u C-c y), it will 
-; use a *clone* of the buffer (just like doing C-c C-t from within w3m)
-; It would probably be ideal if that were not the case, but ah well. 
-; Note that this is a function of browse-url.
-; from <http://www.yubnub.org/yubnub-emacs.txt>
-(defun yubnub (command)
-  "Use `browse-url' to submits a command to yubnub and opens
-;; result in an external browser defined in `browse-url-browser-function'.
-
-To get started  `M-x yubnub <RET> ls <RET>' will return a list of 
-all yubnub commands."
-  (interactive "sYubNub: ")
-  (browse-url 
-   (concat "http://yubnub.org/parser/parse?command=" command)))
-(global-set-key "\C-cy"    'yubnub)
-(global-set-key "\C-c\C-y" 'yubnub)
-
-
 ;; optional keyboard short-cut
 ; (global-set-key "\C-xm" 'browse-url-at-point)
 
@@ -220,6 +199,10 @@ all yubnub commands."
 
 (global-set-key [(meta down)] 'forward-block-dwim)
 (global-set-key [(meta up)]  'backward-block-dwim)
+
+(global-set-key "\C-x s" 'save-buffer) ; so tired of 'save-some-buffers, the default
+
+(global-set-key "\M-`" 'other-frame) ; mimic the way macosx switches between windows of the same application
 
 
 ;; no-word: use antiword to view .doc in emacs
