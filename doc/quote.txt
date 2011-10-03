@@ -4946,6 +4946,7 @@ As someone who almost spent $90 on an emoticon
 %
 "I heard Justin Bieber has a 10 inch dick, but it’s in his ass and belongs to Usher."
 - Mos Def, http://twitter.com/MosDef/status/42853290114953216
+  (edit from the future: I am deeply saddened to learn that Twitter has suspended this Twitter user on account of it not being the real Mos Def.)
 %
 Don't try to read the dialog boxes that appear while I'm doing something. If you could read dialog boxes in the first place you wouldn't have called me.
 - The Help Desk on fb
@@ -5164,7 +5165,7 @@ I'm really good at smiling instead of punching people in the face.
 - @texburgher
 %
 It's a shame that computers don't have feelings. I'd certainly like them to suffer pain from what I want to do to them.
-- @bofhtoptips
+- oh haha@bofhtoptips
 %
 The universal unit for measuring sacrifice is the "latte."
 - @fakeapstylebook
@@ -5330,4 +5331,47 @@ We all recognize that it's just the internet. At the end of the day you still go
 %
 gxddbov xxkxzt pg ifmk
 - "Flen flyys", a poem of the 15th century
+%
+Tax Questions from the Future
+
+Does gay marriage include corporate persons, or is it still discriminatorily phrased so as to exclude legal persons who happen to not be made of meat?
+
+Let's say General Dynamics and Katy Perry love each other very much, travel to New York and get hitched. Is that legal even though one of them is still incorporated in Delaware? And does the other one get a deduction in California?
+
+My uh, friend really needs to know.
+
+http://www.jwz.org/blog/2011/08/tax-questions-from-the-future/
+%
+And therein lies the real problem of web 2.0 — whether it takes the form of SEO-driven “news” or crowd-sourced accommodation. To make money — real money — at this game you have to attract millions, or tens of millions, of users. And when you’re dealing with those kinds of numbers, it’s literally impossible not to treat your users as pieces of data. It’s ironic, but depressingly unsurprising, that web 2.0 is using faux socialization and democratization to create a world where everyone is reduced to a number on a spreadsheet.
+- Paul Carr, http://techcrunch.com/2011/07/30/humbug/
+%
+To a first approximation, when someone says "Lightweight" what they mean is "I don't understand the problems that the alternative solves".
+- http://mjg59.dreamwidth.org/2414.html
+%
+We have two software patent articles on the front page of HN. One from a developer saying they are unfixable; another from a lawyer saying they aren’t broken. I think this succinctly describes the situation we are in.
+— MatthewPhillips in Hacker News' coments here: http://news.ycombinator.com/item?id=2873347
+%
+Horseshit, and in this specific case, bullshit flavored horseshit.
+- pavel_lishin on jwz.org
+%
+You know, every now and then I post something that people interpret as "you called my baby ugly", like that time I farted in bike-church, and sometimes I feel bad about that. But when the people I've upset by calling their baby ugly have "ventures" in their email addresses, you know what, I'm totally ok with that. 
+- jwz
+%
+I thought that by 2011 somebody would have figured out how to copy files automatically but I was wrong.
+- Yaos on SA
+%
+Beautiful Soup uses a class called UnicodeDammit to detect the encodings of documents you give it and convert them to Unicode, no matter what. 
+- http://www.crummy.com/software/BeautifulSoup/documentation.html#Parsing%20HTML
+%
+One of the things that can happen, according to the press, is that you can, if you are very lucky, talk with one of the founders of Google, because he's hanging out using the service too. And you can ask him about user experience, and show him your cat. Which sounds horrifying, like having to pee next to Steve Jobs or playing touch football with Arnold Schwarzenegger. People rich enough to place phone calls to order body organs, people who can afford to hide families, make me nervous. The only thing they could want me for is harvesting.
+- http://www.ftrain.com/woods-plus.html
+%
+Anyway, the new thing from the Gootch makes it really easy to sort people into the holes, which is good, because this lets you divide people into clusters and lie to each group in different ways, which makes it easier to preserve the fictions that make up our polite racist society. 
+- http://www.ftrain.com/woods-plus.html
+%
+Why do they sell Hustler in airports? Does that mean that at some point in time, someone fapped on an airplane? Is the fap-on-plane demographic so significant, airports are just serving the demand? 
+
+I think about these things while I'm waiting to get on my plane.
+
+- Wil Wheaton
 %
