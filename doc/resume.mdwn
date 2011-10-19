@@ -15,11 +15,17 @@
 
 ## System administration skills
 
-- Server operating systems I have managed in production: Windows (4 years), Linux (4 years)
-- Client operating systems I have systematically managed: Windows (4 years), Linux (1 year)
-- Client operating systems I have individually managed: Windows (5 years), Mac OS X (5 years), Linux (5 years)
-- Directory servers I have managed in production: OpenLDAP (3 years), Active Directory (4 years)
-- Network services I have managed in production: e-mail including SMTP, IMAP, and POP (3 years); Apache web server (3 years); OpenVPN (3 years)
+- Server operating systems I have managed in production: 
+  Windows (4 years), Linux (4 years)
+- Client operating systems I have systematically managed: 
+  Windows (4 years), Linux (1 year)
+- Client operating systems I have individually managed: 
+  Windows (5 years), Mac OS X (5 years), Linux (5 years)
+- Directory servers I have managed in production: 
+  OpenLDAP (3 years), Active Directory (4 years)
+- Network services I have managed in production: 
+  e-mail including SMTP, IMAP, and POP (3 years); 
+  Apache web server (3 years); OpenVPN (3 years)
 
 I believe strongly in good documentation. 
 
@@ -55,3 +61,4 @@ I believe strongly in good documentation.
 ## Other
 
 I am interested in computer science/programming, as well as system administration. I use computers for fun, on my own time, and not just for games. I own and administer at least one Linux, BSD Unix, Solaris, IRIX, and soon an HP-UX system for personal interest.
+
