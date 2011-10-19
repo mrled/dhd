@@ -1,7 +1,17 @@
-Micah R Ledbetter
-8617 Spicewood Springs Rd #182
-Austin TX 78759
-512 965 5252
+# Micah R Ledbetter
+
+<div style="width: 100%; float: left; margin-bottom: 1.5em;">
+  <div style="float: left; width: 50%">
+      Micah R Ledbetter<br />
+      8617 Spicewood Springs Rd #182<br />
+      Austin TX 78759
+  </div>
+  <div style="float: left; width: 50%">
+      Phone: 512 965 5252<br />
+      Email: <a href=mailto:micah@micahrl.com>micah@micahrl.com</a><br />
+      Web: <a href=http://micahrl.com>http://micahrl.com</a>
+  </div>
+</div>
 
 ## System administration skills
 
@@ -12,11 +22,10 @@ Austin TX 78759
 - Network services I have managed in production: e-mail including SMTP, IMAP, and POP (3 years); Apache web server (3 years); OpenVPN (3 years)
 
 I believe strongly in good documentation. 
- 
 
 ## Employment history
 
-- Self-employed (May 2008 - Present)
+- Self-employed (January 2009 - Present)
 
     *Roles: Freelance tech support, IT consulting, and computer repair*
 
@@ -36,12 +45,12 @@ I believe strongly in good documentation.
 
     I worked as a linguist with a small team researching and proposing solutions for natural language parsing problems. A key component of this job was accurately communicating technical information to people who are not experts. 
 
-    I helped to design and build a model o the English language based on the predicate argument system of semantic roles and 
+    I helped to design and build a model of the English language based on an inheritable predicate argument system of semantic roles. 
 
 
 ## Education
 
-- I graduated from the University of Texas with a Bachelor of the Arts in Linguistics
+- B.A. Linguistics, University of Texas, 2008
 
 ## Other
 
