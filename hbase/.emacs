@@ -200,7 +200,7 @@
 (global-set-key [(meta down)] 'forward-block-dwim)
 (global-set-key [(meta up)]  'backward-block-dwim)
 
-(global-set-key "\C-x s" 'save-buffer) ; so tired of 'save-some-buffers, the default
+(global-set-key "\C-xs" 'save-buffer) ; so tired of 'save-some-buffers, the default
 
 (global-set-key "\M-`" 'other-frame) ; mimic the way macosx switches between windows of the same application
 
