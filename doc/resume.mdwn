@@ -1,0 +1,48 @@
+Micah R Ledbetter
+8617 Spicewood Springs Rd #182
+Austin TX 78759
+512 965 5252
+
+## System administration skills
+
+- Server operating systems I have managed in production: Windows (4 years), Linux (4 years)
+- Client operating systems I have systematically managed: Windows (4 years), Linux (1 year)
+- Client operating systems I have individually managed: Windows (5 years), Mac OS X (5 years), Linux (5 years)
+- Directory servers I have managed in production: OpenLDAP (3 years), Active Directory (4 years)
+- Network services I have managed in production: e-mail including SMTP, IMAP, and POP (3 years); Apache web server (3 years); OpenVPN (3 years)
+
+I believe strongly in good documentation. 
+ 
+
+## Employment history
+
+- Self-employed (May 2008 - Present)
+
+    *Roles: Freelance tech support, IT consulting, and computer repair*
+
+    I fix computer problems for individuals and manage small networks for businesses. I am solely responsible for the business, including advertising, customer relations, and actual tech support work. 
+
+    I do a wide breadth of work, from Active Directory management to network hardware troubleshooting to individual user education. I routinely explain technical information to nontechnical managers and home users, with the goal that they know exactly what they need to make informed technical decisions about their business or personal data. I remove viruses, set up backup systems, and administer network services. 
+
+- Neuric Technologies (May 2008 - Present)
+
+    *Role: System Administrator*
+
+    I work with Neuric as sole administrator responsible for a network of several servers, including Windows-based Active Directory infrastructure, Linux email and shell servers, and firewall. I migrated the company from an OpenLDAP backend authentication system to Active Directory. I am responsible for the information security 
+
+- Neuric Technologies (September 2006 - November 2008)
+
+    *Role: Staff Linguist*
+
+    I worked as a linguist with a small team researching and proposing solutions for natural language parsing problems. A key component of this job was accurately communicating technical information to people who are not experts. 
+
+    I helped to design and build a model o the English language based on the predicate argument system of semantic roles and 
+
+
+## Education
+
+- I graduated from the University of Texas with a Bachelor of the Arts in Linguistics
+
+## Other
+
+I am interested in computer science/programming, as well as system administration. I use computers for fun, on my own time, and not just for games. I own and administer at least one Linux, BSD Unix, Solaris, IRIX, and soon an HP-UX system for personal interest.
