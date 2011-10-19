@@ -88,6 +88,16 @@
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
 (setq line-move-visual nil) ; necessary I think b/c of something markdown-mode does
+; Marked (Mac OS X only):
+(defun markdown-preview-file ()
+  "run Marked on the current file and revert the buffer"
+  (interactive)
+  (shell-command 
+   (format "open -a /Applications/Marked.app %s" 
+       (shell-quote-argument (buffer-file-name))))
+)
+(global-set-key "\C-cm" 'markdown-preview-file)
+
 
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
