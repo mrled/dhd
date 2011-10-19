@@ -89,6 +89,16 @@
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
 (setq line-move-visual nil) ; necessary I think b/c of something markdown-mode does
+; Marked (Mac OS X only):
+(defun markdown-preview-file ()
+  "run Marked on the current file and revert the buffer"
+  (interactive)
+  (shell-command 
+   (format "open -a /Applications/Marked.app %s" 
+       (shell-quote-argument (buffer-file-name))))
+)
+(global-set-key "\C-cm" 'markdown-preview-file)
+
 
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
@@ -201,7 +211,7 @@
 (global-set-key [(meta down)] 'forward-block-dwim)
 (global-set-key [(meta up)]  'backward-block-dwim)
 
-(global-set-key "\C-x s" 'save-buffer) ; so tired of 'save-some-buffers, the default
+(global-set-key "\C-xs" 'save-buffer) ; so tired of 'save-some-buffers, the default
 
 (global-set-key "\M-`" 'other-frame) ; mimic the way macosx switches between windows of the same application
 
