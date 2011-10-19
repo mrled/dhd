@@ -12,7 +12,9 @@
 ;; paths that Emacs should look for executables, since (LAME) bashrc isn't being read. 
 (setq exec-path (split-string ":/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/sw/bin:/sw/sbin:~/opt/bin" path-separator))
 (setenv "PATH" (mapconcat 'identity exec-path ":"))
-
+(setq mrl-home (if (getenv "HOME") ; need this to work on Windows and Unix :)
+                   (getenv "HOME")
+                 (getenv "USERPROFILE")))
 ;; Add the given path to the load-path variable.
 (defun add-to-load-path (path-string)
   (message (format "Passed %S..." path-string))
@@ -76,8 +78,9 @@
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
-(setq auto-mode-alist
-   (cons '("\\.mdwn" . markdown-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.mdwn" . markdown-mode) auto-mode-alist)
+      markdown-command (concat mrl-home "/.dhd/opt/bin/Markdown.pl")
+      markdown-css-path (concat mrl-home "/.dhd/doc/css/mrl-swiss.css"))
 
 ; because markdown-mode + longlines-mode = fucked up [return] key
 (add-hook 'markdown-mode-hook
