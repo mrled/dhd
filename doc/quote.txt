@@ -5375,3 +5375,12 @@ I think about these things while I'm waiting to get on my plane.
 
 - Wil Wheaton
 %
+“When I walk through Best Buy, which I try to do once every few months, it feels like it’s technology at its worst, the magic of progress used as smoke and mirrors to confuse and dupe consumers rather than make their lives better.” 
+-Matt Mullenweg, http://ma.tt/2011/10/whats-next-for-apple/
+%
+But I’ll argue that Accessibility is actually more important than Security because dialing Accessibility to zero means you have no product at all, whereas dialing Security to zero can still get you a reasonably successful product such as the Playstation Network.
+- Steve Yegge, reprinted here: http://siliconfilter.com/google-engineer-google-is-a-prime-example-of-our-complete-failure-to-understand-platforms/
+%
+‎"You know those delicious bits of frozen root beer that stick to the ice cream in a float? They're my birth stone."
+- http://titleproper.tumblr.com/
+%
