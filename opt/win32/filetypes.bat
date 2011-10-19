@@ -13,6 +13,6 @@ ftype inifile="%emacsdir%\emacsclientw.exe" -n -a "%emacsdir%\runemacs.exe" "%%1
 
 set pythondir=C:\Python32
 assoc .py=Python.File
-ftype Python.File=%pythondir%\pythonw.exe "%1" %*
+ftype Python.File=%pythondir%\python.exe "%1" %*
 
 pause
