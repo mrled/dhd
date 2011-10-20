@@ -15,19 +15,13 @@
 
 ## System administration skills
 
-- Server operating systems I have managed in production: 
-  Windows (4 years), Linux (4 years)
-- Client operating systems I have systematically managed: 
-  Windows (4 years), Linux (1 year)
-- Client operating systems I have individually managed: 
-  Windows (5 years), Mac OS X (5 years), Linux (5 years)
-- Directory servers I have managed in production: 
-  OpenLDAP (3 years), Active Directory (4 years)
-- Network services I have managed in production: 
-  e-mail including SMTP, IMAP, and POP (3 years); 
-  Apache web server (3 years); OpenVPN (3 years)
-
-I believe strongly in good documentation. 
+- Windows and Unix servers
+- Windows, Unix, and Mac OS X workstations
+- Both Active Directory and OpenLDAP authentication backends for Windows and Unix client login and application login
+- Email services (POP3, IMAP4, and SMTP) on Postfix/Dovecot or Exchange
+- Web services on Apache (and some supporting Windows/IIS knowledge)
+- Miscellaneous services running on OpenSSH, OpenVPN, and MySQL
+- Administrative scripting using bash and python
 
 ## Employment history
 
@@ -37,13 +31,17 @@ I believe strongly in good documentation.
 
     I fix computer problems for individuals and manage small networks for businesses. I am solely responsible for the business, including advertising, customer relations, and actual tech support work. 
 
-    I do a wide breadth of work, from Active Directory management to network hardware troubleshooting to individual user education. I routinely explain technical information to nontechnical managers and home users, with the goal that they know exactly what they need to make informed technical decisions about their business or personal data. I remove viruses, set up backup systems, and administer network services. 
+    I do a wide breadth of work, from Active Directory management to network hardware troubleshooting to individual user education. I routinely explain technical information to nontechnical managers and home users, with the goal that they know exactly what they need to make informed technical decisions about their business or personal data. I remove viruses, set up backup systems, and administer servers. 
+
+    Accomplishments: 
 
 - Neuric Technologies (May 2008 - Present)
 
     *Role: System Administrator*
 
-    I work with Neuric as sole administrator responsible for a network of several servers, including Windows-based Active Directory infrastructure, Linux email and shell servers, and firewall. I migrated the company from an OpenLDAP backend authentication system to Active Directory. I am responsible for the information security 
+    I work as sole administrator and tech support responsible for a network of several servers, including Windows-based Active Directory infrastructure, Linux email and shell servers, and firewall. I am responsible for information security 
+
+    Accomplishments: I migrated the company from an OpenLDAP backend authentication system to Active Directory. 
 
 - Neuric Technologies (September 2006 - November 2008)
 
@@ -51,7 +49,7 @@ I believe strongly in good documentation.
 
     I worked as a linguist with a small team researching and proposing solutions for natural language parsing problems. A key component of this job was accurately communicating technical information to people who are not experts. 
 
-    I helped to design and build a model of the English language based on an inheritable predicate argument system of semantic roles. 
+    Accomplishments: I helped to design and build a model of the English language based on an inheritable predicate argument system of semantic roles. 
 
 
 ## Education
@@ -61,4 +59,6 @@ I believe strongly in good documentation.
 ## Other
 
 I am interested in computer science/programming, as well as system administration. I use computers for fun, on my own time, and not just for games. I own and administer at least one Linux, BSD Unix, Solaris, IRIX, and soon an HP-UX system for personal interest.
+
+I believe strongly in good documentation. 
 
