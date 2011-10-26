@@ -6,12 +6,15 @@
  ---------------------------------------------------------------
  SwissStyle by Brett Terpstra
  */
-
+#content 
+{
+    width:600px;
+}     
 body
 {
     -webkit-font-smoothing:antialiased;
     font:normal .8764em/1.5em Arial,Verdana,sans-serif;
-    margin:0
+    margin:1em;
 }
 
 html>body
@@ -19,21 +22,21 @@ html>body
     font-size:12px
 }
 
-/* li */
-/* { */
-/*     font-size:110% */
-/* } */
+li
+{
+    font-size:110%
+}
 
-/* li li */
-/* { */
-/*     font-size:100% */
-/* } */
+li li
+{
+    font-size:100%
+}
 
-/* li p */
-/* { */
-/*     font-size:100%; */
-/*     margin:.5em 0 */
-/* } */
+li p
+{
+    font-size:100%;
+    margin:.5em 0
+}
 
 h1
 {
@@ -267,13 +270,6 @@ sup,sub,a.footnote
     line-height:1;
     position:relative;
     vertical-align:super
-}
-
-p,h5
-{
-    font-size:1.1429em;
-    line-height:1.3125em;
-    margin:1.3125em 0
 }
 
 dt,th
