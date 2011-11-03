@@ -103,6 +103,50 @@
 (global-set-key "\C-cm" 'markdown-preview-file)
 
 
+; ikiwiki stuff
+(setq younix-blog-dir "~/yus")
+(defun iki/new-blog-post ()
+  "Creates a new younix.us/blog post with a temporary name."
+  (interactive)
+  (find-file (concat younix-blog-dir "/posts/" (format-time-string "%Y%m%d") "-tmp.mdwn")))
+(defun iki/get-title ()
+  "Read the contents of the current file and return the title specified in [[!meta title=\"\"]]"
+  (interactive)
+
+  (defvar title-regexp
+  (string-match "\\[\\[!meta title=\"\\(.*\\)\"\\]\\]" (buffer-string))
+  (match-string-no-properties 1 (buffer-string))))
+(defun iki/rename-to-title ()
+  "Create a filename based on what iki/get-title returns"
+  (interactive)
+  (rename-file-and-buffer (concat (iki/get-title) ".mdwn")))
+
+
+; from stevey:   
+(defun rename-file-and-buffer (new-name)
+ "Renames both current buffer and file it's visiting to NEW-NAME." 
+ (interactive "sNew name: ")
+ (let ((name (buffer-name))
+       (filename (buffer-file-name)))
+   (if (not filename)
+       (message "Buffer '%s' is not visiting a file!" name)
+     (if (get-buffer new-name)
+         (message "A buffer named '%s' already exists!" new-name)
+       (progn   (rename-file name new-name 1)   (rename-buffer new-name)    
+                (set-visited-file-name new-name)    (set-buffer-modified-p nil))))))
+(defun move-buffer-file (dir)
+ "Moves both current buffer and file it's visiting to DIR." (interactive "DNew directory: ")
+ (let* ((name (buffer-name))
+        (filename (buffer-file-name))
+        (dir
+         (if (string-match dir "\\(?:/\\|\\\\)$")
+             (substring dir 0 -1) dir))
+        (newname (concat dir "/" name)))
+   (if (not filename)
+       (message "Buffer '%s' is not visiting a file!" name)
+     (progn (copy-file filename newname 1) (delete-file filename) 
+            (set-visited-file-name newname) (set-buffer-modified-p nil) t))))
+
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
 

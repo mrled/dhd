@@ -235,6 +235,19 @@ alias shl="echo $SHLVL"
 alias grep="$cmd_grep --color=auto"
 
 alias ddate="date +%Y%m%d"
+epoch() {
+    if [ -z "$1" ]; then d="now"
+    else d="$@"
+    fi
+
+    if (date --date="$d" &>/dev/null); then
+        tunix=`date --date="$d" +%s`
+        thuman=`date --date="$d"`
+        echo "Unix time: $tunix    Date: $thuman    Input: $d"
+    else
+        echo "Invalid date: $d"
+    fi
+}
 
 # emacsy goodness
 function e {
