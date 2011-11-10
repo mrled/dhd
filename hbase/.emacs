@@ -104,24 +104,18 @@
 
 
 ; ikiwiki stuff
-(setq younix-blog-dir "~/yus")
+(setq younix-blog-dir "~/Personal/yus")
 (defun iki/new-blog-post ()
   "Creates a new younix.us/blog post with a temporary name."
   (interactive)
-  (find-file (concat younix-blog-dir "/posts/" (format-time-string "%Y%m%d") "-tmp.mdwn")))
+  (find-file (concat younix-blog-dir "/soc/" (format-time-string "%Y%m%d") "-tmp.mdwn")))
 (defun iki/get-title ()
-  "Read the contents of the current file and return the title specified in [[!meta title=\"\"]]"
+  "Read the contents of the current file and return the title specified in [[!m\
+eta title=\"\"]]"
   (interactive)
-
-  (defvar title-regexp
-  (string-match "\\[\\[!meta title=\"\\(.*\\)\"\\]\\]" (buffer-string))
-  (match-string-no-properties 1 (buffer-string))))
-;(defun iki/rename-to-title ()
-;  "Create a filename based on what iki/get-title returns"
-;  (interactive)
-;  (string-match "" (iki/get-title))
-;  (let ((new-filename (match-substitute-replacement "" nil nil (iki/get-title) nil))))
-;  (rename-file-and-buffer new-filename))
+  (string-match ".*\\[\\[!meta title=\"\\(.*\\)\"\\]\\]" (buffer-string))
+  (setq title-regexp
+        (match-string-no-properties 1 (buffer-string))))
 (defun iki/urlify-title ()
   "Returns a filename based on what iki/get-title returns. Alphanumerics, _, and - are left as-is, blanks are converted to -, and everything else is stripped out."
   (concat 
