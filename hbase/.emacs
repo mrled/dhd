@@ -116,10 +116,36 @@
   (defvar title-regexp
   (string-match "\\[\\[!meta title=\"\\(.*\\)\"\\]\\]" (buffer-string))
   (match-string-no-properties 1 (buffer-string))))
+;(defun iki/rename-to-title ()
+;  "Create a filename based on what iki/get-title returns"
+;  (interactive)
+;  (string-match "" (iki/get-title))
+;  (let ((new-filename (match-substitute-replacement "" nil nil (iki/get-title) nil))))
+;  (rename-file-and-buffer new-filename))
+(defun iki/urlify-title ()
+  "Returns a filename based on what iki/get-title returns. Alphanumerics, _, and - are left as-is, blanks are converted to -, and everything else is stripped out."
+  (concat 
+   (downcase
+    (replace-regexp-in-string "[^-_a-zA-Z0-9]" "" 
+                              (replace-regexp-in-string "[ 	]" "-" (iki/get-title))))
+   ".mdwn"))
 (defun iki/rename-to-title ()
-  "Create a filename based on what iki/get-title returns"
+  "Renames current buffer and associated file to the result of iki/urlify-title"
   (interactive)
-  (rename-file-and-buffer (concat (iki/get-title) ".mdwn")))
+  (rename-file-and-buffer (iki/urlify-title)))
+(defun iki/insert-meta-title ()
+  (interactive)
+  (insert "[[!meta title=\"\"]]"))
+(defun iki/insert-meta-date ()
+  (interactive)
+  (insert "[[!meta date=\"\"]]"))
+(defun iki/insert-directive-tag ()
+  (interactive)
+  (insert "[[!tag]]"))
+(global-set-key "\C-cir" 'iki/rename-to-title)
+(global-set-key "\C-cit" 'iki/insert-meta-title)
+(global-set-key "\C-cid" 'iki/insert-meta-date)
+(global-set-key "\C-ciy" 'iki/insert-directive-tag)
 
 
 ; from stevey:   
