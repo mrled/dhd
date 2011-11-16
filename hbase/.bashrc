@@ -407,7 +407,7 @@ extractaudio() {
         ffmpeg -i "$v" -acodec copy -vn "$v.m4a"
     done
     echo "The files are written as .m4a files but we didn't check first!"
-    echo "(You can check yourself with `ffmpeg -i "vidfile" 2>&1|grep Audio`"
+    echo "(You can check yourself with 'ffmpeg -i "vidfile" 2>&1|grep Audio'"
 }
 
 
