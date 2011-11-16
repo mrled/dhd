@@ -9,9 +9,6 @@
 ; my vars:
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default? 
 
-;; paths that Emacs should look for executables, since (LAME) bashrc isn't being read. 
-(setq exec-path (split-string ":/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/sw/bin:/sw/sbin:~/opt/bin" path-separator))
-(setenv "PATH" (mapconcat 'identity exec-path ":"))
 (setq mrl-home (if (getenv "HOME") ; need this to work on Windows and Unix :)
                    (getenv "HOME")
                  (getenv "USERPROFILE")))
@@ -59,7 +56,8 @@
       display-time-24hr-format t
       display-time-day-and-date t
       vc-follow-symlinks t       ; don't ask ARE YOU SURE if symlink->version-controlled file
-      truncate-partial-width-windows nil) ; do NOT change behavior of truncate-lines (see toggle-truncate-lines) when working in C-x 3 horizontally split windows
+      truncate-partial-width-windows nil ; do NOT change behavior of truncate-lines (see toggle-truncate-lines) when working in C-x 3 horizontally split windows
+      tramp-default-method "ssh")
 (fset 'yes-or-no-p 'y-or-n-p) ; "yes or no" = "y or n"
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
@@ -205,36 +203,22 @@ eta title=\"\"]]"
 
 
 
-(when (eq window-system 'w32)
-  (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
-  (setq pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe")
-;  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
-   (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
-;   (defvar myfont "-outline-Consolas-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+(when (eq system-type 'windows-nt)
+  ; some things are useful to have here just in case they're not in your system %PATH%
+  (add-to-list 'exec-path "C:/Program Files/PuTTY")
+  (add-to-list 'exec-path "C:/Program Files (x86)/PuTTY")
+  (add-to-list 'exec-path "C:/opt/UnxUtils")
+  (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe"
+        pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
+        w32-pass-apps-to-system nil ; let Emacs interpret meta keys
+        w32-apps-modifier 'hyper ;; Menu key -> Hyper
+        tramp-default-method "plink")
+  (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
 
-
-  ; let Emacs use the special win keys, don't pass them to the OS
-  ; you can also use :
-  ;      w32-pass-lwindow-to-system nil 
-  ;      w32-pass-rwindow-to-system nil 
-  ;      w32-lwindow-modifier 'super ;; Left Windows key 
-  ;      w32-rwindow-modifier 'super ;; Right Windows key 
-  ; to use this under Interix, you should bind the win keys in your .xinitrc somehow I think
-  (setq w32-pass-apps-to-system nil 
-        w32-apps-modifier 'hyper) ;; Menu key 
-
- (when (eq system-type 'Interix) 
-  ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, 
-  ; so as long as I've installed ProFontWindows and can use it, this should work too
-  (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
-
-
-
-
-
-;; now I also need 
-(when (or (eq window-system 'mac) (eq window-system 'ns))
-  (add-to-list 'exec-path "/sw/bin") ;add fink's path
+; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
+(when (eq system-type 'darwin)
+  (add-to-list 'exec-path "/sw/bin")
+  (add-to-list 'exec-path "~/opt/bin")
   (setq mac-option-modifier 'alt)
   (setq mac-command-modifier 'meta)
   (global-set-key "\M-h" 'ns-do-hide-emacs)
