@@ -73,10 +73,14 @@
 (server-start)
 
 ;;;;; tramp shit
+(setq tramp-default-method "ssh")
 ; this next line: you can `C-xC-f /sudo:root@host:/path/to/file` and it will 
 ; ssh to the host using your default user, then run sudo, then find file. 
-(set-default 'tramp-default-proxies-alist (quote ((".*" "\\`root\\'" "/ssh:%h:"))))
-(setq tramp-default-method "ssh") ; this is changed to plink on Windows below. 
+(setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/ssh:%h:")))) 
+(when (eq system-type 'windows-nt) ; windows-specific settings & overrides
+  (setq tramp-default-method "plink")
+  (setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
+(set-default 'tramp-default-proxies-alist mrl/tramp-sudo-proxy)
 
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
@@ -216,8 +220,7 @@ eta title=\"\"]]"
   (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe"
         pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
         w32-pass-apps-to-system nil ; let Emacs interpret meta keys
-        w32-apps-modifier 'hyper ;; Menu key -> Hyper
-        tramp-default-method "plink")
+        w32-apps-modifier 'hyper) ;; Menu key -> Hyper
   (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
 
 ; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
