@@ -53,11 +53,10 @@
       backup-directory-alist (quote ((".*" . "~/Backup/emacs/"))) ; Save backups
       delete-old-versions t       ; don't ask me to delete old backups, just do it
       mouse-autoselect-window t   ; focus-follows-mouse in WINDOWS, NOT frames
-      display-time-24hr-format t
-      display-time-day-and-date t
-      vc-follow-symlinks t       ; don't ask ARE YOU SURE if symlink->version-controlled file
       truncate-partial-width-windows nil ; do NOT change behavior of truncate-lines (see toggle-truncate-lines) when working in C-x 3 horizontally split windows
-      tramp-default-method "ssh")
+      vc-follow-symlinks t       ; don't ask ARE YOU SURE if symlink->version-controlled file
+      display-time-24hr-format t
+      display-time-day-and-date t)
 (fset 'yes-or-no-p 'y-or-n-p) ; "yes or no" = "y or n"
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
@@ -68,10 +67,16 @@
 (require 'hide-lines)
 (require 'tail)
 (require 'highlight-tail)
+(require 'apache-mode)
 
 ; I feel like it should do this for me, ugh
 (server-start)
 
+;;;;; tramp shit
+; this next line: you can `C-xC-f /sudo:root@host:/path/to/file` and it will 
+; ssh to the host using your default user, then run sudo, then find file. 
+(set-default 'tramp-default-proxies-alist (quote ((".*" "\\`root\\'" "/ssh:%h:"))))
+(setq tramp-default-method "ssh") ; this is changed to plink on Windows below. 
 
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
@@ -219,8 +224,9 @@ eta title=\"\"]]"
 (when (eq system-type 'darwin)
   (add-to-list 'exec-path "/sw/bin")
   (add-to-list 'exec-path "~/opt/bin")
-  (setq mac-option-modifier 'alt)
-  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'alt
+        mac-command-modifier 'meta
+        mac-allow-anti-aliasing nil)
   (global-set-key "\M-h" 'ns-do-hide-emacs)
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
 
@@ -229,7 +235,6 @@ eta title=\"\"]]"
     ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
     ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
     "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
-
     ;; for stumpwm
     (defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
     (require 'stumpwm-mode))
@@ -243,11 +248,8 @@ eta title=\"\"]]"
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
-  ;(menu-bar-mode nil)  ; this used to do nothing under osx but since emacs23 it DOES, so define it in a window-system section above instead
   (global-hl-line-mode t) ;; Highlight the current line. 
-  (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
-  ;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
-  )
+  (set-face-background 'hl-line "#335"))
 
 ;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs
