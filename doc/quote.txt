@@ -2992,7 +2992,7 @@ Therefore, we must do it.
 If you’re a consumer looking to protect your privacy, get a personal shredder and have a discussion with your family members about what should be shredded before being thrown away. If your family refuses to comply, you might consider relocating them. If they are not particularly noisy, you might find another great use for a dumpster with a lock on the lid. 
  - Johnny Long, No Tech Hacking
 %
-All men will be false, be failty mounds of clay. The adultress, please be true, glory hallelujah.
+All men will be false, be faulty mounds of clay. The adultress pleads be true, glory hallelujah.
  - The Still Life
 %
 "We should not draw attention to ourselves, troublesome strumpet."
@@ -3177,7 +3177,8 @@ Write a wise saying and your name will live forever
 "And then I wrote some stories that made me realize how sadly misplaced my bliss had been. The reason I'd enjoyed such smooth sailing for so long hadn't been, as I'd assumed, because I was careful and diligent and good at my job . . .  The truth was that, in all those years, I hadn't written anything important enough to suppress."
 From "The Mighty Wurlitzer Plays On" by Gary Webb, published as Chapter 14 of Into the Buzzsaw, Edited by Kristina Borjesson. 
 %
-Please don't commercialize this. 
+This is not for commercial usage
+Please don't categorize this as music
  - Jay-Z on No Hook on the American Gangster album
 %
 Gah. When the fuck did they put a price on happiness and art?
@@ -4946,6 +4947,7 @@ As someone who almost spent $90 on an emoticon
 %
 "I heard Justin Bieber has a 10 inch dick, but it’s in his ass and belongs to Usher."
 - Mos Def, http://twitter.com/MosDef/status/42853290114953216
+  (edit from the future: I am deeply saddened to learn that Twitter has suspended this Twitter user on account of it not being the real Mos Def.)
 %
 Don't try to read the dialog boxes that appear while I'm doing something. If you could read dialog boxes in the first place you wouldn't have called me.
 - The Help Desk on fb
@@ -5164,7 +5166,7 @@ I'm really good at smiling instead of punching people in the face.
 - @texburgher
 %
 It's a shame that computers don't have feelings. I'd certainly like them to suffer pain from what I want to do to them.
-- @bofhtoptips
+- oh haha@bofhtoptips
 %
 The universal unit for measuring sacrifice is the "latte."
 - @fakeapstylebook
@@ -5322,3 +5324,130 @@ FUCK YES. Artists, when you're pressing down on the label's necks, keep pushing 
 “For while the particular four-letter word being litigated here is perhaps more distasteful than most others of its genre, it is nevertheless often true that one man’s vulgarity is another man’s lyric.” -Justice John M. Harlan II, Cohen v. California
 
 %
+I recently read that many girls start dieting when they are 8 years old. This pissed me off for two reasons ... one, because 8-year-olds should not be thinking about their figures, and two, that skinny 8-year-olds are probably judging me at the pool. Both of these are unsettling, and as parents, we need to put a stop to it. I get judged enough from grown-ups, thankyouverymuch.
+- The Bloggess, http://thestir.cafemom.com/big_kid/124834/lesson_22_body_acceptance_for
+%
+We all recognize that it's just the internet. At the end of the day you still go outside and nobody knows who you are.
+- Ted Dzubia, http://www.wired.com/techbiz/people/news/2007/10/dzubia_qa?currentPage=all
+%
+gxddbov xxkxzt pg ifmk
+- "Flen flyys", a poem of the 15th century
+%
+Tax Questions from the Future
+
+Does gay marriage include corporate persons, or is it still discriminatorily phrased so as to exclude legal persons who happen to not be made of meat?
+
+Let's say General Dynamics and Katy Perry love each other very much, travel to New York and get hitched. Is that legal even though one of them is still incorporated in Delaware? And does the other one get a deduction in California?
+
+My uh, friend really needs to know.
+
+http://www.jwz.org/blog/2011/08/tax-questions-from-the-future/
+%
+And therein lies the real problem of web 2.0 — whether it takes the form of SEO-driven “news” or crowd-sourced accommodation. To make money — real money — at this game you have to attract millions, or tens of millions, of users. And when you’re dealing with those kinds of numbers, it’s literally impossible not to treat your users as pieces of data. It’s ironic, but depressingly unsurprising, that web 2.0 is using faux socialization and democratization to create a world where everyone is reduced to a number on a spreadsheet.
+- Paul Carr, http://techcrunch.com/2011/07/30/humbug/
+%
+To a first approximation, when someone says "Lightweight" what they mean is "I don't understand the problems that the alternative solves".
+- http://mjg59.dreamwidth.org/2414.html
+%
+We have two software patent articles on the front page of HN. One from a developer saying they are unfixable; another from a lawyer saying they aren’t broken. I think this succinctly describes the situation we are in.
+— MatthewPhillips in Hacker News' coments here: http://news.ycombinator.com/item?id=2873347
+%
+Horseshit, and in this specific case, bullshit flavored horseshit.
+- pavel_lishin on jwz.org
+%
+You know, every now and then I post something that people interpret as "you called my baby ugly", like that time I farted in bike-church, and sometimes I feel bad about that. But when the people I've upset by calling their baby ugly have "ventures" in their email addresses, you know what, I'm totally ok with that. 
+- jwz
+%
+I thought that by 2011 somebody would have figured out how to copy files automatically but I was wrong.
+- Yaos on SA
+%
+Beautiful Soup uses a class called UnicodeDammit to detect the encodings of documents you give it and convert them to Unicode, no matter what. 
+- http://www.crummy.com/software/BeautifulSoup/documentation.html#Parsing%20HTML
+%
+One of the things that can happen, according to the press, is that you can, if you are very lucky, talk with one of the founders of Google, because he's hanging out using the service too. And you can ask him about user experience, and show him your cat. Which sounds horrifying, like having to pee next to Steve Jobs or playing touch football with Arnold Schwarzenegger. People rich enough to place phone calls to order body organs, people who can afford to hide families, make me nervous. The only thing they could want me for is harvesting.
+- http://www.ftrain.com/woods-plus.html
+%
+Anyway, the new thing from the Gootch makes it really easy to sort people into the holes, which is good, because this lets you divide people into clusters and lie to each group in different ways, which makes it easier to preserve the fictions that make up our polite racist society. 
+- http://www.ftrain.com/woods-plus.html
+%
+Why do they sell Hustler in airports? Does that mean that at some point in time, someone fapped on an airplane? Is the fap-on-plane demographic so significant, airports are just serving the demand? 
+
+I think about these things while I'm waiting to get on my plane.
+
+- Wil Wheaton
+%
+“When I walk through Best Buy, which I try to do once every few months, it feels like it’s technology at its worst, the magic of progress used as smoke and mirrors to confuse and dupe consumers rather than make their lives better.” 
+-Matt Mullenweg, http://ma.tt/2011/10/whats-next-for-apple/
+%
+But I’ll argue that Accessibility is actually more important than Security because dialing Accessibility to zero means you have no product at all, whereas dialing Security to zero can still get you a reasonably successful product such as the Playstation Network.
+- Steve Yegge, reprinted here: http://siliconfilter.com/google-engineer-google-is-a-prime-example-of-our-complete-failure-to-understand-platforms/
+%
+‎"You know those delicious bits of frozen root beer that stick to the ice cream in a float? They're my birth stone."
+- http://titleproper.tumblr.com/
+%
+counterstrike is actually game about bitching that happens to feature guns
+- DOOMocrat on YOSPOS
+%
+Shit, I forgot you're supposed to be drunk when reading wikipedia discussion pages.
+- @aedison (I think)
+%
+Me: I like the (iPhone) bumper, but it's hard to get out of my pocket
+Papa: That's good that it's hard to get out of your pocket! That means it can't slip out by accident. 
+Me: I've never had my phone slip out of my pocket.
+Papa: That's because you've never had sex in a chair.
+%
+I am too busy living my life to maintain a public identity, so email me if you want to discuss something (warning: I have a bad habit of reading without replying). I don't use social network sites or anything of that sort, so don't bother looking for me there; any accounts I might have are merely for temporary experimentation.
+
+Life is pretty awesome when you live it outside. Get off Facebook, get rid of your TV, and go be interesting. Don't try to capture your interesting moments in a zillion contrived photos; don't try to hold on to the people you meet through some ridiculous virtual stamp collection; don't broadcast a message to your friends to brag about what just happened. Live your life as though it is the world's best-kept secret, as though you are living in an amazing TV show with an audience of one. Don't run a virtual background check on new people; appreciate them as mysterious new characters that add new twists to the story of your life. Take a chance on reality.
+
+At some point I will get old and document all of the wonderful things that I did with the time I saved by jettisoning myself from the virtual world; for the time being, however, you'll just have to take my word for it. 
+
+You could be doing something amazing right now; instead you are reading this. Get out there!
+
+- http://numair.com/
+  ...
+  Hilariously, this is hosted on Tumblr.
+%
+I wouldn’t say I know all that much about porn. More than the average guy for sure but there is a whole other level of porn aficianado out there that dwarfs mine. It’s the guys who have been following porn for 20+ years and have tens of thousands of posts on sites like Adultdvdtalk and planetsuzy.com and run blogs about porn who are the real experts who have helped educate me. It’s kind of like what Newton said about standing on the shoulders of giants.
+- one "mroglolblo" from reddit
+%
+I mean this in a super manly way... that guy scares the panties off me
+- Ted
+%
+a bro is like a dude, but he's gross about it
+- @ryanpequin, https://twitter.com/#!/ryanpequin/status/121849648762720256
+%
+Ages for which you're in the "prime" of your life: 2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97 101
+- @neiltyson
+%
+Deb: Goddamn pantyhose. Has anyone ever died from crotch asphyxiation? 
+Dexter: You have now crossed the line into inappropriate brother-sister exchanges. 
+%
+One of the surest tests [of the superiority or inferiority of a poet] is the way in which a poet borrows. Immature poets imitate; mature poets steal; bad poets deface what they take, and good poets make it into something better, or at least something different. The good poet welds his theft into a whole of feeling which is unique, utterly different than that from which it is torn; the bad poet throws it into something which has no cohesion. A good poet will usually borrow from authors remote in time, or alien in language, or diverse in interest.
+- T.S. Eliot, "Philip Massinger" - the original version of the bastardized "good artists copy, great artists steal" quote
+%
+Over the past week I’ve twice heard twenty-somethings wonder whether kids growing up today, kids who were practically born with iPhones in hand, will still have the capacity for wonder. 
+
+Yesterday as a present for his first day of second grade I brought home an erasable gel pen for my iPhone savvy six year old. After a brief demonstration, he spontaneously hugged me, “I’ve been waiting for this pen my entire life!” 
+
+I think the kids are alright.
+
+- Raul Gtierrez, http://www.mexicanpictures.com/headingeast/2011/09/pens.html
+%
+I do love campy melodramatic shows about supernatural creatures. Husband says he does not. But then again, he watched all six seasons of Lost.
+- Meagan Vorce
+%
+Oh no. I think there's some sort of sport today. I'm going back to bed.
+- Hannah on Facebook
+%
+I am so over Sookie and her precious fairy vagina and her unbelievably stupid name.
+- Pam
+%
+"That wasn’t the way science fiction advertised itself, of course. The self-advertisement was: Technology! The world of the future! Educational! Learn about science! It didn’t tell you that it would jack your kid into this weird malcontent urban literary universe and serve as the gateway drug to J.G. Ballard."
+- William Gibson, http://www.theparisreview.org/interviews/6089/the-art-of-fiction-no-211-william-gibson
+%
+["Neuromancer"] was a kind of booby-trapped portmanteau that contained considerable potential for cognitive dissonance, that pleasurable buzz of feeling slightly unsettled.
+- William Gibson, http://www.theparisreview.org/interviews/6089/the-art-of-fiction-no-211-william-gibson
+%
+
+

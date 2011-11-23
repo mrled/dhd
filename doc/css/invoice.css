@@ -1,0 +1,394 @@
+/* local.css
+
+   This document has been created with Marked.app <http://markedapp.com>, Copyright 2011 Brett Terpstra
+   Please leave this notice in place, along with any additional credits below.
+   ---------------------------------------------------------------
+   SwissStyle by Brett Terpstra
+   Modifications for ikiwiki by mrled
+   Some additions by whoever wrote dokuwiki's convoluted maze of CSS
+ */
+
+body
+{
+    -webkit-font-smoothing:antialiased;
+    font:normal .8764em/1.5em Arial,Verdana,sans-serif;
+    margin:1em;
+}
+
+/* For some reason I don't understand, Swiss.css has <li> in different sizes from
+   body text. fuck.dat
+ */
+
+/* Swiss.css has its own header stuff, but I liked the stuff from 
+   dokuwiki a lot better, so I replaced it with that.
+ */
+h1, h2, h3, h4, h5 {
+    color:#000;
+    background-color:inherit;
+    font-size:100%;
+    font-weight:normal;
+    margin:0 0 1em 0;
+    padding:0.5em 0 0 0;
+    border-bottom:1px solid #8cacbb;
+    clear:left;
+}
+h1 {
+    font-size:160%;
+    margin-left:0px;
+    font-weight:bold;
+}
+h2 {
+    font-size:150%;
+    margin-left:20px;
+}
+h3 {
+    font-size:140%;
+    margin-left:40px;
+    border-bottom:none;
+    font-weight:bold;
+}
+h4 {
+    font-size:120%;
+    margin-left:60px;
+    border-bottom:none;
+    font-weight:bold;
+}
+h5 {
+    font-size:100%;
+    margin-left:80px;
+    border-bottom:none;
+    font-weight:bold;
+}
+
+
+body,p,td,div
+{
+    color:#111;
+    font-family:Helvetica,Arial,sans-serif;
+    word-wrap:break-word
+}
+
+h1,h2,h3,h4,h5,h6
+{
+    line-height:1.5em
+}
+
+/* Anchor styling: 
+   No underlined links, but they're bright blue and stand out. 
+   Do not change link color once visited.
+ */
+a {
+    -webkit-transition:color .2s ease-in-out;
+    color: #0000FF;
+    text-decoration:none;
+}
+
+h2 em
+{
+    color:#111;
+    padding-left:10px;
+    text-shadow:0 1px 0 #FFF
+}
+
+.footnote
+{
+    color:#0d6ea1;
+    font-size:.8em;
+    vertical-align:super
+}
+
+#wrapper img
+{
+    max-width:100%
+}
+
+dd
+{
+    margin-bottom:1em
+}
+
+li > p:first-child
+{
+    margin:0
+}
+
+ul ul,ul ol
+{
+    margin-bottom:.4em
+}
+
+caption,col,colgroup,table,tbody,td,tfoot,th,thead,tr
+{
+    border-spacing:0
+}
+
+table
+{
+    border:1px solid rgba(0,0,0,0.25);
+    border-collapse:collapse;
+    display:table;
+    empty-cells:hide;
+    margin:-1px 0 23px;
+    padding:0;
+    table-layout:fixed
+}
+
+caption
+{
+    display:table-caption;
+    font-weight:700
+}
+
+col
+{
+    display:table-column
+}
+
+colgroup
+{
+    display:table-column-group
+}
+
+tbody
+{
+    display:table-row-group
+}
+
+tfoot
+{
+    display:table-footer-group
+}
+
+thead
+{
+    display:table-header-group
+}
+
+td,th
+{
+    display:table-cell
+}
+
+tr
+{
+    display:table-row
+}
+
+table th,table td
+{
+    font-size:1.1em;
+    line-height:23px;
+    padding:0 1em
+}
+
+table thead
+{
+    background:rgba(0,0,0,0.15);
+    border:1px solid rgba(0,0,0,0.15);
+    border-bottom:1px solid rgba(0,0,0,0.2)
+}
+
+table tbody
+{
+    background:rgba(0,0,0,0.05)
+}
+
+table tfoot
+{
+    background:rgba(0,0,0,0.15);
+    border:1px solid rgba(0,0,0,0.15);
+    border-top:1px solid rgba(0,0,0,0.2)
+}
+
+figure
+{
+    display:inline-block;
+    margin-bottom:1.2em;
+    position:relative
+}
+
+figcaption
+{
+    -webkit-transition:all .2s ease-in-out;
+    background:rgba(0,0,0,0);
+    bottom:0;
+    color:rgba(255,255,255,0);
+    left:0;
+    position:absolute;
+    text-align:center;
+    width:100%
+}
+
+figure:hover
+{
+    cursor:pointer
+}
+
+figcaption:hover
+{
+    background:rgba(0,0,0,.56);
+    color:rgba(255,255,255,1)
+}
+
+/* .poetry pre */
+/* { */
+/*     display:block; */
+/*     font-family:Georgia, Garamond, serif!important; */
+/*     font-size:110%!important; */
+/*     font-style:italic; */
+/*     line-height:1.6em; */
+/*     margin-left:1em */
+/* } */
+
+/* .poetry pre code */
+/* { */
+/*     font-family:Georgia, Garamond, serif!important */
+/* } */
+
+sup,sub,a.footnote
+{
+    font-size:1.4ex;
+    height:0;
+    line-height:1;
+    position:relative;
+    vertical-align:super
+}
+
+dt,th
+{
+    font-weight:700
+}
+
+table tr:nth-child(odd),table th:nth-child(odd),table td:nth-child(odd)
+{
+    background:rgba(255,255,255,0.06)
+}
+
+table tr:nth-child(even),table td:nth-child(even)
+{
+    background:rgba(0,0,0,0.06)
+}
+
+@media print {
+    body
+    {
+        overflow:auto
+    }
+    
+    #wrapper
+    {
+        background:#fff;
+        color:#303030;
+        font-size:85%;
+        padding:10px;
+        position:relative;
+        text-indent:0
+    }
+}
+
+@media screen {
+    .inverted {
+        background:#333
+    }
+    
+    .inverted p,.inverted td,.inverted li,.inverted h1,.inverted h2,.inverted h3,.inverted h4,.inverted h5,.inverted h6,.inverted pre,.inverted code,.inverted th
+    {
+        color:#eee!important
+    }
+    
+    .inverted a
+    {
+        color:#fff;
+        text-decoration:underline
+    }
+    
+    #wrapper
+    {
+        padding:20px
+    }
+    
+    .inverted #wrapper
+    {
+        background:#333;
+    }
+}
+
+/* I want to use Ikiwiki's aggregate plugin for a chatterbox: http://ikiwiki.info/tips/add_chatterbox_to_blog/
+   However, it generates annoying "posted by @mrled" on every tweet. This gets rid of that. */
+.microblog-header {
+    display: none;
+}
+
+#backlinks {
+    display: none;
+}
+
+/*.mrl-index-main {
+    min-width: 300px;
+    max-width: 50%;
+    margin: 15px;
+}*/
+.mrl-firehose-column-set {
+	/*border-top:1px solid #8cacbb;*/   /*these are handled by the h1-h5 border-bottom stuff now*/
+    /*border-bottom: 1px solid #ccc; */
+    float: left;
+    padding: 10px;
+    margin: 50px 10px 10px 10px;
+}
+.mrl-firehose-column {
+    float: left; 
+    max-width:20%;
+    min-width:250px;
+    margin: 15px;
+}
+
+/* This is the edit / recentchanges / preferences links that are at the top of ikiwiki pages. 
+ * Note that while you can disable plugins recentchanges and editpage to get rid of those
+ * two links, you can't get rid of the Preferences link w/o this. 
+ * OTOH if you just do ".actions" here rather than ".actions li", it also removes a border
+ * between the title area and the content area that I want to keep
+ */
+.actions li {
+    display: none;
+}
+/* changing border color from default to match stuff from dokuwiki */
+.pageheader .actions ul {
+	border-bottom:1px solid #8cacbb;
+}
+#pageinfo {
+	border-top: 1px solid #8cacbb;
+}
+
+
+}
+input#searchbox {
+    background: #FFFFFF;
+    padding: 0px 0px 4px 4px;
+}
+
+.sidebar {
+    width: 30ex;
+    border: 1px solid #8cacbb;
+    margin-top:50px;
+}
+
+pre, code {
+/*  for white on black:
+    background: #000000;
+    color: #FFFFFF;
+ */
+/*  for black on gray */
+    background:#E0E0E0;
+    color: #000000;
+
+    padding-right: 4px;
+    padding-left:  4px;
+    font-family: ProFont,Consolas,monospace;
+}
+.toc {
+    border: 1px solid #8cacbb;
+    margin-right:  30px; /*if I don't have this, <li> bullets in the body will be displayed on top of me, wtf*/
+    padding-right: 15px;
+    padding-top:   5px;
+    float: left;
+}

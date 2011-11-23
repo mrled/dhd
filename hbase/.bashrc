@@ -100,6 +100,7 @@ elif [ -d /dev/fs ]; then # SFU/SUA
     export SVN_SSH="/usr/pkg/bin/ssh"
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
 elif [ $uname == "Darwin" ]; then # Mac OS X
+    ls_args="${ls_args} -G"
     # many of these are thanks to <http://superuser.com/questions/52483/terminal-tips-and-tricks-for-mac-os-x>
     test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
     function hideapp {
@@ -233,6 +234,21 @@ alias shl="echo $SHLVL"
 
 alias grep="$cmd_grep --color=auto"
 
+alias ddate="date +%Y%m%d"
+epoch() {
+    if [ -z "$1" ]; then d="now"
+    else d="$@"
+    fi
+
+    if (date --date="$d" &>/dev/null); then
+        tunix=`date --date="$d" +%s`
+        thuman=`date --date="$d"`
+        echo "Unix time: $tunix    Date: $thuman    Input: $d"
+    else
+        echo "Invalid date: $d"
+    fi
+}
+
 # emacsy goodness
 function e {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
@@ -348,6 +364,53 @@ alias lsseed="ls *.torrent *.nzb"
 alias lseed=lsseed
 alias rseed=rmseed
 
+webstream() {
+    # take N video URLs on the cli and stream them with mplayer. Works with any site youtube-dl can see. 
+    for video in $*; do
+        youtube-dl -q -o- "$video" | mplayer -really-quiet -cache 1000 -
+    done
+}
+mencinfo() {
+    for vidfile in "$@"; do
+        mplayer -identify "$vidfile" -ao null -vo null -frames 0 2>/dev/null | while read line; do
+            if [ -z "$line" ]; then 
+                :
+            else
+                echo -en "\033[35m$vidfile\033[0m::  "
+                echo -e "$line"
+            fi
+        done
+    done
+}
+ffinfo() {
+    for vidfile in "$@"; do 
+        #echo -e "\033[35m$vidfile\033[0m"
+        # ffmpeg prints a giant useless header; let's not output it 
+        in_header=1
+        ffmpeg -i "$vidfile" 2>&1 | while read line; do
+            if [[ "$line" == Input* ]]; then
+                in_header=0
+            elif [[ "$line" == At\ least\ one\ output\ file* ]]; then
+                in_header=1
+            fi
+            if [ "$in_header" -eq 0 ]; then
+                #echo -en "\t"
+                echo -en "\033[35m$vidfile\033[0m::  "
+                echo -e "$line"
+            fi
+        done
+    done
+}
+
+extractaudio() {
+    for v in "$@"; do
+        ffmpeg -i "$v" -acodec copy -vn "$v.m4a"
+    done
+    echo "The files are written as .m4a files but we didn't check first!"
+    echo "(You can check yourself with 'ffmpeg -i "vidfile" 2>&1|grep Audio'"
+}
+
+
 function manualman {
 # this is basically the function that man uses to view its manpages
 # if you know the path to a manpage file (like /usr/share/man/man1/ls.1)
@@ -452,7 +515,8 @@ function tinfo { # bittorrent info
 
 function strip-comments { 
     for f in $@; do
-        grep -v '^#' $f | grep -v '^ *#' | grep -v '^ *$'
+        grep -v '^[	| ]*#'  $f | grep -v '^[	| ]*$' 
+        #grep -v '^[:blank:]*#' $f | grep -v '^[:blank:]*$'
     done
 }
 # from http://www.robmeerman.co.uk/unix

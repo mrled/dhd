@@ -24,6 +24,7 @@ rem   (cmd syntax is bullshit.)
 set MYPATH=
 
 call :s_check_exists %HOME%\.dhd\win32bin
+call :s_check_exists C:\strawberry\perl\bin
 call :s_check_exists C:\opt\local\bin
 call :s_check_exists C:\opt\ntemacs24\bin
 call :s_check_exists C:\opt\git\bin
@@ -34,6 +35,7 @@ call :s_check_exists C:\opt\nirsoft_package
 call :s_check_exists C:\opt\Console2
 call :s_check_exists C:\opt\UnxUtils\bin
 call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
+call :s_check_exists C:\opt\sqlite
 call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files (x86)\PuTTY
 call :s_check_exists C:\Program Files\7-Zip
