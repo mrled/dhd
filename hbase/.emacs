@@ -63,6 +63,13 @@
 (show-paren-mode t) ;; show matching paren when your curser is on a paren
 (global-font-lock-mode t) ;; syntax
 
+; use a different version of python than the default in python-shell (and elsewhere?)
+(if (file-exists-p "/usr/local/bin/python3")
+    (setq python-python-command "/usr/local/bin/python3")
+  (if (file-exists-p "~/opt/homebrew/bin/python3")
+      (setq python-python-command "~/opt/homebrew/bin/python3")))
+
+
 (require 'motion-and-kill-dwim)
 (require 'hide-lines)
 (require 'tail)
