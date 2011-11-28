@@ -1,6 +1,6 @@
 #!/usr/bin/python3 
 
-import sys, os, time, subprocess, re
+import sys, os, time, subprocess, re, datetime
 
 def mungeoutput(output):
     #match a header of id\tSubject\n and a footer of just an extra \n
@@ -37,15 +37,15 @@ def mungeoutput(output):
 
 
 rtbin="/opt/rt40/bin/rt"
-today=time.strftime("%Y%m%d")
+today=datetime.date.today()
 
 # By default, check the last 6 days, but use the first argument if present
 if (len(sys.argv) <= 1):
     numdays=6
 else:
-    numdays=sys.argv[1]
+    numdays=int(sys.argv[1])
 updated="Updated >= '" + str(numdays) + " days ago'"
-
+startdate=today - datetime.timedelta(numdays)
 
 # Find resolved tickets
 cmd=[rtbin, "ls", "-f", "Subject", "-o", "-Created", 
@@ -64,7 +64,7 @@ rejectedtickets=mungeoutput(subprocess.check_output(cmd))
 
 # Now print them all. I'm using Markdown, which means it's easy to just do `rmet.py|markdown.pl`
 # or if I want to add notes or something I can do it in markdown format at the bottom first
-print("# Micah's progress report as of " + today + "\n")
+print("# Micah's progress report: " + startdate.strftime("%Y%m%d") + " to " + today.strftime("%Y%m%d") + "\n")
 print("Tickets I resolved this week:")
 print(resolvedtickets)
 print("Other tickets I worked on this week:")
