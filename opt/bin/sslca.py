@@ -67,21 +67,7 @@ def main(*args):
                 # if after all that we have nothing, exit
                 print("Can't find OpenSSL binary. Exiting...")
                 sys.exit(1)
-        # Windows is unlikely to have this variable set, but just in case the user did:
-        if ('EDITOR' in os.environ):
-            logging.debug("We're on Windows and the %EDITOR% environment variable was set; using that.")
-            myeditor=os.environ['EDITOR']
-        else:
-            for path in [r"C:\Program Files\Notepad++\notepad++.exe",
-                         r"C:\Program Files (x86)\Notepad++\notepad++.exe"]:
-                logging.debug("Checking whether %r is an exe..." % path)
-                if (is_exe(path)):
-                    myeditor=path
-                    logging.debug("Found an editor: %r at this path: %r" % (myeditor, path))
-                    break
-            # if after all that we have nothing, use notepad
-            else:
-                myeditor="C:\Windows\system32\notepad.exe"
+        myeditor="C:\Windows\system32\notepad.exe"
     elif (os.name == 'posix'):
         # for POSIX systems we're just going to assume that openssl is in the path and $EDITOR is an existing env var. 
         inpath=which("openssl")
