@@ -65,9 +65,9 @@ def main(*args):
                     break
             else:
                 # if after all that we have nothing, exit
-                print("Can't find OpenSSL binary. Exiting...")
+                print("Can't find OpenSSL binary. Try adding the location of openssl.exe to your PATH environment variable. Exiting...")
                 sys.exit(1)
-        myeditor="C:\Windows\system32\notepad.exe"
+        myeditor=r"C:\Windows\system32\notepad.exe"
     elif (os.name == 'posix'):
         # for POSIX systems we're just going to assume that openssl is in the path and $EDITOR is an existing env var. 
         inpath=which("openssl")
