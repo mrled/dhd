@@ -10,6 +10,8 @@ d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
+# fuck you Homebrew, installing to /usr/local is bullshit
+d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -318,7 +320,12 @@ function uploadid {
 }
 alias ssh-uploadid="uploadid"
 function fingerprint {
-    for publickey in /etc/ssh/*.pub; do ssh-keygen -lf "$publickey"; done
+    for publickey in /etc/ssh/*.pub; do 
+        echo "Local key: " `ssh-keygen -lf "$publickey"`
+    done
+    for argument in $@; do
+        echo "$argument key: " `ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'`
+    done
 }
 alias ssh-fingerprint="fingerprint"
 function rfingerprint {
