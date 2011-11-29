@@ -69,6 +69,13 @@
   (if (file-exists-p "~/opt/homebrew/bin/python3")
       (setq python-python-command "~/opt/homebrew/bin/python3")))
 
+(when (eq system-type 'windows-nt) ; windows-specific settings & overrides for python
+  (if (file-exists-p "C:/Python32/python.exe")
+      (setq python-python-command "C:/Python32/python.exe")
+    (if (file-exists-p "C:/Python/python.exe")
+        (setq python-python-command "C:/Python/python.exe"))))
+
+(require 'python)
 
 (require 'motion-and-kill-dwim)
 (require 'hide-lines)
@@ -84,7 +91,7 @@
 ; this next line: you can `C-xC-f /sudo:root@host:/path/to/file` and it will 
 ; ssh to the host using your default user, then run sudo, then find file. 
 (setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/ssh:%h:")))) 
-(when (eq system-type 'windows-nt) ; windows-specific settings & overrides
+(when (eq system-type 'windows-nt) ; windows-specific settings & overrides for tramp
   (setq tramp-default-method "plink")
   (setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
 (set-default 'tramp-default-proxies-alist mrl/tramp-sudo-proxy)
