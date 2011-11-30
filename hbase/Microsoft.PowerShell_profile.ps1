@@ -30,3 +30,31 @@ function Get-InstalledPrograms ($computer = 'localhost') {
 	return $programs_installed;
 }
 
+# mklink isn't an exe - it's a cmd.exe builtin! 
+# what the fuck
+# also note that if you want to do this without elevating first 
+# secpol.msc -> Security Settings -> Local Policies -> User Rights Assignment -> Create symbolic links
+# you have to log out after this ahahahahaha fuck
+function mklink {
+    echo "(Running mklink from cmd.exe...)"
+    cmd /c mklink $args
+}
+
+
+# via: https://github.com/stephenn/powershell_sudo
+# via: http://www.ainotenshi.org/710/%E2%80%98sudo%E2%80%99-for-powershell-sorta
+# this works OK for things like "notepad C:\Windows\something.txt"
+# it doesn't preserve CWD and other things though
+# and it fucking requires that windows because it's based on UAC. 
+# FFFFFFFFFFFFFFFFFFF
+function sudo()
+{
+    if ($args.Length -eq 1)
+    {
+        start-process $args[0] -verb "runAs"
+    }
+    if ($args.Length -gt 1)
+    {
+        start-process $args[0] -ArgumentList $args[1..$args.Length] -verb "runAs"
+    }
+}
