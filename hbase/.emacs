@@ -99,7 +99,12 @@
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
-(setq auto-mode-alist (cons '("\\.mdwn" . markdown-mode) auto-mode-alist)
+(setq auto-mode-alist (cons '("\\.mdwn"     . markdown-mode) auto-mode-alist) ; ikiwiki's extension
+      auto-mode-alist (cons '("\\.markdown" . markdown-mode) auto-mode-alist) ; Github's extension
+      auto-mode-alist (cons '("\\.text"     . markdown-mode) auto-mode-alist) ; Gruber's extension
+      auto-mode-alist (cons '("\\.mkd"      . markdown-mode) auto-mode-alist) ; VS Markdown Mode
+      auto-mode-alist (cons '("\\.md"       . markdown-mode) auto-mode-alist) ; MarkdownPad, others
+      auto-mode-alist (cons '("\\.mdown"    . markdown-mode) auto-mode-alist) ; MarkdownPad
       markdown-command (concat mrl-home "/.dhd/opt/bin/Markdown.pl")
       markdown-css-path (concat mrl-home "/.dhd/doc/css/mrl-swiss.css"))
 
@@ -187,6 +192,22 @@ eta title=\"\"]]"
        (message "Buffer '%s' is not visiting a file!" name)
      (progn (copy-file filename newname 1) (delete-file filename) 
             (set-visited-file-name newname) (set-buffer-modified-p nil) t))))
+
+(defun fix-amazon-url ()
+  "Minimizes the Amazon URL under the point.  You can paste an Amazon
+URL out of your browser, put the cursor in it somewhere, and invoke
+this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving-time>"
+  (interactive)
+  (and (search-backward "http://www.amazon.com" (point-at-bol) t)
+       (search-forward-regexp
+	".+/\\([A-Z0-9]\\{10\\}\\)/[^[:space:]\"]+" (point-at-eol) t)
+       (replace-match
+	(concat "http://www.amazon.com/o/asin/"
+		(match-string 1)
+		(match-string 3)
+        "&tag=younixus-20"))))
+
+
 
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
