@@ -58,3 +58,19 @@ function sudo()
         start-process $args[0] -ArgumentList $args[1..$args.Length] -verb "runAs"
     }
 }
+
+function .. {
+   cd ..
+}
+
+function e {
+    emacsclient -n $args
+}
+
+function trid {
+    C:\opt\trid\trid.exe $args
+}
+
+function conkeror {
+    C:\opt\xulrunner\xulrunner.exe "$home\opt\src\conkeror\application.ini" $args
+}
