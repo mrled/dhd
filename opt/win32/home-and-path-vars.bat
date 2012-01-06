@@ -42,6 +42,8 @@ call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files\7-Zip
 call :s_check_exists C:\Program Files (x86)\7-Zip
 call :s_check_exists C:\Program Files (x86)\PuTTY
+call :s_check_exists C:\Program Files\Windows SDKs\Windows\v7.0\Bin
+call :s_check_exists C:\Program Files\NSIS
 
 rem These are no longer used: 
 rem call :s_check_exists C:\Program Files\Emacs\emacs
