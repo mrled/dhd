@@ -60,29 +60,19 @@ umask 077
 export CVS_RSH="ssh"
 
 cmd_ls="ls"
-ls_args="-hF"
+ls_args="-hF --color"
 cmd_sed="sed"
 cmd_du="du"
 cmd_grep="grep"
 
-#### Annoying inter-OS issues
-# obsd & macosx: `/usr/bin/which -a` does the same as tcsh's `whence`
-# debian & macosx: `which asdf` returns false; obsd returns "command not found"
-#   this makes it impossible to rely on `which` in .bashrc - grr! 
-
-# Found solution: use `whence` on ksh, and either `hash` or `type` on bash
-
-if type -P gls >/dev/null; then 
-    cmd_ls=gls
-    ls_args="${ls_args} --color"
-elif type -P colorls >/dev/null; then 
-    cmd_ls=colorls
-    ls_args="${ls_args} -G"
-fi
-
 if type -P gsed >/dev/null; then cmd_sed=gsed; fi
 if type -P gdu  >/dev/null; then cmd_du=gdu;   fi
 
+# FUCKING capslock
+# this really isn't the place for this...w
+if type -P xkbmap >/dev/null; then
+    xkbmap -option ctrl:nocaps
+fi
 
 ## Defaults which can be overridden in the system-specific configurations below
 psargs="ax"
@@ -102,41 +92,20 @@ elif [ -d /dev/fs ]; then # SFU/SUA
     export SVN_SSH="/usr/pkg/bin/ssh"
     test -f /usr/examples/win32/aliases.sh && /usr/examples/win32/aliases.sh
 elif [ $uname == "Darwin" ]; then # Mac OS X
-    ls_args="${ls_args} -G"
+    ls_args="-hFG"
+    if type -P gls >/dev/null; then 
+        cmd_ls=gls
+        ls_args="-hF --color"
+    fi
     # many of these are thanks to <http://superuser.com/questions/52483/terminal-tips-and-tricks-for-mac-os-x>
     test -r /sw/bin/init.sh && source /sw/bin/init.sh  # fink
-    function hideapp {
-        APPLICATION="$1"
-        osascript -e "tell application \"System Events\" to set visible of process \"$APPLICATION\" to false"
-    }
     # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
     alias switchx="osascript ~/.dhd/opt/ascript/x11-cmd-tab.ascript"
     # Launch QuickLook from the command line (^c will kill it and return to prompt)
     alias ql='qlmanage -p 2>/dev/null'
-    function pman {
+    pman() {
         man -t $* | ps2pdf - - | open -g -f -a /Applications/Preview.app 
     }
-    # see: 
-    # cd "$vmfdir"
-    # for vmbin in $(find . -maxdepth 1 -type f -perm +=x); do echo "$vmbin"; done
-    vmfdir="/Library/Application Support/VMware Fusion"
-    if [ -d "$vmfdir" ]; then
-        for vmbin in vm-support.tool vmnet-bridge vmnet-cli vmnet-dhcpd vmnet-natd \
-            vmnet-netifup vmnet-sniffer vmrun vmss2core vmware-authd vmware-cloneBootCamp \
-            vmware-licenseTool vmware-ntfs vmware-rawdiskAuthTool vmware-rawdiskCreator \
-            vmware-usbArbitratorTool vmware-vdiskmanager vmware-vmx vmware-vmx-debug
-        do
-            alias $vmbin="\"$vmfdir/$vmbin\""
-        done
-    fi
-elif [ $uname == "SunOS"  ]; then # Solaris
-    export CC="/opt/csw/gcc4/bin/gcc"
-    psargs="-ef"
-elif [ $uname == "OpenBSD" ]; then # obsd
-    export PKG_PATH="ftp://ftp3.usa.openbsd.org/pub/OpenBSD/4.3/packages/sparc64/"
-    psargs_user="j"
-elif [ $uname == "Linux" ]; then # assume GNU userland
-    ls_args="${ls_args} --color"
 fi
 
 ##################
@@ -162,28 +131,29 @@ alias logrec='lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d
 alias psa="ps $psargs"
 alias psaj="ps $psargs$psargs_user"
 alias psawcl="ps $psargs | wc -l"
-function psother {
+psother() {
     # return all processes except my own
     psaj | grep -v "$me" 
 }
-function psaf { 
+psaf() { 
     # (the second call to grep prevents this function from being returned as a hit)
     psa | grep -i $1 | grep -v "grep -i $1"
 }
-function define {
+define() {
     wn "$1" -over
 }
 alias wno=define
-function ff {
+ff() {
     find . -name "$1" -print
 }
 
-function .b {
+rebash() {
     . ~/.profile
     . ~/.bashrc
 }
+alias .b=rebash
 
-function maildir2mbox {
+maildir2mbox() {
     MDIR="$1"
     MBOX="$2"
     for msg in "$MDIR"/{cur,tmp,new}/*; do 
@@ -194,7 +164,7 @@ function maildir2mbox {
 # Important! this function assumes that you have no mbox files in already in your maildir!
 # (That would be dumb of you, but I figured you could use fair warning anyway.)
 # Also, I assume you're in the mbox root
-function maildirtree2mboxes {
+maildirtree2mboxes() {
     maildir2mbox . Inbox.mbox
     # you have to do the exec call to 'bash -lc' because otherwise it won't find our
     # maildir2mbox function that we just so cleverly defined, argh
@@ -206,8 +176,8 @@ function maildirtree2mboxes {
 }
 
 # expects to be called like this: 
-# maildirtree2mboxes-all-users /home .maildir
-function maildirtree2mboxes-all-users {
+# maildirtree2mboxes_all_users /home .maildir
+maildirtree2mboxes_all_users() {
     homedirs="$1"
     # the standard maildir name, usually something like Maildir or .mail
     maildirname="$2" 
@@ -252,7 +222,7 @@ epoch() {
 }
 
 # emacsy goodness
-function e {
+e() {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
     macosxemacs="/Applications/Emacs/emacsformacosx.com/Emacs for Mac OS X.app"
     if [[ $uname == MINGW* ]]; then
@@ -293,7 +263,7 @@ if [ $cmd_screen ]; then
     default_session_name="camelot" # totally arbitrary session name
     
     # attach to session if extant, otherwise create a new one
-    function scr {
+    scr() {
         if [ $1 ]; then
             sessionname="$1"
         else
@@ -314,12 +284,12 @@ alias ssh="ssh -A"
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-function uploadid { 
+uploadid() { 
     # this function could be extended to add the host to .ssh/config for use with my 'complete' line elsewhere in .bashrc
     cat ~/.ssh/id_rsa.pub | ssh $* 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys'
 }
 alias ssh-uploadid="uploadid"
-function fingerprint {
+fingerprint() {
     for publickey in /etc/ssh/*.pub; do 
         echo "Local key: " `ssh-keygen -lf "$publickey"`
     done
@@ -328,7 +298,7 @@ function fingerprint {
     done
 }
 alias ssh-fingerprint="fingerprint"
-function rfingerprint {
+rfingerprint() {
     for argument in $@; do
         echo "SSH keys for $argument"
         ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'
@@ -337,7 +307,7 @@ function rfingerprint {
 alias ssh-rfingerprint="rfingerprint"
 
 # wake-on-lan information so I don't have to always remember it
-function magicp { 
+magicp() { 
     target=${1:? "Usage: magicp <target>, where <target> is a host that I know about"}
     if   [[ $target == "andraia-wifi" ]]; then
         wakeonlan 00:1f:f3:d8:40:e6 
@@ -358,7 +328,7 @@ esxtop() {
 
 
 # Torrent &c stuff
-function seedbox {
+seedbox() {
     for torrent in *.torrent; do
         scp "${torrent}" younix.us:~/.torincoming/
     done
@@ -418,7 +388,7 @@ extractaudio() {
 }
 
 
-function manualman {
+manualman() {
 # this is basically the function that man uses to view its manpages
 # if you know the path to a manpage file (like /usr/share/man/man1/ls.1)
 # you can view it directly with this function.
@@ -437,7 +407,7 @@ function manualman {
 # It will convert all files of that filetype in the cwd. 
 # Additionally, make sure there are no other PDFs files hanging
 # around unless you want them assimilated into the final pdf too.
-function convert2pdf {
+convert2pdf() {
     filetype="$1"
     for oldfile in *.$filetype; do 
         convert "$oldfile" "$oldfile.pdf"
@@ -447,13 +417,13 @@ function convert2pdf {
 
 # Bulk replace file extensions on all files in current directory
 # Use it like "changext html php" to move everything ending in .html to filename.php
-function changext {
+changext() {
     oldext="$1"
     newext="$2"
     /bin/ls -1 *.$oldext | sed 's/\(.*\)\.$oldext/mv \"\1.$oldext\"  \"\1.$newext\"/' | /bin/sh
 }
 
-function remote {
+remote() {
     if [ $2 ]; then 
         sessionname="$2"
     else 
@@ -463,7 +433,7 @@ function remote {
 } 
 
 # Mac metadata files: .DS_Store and ._Doomsday.mkv for example
-function mmf { 
+mmf() { 
     case $1 in 
         list) 
             find . -type f -name '._*'
@@ -481,7 +451,7 @@ function mmf {
 # index page; you have to directly request the files themselves.
 # Requires netcat as `nc`. 
 # From <http://www.linuxscrew.com/2007/09/06/web-server-on-bash-in-one-line/>
-function htserv {
+htserv() {
     port=$1
     :;while [ $? -eq 0 ];do nc -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
 }
@@ -489,18 +459,18 @@ function htserv {
 ###################
 # Other Functions #
 ###################
-function listens {
+listens() {
     netstat -an | grep LISTEN | grep 'tcp\|udp' | awk '{ print $1, "\t", $4 }' | sort
 }
-function connections {
+connections() {
     netstat -a | grep 'tcp\|udp'
 }
-function routes {
+routes() {
     # works for macosx
     route -n get default
 }
 
-function tinfo { # bittorrent info
+tinfo() { # bittorrent info
     case $1 in
         name)
             for f in $@; do 
@@ -520,7 +490,7 @@ function tinfo { # bittorrent info
     esac
 }
 
-function strip-comments { 
+strip_comments() { 
     for f in $@; do
         grep -v '^[	| ]*#'  $f | grep -v '^[	| ]*$' 
         #grep -v '^[:blank:]*#' $f | grep -v '^[:blank:]*$'
@@ -528,7 +498,7 @@ function strip-comments {
 }
 # from http://www.robmeerman.co.uk/unix
 # red stderr - prepend to a command to have its stderr output in red
-function rse {
+rse() {
     # We need to wrap each phrase of the command in quotes to preserve arguments that contain whitespace
     # Execute the command, swap STDOUT and STDERR, colour STDOUT, swap back
     ((eval $(for phrase in "$@"; do echo -n "'$phrase' "; done)) 3>&1 1>&2 2>&3 | sed -e "s/^\(.*\)$/$(echo -en \\033)[31;1m\1$(echo -en \\033)[0m/") 3>&1 1>&2 2>&3
@@ -553,7 +523,7 @@ roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; s
 ## Completion
 complete -cf sudo
 # via <http://hints.macworld.com/article.php?story=20080317085050719>
-function _complete_ssh_hosts {
+_complete_ssh_hosts() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     sshkh=
