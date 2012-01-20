@@ -68,12 +68,6 @@ cmd_grep="grep"
 if type -P gsed >/dev/null; then cmd_sed=gsed; fi
 if type -P gdu  >/dev/null; then cmd_du=gdu;   fi
 
-# FUCKING capslock
-# this really isn't the place for this...w
-if type -P xkbmap >/dev/null; then
-    xkbmap -option ctrl:nocaps
-fi
-
 ## Defaults which can be overridden in the system-specific configurations below
 psargs="ax"
 psargs_user="j"
