@@ -273,9 +273,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
     ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
     ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
     "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
-    ;; for stumpwm
-    (defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
-    (require 'stumpwm-mode))
+)
 
 (unless (eq window-system nil) ;if we are NOT running in the console
   (setq default-frame-alist ; this actually sets the font and colours
