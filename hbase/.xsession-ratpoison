@@ -1,1 +1,5 @@
-.xinitrc
+#!/bin/bash
+setxkbmap -option ctrl:nocaps
+xrdb -merge ~/.Xresources
+xterm&
+exec ratpoison
