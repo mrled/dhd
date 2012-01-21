@@ -36,9 +36,6 @@ add_hook("mode_line_hook", mode_line_adder(buffer_count_widget), true);
 require("page-modes/stackexchange.js");
 require("page-modes/xkcd.js");
   xkcd_add_title = true;
-require("page-modes/google-search-results.js");
-  //google_search_bind_number_shortcuts(); //0-9 are now the ten results on the page; means you can't use any other links tho ugh
-
 
 // webjumps: 
 
