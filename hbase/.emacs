@@ -287,7 +287,8 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
 
-  (set-default-font "ProFontWindows-10")
+  ;(set-default-font "ProFontWindows-10")
+  (set-default-font "Terminus-8")
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
 
   (global-hl-line-mode t) ;; Highlight the current line. 

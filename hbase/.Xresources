@@ -1,4 +1,5 @@
-xterm*faceName:          ProFontWindows:pixelsize=14
+!xterm*faceName:          ProFontWindows:pixelsize=14
+xterm*faceName:          Terminus:pixelsize=12
 xterm*background:        Black
 xterm*foreground:        White
 xterm*saveLines:         100000
