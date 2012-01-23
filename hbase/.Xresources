@@ -4,6 +4,10 @@ xterm*background:        Black
 xterm*foreground:        White
 xterm*saveLines:         100000
 
+! cause meta (alt) to send an escape key, but allow pasting of 8 bit characters (i.e. not just ascii)
+xterm*metaSendsEscape:   true
+xterm*eightBitInput:     false
+
 !Emacs*faceName:          ProFontWindows
 !Emacs*faceSize:          10
 !emacs.font: ProFontWindows-10
