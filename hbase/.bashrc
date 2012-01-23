@@ -202,6 +202,23 @@ alias grep="$cmd_grep --color=auto"
 
 if type -P xscreensaver-command >/dev/null; then alias xslock="xscreensaver-command -lock"; fi
 
+disp() {
+    if [ -z $1 ]; then
+        echo "DISPLAY=$DISPLAY"
+    elif [ "$1" = "-h" ]; then
+        echo "disp - set the $DISPLAY variable, simply"
+        echo "    Usage: 'disp [N]', where N is an integer"
+        echo "Sets the display environment variable to ':N'."
+        echo "If N was not passed, it sets it to ':0' instead."
+        echo "TODO: expand this to work better with reattached screen sessions and ssh."
+    elif [[ $1 =~ ^[0-9]+$ ]]; then # if $1 is an integer
+        echo Setting DISPLAY to ":$1"
+        export DISPLAY=":$1"
+    else
+        echo "The first argument must be an integer; see 'disp -h' for more details."
+    fi
+}
+
 alias ddate="date +%Y%m%d"
 epoch() {
     if [ -z "$1" ]; then d="now"
