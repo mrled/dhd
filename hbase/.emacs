@@ -267,25 +267,33 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         mac-allow-anti-aliasing nil)
   (global-set-key "\M-h" 'ns-do-hide-emacs)
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
-
 (when (eq window-system 'x)
-  (defvar myfont 
+  ; see all fonts (execute in scratch buffer): 
+  ;      (insert (prin1-to-string (x-list-fonts "*")))
+  ; however, I'm doing this with .Xdefaults now
+  ; I still have to defvar myfont because otherwize it throws a fit agh. 
+  (defvar myfont  "" )
     ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
     ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
-    "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
+    ;"-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
 )
 
 (unless (eq window-system nil) ;if we are NOT running in the console
+
   (setq default-frame-alist ; this actually sets the font and colours
     (list
-      (cons 'font  myfont)
       (cons 'foreground-color  "white")
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
+
+  ;(set-default-font "ProFontWindows-10")
+  (set-default-font "Terminus-8")
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
+
   (global-hl-line-mode t) ;; Highlight the current line. 
-  (set-face-background 'hl-line "#335"))
+  (set-face-background 'hl-line "#335")
+)
 
 ;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs

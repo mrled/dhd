@@ -1,0 +1,9 @@
+!xterm*faceName:          ProFontWindows:pixelsize=14
+xterm*faceName:          Terminus:pixelsize=12
+xterm*background:        Black
+xterm*foreground:        White
+xterm*saveLines:         100000
+
+!Emacs*faceName:          ProFontWindows
+!Emacs*faceSize:          10
+!emacs.font: ProFontWindows-10

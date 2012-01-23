@@ -1,18 +1,20 @@
-; -*- mode: lisp; mode: stumpwm -*-
+; -*- mode: lisp -*-
 
 (in-package :stumpwm)
+
+(stumpwm:set-prefix-key (stumpwm:kbd "C-i"))
 
 ;; Key bindings
 ; Note: use *root-map* to use the prefix key, where C-x becomes C-tC-x
 ;       use *top-map* to do without it, where C-x is C-x
 
 ;(define-key *root-map* (kbd "C-s") "exec open /Applications/Spaces.app")
-(define-key *top-map* (kbd "M-h") 
-  "exec osascript ~/doc/dhd/opt/ascript/x11-hide.ascript")
-(define-key *top-map* (kbd "M-TAB") 
-  "exec osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript")
-(define-key *top-map* (kbd "C-M-SPC")
-  "exec osascript ~/doc/dhd/opt/ascript/switch-lang-input.ascript")
+;(define-key *top-map* (kbd "M-h") 
+;  "exec osascript ~/doc/dhd/opt/ascript/x11-hide.ascript")
+;(define-key *top-map* (kbd "M-TAB") 
+;  "exec osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript")
+;(define-key *top-map* (kbd "C-M-SPC")
+;  "exec osascript ~/doc/dhd/opt/ascript/switch-lang-input.ascript")
 
 
 (defcommand paste-x-selection () (:rest)
@@ -22,3 +24,20 @@
 (define-key *root-map* (kbd "y") "paste-x-selection")
 
 
+(setf stumpwm:*screen-mode-line-format*
+      (list "%w | "
+            '(:eval (stumpwm:run-shell-command "date" t))))
+
+;; turn on the modeline
+(if (not (head-mode-line (current-head)))
+    (toggle-mode-line (current-screen) (current-head)))
+    ; A head is a physical monitor. A screen is a section of video memory
+    ; that heads are mapped on to. When using xinerama you generally have
+    ; 1 screen and many heads. When not using xinerama each screen is a
+    ; physical monitor so you have many screens with only one head on them.
+
+
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "c") "exec xterm")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-c") "exec xterm")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-k") "exec conkeror")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "k") "exec conkeror")

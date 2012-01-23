@@ -200,6 +200,8 @@ alias shl="echo $SHLVL"
 
 alias grep="$cmd_grep --color=auto"
 
+if type -P xscreensaver-command >/dev/null; then alias xslock="xscreensaver-command -lock"; fi
+
 alias ddate="date +%Y%m%d"
 epoch() {
     if [ -z "$1" ]; then d="now"
