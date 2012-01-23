@@ -1,6 +1,20 @@
 #!/bin/bash
+
 setxkbmap -option ctrl:nocaps
 xrdb -merge ~/.Xresources
-xscreensaver&
-xterm&
+if type -P xscreensaver >/dev/null; then 
+    xscreensaver &
+fi
+
+xterm -T xterm-launcher &
+xterm -T xterm-camelot -e screen -D -R -S camelot &
+
+if type -P emacs >/dev/null; then 
+    emacs &
+fi
+if type -P conkeror >/dev/null; then 
+    conkeror &
+fi
+
+
 exec stumpwm
