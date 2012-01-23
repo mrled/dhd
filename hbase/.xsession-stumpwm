@@ -6,7 +6,7 @@ if type -P xscreensaver >/dev/null; then
     xscreensaver &
 fi
 
-xterm -T xterm-launcher &
+# Note that 'camelot' is my default screen session from .bashrc
 xterm -T xterm-camelot -e screen -D -R -S camelot &
 
 if type -P emacs >/dev/null; then 

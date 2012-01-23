@@ -273,7 +273,7 @@ e() {
 # screen stuff
 cmd_screen=`type -P screen`
 if [ $cmd_screen ]; then
-    default_session_name="camelot" # totally arbitrary session name
+    default_session_name="camelot" # totally arbitrary session name; note that it IS used elsewhere, though, such as .xsession-stumpwm, where I have it launch an xterm that connects to this session
     
     # attach to session if extant, otherwise create a new one
     scr() {
