@@ -39,5 +39,5 @@
 
 (stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "c") "exec xterm")
 (stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-c") "exec xterm")
-(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-k") "exec conkeror")
-(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "k") "exec conkeror")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "o") "exec conkeror")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-o") "exec conkeror")
