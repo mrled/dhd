@@ -218,6 +218,10 @@ disp() {
         echo "The first argument must be an integer; see 'disp -h' for more details."
     fi
 }
+xttitle() {
+    echo -e "\033]2;""$1""\007"
+}
+alias xtt=xtermtitle
 
 alias ddate="date +%Y%m%d"
 epoch() {
