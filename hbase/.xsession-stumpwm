@@ -6,6 +6,10 @@ if type -P xscreensaver >/dev/null; then
     xscreensaver &
 fi
 
+# hsetroot is its own package; lets you scale to full screen without stretching. 
+# link any image to ~/.xbackground and this will put it on the background. 
+test `type -P hsetroot >/dev/null` && test -r ~/.xbackground && hsetroot -full ~/.xbackground
+
 # Note that 'camelot' is my default screen session from .bashrc
 xterm -T xterm-camelot -e screen -D -R -S camelot &
 
@@ -15,6 +19,5 @@ fi
 if type -P conkeror >/dev/null; then 
     conkeror &
 fi
-
 
 exec stumpwm
