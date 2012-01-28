@@ -410,3 +410,13 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 (global-set-key "\C-ct"    'mrled/four-fucking-spaces)
 (global-set-key "\C-c\C-T" 'mrled/eight-fucking-spaces)
 (global-set-key "\C-cT"    'mrled/eight-fucking-spaces)
+
+
+; sprunge.us owns
+(defun sprunge (prefix)
+  "Posts the current buffer to sprunge, and shows the resulting URL in a new buffer"
+  (interactive "P")
+  (let ((filename "/tmp/sprunge-post"))
+    (if prefix (write-file filename) (write-region (region-beginning) (region-end) filename)) ; if invoked with the universal argument / prefix, upload the whole file, else upload just the region
+    (insert (shell-command-to-string (concat "curl -s -F 'sprunge=<" filename "' http://sprunge.us")))
+    (delete-char -1))) ; Newline after URL
