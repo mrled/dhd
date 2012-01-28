@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# xrandr stuff must happen first. 
+# Obviously the correct thing here is host-dependent.
+if [ `hostname` == "hornsby" ]; then
+    xrandr --output HDMI-0 --auto --output DVI-0 --auto --right-of HDMI-0
+fi
+
 setxkbmap -option ctrl:nocaps
 xrdb -merge ~/.Xresources
 if type -P xscreensaver >/dev/null; then 
