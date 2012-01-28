@@ -36,9 +36,12 @@
     ; 1 screen and many heads. When not using xinerama each screen is a
     ; physical monitor so you have many screens with only one head on them.
 
-
 (stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "c") "exec xterm")
 (stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-c") "exec xterm")
-(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "o") "exec conkeror")
-(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-o") "exec conkeror")
+
+(defcommand conkeror () () (run-or-raise "conkeror" '(:class "Conkeror")))
+(define-key *root-map* (kbd "o") "conkeror")
+(define-key *root-map* (kbd "C-o") "conkeror")
+
 (stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "O") "exec conkeror -f unfocus") ; run this when Flash or Java applets steal focus and you can't get it back.
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "l") "exec xscreensaver-command -lock")
