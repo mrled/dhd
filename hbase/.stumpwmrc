@@ -3,6 +3,7 @@
 (in-package :stumpwm)
 
 (stumpwm:set-prefix-key (stumpwm:kbd "C-i"))
+;(stumpwm:set-prefix-key (stumpwm:kbd "C-q")) ; in Emacs this is quoted-insert; in other apps this might be quit, but mostly I won't be using it a bunch. 
 
 ;; Key bindings
 ; Note: use *root-map* to use the prefix key, where C-x becomes C-tC-x
@@ -36,12 +37,14 @@
     ; 1 screen and many heads. When not using xinerama each screen is a
     ; physical monitor so you have many screens with only one head on them.
 
-(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "c") "exec xterm")
-(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-c") "exec xterm")
+; default has "c" opening "console", but fuck x-terminal-emulator and I need "c" for conkeror anyway, so fffffffff.
 
-(defcommand conkeror () () (run-or-raise "conkeror" '(:class "Conkeror")))
-(define-key *root-map* (kbd "o") "conkeror")
-(define-key *root-map* (kbd "C-o") "conkeror")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "x") "exec xterm")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C-x") "exec xterm")
 
-(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "O") "exec conkeror -f unfocus") ; run this when Flash or Java applets steal focus and you can't get it back.
+(defcommand conkeror () () (run-or-raise "conkeror" '(:class "Conkeror")))(
+define-key *root-map* (kbd "c") "conkeror")
+(define-key *root-map* (kbd "C-c") "conkeror")
+(stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "C") "exec conkeror -f unfocus") ; run this when Flash or Java applets steal focus and you can't get it back.
+
 (stumpwm:define-key stumpwm:*root-map* (stumpwm:kbd "l") "exec xscreensaver-command -lock")
