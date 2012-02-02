@@ -12,18 +12,30 @@ if type -P xscreensaver >/dev/null; then
     xscreensaver &
 fi
 
-# hsetroot is its own package; lets you scale to full screen without stretching. 
+# hsetroot is its own package; lets you scale to full screen without stretching, but treats multi heads like one big screen.
+# feh is also a separate package; will center the same image to any number of heads
 # link any image to ~/.xbackground and this will put it on the background. 
-test `type -P hsetroot >/dev/null` && test -r ~/.xbackground && hsetroot -full ~/.xbackground
+if `type -P feh > /dev/null`; then
+    if [ -r ~/.xbackground ]; then
+        feh --bg-max ~/.xbackground
+    fi
+elif `type -P hsetroot >/dev/null`; then
+    if [ -r ~/.xbackground ]; then
+        hsetroot -full ~/.xbackground
+    fi
+fi
 
 # Note that 'camelot' is my default screen session from .bashrc
-xterm -T xterm-camelot -e screen -D -R -S camelot &
+#xterm -T xterm-camelot -e screen -D -R -S camelot &
+#xterm -T xterm-selene -e ssh -t "h.younix.us" "screen -D -R -S camelot" &
 
-if type -P emacs >/dev/null; then 
-    emacs &
-fi
-if type -P conkeror >/dev/null; then 
-    conkeror &
-fi
+#if type -P emacs >/dev/null; then 
+#    emacs &
+#fi
+#if type -P conkeror >/dev/null; then 
+#    conkeror &
+#fi
 
-exec stumpwm
+stumpwm &
+
+exec xterm -T xterm-session
