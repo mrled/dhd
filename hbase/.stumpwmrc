@@ -62,12 +62,16 @@
 ;   Special stuff like locking the screen with xscreensaver-command -lock doesn't follow this convention
 
 ;; k: conkeror
-(defcommand conkeror () () (run-or-raise "conkeror" '(:class "Conkeror")))
+(defcommand conkeror () () 
+  "Run or raise conkeror."
+  (run-or-raise "conkeror" '(:class "Conkeror")))
 (define-key *root-map* (kbd "M-k") "conkeror")
 (define-key *root-map* (kbd "M-K") "exec conkeror -f unfocus") ; run this when Flash or Java applets steal focus and you can't get it back.
 ;; c: camelot (also: console)
 ; "camelot", which is my default screen session name. 
-(defcommand camelot () () (run-or-raise "xterm -T xterm-camelot -e screen -D -R -S camelot" '(:title "xterm-camelot")))
+(defcommand camelot () () 
+  "Run or raise my standard screen session called 'camelot'."
+  (run-or-raise "xterm -T xterm-camelot -e screen -D -R -S camelot" '(:title "xterm-camelot")))
 (define-key *root-map* (kbd "M-c") "camelot")
 ;; x: xterm - just give me a new pristine xterm
 (define-key *root-map* (kbd "M-x") "exec xterm")
@@ -77,12 +81,18 @@
 (define-key *root-map* (kbd "M-e") "emacs")
 (undefine-key *root-map* (kbd "e")) ; the default binding for emacs
 ;; f: firefox
-(defcommand firefox () () (run-or-raise "firefox" '(:class "Firefox")))
+(defcommand firefox () () 
+  "Run or raise Firefox."
+  (run-or-raise "firefox" '(:class "Firefox")))
 (define-key *root-map* (kbd "M-f") "firefox")
 ;; t: thunderbird
 ; (also m: muttator)
-(defcommand thunderbird () () (run-or-raise "thunderbird" '(:class "Thunderbird")))
-(defcommand muttator () () (run-or-raise "thunderbird" '(:class "Thunderbird")))
+(defcommand thunderbird () () 
+  "Run or raise Thunderbird."
+  (run-or-raise "thunderbird" '(:class "Thunderbird")))
+(defcommand muttator () () 
+  "Run or raise Muttator (Thunderbird)."
+  (run-or-raise "thunderbird" '(:class "Thunderbird")))
 (define-key *root-map* (kbd "M-t") "thunderbird")
 (define-key *root-map* (kbd "M-m") "muttator")
 
@@ -95,22 +105,26 @@
 
 
 (defcommand selene-ssh () () 
+  "Run or raise xterm->ssh->screen to selene."
   (run-or-raise 
    "xterm -T xterm-selene -e ssh -t 'h.younix.us' 'screen -D -R -S camelot'" 
    '(:title "xterm-selene")))
 (defcommand chelo-rdp () () 
+  "Run or raise an RDP session to chelo."
   (run-or-raise 
    (concat "rdesktop -u mrled -d djinn.internal -p \"" 
            mrl/passwords/djinn-ad 
            "\" -g 1440x880 -K h.younix.us")
    '(:title "rdesktop - h.younix.us")))
 (defcommand convicthill-rdp () () 
+  "Run or raise an RDP session to convicthill at Neuric."
   (run-or-raise 
    (concat "rdesktop -u mrled -d neuric.internal -p \"" 
            mrl/passwords/neuric-ad 
            "\" -g 1440x880 -K convicthill.neuric.internal")
    '(:title "rdesktop - convicthill.neuric.internal")))
 (defcommand fattire-rdp () () 
+  "Run or raise an RDP session to fattire at Neuric."
   (run-or-raise 
    (concat "rdesktop -u mrled -d neuric.internal -p \""
            mrl/passwords/neuric-ad 
