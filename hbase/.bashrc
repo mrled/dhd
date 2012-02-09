@@ -262,13 +262,8 @@ e() {
             # check to see if there is an Emacs for Mac OS X.app process
             /usr/bin/open "$macosxemacs"
         fi
-    elif [ -f /usr/local/bin/emacsclient ]; then
-    # I believe this next bit requires Emacs23 under Unix: 
-        if [ "$1" ]; then
-            /usr/local/bin/emacsclient -a /usr/local/bin/emacs "$1"
-        else 
-            /usr/local/bin/emacsclient -a /usr/local/bin/emacs
-        fi
+    elif `type -P emacsclient >/dev/null`; then
+        emacsclient -n $@
     else 
         echo "Couldn't find emacs. Make sure it's installed and this function knows about it."
     fi
