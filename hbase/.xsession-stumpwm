@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# for Thunderbird, because this is the only way to control date formatting lol:
+# http://kb.mozillazine.org/Date_display_format
+export LC_TIME="en-DK.utf8"
+
 # xrandr stuff must happen first. 
 # Obviously the correct thing here is host-dependent.
 if [ `hostname` == "hornsby" ]; then
@@ -36,6 +40,4 @@ fi
 #    conkeror &
 #fi
 
-stumpwm &
-
-exec xterm -T xterm-session
+exec stumpwm 

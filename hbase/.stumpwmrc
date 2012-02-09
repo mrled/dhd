@@ -2,6 +2,8 @@
 
 (in-package :stumpwm)
 
+(setq *shell-program* (stumpwm::getenv "SHELL")) ; it's /bin/sh by default, fuck that.
+
 (defcommand paste-x-selection () (:rest)
   "Universal rat-less X paste."
   (let ((cmd (concatenate 'string "insert " (get-x-selection))))
@@ -17,16 +19,21 @@
       *mode-line-background-color* "black"
       *mode-line-border-color* "grey"
       *group-format* "%t" ; just the title
-      *window-format* "[%n%s%m_%24t]"  ;; limit window titles to 24 chars
+;      *window-format* "[%n%s%m_%24t]"  ;; limit window titles to 24 chars
+      *window-format* "[%n%s%m_%18t]"  ;; limit window titles to 18 chars
       *hidden-window-color* "^8*"  ;; for fmt-head-window-list-hidden-windows
 ;      *win-list-format* "(%v)"
 ;      *screen-mode-line-format-aux* (list *win-list-format*)
       *mrl/left-ml-fmt* (list
                          "%g "; all groups
+                         "
+";newline
                          "%W "; all windows in the current group on current head
                          )
       *mrl/right-ml-fmt* (list
                          "%d "; date, including seconds, updating in the background
+                         "
+";newline
                          "%W "; all windows in the current group on current head
                          )
       )
@@ -85,6 +92,10 @@
   "Run or raise Firefox."
   (run-or-raise "firefox" '(:class "Firefox")))
 (define-key *root-map* (kbd "M-f") "firefox")
+;; chrome
+(defcommand chrome () () 
+  "Run or raise Chromium."
+  (run-or-raise "chromium-browser" '(:class "Chromium")))
 ;; t: thunderbird
 ; (also m: muttator)
 (defcommand thunderbird () () 
@@ -95,6 +106,10 @@
   (run-or-raise "thunderbird" '(:class "Thunderbird")))
 (define-key *root-map* (kbd "M-t") "thunderbird")
 (define-key *root-map* (kbd "M-m") "muttator")
+(defcommand ircterm () () 
+  "Run or raise irc in an xterm"
+  (run-or-raise "xterm -T ircterm -e irssi" '(:title "ircterm")))
+(define-key *root-map* (kbd "M-i") "ircterm")
 
 ;;; Section dealing with remote instances
 ; C-i M-r *
@@ -103,37 +118,51 @@
 
 (load "~/.uenc/hbase/.stumpwm.secret.el") ; contains passwords
 
-
+(defun remote-camelot (hostname title)
+  "Generic function to run-or-raise an xterm->ssh->screen session. 
+Note that my default screen session (used in .bashrc) is called 'camelot'."
+  (run-or-raise 
+   (concat "xterm -T " title " -e ssh -t " hostname " 'screen -D -R -S camelot'") 
+   `(:title ,title) ; see SimpleNote for the explanation for this syntax
+))
+ 
+(defcommand lawnmower-ssh () () 
+  "Run or raise xterm->ssh->screen to lawnmower."
+  (remote-camelot "lawnmower.neuric.internal" "xterm-lawnmower"))
 (defcommand selene-ssh () () 
   "Run or raise xterm->ssh->screen to selene."
-  (run-or-raise 
-   "xterm -T xterm-selene -e ssh -t 'h.younix.us' 'screen -D -R -S camelot'" 
-   '(:title "xterm-selene")))
+  (remote-camelot "h.younix.us" "xterm-selene"))
+(defcommand tika-ssh () () 
+  "Run or raise xterm->ssh->screen to tika."
+  (remote-camelot "tika.younix.us" "xterm-tika"))
+
 (defcommand chelo-rdp () () 
   "Run or raise an RDP session to chelo."
   (run-or-raise 
    (concat "rdesktop -u mrled -d djinn.internal -p \"" 
            mrl/passwords/djinn-ad 
-           "\" -g 1440x880 -K h.younix.us")
+           "\" -g 1440x860 -K h.younix.us")
    '(:title "rdesktop - h.younix.us")))
 (defcommand convicthill-rdp () () 
   "Run or raise an RDP session to convicthill at Neuric."
   (run-or-raise 
    (concat "rdesktop -u mrled -d neuric.internal -p \"" 
            mrl/passwords/neuric-ad 
-           "\" -g 1440x880 -K convicthill.neuric.internal")
+           "\" -g 1440x860 -K convicthill.neuric.internal")
    '(:title "rdesktop - convicthill.neuric.internal")))
 (defcommand fattire-rdp () () 
   "Run or raise an RDP session to fattire at Neuric."
   (run-or-raise 
    (concat "rdesktop -u mrled -d neuric.internal -p \""
            mrl/passwords/neuric-ad 
-           "\" -g 1440x880 -K fattire.neuric.internal")
+           "\" -g 1440x860 -K fattire.neuric.internal")
    '(:title "rdesktop - fattire.neuric.internal")))
 
-(defvar *mrl/remote-map*
+(setq *mrl/remote-map* ; use setq instead of defvar so that it will work after a "restart-soft". 
   (let ((m (make-sparse-keymap)))
     (define-key m (kbd "s") "selene-ssh")
+    (define-key m (kbd "t") "tika-ssh")
+    (define-key m (kbd "l") "lawnmower-ssh")
     (define-key m (kbd "f") "fattire-rdp")
     (define-key m (kbd "h") "chelo-rdp")
     (define-key m (kbd "c") "convicthill-rdp")

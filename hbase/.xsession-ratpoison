@@ -1,6 +1,0 @@
-#!/bin/bash
-setxkbmap -option ctrl:nocaps
-xrdb -merge ~/.Xresources
-xscreensaver&
-xterm&
-exec ratpoison
