@@ -69,6 +69,13 @@
   (if (file-exists-p "~/opt/homebrew/bin/python3")
       (setq python-python-command "~/opt/homebrew/bin/python3")))
 
+(when (eq system-type 'windows-nt) ; windows-specific settings & overrides for python
+  (if (file-exists-p "C:/Python32/python.exe")
+      (setq python-python-command "C:/Python32/python.exe")
+    (if (file-exists-p "C:/Python/python.exe")
+        (setq python-python-command "C:/Python/python.exe"))))
+
+(require 'python)
 
 (require 'motion-and-kill-dwim)
 (require 'hide-lines)
@@ -84,7 +91,7 @@
 ; this next line: you can `C-xC-f /sudo:root@host:/path/to/file` and it will 
 ; ssh to the host using your default user, then run sudo, then find file. 
 (setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/ssh:%h:")))) 
-(when (eq system-type 'windows-nt) ; windows-specific settings & overrides
+(when (eq system-type 'windows-nt) ; windows-specific settings & overrides for tramp
   (setq tramp-default-method "plink")
   (setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
 (set-default 'tramp-default-proxies-alist mrl/tramp-sudo-proxy)
@@ -92,7 +99,12 @@
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
-(setq auto-mode-alist (cons '("\\.mdwn" . markdown-mode) auto-mode-alist)
+(setq auto-mode-alist (cons '("\\.mdwn"     . markdown-mode) auto-mode-alist) ; ikiwiki's extension
+      auto-mode-alist (cons '("\\.markdown" . markdown-mode) auto-mode-alist) ; Github's extension
+      auto-mode-alist (cons '("\\.text"     . markdown-mode) auto-mode-alist) ; Gruber's extension
+      auto-mode-alist (cons '("\\.mkd"      . markdown-mode) auto-mode-alist) ; VS Markdown Mode
+      auto-mode-alist (cons '("\\.md"       . markdown-mode) auto-mode-alist) ; MarkdownPad, others
+      auto-mode-alist (cons '("\\.mdown"    . markdown-mode) auto-mode-alist) ; MarkdownPad
       markdown-command (concat mrl-home "/.dhd/opt/bin/Markdown.pl")
       markdown-css-path (concat mrl-home "/.dhd/doc/css/mrl-swiss.css"))
 
@@ -181,6 +193,22 @@ eta title=\"\"]]"
      (progn (copy-file filename newname 1) (delete-file filename) 
             (set-visited-file-name newname) (set-buffer-modified-p nil) t))))
 
+(defun fix-amazon-url ()
+  "Minimizes the Amazon URL under the point.  You can paste an Amazon
+URL out of your browser, put the cursor in it somewhere, and invoke
+this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving-time>"
+  (interactive)
+  (and (search-backward "http://www.amazon.com" (point-at-bol) t)
+       (search-forward-regexp
+	".+/\\([A-Z0-9]\\{10\\}\\)/[^[:space:]\"]+" (point-at-eol) t)
+       (replace-match
+	(concat "http://www.amazon.com/o/asin/"
+		(match-string 1)
+		(match-string 3)
+        "&tag=younixus-20"))))
+
+
+
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
 
@@ -239,27 +267,33 @@ eta title=\"\"]]"
         mac-allow-anti-aliasing nil)
   (global-set-key "\M-h" 'ns-do-hide-emacs)
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
-
 (when (eq window-system 'x)
-  (defvar myfont 
+  ; see all fonts (execute in scratch buffer): 
+  ;      (insert (prin1-to-string (x-list-fonts "*")))
+  ; however, I'm doing this with .Xdefaults now
+  ; I still have to defvar myfont because otherwize it throws a fit agh. 
+  (defvar myfont  "" )
     ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
     ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
-    "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
-    ;; for stumpwm
-    (defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
-    (require 'stumpwm-mode))
+    ;"-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
+)
 
 (unless (eq window-system nil) ;if we are NOT running in the console
+
   (setq default-frame-alist ; this actually sets the font and colours
     (list
-      (cons 'font  myfont)
       (cons 'foreground-color  "white")
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
+
+  ;(set-default-font "ProFontWindows-10")
+  (set-default-font "Terminus-8")
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
+
   (global-hl-line-mode t) ;; Highlight the current line. 
-  (set-face-background 'hl-line "#335"))
+  (set-face-background 'hl-line "#335")
+)
 
 ;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs
@@ -376,3 +410,13 @@ eta title=\"\"]]"
 (global-set-key "\C-ct"    'mrled/four-fucking-spaces)
 (global-set-key "\C-c\C-T" 'mrled/eight-fucking-spaces)
 (global-set-key "\C-cT"    'mrled/eight-fucking-spaces)
+
+
+; sprunge.us owns
+(defun sprunge (prefix)
+  "Posts the current buffer to sprunge, and shows the resulting URL in a new buffer"
+  (interactive "P")
+  (let ((filename "/tmp/sprunge-post"))
+    (if prefix (write-file filename) (write-region (region-beginning) (region-end) filename)) ; if invoked with the universal argument / prefix, upload the whole file, else upload just the region
+    (insert (shell-command-to-string (concat "curl -s -F 'sprunge=<" filename "' http://sprunge.us")))
+    (delete-char -1))) ; Newline after URL
