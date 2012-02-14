@@ -254,7 +254,7 @@ epoch() {
 # emacsy goodness
 function e {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
-    macosxemacs="/Applications/Emacs/emacsformacosx.com/Emacs for Mac OS X.app"
+    macosxemacs="/Applications/Emacs for Mac OS X.app"
     if [[ $uname == MINGW* ]]; then
         # try /c/opt/ntemacs24 first. then try the EmacsW32 possible locations.
         emacsdir="/c/opt/ntemacs24"
