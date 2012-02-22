@@ -1,5 +1,6 @@
 #!/usr/bin/python3 
 
+
 import sys, os, time, subprocess, re, datetime
 import xml.etree.ElementTree as ET
 
@@ -140,13 +141,21 @@ repos = {
     SVNRepository('documentation', "/source/documentation", desc="the Neuric documentation repository"),
 }
 
-print("## SVN commits\n\n")
 
+svntext = ""
 for r in repos:
     commitstring=""
     urls = r.logentries_to_urls_markdown()
     if len(urls) > 0:
         commitstring = "Commits I made to " + r.desc + ": "
-        for u in urls:
-            commitstring += u + ", "
-        print("- " + commitstring)
+        for i in range(0,len(urls)):
+            commitstring += urls[i]
+            if i < len(urls)-1:
+                commitstring += ", "
+        svntext += "- " + commitstring + "\n"
+
+if (svntext != ""):
+    print("## SVN commits\n")
+    print(svntext)
+
+# -*- mode: python -*-
