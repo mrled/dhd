@@ -1,6 +1,0 @@
-#!/bin/csh
-
-if (! -f $1 ) then
-   touch $1
-endif
-open -a /Apps/Work\ -\ Text/Aquamacs/Aquamacs\ Emacs.app $1

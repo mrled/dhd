@@ -1,5 +1,10 @@
 // -*- mode: javascript -*-
 
+// handy bullshit: 
+// M-x ssl-certificate-manager
+// M-x extensions
+// C-x f about:config
+
 //function reinit() { load_rc_file("/Users/mrled/.conkerorrc"); }
 //add_command("mrlreinit", reinit, []);
 
@@ -15,5 +20,55 @@
 //require("daemon.js");
 
 require("session.js");
-
 session_auto_save_auto_load = true;
+
+// modeline:
+add_hook("mode_line_hook", mode_line_adder(buffer_count_widget), true);
+//add_hook("mode_line_hook", mode_line_adder(loading_count_widget), true);
+//remove_hook("mode_line_hook", mode_line_adder(clock_widget));
+
+//load_paths.unshift("chrome://conkeror-contrib/content/");
+//require("mode-line-buttons.js");
+//mode_line_add_buttons(standard_mode_line_buttons, true);
+
+
+
+require("favicon");
+// favicon in modeline: 
+add_hook("mode_line_hook", mode_line_adder(buffer_icon_widget), true);
+// favicon in buffer list: 
+read_buffer_show_icons = true;
+
+
+// page modes: 
+require("page-modes/stackexchange.js");
+require("page-modes/xkcd.js");
+  xkcd_add_title = true;
+
+// webjumps: 
+
+define_webjump("duckduckgo", "https://duckduckgo.com/?q=%s&kp=-1&kl=us-en&kh=1&kc=0");
+define_webjump("d", "https://duckduckgo.com/?q=%s");
+//define_webjump("g", "https://duckduckgo.com/?q=%s"); // use "goo" for Google
+
+// pinboard
+define_webjump("pb", "javascript:q=location.href;if(document.getSelection){d=document.getSelection();}else{d='';};p=document.title;void(open('https://pinboard.in/add?url='+encodeURIComponent(q)+'&description='+encodeURIComponent(d)+'&title='+encodeURIComponent(p),'Pinboard','toolbar=no,width=700,height=350'));");
+
+// instapaper
+define_webjump("ip", "javascript:function%20iprl5(){var%20d=document,z=d.createElement('scr'+'ipt'),b=d.body,l=d.location;try{if(!b)throw(0);d.title='(Saving...)%20'+d.title;z.setAttribute('src',l.protocol+'//www.instapaper.com/j/r69NBgXqtoWG?u='+encodeURIComponent(l.href)+'&t='+(new%20Date().getTime()));b.appendChild(z);}catch(e){alert('Please%20wait%20until%20the%20page%20has%20loaded.');}}iprl5();void(0)");
+
+// neuric stuff
+define_webjump("rt","https://bugs.neuric.internal/Dashboards/31/Micah%27s%20Tickets");
+
+requires("noscript"); // load required code for noscript (still need to add the extension)
+
+// load urls from the command line in new buffers instead of new windows.
+url_remoting_fn = load_url_in_new_buffer;
+
+//define_key(content_buffer_normal_keymap, "C-c w", 
+url_completion_use_history = true;
+
+can_kill_last_buffer = false;
+define_key(content_buffer_normal_keymap, "C-x C-c", "confirm-quit");
+
+

@@ -1,0 +1,183 @@
+#!/usr/bin/python3 
+# -*- mode: python -*-
+
+import sys, os, time, subprocess, re, datetime
+import xml.etree.ElementTree as ET
+import markdown #requires the python3-markdown package, which I got from debian and installed manually via dpkg
+
+# user-serviceable parts
+svnauthor="mrled" #Your SVN author name - this will be your Neuric username. 
+
+# absolute paths to binaries
+rtbin="/opt/rt40/bin/rt"
+svnbin="/usr/bin/svn"
+
+#### Nothing user-serviceable after this line ####
+
+output = ""
+
+def mungeoutput(output):
+    #match a header of id\tSubject\n and a footer of just an extra \n
+    headerfooter = re.compile("(id\tSubject\n)|(\n$)") 
+
+    #match the begining of the line OR of the whole block of text
+    linebegin = re.compile("^|\n") 
+
+    #match an eof
+    eof = re.compile("$")
+
+    #match a ticket line, consisting of a ticket number, a tab, and a title
+    #like "1234	Fix some horrifying problem by yesterday"
+    ticketline = re.compile("([0-9]*)\t(.*)")
+
+    #required b/c it comes to us from subprocess.check_output which returns a bytes object
+    output = str(output, "utf-8") 
+
+    ##now process the regexps
+
+    #nuke header and footer
+    output = re.sub(headerfooter, r"", output)
+
+    #change line beginings to have bullets in front of them
+    output = re.sub(linebegin, r"\n- ", output)
+
+    #add an extra line at the end for... some reason
+    output = re.sub(eof, r"\n", output)
+
+    #make the ticket line into a Markdown link
+    output = re.sub(ticketline, r"[\2](https://bugs.neuric.internal/Ticket/Display.html?id=\1)", output)
+
+    return output
+
+today=datetime.date.today()
+
+# By default, check the last 6 days, but use the first argument if present
+if (len(sys.argv) <= 1):
+    numdays=6
+else:
+    numdays=int(sys.argv[1])
+updated="Updated >= '" + str(numdays) + " days ago'"
+startdate=today - datetime.timedelta(numdays)
+
+# Find resolved tickets
+cmd=[rtbin, "ls", "-f", "Subject", "-o", "-Created", 
+     "Queue = '5' AND Status = 'resolved' AND " + updated]
+resolvedtickets=mungeoutput(subprocess.check_output(cmd))
+
+# Find modified tickets
+cmd=[rtbin, "ls", "-f", "Subject", "-o", "-Created", 
+     "Queue = '5' AND Status != 'resolved' AND Status != 'rejected' AND " + updated]
+modifiedtickets=mungeoutput(subprocess.check_output(cmd))
+
+# Find rejected tickets
+cmd=[rtbin, "ls", "-f", "Subject", "-o", "-Created",
+     "Queue = '5' AND Status = 'rejected' AND " + updated]
+rejectedtickets=mungeoutput(subprocess.check_output(cmd))
+
+# Now print them all. I'm using Markdown, which means it's easy to just do `rmet.py|markdown.pl`
+# or if I want to add notes or something I can do it in markdown format at the bottom first
+output += "# Micah's progress report: " + startdate.strftime("%Y%m%d") + " to " + today.strftime("%Y%m%d") + "\n"
+output += "\nTickets I resolved this week:\n"
+output += resolvedtickets
+output += "\nOther tickets I worked on this week:\n"
+output += modifiedtickets
+output += "\nTickets I rejected this week:\n"
+output += rejectedtickets
+
+
+# Make sure each repo you want counted is in this dictionary with a meaningful name! 
+class SVNRepository:
+    """A wrapper class that contains information about SVN repositories. 
+    shortname: a short name for the repository, currently unused
+    path: the server-side path for the repository
+    desc: a description that would grammatically fit in this blank: "Commits I made to _____", such as "the main repository"
+    baseurl: the first part of the URL to the SVN server. This is probably static across the whole organization, and is optional. 
+    """
+    def __init__(self, shortname, path, desc, baseurl=None):
+        self.shortname=shortname
+        self.path=path
+        self.desc=desc
+        if baseurl==None:
+            self.baseurl='https://svn.neuric.internal'
+    def repo_url(self):
+        return self.baseurl + self.path
+    def viewvc_url(self):
+        return self.baseurl + "/viewvc" + self.path
+    def get_my_commits(self):
+        """Find all commits to a repository which were authored by svnauthor (defined above)
+        Returns an array of ElementTree Element objects
+        You can do this in bash like so: 
+        svn log -v -r {2012-01-01}:{2012-02-15}  | sed -n '/| mrled |/,/-----$/ p'
+        """
+        svncmd = [svnbin, "log", "--xml", "-v", "-r", "{" + startdate.strftime("%Y-%m-%d") + "}:{" + today.strftime("%Y-%m-%d") + "}", self.repo_url()]
+        #sys.stderr.write("SVN log command: " + " ".join(svncmd) + "\n")
+        logxml = subprocess.check_output(svncmd)
+        logxmltree = ET.fromstring(logxml)
+        mycommits = []
+        for entry in logxmltree.findall("logentry"):
+            a = next(entry.iter("author")).text
+            if a == svnauthor:
+                appendme = True
+                # Now skip the useless commits regarding the very reports we are generating here (lulz)
+                for p in entry.iter("path"):
+                    if p.text.startswith("/Presentations/Weekly Presentations"):
+                        appendme = False
+                        break
+                if appendme:
+                    mycommits.append(entry)
+        # stupid hack because "Documentation/Presentations/Weekly Presentations" is where we commit these metrics reports every week
+        # don't include those commits in the list...
+        return mycommits
+    def logentries_to_urls(self):
+        """Returns an array of URLs for all my commits between startdate and today."""
+        logentries=self.get_my_commits()
+        urllist=[]
+        for entry in logentries:
+            r = entry.get("revision")
+            urllist.append ( self.viewvc_url() + "?view=revision&revision=" + r)
+        return urllist
+    def logentries_to_urls_markdown(self):
+        """Returns an array of Markdown strings for all my commits between startdate and today.
+        Example: [1234](http://svn.example.com/repo1?view=revision&revision=1234)"""
+        logentries=self.get_my_commits()
+
+        mdlist=[]
+        for entry in logentries:
+            r = entry.get("revision")
+            mdstring = "[" + r + "](" + self.viewvc_url() + "?view=revision&revision=" + r + ")"
+            mdlist.append(mdstring)
+        return mdlist
+
+repos = {
+    SVNRepository('ikiadmin', "/sysadmin/ikiadmin/trunk", desc="the sysadmin documentation wiki"),
+    SVNRepository('nasrc', "/sysadmin/nasrc", desc="the sysadmin script repository"),
+    SVNRepository('neuric', "/source/neuric", desc="the Neuric source code repository"),
+    SVNRepository('documentation', "/source/documentation", desc="the Neuric documentation repository"),
+}
+
+
+svntext = ""
+for r in repos:
+    commitstring=""
+    urls = r.logentries_to_urls_markdown()
+    if len(urls) > 0:
+        commitstring = "Commits I made to " + r.desc + ": "
+        for i in range(0,len(urls)):
+            commitstring += urls[i]
+            if i < len(urls)-1:
+                commitstring += ", "
+        svntext += "- " + commitstring + "\n"
+
+if (svntext != ""):
+    output += "## SVN commits\n"
+    output += svntext + "\n"
+
+
+# Markdownify
+
+htmltitle  = "Micah's progress report, " + startdate.strftime("%Y-%m-%d") + " - " + today.strftime("%Y-%m-%d")
+htmloutput = "<html><head>" + htmltitle + "</head><body>\n" + markdown.markdown(output) + "</body></html>"
+
+print(htmloutput)
+
+# -*- mode: python -*-

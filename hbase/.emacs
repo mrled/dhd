@@ -9,9 +9,6 @@
 ; my vars:
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default? 
 
-;; paths that Emacs should look for executables, since (LAME) bashrc isn't being read. 
-(setq exec-path (split-string ":/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin:/sw/bin:/sw/sbin:~/opt/bin" path-separator))
-(setenv "PATH" (mapconcat 'identity exec-path ":"))
 (setq mrl-home (if (getenv "HOME") ; need this to work on Windows and Unix :)
                    (getenv "HOME")
                  (getenv "USERPROFILE")))
@@ -56,29 +53,58 @@
       backup-directory-alist (quote ((".*" . "~/Backup/emacs/"))) ; Save backups
       delete-old-versions t       ; don't ask me to delete old backups, just do it
       mouse-autoselect-window t   ; focus-follows-mouse in WINDOWS, NOT frames
-      display-time-24hr-format t
-      display-time-day-and-date t
+      truncate-partial-width-windows nil ; do NOT change behavior of truncate-lines (see toggle-truncate-lines) when working in C-x 3 horizontally split windows
       vc-follow-symlinks t       ; don't ask ARE YOU SURE if symlink->version-controlled file
-      truncate-partial-width-windows nil) ; do NOT change behavior of truncate-lines (see toggle-truncate-lines) when working in C-x 3 horizontally split windows
+      display-time-24hr-format t
+      display-time-day-and-date t)
 (fset 'yes-or-no-p 'y-or-n-p) ; "yes or no" = "y or n"
 (line-number-mode 1) ;; Show line-number in the mode line
 (column-number-mode 1) ;; Show column-number in the mode line
 (show-paren-mode t) ;; show matching paren when your curser is on a paren
 (global-font-lock-mode t) ;; syntax
 
+; use a different version of python than the default in python-shell (and elsewhere?)
+(if (file-exists-p "/usr/local/bin/python3")
+    (setq python-python-command "/usr/local/bin/python3")
+  (if (file-exists-p "~/opt/homebrew/bin/python3")
+      (setq python-python-command "~/opt/homebrew/bin/python3")))
+
+(when (eq system-type 'windows-nt) ; windows-specific settings & overrides for python
+  (if (file-exists-p "C:/Python32/python.exe")
+      (setq python-python-command "C:/Python32/python.exe")
+    (if (file-exists-p "C:/Python/python.exe")
+        (setq python-python-command "C:/Python/python.exe"))))
+
+(require 'python)
+
 (require 'motion-and-kill-dwim)
 (require 'hide-lines)
 (require 'tail)
 (require 'highlight-tail)
+(require 'apache-mode)
 
 ; I feel like it should do this for me, ugh
 (server-start)
 
+;;;;; tramp shit
+(setq tramp-default-method "ssh")
+; this next line: you can `C-xC-f /sudo:root@host:/path/to/file` and it will 
+; ssh to the host using your default user, then run sudo, then find file. 
+(setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/ssh:%h:")))) 
+(when (eq system-type 'windows-nt) ; windows-specific settings & overrides for tramp
+  (setq tramp-default-method "plink")
+  (setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
+(set-default 'tramp-default-proxies-alist mrl/tramp-sudo-proxy)
 
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
-(setq auto-mode-alist (cons '("\\.mdwn" . markdown-mode) auto-mode-alist)
+(setq auto-mode-alist (cons '("\\.mdwn"     . markdown-mode) auto-mode-alist) ; ikiwiki's extension
+      auto-mode-alist (cons '("\\.markdown" . markdown-mode) auto-mode-alist) ; Github's extension
+      auto-mode-alist (cons '("\\.text"     . markdown-mode) auto-mode-alist) ; Gruber's extension
+      auto-mode-alist (cons '("\\.mkd"      . markdown-mode) auto-mode-alist) ; VS Markdown Mode
+      auto-mode-alist (cons '("\\.md"       . markdown-mode) auto-mode-alist) ; MarkdownPad, others
+      auto-mode-alist (cons '("\\.mdown"    . markdown-mode) auto-mode-alist) ; MarkdownPad
       markdown-command (concat mrl-home "/.dhd/opt/bin/Markdown.pl")
       markdown-css-path (concat mrl-home "/.dhd/doc/css/mrl-swiss.css"))
 
@@ -101,6 +127,86 @@
        (shell-quote-argument (buffer-file-name))))
 )
 (global-set-key "\C-cm" 'markdown-preview-file)
+
+
+; ikiwiki stuff
+(setq younix-blog-dir "~/Personal/yus")
+(defun iki/new-blog-post ()
+  "Creates a new younix.us/blog post with a temporary name."
+  (interactive)
+  (find-file (concat younix-blog-dir "/soc/" (format-time-string "%Y%m%d") "-tmp.mdwn")))
+(defun iki/get-title ()
+  "Read the contents of the current file and return the title specified in [[!m\
+eta title=\"\"]]"
+  (interactive)
+  (string-match ".*\\[\\[!meta title=\"\\(.*\\)\"\\]\\]" (buffer-string))
+  (setq title-regexp
+        (match-string-no-properties 1 (buffer-string))))
+(defun iki/urlify-title ()
+  "Returns a filename based on what iki/get-title returns. Alphanumerics, _, and - are left as-is, blanks are converted to -, and everything else is stripped out."
+  (concat 
+   (downcase
+    (replace-regexp-in-string "[^-_a-zA-Z0-9]" "" 
+                              (replace-regexp-in-string "[ 	]" "-" (iki/get-title))))
+   ".mdwn"))
+(defun iki/rename-to-title ()
+  "Renames current buffer and associated file to the result of iki/urlify-title"
+  (interactive)
+  (rename-file-and-buffer (iki/urlify-title)))
+(defun iki/insert-meta-title ()
+  (interactive)
+  (insert "[[!meta title=\"\"]]"))
+(defun iki/insert-meta-date ()
+  (interactive)
+  (insert "[[!meta date=\"\"]]"))
+(defun iki/insert-directive-tag ()
+  (interactive)
+  (insert "[[!tag]]"))
+(global-set-key "\C-cir" 'iki/rename-to-title)
+(global-set-key "\C-cit" 'iki/insert-meta-title)
+(global-set-key "\C-cid" 'iki/insert-meta-date)
+(global-set-key "\C-ciy" 'iki/insert-directive-tag)
+
+
+; from stevey:   
+(defun rename-file-and-buffer (new-name)
+ "Renames both current buffer and file it's visiting to NEW-NAME." 
+ (interactive "sNew name: ")
+ (let ((name (buffer-name))
+       (filename (buffer-file-name)))
+   (if (not filename)
+       (message "Buffer '%s' is not visiting a file!" name)
+     (if (get-buffer new-name)
+         (message "A buffer named '%s' already exists!" new-name)
+       (progn   (rename-file name new-name 1)   (rename-buffer new-name)    
+                (set-visited-file-name new-name)    (set-buffer-modified-p nil))))))
+(defun move-buffer-file (dir)
+ "Moves both current buffer and file it's visiting to DIR." (interactive "DNew directory: ")
+ (let* ((name (buffer-name))
+        (filename (buffer-file-name))
+        (dir
+         (if (string-match dir "\\(?:/\\|\\\\)$")
+             (substring dir 0 -1) dir))
+        (newname (concat dir "/" name)))
+   (if (not filename)
+       (message "Buffer '%s' is not visiting a file!" name)
+     (progn (copy-file filename newname 1) (delete-file filename) 
+            (set-visited-file-name newname) (set-buffer-modified-p nil) t))))
+
+(defun fix-amazon-url ()
+  "Minimizes the Amazon URL under the point.  You can paste an Amazon
+URL out of your browser, put the cursor in it somewhere, and invoke
+this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving-time>"
+  (interactive)
+  (and (search-backward "http://www.amazon.com" (point-at-bol) t)
+       (search-forward-regexp
+	".+/\\([A-Z0-9]\\{10\\}\\)/[^[:space:]\"]+" (point-at-eol) t)
+       (replace-match
+	(concat "http://www.amazon.com/o/asin/"
+		(match-string 1)
+		(match-string 3)
+        "&tag=younixus-20"))))
+
 
 
 ; irc
@@ -141,65 +247,53 @@
 
 
 
-(when (eq window-system 'w32)
-  (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe")
-  (setq pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe")
-;  (defvar myfont "-*-ProFontWindows-normal-r-*-*-12-*-*-*-c-*-*-iso8859-1")) ;;font = ProFontWindows 9pt
-   (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
-;   (defvar myfont "-outline-Consolas-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+(when (eq system-type 'windows-nt)
+  ; some things are useful to have here just in case they're not in your system %PATH%
+  (add-to-list 'exec-path "C:/Program Files/PuTTY")
+  (add-to-list 'exec-path "C:/Program Files (x86)/PuTTY")
+  (add-to-list 'exec-path "C:/opt/UnxUtils")
+  (setq pr-gs-command "c:\\Program Files\\gs\\gs8.54\\bin\\gswin32c.exe"
+        pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
+        w32-pass-apps-to-system nil ; let Emacs interpret meta keys
+        w32-apps-modifier 'hyper) ;; Menu key -> Hyper
+  (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
 
-
-  ; let Emacs use the special win keys, don't pass them to the OS
-  ; you can also use :
-  ;      w32-pass-lwindow-to-system nil 
-  ;      w32-pass-rwindow-to-system nil 
-  ;      w32-lwindow-modifier 'super ;; Left Windows key 
-  ;      w32-rwindow-modifier 'super ;; Right Windows key 
-  ; to use this under Interix, you should bind the win keys in your .xinitrc somehow I think
-  (setq w32-pass-apps-to-system nil 
-        w32-apps-modifier 'hyper) ;; Menu key 
-
- (when (eq system-type 'Interix) 
-  ; I use Xming, and I add the Windows font path to Xming's font path; this profont is the same as the profont above, 
-  ; so as long as I've installed ProFontWindows and can use it, this should work too
-  (defvar myfont "-*-profontwindows-medium-r-normal--*-*-0-*-*-*-iso8859-1"))
-
-
-
-
-
-;; now I also need 
-(when (or (eq window-system 'mac) (eq window-system 'ns))
-  (add-to-list 'exec-path "/sw/bin") ;add fink's path
-  (setq mac-option-modifier 'alt)
-  (setq mac-command-modifier 'meta)
+; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
+(when (eq system-type 'darwin)
+  (add-to-list 'exec-path "/sw/bin")
+  (add-to-list 'exec-path "~/opt/bin")
+  (setq mac-option-modifier 'alt
+        mac-command-modifier 'meta
+        mac-allow-anti-aliasing nil)
   (global-set-key "\M-h" 'ns-do-hide-emacs)
   (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
-
 (when (eq window-system 'x)
-  (defvar myfont 
+  ; see all fonts (execute in scratch buffer): 
+  ;      (insert (prin1-to-string (x-list-fonts "*")))
+  ; however, I'm doing this with .Xdefaults now
+  ; I still have to defvar myfont because otherwize it throws a fit agh. 
+  (defvar myfont  "" )
     ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
     ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
-    "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
-
-    ;; for stumpwm
-    (defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
-    (require 'stumpwm-mode))
+    ;"-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
+)
 
 (unless (eq window-system nil) ;if we are NOT running in the console
+
   (setq default-frame-alist ; this actually sets the font and colours
     (list
-      (cons 'font  myfont)
       (cons 'foreground-color  "white")
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
+
+  ;(set-default-font "ProFontWindows-10")
+  (set-default-font "Terminus-8")
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
-  ;(menu-bar-mode nil)  ; this used to do nothing under osx but since emacs23 it DOES, so define it in a window-system section above instead
+
   (global-hl-line-mode t) ;; Highlight the current line. 
-  (set-face-background 'hl-line "#335")     ;; Emacs 22 Only
-  ;(set-face-background 'highlight "#330")  ;; Emacs 21 Only
-  )
+  (set-face-background 'hl-line "#335")
+)
 
 ;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs
@@ -316,3 +410,13 @@
 (global-set-key "\C-ct"    'mrled/four-fucking-spaces)
 (global-set-key "\C-c\C-T" 'mrled/eight-fucking-spaces)
 (global-set-key "\C-cT"    'mrled/eight-fucking-spaces)
+
+
+; sprunge.us owns
+(defun sprunge (prefix)
+  "Posts the current buffer to sprunge, and shows the resulting URL in a new buffer"
+  (interactive "P")
+  (let ((filename "/tmp/sprunge-post"))
+    (if prefix (write-file filename) (write-region (region-beginning) (region-end) filename)) ; if invoked with the universal argument / prefix, upload the whole file, else upload just the region
+    (insert (shell-command-to-string (concat "curl -s -F 'sprunge=<" filename "' http://sprunge.us")))
+    (delete-char -1))) ; Newline after URL
