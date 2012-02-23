@@ -1,6 +1,5 @@
 #!/usr/bin/python3 
 
-
 import sys, os, time, subprocess, re, datetime
 import xml.etree.ElementTree as ET
 import markdown #requires the python3-markdown package, which I got from debian and installed manually via dpkg
@@ -77,11 +76,11 @@ rejectedtickets=mungeoutput(subprocess.check_output(cmd))
 # Now print them all. I'm using Markdown, which means it's easy to just do `rmet.py|markdown.pl`
 # or if I want to add notes or something I can do it in markdown format at the bottom first
 output += "# Micah's progress report: " + startdate.strftime("%Y%m%d") + " to " + today.strftime("%Y%m%d") + "\n"
-output += "Tickets I resolved this week:"
+output += "\nTickets I resolved this week:\n"
 output += resolvedtickets
-output += "Other tickets I worked on this week:"
+output += "\nOther tickets I worked on this week:\n"
 output += modifiedtickets
-output += "Tickets I rejected this week:"
+output += "\nTickets I rejected this week:\n"
 output += rejectedtickets
 
 
@@ -109,14 +108,24 @@ class SVNRepository:
         You can do this in bash like so: 
         svn log -v -r {2012-01-01}:{2012-02-15}  | sed -n '/| mrled |/,/-----$/ p'
         """
-        logxml = subprocess.check_output([svnbin, "log", "--xml", "-v", "-r", "{" + startdate.strftime("%Y-%m-%d") + "}:{" + today.strftime("%Y-%m-%d") + "}", self.repo_url()])
+        svncmd = [svnbin, "log", "--xml", "-v", "-r", "{" + startdate.strftime("%Y-%m-%d") + "}:{" + today.strftime("%Y-%m-%d") + "}", self.repo_url()]
+        #sys.stderr.write("SVN log command: " + " ".join(svncmd) + "\n")
+        logxml = subprocess.check_output(svncmd)
         logxmltree = ET.fromstring(logxml)
         mycommits = []
         for entry in logxmltree.findall("logentry"):
             a = next(entry.iter("author")).text
-            #a = entry.iter("author").next().text
             if a == svnauthor:
-                mycommits.append(entry)
+                appendme = True
+                # Now skip the useless commits regarding the very reports we are generating here (lulz)
+                for p in entry.iter("path"):
+                    if p.text.startswith("/Presentations/Weekly Presentations"):
+                        appendme = False
+                        break
+                if appendme:
+                    mycommits.append(entry)
+        # stupid hack because "Documentation/Presentations/Weekly Presentations" is where we commit these metrics reports every week
+        # don't include those commits in the list...
         return mycommits
     def logentries_to_urls(self):
         """Returns an array of URLs for all my commits between startdate and today."""
@@ -130,6 +139,7 @@ class SVNRepository:
         """Returns an array of Markdown strings for all my commits between startdate and today.
         Example: [1234](http://svn.example.com/repo1?view=revision&revision=1234)"""
         logentries=self.get_my_commits()
+
         mdlist=[]
         for entry in logentries:
             r = entry.get("revision")
@@ -159,12 +169,13 @@ for r in repos:
 
 if (svntext != ""):
     output += "## SVN commits\n"
-    output += svntext
+    output += svntext + "\n"
 
 
 # Markdownify
 
-htmloutput = markdown.markdown(output)
+htmltitle  = "Micah's progress report, " + startdate.strftime("%Y-%m-%d") + " - " + today.strftime("%Y-%m-%d")
+htmloutput = "<html><head>" + htmltitle + "</head><body>\n" + markdown.markdown(output) + "</body></html>"
 
 print(htmloutput)
 
