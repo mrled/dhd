@@ -137,6 +137,14 @@ elif [ $uname == "Linux" ]; then # assume GNU userland
     ls_args="${ls_args} --color"
 fi
 
+#######################
+# Host-specific stuff #
+#######################
+if [ $host == "selene" ]; then
+    alias anonymize="sudo -H -u t"
+fi
+
+
 ##################
 # Global Aliases #
 ##################
@@ -335,6 +343,10 @@ function magicp {
 esxtop() {
     ssh antimony -t TERM=xterm esxtop
 }
+
+alias canhazip='curl icanhazip.com'
+alias whatismyip=canhazip
+alias icanhazip=canhazip
 
 
 # Torrent &c stuff
