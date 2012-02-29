@@ -2,7 +2,9 @@
 
 # for Thunderbird, because this is the only way to control date formatting lol:
 # http://kb.mozillazine.org/Date_display_format
-export LC_TIME="en-DK.utf8"
+# Perl does not like this, but falls back to LOCALE="C", which is fine I guess. 
+#export LC_TIME="en-DK.utf8"
+#do this in your thunderbird aliases instead plz
 
 # xrandr stuff must happen first. 
 # Obviously the correct thing here is host-dependent.
