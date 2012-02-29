@@ -102,6 +102,14 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     }
 fi
 
+#######################
+# Host-specific stuff #
+#######################
+if [ $host == "selene" ]; then
+    alias anonymize="sudo -H -u t"
+fi
+
+
 ##################
 # Global Aliases #
 ##################
@@ -337,6 +345,10 @@ magicp() {
 esxtop() {
     ssh antimony -t TERM=xterm esxtop
 }
+
+alias canhazip='curl icanhazip.com'
+alias whatismyip=canhazip
+alias icanhazip=canhazip
 
 
 # Torrent &c stuff

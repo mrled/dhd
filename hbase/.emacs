@@ -256,7 +256,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
         w32-pass-apps-to-system nil ; let Emacs interpret meta keys
         w32-apps-modifier 'hyper) ;; Menu key -> Hyper
-  (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+)
 
 ; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
 (when (eq system-type 'darwin)
@@ -265,18 +265,8 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
   (setq mac-option-modifier 'alt
         mac-command-modifier 'meta
         mac-allow-anti-aliasing nil)
-  (global-set-key "\M-h" 'ns-do-hide-emacs)
-  (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
-(when (eq window-system 'x)
-  ; see all fonts (execute in scratch buffer): 
-  ;      (insert (prin1-to-string (x-list-fonts "*")))
-  ; however, I'm doing this with .Xdefaults now
-  ; I still have to defvar myfont because otherwize it throws a fit agh. 
-  (defvar myfont  "" )
-    ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
-    ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
-    ;"-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
-)
+  (global-set-key "\M-h" 'ns-do-hide-emacs))
+;(when (eq window-system 'x) ...)
 
 (unless (eq window-system nil) ;if we are NOT running in the console
 
@@ -287,8 +277,10 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
 
-  ;(set-default-font "ProFontWindows-10")
-  (set-default-font "Terminus-8")
+  (if (member "ProFontX" (font-family-list))
+      (set-default-font "ProFontX-9")
+    (if (member "Terminus" (font-family-list))
+        (set-default-font "Terminus-8")))
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
 
   (global-hl-line-mode t) ;; Highlight the current line. 
