@@ -32,13 +32,18 @@ add_hook("mode_line_hook", mode_line_adder(buffer_count_widget), true);
 //mode_line_add_buttons(standard_mode_line_buttons, true);
 
 
+
+require("favicon");
+// favicon in modeline: 
+add_hook("mode_line_hook", mode_line_adder(buffer_icon_widget), true);
+// favicon in buffer list: 
+read_buffer_show_icons = true;
+
+
 // page modes: 
 require("page-modes/stackexchange.js");
 require("page-modes/xkcd.js");
   xkcd_add_title = true;
-require("page-modes/google-search-results.js");
-  //google_search_bind_number_shortcuts(); //0-9 are now the ten results on the page; means you can't use any other links tho ugh
-
 
 // webjumps: 
 
@@ -48,6 +53,7 @@ define_webjump("d", "https://duckduckgo.com/?q=%s");
 
 // pinboard
 define_webjump("pb", "javascript:q=location.href;if(document.getSelection){d=document.getSelection();}else{d='';};p=document.title;void(open('https://pinboard.in/add?url='+encodeURIComponent(q)+'&description='+encodeURIComponent(d)+'&title='+encodeURIComponent(p),'Pinboard','toolbar=no,width=700,height=350'));");
+
 // instapaper
 define_webjump("ip", "javascript:function%20iprl5(){var%20d=document,z=d.createElement('scr'+'ipt'),b=d.body,l=d.location;try{if(!b)throw(0);d.title='(Saving...)%20'+d.title;z.setAttribute('src',l.protocol+'//www.instapaper.com/j/r69NBgXqtoWG?u='+encodeURIComponent(l.href)+'&t='+(new%20Date().getTime()));b.appendChild(z);}catch(e){alert('Please%20wait%20until%20the%20page%20has%20loaded.');}}iprl5();void(0)");
 
@@ -63,3 +69,6 @@ url_remoting_fn = load_url_in_new_buffer;
 url_completion_use_history = true;
 
 can_kill_last_buffer = false;
+define_key(content_buffer_normal_keymap, "C-x C-c", "confirm-quit");
+
+

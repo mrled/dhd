@@ -1,19 +1,8 @@
-; -*- mode: lisp; mode: stumpwm -*-
+; -*- mode: lisp -*-
 
 (in-package :stumpwm)
 
-;; Key bindings
-; Note: use *root-map* to use the prefix key, where C-x becomes C-tC-x
-;       use *top-map* to do without it, where C-x is C-x
-
-;(define-key *root-map* (kbd "C-s") "exec open /Applications/Spaces.app")
-(define-key *top-map* (kbd "M-h") 
-  "exec osascript ~/doc/dhd/opt/ascript/x11-hide.ascript")
-(define-key *top-map* (kbd "M-TAB") 
-  "exec osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript")
-(define-key *top-map* (kbd "C-M-SPC")
-  "exec osascript ~/doc/dhd/opt/ascript/switch-lang-input.ascript")
-
+(setq *shell-program* (stumpwm::getenv "SHELL")) ; it's /bin/sh by default, fuck that.
 
 (defcommand paste-x-selection () (:rest)
   "Universal rat-less X paste."
@@ -21,4 +10,162 @@
     (eval-command cmd)))
 (define-key *root-map* (kbd "y") "paste-x-selection")
 
+(setf *mode-line-position* :top
+      *mode-line-border-width* 1
+      *mode-line-timeout* 1
+      *mode-line-pad-x* 2 
+      *mode-line-pad-y* 2 ; pixels between text and bottom of modeline
+      *mode-line-foreground-color* "green" 
+      *mode-line-background-color* "black"
+      *mode-line-border-color* "grey"
+      *group-format* "%t" ; just the title
+;      *window-format* "[%n%s%m_%24t]"  ;; limit window titles to 24 chars
+      *window-format* "[%n%s%m_%18t]"  ;; limit window titles to 18 chars
+      *hidden-window-color* "^8*"  ;; for fmt-head-window-list-hidden-windows
+;      *win-list-format* "(%v)"
+;      *screen-mode-line-format-aux* (list *win-list-format*)
+      *mrl/left-ml-fmt* (list
+                         "%g "; all groups
+                         "
+";newline
+                         "%W "; all windows in the current group on current head
+                         )
+      *mrl/right-ml-fmt* (list
+                         "%d "; date, including seconds, updating in the background
+                         "
+";newline
+                         "%W "; all windows in the current group on current head
+                         )
+      )
 
+; this is a stupid hack, but it works. 
+; there is no "next-head" command, so I have to settle for this hack. 
+(enable-mode-line (current-screen) (current-head) t *mrl/left-ml-fmt*)  ; enable the mode-line on the first head
+(focus-next-frame (current-group))                                      ; switch to the next frame, which at startup time is the empty frame on the other head
+(enable-mode-line (current-screen) (current-head) t *mrl/right-ml-fmt*) ; enable the mode-line on the other head
+(focus-next-frame (current-group))                                      ; switch back to the first frame, so that messages show up where I expect
+
+
+;;;;; Keybindings
+
+(set-prefix-key (kbd "C-i")) ; in Emacs this inserts a tab, and I very rarely use it
+
+; Note: use *root-map* to use the prefix key, where C-x becomes C-t C-x
+;       use *top-map* to do without it, where C-x is C-x
+
+;; Mac OS X stuff
+;(define-key *root-map* (kbd "C-s") "exec open /Applications/Spaces.app")
+;(define-key *top-map* (kbd "M-h") 
+;  "exec osascript ~/doc/dhd/opt/ascript/x11-hide.ascript")
+;(define-key *top-map* (kbd "M-TAB") 
+;  "exec osascript ~/doc/dhd/opt/ascript/x11-cmd-tab.ascript")
+;(define-key *top-map* (kbd "C-M-SPC")
+;  "exec osascript ~/doc/dhd/opt/ascript/switch-lang-input.ascript")
+
+;;; Section dealing with running programs
+; C-i M-*
+;   If * is a lower case letter, run-or-raise a program
+;   If * is an upper case letter, run a new instance of the program (?)
+;   Special stuff like locking the screen with xscreensaver-command -lock doesn't follow this convention
+
+;; k: conkeror
+(defcommand conkeror () () 
+  "Run or raise conkeror."
+  (run-or-raise "conkeror" '(:class "Conkeror")))
+(define-key *root-map* (kbd "M-k") "conkeror")
+(define-key *root-map* (kbd "M-K") "exec conkeror -f unfocus") ; run this when Flash or Java applets steal focus and you can't get it back.
+;; c: camelot (also: console)
+; "camelot", which is my default screen session name. 
+(defcommand camelot () () 
+  "Run or raise my standard screen session called 'camelot'."
+  (run-or-raise "xterm -T xterm-camelot -e screen -D -R -S camelot" '(:title "xterm-camelot")))
+(define-key *root-map* (kbd "M-c") "camelot")
+;; x: xterm - just give me a new pristine xterm
+(define-key *root-map* (kbd "M-x") "exec xterm")
+(undefine-key *root-map* (kbd "c")) ; the default binding, for the hated x-terminal-emulator
+;; e: emacs
+; the command "emacs" is already created in stock stumpwm to run-or-raise emacs (as I did with conkeror above)
+(define-key *root-map* (kbd "M-e") "emacs")
+(undefine-key *root-map* (kbd "e")) ; the default binding for emacs
+;; f: firefox
+(defcommand firefox () () 
+  "Run or raise Firefox."
+  (run-or-raise "firefox" '(:class "Firefox")))
+(define-key *root-map* (kbd "M-f") "firefox")
+;; chrome
+(defcommand chrome () () 
+  "Run or raise Chromium."
+  (run-or-raise "chromium-browser" '(:class "Chromium")))
+
+;; m: mail
+(defcommand mail () () 
+  "Run or raise mail clients for Neuric and Home."
+  ;(run-or-raise "sh -c \"LC_TIME=en_DK.utf8 thunderbird\"" '(:class "Thunderbird"))) ; setting the environment like this does appears to actually work.
+  (run-or-raise "~/.dhd/opt/bin/tbird.sh" '(:class "Thunderbird"))) 
+(define-key *root-map* (kbd "M-m") "mail")
+
+(defcommand ircterm () () 
+  "Run or raise irc in an xterm"
+  (run-or-raise "xterm -T ircterm -e irssi" '(:title "ircterm")))
+(define-key *root-map* (kbd "M-i") "ircterm")
+
+;;; Section dealing with remote instances
+; C-i M-r *
+;   Where * is a key that I give to a common connection, whether it's for "ssh $hostname screen -rd" or "rdesktop -u $user -p $pass -d $domain -g $geometry -K $hostname"
+;   This requires that I make a new keymap
+
+(load "~/.uenc/hbase/.stumpwm.secret.el") ; contains passwords
+
+(defun remote-camelot (hostname title)
+  "Generic function to run-or-raise an xterm->ssh->screen session. 
+Note that my default screen session (used in .bashrc) is called 'camelot'."
+  (run-or-raise 
+   (concat "xterm -T " title " -e ssh -t " hostname " 'screen -D -R -S camelot'") 
+   `(:title ,title) ; see SimpleNote for the explanation for this syntax
+))
+ 
+(defcommand lawnmower-ssh () () 
+  "Run or raise xterm->ssh->screen to lawnmower."
+  (remote-camelot "lawnmower.neuric.internal" "xterm-lawnmower"))
+(defcommand selene-ssh () () 
+  "Run or raise xterm->ssh->screen to selene."
+  (remote-camelot "h.younix.us" "xterm-selene"))
+(defcommand tika-ssh () () 
+  "Run or raise xterm->ssh->screen to tika."
+  (remote-camelot "tika.younix.us" "xterm-tika"))
+
+(defcommand chelo-rdp () () 
+  "Run or raise an RDP session to chelo."
+  (run-or-raise 
+   (concat "rdesktop -u mrled -d djinn.internal -p \"" 
+           mrl/passwords/djinn-ad 
+           "\" -g 1440x860 -K h.younix.us")
+   '(:title "rdesktop - h.younix.us")))
+(defcommand convicthill-rdp () () 
+  "Run or raise an RDP session to convicthill at Neuric."
+  (run-or-raise 
+   (concat "rdesktop -u mrled -d neuric.internal -p \"" 
+           mrl/passwords/neuric-ad 
+           "\" -g 1440x860 -K convicthill.neuric.internal")
+   '(:title "rdesktop - convicthill.neuric.internal")))
+(defcommand fattire-rdp () () 
+  "Run or raise an RDP session to fattire at Neuric."
+  (run-or-raise 
+   (concat "rdesktop -u mrled -d neuric.internal -p \""
+           mrl/passwords/neuric-ad 
+           "\" -g 1440x860 -K fattire.neuric.internal")
+   '(:title "rdesktop - fattire.neuric.internal")))
+
+(setq *mrl/remote-map* ; use setq instead of defvar so that it will work after a "restart-soft". 
+  (let ((m (make-sparse-keymap)))
+    (define-key m (kbd "s") "selene-ssh")
+    (define-key m (kbd "t") "tika-ssh")
+    (define-key m (kbd "l") "lawnmower-ssh")
+    (define-key m (kbd "f") "fattire-rdp")
+    (define-key m (kbd "h") "chelo-rdp")
+    (define-key m (kbd "c") "convicthill-rdp")
+    m))
+(define-key *root-map* (kbd "M-r") '*mrl/remote-map*)
+
+;;; other commands:
+(define-key *root-map* (kbd "l") "exec xscreensaver-command -lock")

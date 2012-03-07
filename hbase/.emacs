@@ -256,7 +256,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
         w32-pass-apps-to-system nil ; let Emacs interpret meta keys
         w32-apps-modifier 'hyper) ;; Menu key -> Hyper
-  (defvar myfont "-outline-ProFontWindows-normal-normal-normal-mono-12-*-*-*-c-*-iso8859-1"))
+)
 
 ; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
 (when (eq system-type 'darwin)
@@ -265,29 +265,27 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
   (setq mac-option-modifier 'alt
         mac-command-modifier 'meta
         mac-allow-anti-aliasing nil)
-  (global-set-key "\M-h" 'ns-do-hide-emacs)
-  (defvar myfont "-apple-profontx-medium-r-normal--9-90-72-72-m-90-iso10646-1"))
-
-(when (eq window-system 'x)
-  (defvar myfont 
-    ;"-*-profontwindows-medium-r-normal--12-*-0-*-*-*-iso8859-1"))
-    ;"-unknown-ProFontX-normal-normal-normal-*-*-*-*-*-m-0-iso10646-1"))
-    "-unknown-ProFont-normal-normal-normal-*-11-*-*-*-m-*-iso10646-1")
-    ;; for stumpwm
-    (defvar stumpwm-shell-program "~/opt/src/stumpwm/contrib/stumpish")
-    (require 'stumpwm-mode))
+  (global-set-key "\M-h" 'ns-do-hide-emacs))
+;(when (eq window-system 'x) ...)
 
 (unless (eq window-system nil) ;if we are NOT running in the console
+
   (setq default-frame-alist ; this actually sets the font and colours
     (list
-      (cons 'font  myfont)
       (cons 'foreground-color  "white")
       (cons 'background-color  "black")
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
+
+  (if (member "ProFontX" (font-family-list))
+      (set-default-font "ProFontX-9")
+    (if (member "Terminus" (font-family-list))
+        (set-default-font "Terminus-8")))
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
+
   (global-hl-line-mode t) ;; Highlight the current line. 
-  (set-face-background 'hl-line "#335"))
+  (set-face-background 'hl-line "#335")
+)
 
 ;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs
@@ -404,3 +402,13 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 (global-set-key "\C-ct"    'mrled/four-fucking-spaces)
 (global-set-key "\C-c\C-T" 'mrled/eight-fucking-spaces)
 (global-set-key "\C-cT"    'mrled/eight-fucking-spaces)
+
+
+; sprunge.us owns
+(defun sprunge (prefix)
+  "Posts the current buffer to sprunge, and shows the resulting URL in a new buffer"
+  (interactive "P")
+  (let ((filename "/tmp/sprunge-post"))
+    (if prefix (write-file filename) (write-region (region-beginning) (region-end) filename)) ; if invoked with the universal argument / prefix, upload the whole file, else upload just the region
+    (insert (shell-command-to-string (concat "curl -s -F 'sprunge=<" filename "' http://sprunge.us")))
+    (delete-char -1))) ; Newline after URL
