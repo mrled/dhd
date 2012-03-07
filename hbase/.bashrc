@@ -587,8 +587,12 @@ export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # last character of prompt
-if [ $menum = 0 ]; then lcop='#'
-else                    lcop='>'
+if   [ $menum = 0 ]; then #root user
+    lcop='#'
+elif [ $me = "t" ]; then  #tor user
+    lcop='?'
+else                      #normal user
+    lcop='>'
 fi
 
 # Setting the default prompt
@@ -604,7 +608,7 @@ fi
 #           \[\e[01;32m\]     \[\e[01;34m\]      \[\e[00m\]
 #      PS1="              \u@\h              \w \$           "
 export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01;34m\]$lcop \[\e[00m\]"
-#                          \t              \h               :               \w              \$
+#                        \t              \h             :             \W              >
 # COLORS:    bold,white         normal,green      bold,blue       normal,white 
 #export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
 #export PS1="\t \w \$ "
