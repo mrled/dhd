@@ -87,6 +87,7 @@
 ; the command "emacs" is already created in stock stumpwm to run-or-raise emacs (as I did with conkeror above)
 (define-key *root-map* (kbd "M-e") "emacs")
 (undefine-key *root-map* (kbd "e")) ; the default binding for emacs
+
 ;; f: firefox
 (defcommand firefox () () 
   "Run or raise Firefox."
