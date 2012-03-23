@@ -19,6 +19,10 @@
 //add_webjump("a", "http://www.amazon.com/s?field-keywords=%s");
 //require("daemon.js");
 
+// load urls from the command line in new buffers instead of new windows.
+// (must be at top of file)
+url_remoting_fn = load_url_in_new_buffer;
+
 require("session.js");
 session_auto_save_auto_load = true;
 
@@ -57,13 +61,13 @@ define_webjump("pb", "javascript:q=location.href;if(document.getSelection){d=doc
 // instapaper
 define_webjump("ip", "javascript:function%20iprl5(){var%20d=document,z=d.createElement('scr'+'ipt'),b=d.body,l=d.location;try{if(!b)throw(0);d.title='(Saving...)%20'+d.title;z.setAttribute('src',l.protocol+'//www.instapaper.com/j/r69NBgXqtoWG?u='+encodeURIComponent(l.href)+'&t='+(new%20Date().getTime()));b.appendChild(z);}catch(e){alert('Please%20wait%20until%20the%20page%20has%20loaded.');}}iprl5();void(0)");
 
+// readability
+define_webjump("read", "javascript:(%28function%28%29%7Bwindow.baseUrl%3D%27http%3A//www.readability.com%27%3Bwindow.readabilityToken%3D%27%27%3Bvar%20s%3Ddocument.createElement%28%27script%27%29%3Bs.setAttribute%28%27type%27%2C%27text/javascript%27%29%3Bs.setAttribute%28%27charset%27%2C%27UTF-8%27%29%3Bs.setAttribute%28%27src%27%2CbaseUrl%2B%27/bookmarklet/read.js%27%29%3Bdocument.documentElement.appendChild%28s%29%3B%7D%29%28%29)");
+
 // neuric stuff
 define_webjump("rt","https://bugs.neuric.internal/Dashboards/31/Micah%27s%20Tickets");
 
 requires("noscript"); // load required code for noscript (still need to add the extension)
-
-// load urls from the command line in new buffers instead of new windows.
-url_remoting_fn = load_url_in_new_buffer;
 
 //define_key(content_buffer_normal_keymap, "C-c w", 
 url_completion_use_history = true;

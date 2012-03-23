@@ -28,32 +28,66 @@ debug() {
 }
 
 cmdname=$(basename $0)
+protocol=unspecified
 
-help() {
-    echo "$cmdname runs Chromium site-specific browsers that do not share cookies or other data." 
-    echo "$cmdname [sub.]domain.tld"
-    echo "Do NOT use full URLs with the protocol (http://) or a slash after wards (facebook.com/) or a file or directory name afterwards (/index.html)."
+usage() {
+    echo "USAGE: $cmdname runs Chromium site-specific browsers that do not share cookies or other data." 
+    echo "USAGE: $cmdname [sub.]domain.tld"
 }
 
-# detect if there are any slashes in $1
-if echo $1 | grep / ; then
-    help
+
+if [[ $1 == "" ]]; then
+    echo "You didn't specify a URL." 
+    usage
     exit
 fi
 
 udd_base="${HOME}/.chromium-ssb"
 base_config="$udd_base/datadir.base"
-url="https://$1" #if the site is not https aware then durrr
-udd="$udd_base/$1" #user data dir
 
-debug url: $url
-debug udd: $udd
 
-if [[ ! -d "$udd" ]]; then
-    debug 'udd does not exist; creating with this command: '
-    debug cp -r "$base_config" "$udd"
-    cp -r "$base_config" "$udd"
+#### MUNGE URL: 
+# slashes aren't allowed, but let's massage the input to see if we can cope
+# NOTES to usage you follow along: 
+# - $input is just the raw value of $1, which we expect to be a URL like http://facebook.com/
+# - $input2 is the above, stripped of its trailing slash (if it has one)
+# - $input3 is the above, also stripped of its protocol specifier (if it has one)
+# - if $input3 still has slashes in it, then you've passed a path (like facebook.com/index.html), which we don't support
+input=$1
+input2=`echo $input | sed 's/\(.*\)\/$/\1/'`
+
+if echo $input2 | grep '://'; then
+    # the sed statement yanks out anything before a ://
+    protocol=`echo $input2 | sed 's/^\([a-zA-Z0-9]*\):\/\/\(.*\)/\1/'`
+    if [[ $protocol -ne "http" ]] && [[ $protocol -ne "https" ]] ; then
+        echo "Sorry, we don't support the $protocol protocol." 
+        usage
+        exit
+    fi
+    # similar to the previous statement, but yanks out anything AFTER a ://
+    input3=`echo $input2 | sed 's/^\([a-zA-Z0-9]*\):\/\/\(.*)/\2/'`
+else
+    # assume the HTTPS protocol. This is probably OK? 
+    protocol="https"
+    input3=$input2
 fi
 
-debug chromium-browser --user-data-dir="$udd" --app="$url"
-chromium-browser --user-data-dir="$udd" --app="$url"
+if echo $input3 | grep '/'; then
+    echo "Your URL contains a path specifier (such as facebook.com/index.html). Please only pass URLs in the base of the domain (like facebook.com)." 
+    usage
+    exit
+fi
+
+url="$protocol://$input3"
+userdata="$udd_base/$input3"
+debug url: $url
+debug userdata: $userdata
+
+if [[ ! -d "$userdata" ]]; then
+    debug 'userdata does not exist; creating with this command: '
+    debug cp -r "$base_config" "$userdata"
+    cp -r "$base_config" "$userdata"
+fi
+
+debug chromium-browser --user-data-dir="$userdata" --app="$url"
+chromium-browser --user-data-dir="$userdata" --app="$url"

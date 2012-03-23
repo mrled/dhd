@@ -17,6 +17,9 @@ xrdb -merge ~/.Xresources
 if type -P xscreensaver >/dev/null; then 
     xscreensaver &
 fi
+if type -P dropbox >/dev/null; then # assumes Ubuntu's dropbox script
+    dropbox start &
+fi
 
 # hsetroot is its own package; lets you scale to full screen without stretching, but treats multi heads like one big screen.
 # feh is also a separate package; will center the same image to any number of heads
