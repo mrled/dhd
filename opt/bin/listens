@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+
+import os, sys, subprocess, re
+
+DEBUG_MODE = True
+def DEBUG(x):
+    if DEBUG_MODE: 
+        print("DEBUG: " + x)
+
+class Listener: 
+    #def __init__(self, listen_line):
+
+    def init_manually(self, proto, addr, port, servicename, servicecomment):
+        self.proto = proto
+        self.addr = addr
+        self.port = port
+        self.servicename = servicename
+        self.servicecomment = servicecomment
+
+    @classmethod
+    def header_listener(self):
+        new_listener=Listener()
+        new_listener.init_manually("Proto", "Address", "Port", "Service name", "Service comment")
+        new_listener.portproto = "Port.Prot"
+        new_listener.type = "header"
+        return new_listener
+    @classmethod
+    def listener_from_listenline(self,listen_line):
+        "Expect a single line from the output of 'netstat -an'"
+        new_listener=Listener()
+        new_listener.input_line=(listen_line) #not sure if we'll need this later but just in case
+        line_array = re.split(r"\s+", listen_line)
+        new_listener.proto = line_array[0]
+
+        proto_re = re.compile(r'([a-zA-Z]+).*')
+        new_listener.versionless_proto = proto_re.match(line_array[0]).group(1)
+
+        ap = new_listener.separate_addrport(line_array[3])
+        new_listener.addr=ap[0]
+        new_listener.port=ap[1]
+        new_listener.portproto=str(new_listener.port + '.' + new_listener.versionless_proto)
+        new_listener.lookup_name() #populates self.service and self.desc
+        new_listener.type="listener"
+        return new_listener
+        
+
+    def lookup_name(self):
+        services_file = open('/etc/services', 'r')
+        services_re = re.compile(r"(\S+)\s+" + self.portproto + "\s+(.*)", re.M)
+        for serviceline in services_file: 
+            match = services_re.match(serviceline)
+            if match:
+                self.servicename = match.group(1)
+                self.servicecomment = match.group(2)
+                break
+        else:
+            self.servicename = "?"
+            self.servicecomment = "??"
+        services_file.close()
+
+    def padded_port(self):
+        # useful for sorting
+        p_port = '{:0>5}'.format(self.port)
+        #DEBUG("Listener obj for port {}... padde3d_port: {}".format(self.port, p_port))
+        return p_port
+
+    def separate_addrport(self, addrport):
+        """addrport is the address/port column of netstat -an output
+        It will look like one of these: *.#, octet.#, ::1.#, ipv6.#
+        Return a list with the address in slot 0 and port in slot 1
+        """
+        ap = re.split(r"\.", addrport)
+        if (len(ap) == 2):
+            #then we have *.# or ::1.# or ipv6.#
+            return ap # split nicely for us already
+        elif (len(ap) == 5): 
+            #then we have a dotted-quad ipv4 address
+            a = ap[0] + '.' + ap[1] + '.' + ap[2] + '.' + ap[3]
+            p = ap[4]
+            return [a,p]
+        else:
+            raise Error("Bad call to separate_addrport(), ERROROMG")
+
+    def printable(self):
+        # proto is 4-5 chars - tcp4, tcp64
+        # addr could be just one, or 3, or 15 - *, ::1, 233.233.233.233
+        #     at most 39: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+        # port is 1-5
+        # service (name) seems to be 15 wide, at least on OS X, whose /etc/services claims to be from FreeBSD
+        # service comment maxes out at 89 on the same system, but all others are under 55 chars wide
+
+        #output =  'protocol: {:<6}  port: {:<6}  service: {:<15}  desc: {:<30}  address: {:<40}'.format(
+        #    self.proto, self.port, self.servicename, self.servicecomment, self.addr)
+
+        #output = '{:<9}  {:<15}  {:<30}  {:<39}'.format(
+        #    self.portproto, self.servicename, self.servicecomment, self.addr)
+
+
+        # I'm considering using a '.' as a padding character, rather than space...
+        # on the address line at least. try it both ways: {:.<39} or just {:<39}
+        output = '{:<5}  {:>5}  {:<39}  {:<15}  {:<30}'.format(
+            self.proto, self.port, self.addr, self.servicename, self.servicecomment)
+
+        return output
+
+class ListenersArray:
+    """A wrapper for an array of listeners. Provides header and ordering"""
+    def __init__(self):
+        self._array=[]
+    def sort_by(self, criterion):
+        if (criterion == "port"):
+            _array2 = sorted(self._array, key=lambda listener: listener.padded_port())
+            self._array=_array2
+    def sort(self):
+        self.sort_by("port")
+    def append_line(self, listen_line):
+        l = Listener.listener_from_listenline(listen_line)
+        if not l:
+            raise Error("Failed to create new Listener object from listener line")
+        else:
+            self._array.append(l)
+    def append_listener(self, listener):
+        if type(listener) is not Listener:
+            raise Error("Object passed to ListenersArray.append_listener was not a Listener object")
+        else: 
+            self._array.append(listener)
+    def print(self):
+        print(Listener.header_listener().printable())
+        for l in self._array:
+            print (l.printable())
+
+
+def main(*args):
+    netstat_bin = "/usr/sbin/netstat"
+    netstat_cmd=[netstat_bin, "-an"]
+    netstat_output = str(subprocess.check_output(netstat_cmd), "utf-8")
+    netstat_output_array = re.split(r"\n", netstat_output, flags=re.M) # it is *much* easier to work with like this
+    
+    listen_re = re.compile(r".*LISTEN.*", re.M)
+    la = ListenersArray()
+    for line in netstat_output_array:
+        if listen_re.match(line, re.M):
+            la.append_line(line)
+            
+    la.sort() #sort by port number
+    la.print()
+
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv))
+
