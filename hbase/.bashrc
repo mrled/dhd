@@ -11,7 +11,7 @@ d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
-d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin"
+d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9.3-p0/bin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
