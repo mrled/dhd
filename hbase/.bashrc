@@ -120,6 +120,7 @@ alias df="df -h"
 alias h=history
 alias m=more
 alias l=less
+alias zl=zless
 alias wh="type -a" # under ksh you want wh=whence
 
 alias sed='$cmd_sed'
