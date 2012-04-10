@@ -11,7 +11,7 @@ d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
-d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin"
+d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9.3-p0/bin"
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -471,10 +471,10 @@ mmf() {
     esac
 }
 
-# Server files over http. This rules. 
+# Serve files over http. This rules. 
 # Serve all files under the directory this was run in. Does NOT serve an
 # index page; you have to directly request the files themselves.
-# Requires netcat as `nc`. 
+# Requires netcat as 'nc'. 
 # From <http://www.linuxscrew.com/2007/09/06/web-server-on-bash-in-one-line/>
 htserv() {
     port=$1
@@ -484,15 +484,22 @@ htserv() {
 ###################
 # Other Functions #
 ###################
-listens() {
-    netstat -an | grep LISTEN | grep 'tcp\|udp' | awk '{ print $1, "\t", $4 }' | sort
+bash_listens() {
+    netstat_cmd=netstat
+    netstat_args=''
+    if [[ ! `echo $1 | grep 's'` ]]; then #look up services
+        netstat_args='-n'
+    fi
+
+    netstat_output=`${netstat_cmd} -a ${netstat_args} | grep LISTEN | grep 'tcp\|udp' `
+    processed_output=`printf "$netstat_output" | awk '{ print $1, "\t", $4 }' | sort`
+    printf "${processed_output}\n"
 }
-connections() {
-    netstat -a | grep 'tcp\|udp'
-}
+
 routes() {
     # works for macosx
     route -n get default
+    # netstat -r would work for others
 }
 
 tinfo() { # bittorrent info
