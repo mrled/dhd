@@ -3,6 +3,7 @@
 import os, sys, subprocess, re, copy
 
 DEBUG_MODE = False
+#DEBUG_MODE = True
 def DEBUG(x):
     if DEBUG_MODE: 
         print("DEBUG: " + x)
@@ -76,21 +77,59 @@ The problematic line: '{}'
         "Gets the pid(s) for a port number. Requires root privs to do this for processes that aren't yours." 
         if self.ltype == "header": return
         if self.proto == "tcp6": 
-            DEBUG("lsof can't deal with ipv6 addresses, ugh. Can't find pids for port {}".format(self.port))
+            DEBUG("lsof can't deal with ipv6 addresses, ugh. Can't get_pids for port {}".format(self.port))
             return
-        else:
-            return #fix this
-        DEBUG("Inside get_pids(); my ltype is: {}".format(self.ltype))
         lsof_bin=find_in_system_path("lsof")
         lsof_cmd=[lsof_bin, "+M", "-t", "-i", '@' + self.addr + ':' + self.port]
         lsof_output=""
         try:
             lsof_output=subprocess.check_output(lsof_cmd)#this should return a simple process name
         except subprocess.CalledProcessError as cpe:
-            DEBUG("""CalledProcessError with lsof commandline: '{}'\nReturn code was: '{}'""".format(
-                    str(lsof_cmd), str(cpe.returncode)))
+            #DEBUG("""CalledProcessError with lsof commandline: '{}'\nReturn code was: '{}'""".format(str(lsof_cmd), str(cpe.returncode)))
+            pass
         finally:
-            self.pids=re.split(r'\\n', str(lsof_output))
+            self.pids=re.split(r'\\n', str(lsof_output)) #yes, r'\\n' is correct, no idea why
+
+    def get_lsof_info(self):
+        if self.ltype == "header": return
+        if self.proto == "tcp6": 
+            DEBUG("lsof can't deal with ipv6 addresses, ugh. Can't get_lsof_info for port {}".format(self.port))
+            return
+        #DEBUG("get_lsof_info for: {}".format(self.printable()))
+        lsof_bin=find_in_system_path("lsof")
+        lsof_cmd=[lsof_bin, "+M", "-i", '@' + self.addr + ':' + self.port]
+        lsof_output=""
+        try:
+            lsof_output=subprocess.check_output(lsof_cmd)#this should return a simple process name
+        except subprocess.CalledProcessError as cpe:
+            pass
+            #DEBUG("""CalledProcessError with lsof commandline: '{}'\nReturn code was: '{}'""".format(str(lsof_cmd), str(cpe.returncode)))
+
+        # get lines like this: 
+        # sshd        832  root    3u  IPv6     8365      0t0  TCP *:ssh (LISTEN)
+        # \1           \2  \3      \4  \5       \6        \7   \8  \9    
+        # note that some are \w (word characters) while others are \S (non-whitespace)
+        lsof_re = re.compile(r'(\w+)\s+(\w+)\s+(\w+)\s+(\w+)\s+(\w+)\s+(\w+)\s+(\w+)\s+({})\s+(\S+)\s+\(LISTEN\)'.format(self.versionless_proto), re.M)
+        for m in lsof_re.findall(str(lsof_output), re.M):
+            #lsof_addrport_text = m.group(9)
+            lsof_addrport_text = m[7]
+            lsof_portname = re.split(r':', lsof_addrport_text)[1]
+            if re.search(r'\D', lsof_portname): 
+                # if we get a port like ':ssh' instead of ':22': 
+                services_file = open('/etc/services', 'r')
+                portnum_re = re.compile(lsof_portname+'\s+(\S+).*', re.M)
+                for serviceline in services_file:
+                    match = portnum_re.match(serviceline)
+                    if match:
+                        lsof_portnum = match.group(1)
+                        DEBUG("lsof_portnum is {}".format(lsof_portnum))
+                        break
+                else:
+                    raise Exception("lsof returned a portname of {}, but portname does not exist in /etc/services. Weird. I guess I'll have to exit...".format(lsof_portname))
+            else:
+                lsof_portname = lsof_portnum
+            DEBUG("lsof_portnum is '{}' for lsof_portname '{}'".format(lsof_portnum, lsof_portname))
+        
 
     def lookup_name(self):
         if self.ltype == "header": return
@@ -110,7 +149,6 @@ The problematic line: '{}'
     def padded_port(self):
         # useful for sorting
         p_port = '{:0>5}'.format(self.port)
-        DEBUG("Listener obj for port {}... padde3d_port: {}".format(self.port, p_port))
         return p_port
 
     def separate_addrport(self, addrport):
@@ -187,9 +225,6 @@ class ListenersArray:
         pretty_array.append(Listener.header_listener())
         for item in self._array:
             pretty_array.append(item)
-        if DEBUG_MODE: 
-            for item in pretty_array:
-                DEBUG("New item in pretty_array: " + str(item))
         longest_addr = longest_svc = longest_comment = 0
         for l in pretty_array: 
             # doing it this way includes the lenght of the header fields too
@@ -203,6 +238,7 @@ class ListenersArray:
             print( '{pr:<5}  {p:>5}  {a:<{alen}}  {svc:<{svclen}}  {comm:<{commlen}}  {pids:<}'.format(
                 pr=l.proto, p=l.port, a=l.addr, svc=l.servicename, comm=l.servicecomment, 
                 alen=longest_addr, svclen=longest_svc, commlen=longest_comment, pids=str(l.pids)))
+            if DEBUG_MODE: l.get_lsof_info()
 
 def find_in_system_path(exename):
     path_e = os.environ['PATH']
