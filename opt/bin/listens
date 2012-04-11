@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+# -*- mode: python -*-
 
 import os, sys, subprocess, re, copy
 
@@ -165,7 +166,7 @@ The problematic line: '{}'
         The address/port string should look something like: *.#, octet.#, ::1.#, ipv6.#, :::2, 
         Return a list with the address in slot 0 and port in slot 1
         """
-        ap_match = re.match(r'(.*)[:\.]([0-9]{0,2})', addrport)
+        ap_match = re.match(r'(.*)[:\.]([0-9]{0,5})', addrport)
         a=ap_match.group(1)
         p=ap_match.group(2)
         return [a,p]
@@ -270,4 +271,4 @@ def main(*args):
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
 
-# -*- mode: python -*-
+
