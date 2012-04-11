@@ -1,28 +1,42 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
-import os, sys, subprocess, re
+import os, sys, subprocess, re, copy
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 def DEBUG(x):
     if DEBUG_MODE: 
         print("DEBUG: " + x)
 
 class Listener: 
-    #def __init__(self, listen_line):
+    def __init__(self):
+        self.proto = ""
+        self.addr = ""
+        self.port = ""
+        self.servicename = ""
+        self.servicecomment = ""
+        self.ltype = ""
+        self.pids = []
 
-    def init_manually(self, proto, addr, port, servicename, servicecomment):
+    def init_instvars(self, proto, addr, port, servicename, servicecomment, ltype):
         self.proto = proto
         self.addr = addr
         self.port = port
         self.servicename = servicename
         self.servicecomment = servicecomment
+        self.ltype = ltype
+        self.pids = []
+        self.get_priv_info()
 
     @classmethod
     def header_listener(self):
+        """
+Return not an actual listener, but one that can be used as a header line.
+There are probably better ways to do this, idk. 
+"""
         new_listener=Listener()
-        new_listener.init_manually("Proto", "Address", "Port", "Service name", "Service comment")
+        new_listener.init_instvars("Proto", "Address", "Port", "Service name", "Service comment", "header")
         new_listener.portproto = "Port.Prot"
-        new_listener.type = "header"
+        new_listener.pids = "PIDs (may require root)"
         return new_listener
     @classmethod
     def listener_from_listenline(self,listen_line):
@@ -35,16 +49,51 @@ class Listener:
         proto_re = re.compile(r'([a-zA-Z]+).*')
         new_listener.versionless_proto = proto_re.match(line_array[0]).group(1)
 
-        ap = new_listener.separate_addrport(line_array[3])
+        try:
+            ap = new_listener.separate_addrport(line_array[3])
+        except Exception as e:
+            print("""
+Error when trying to split address from port.
+The problematic line: '{}'
+""".format(listen_line, line_array[3]))
+            raise
+            
         new_listener.addr=ap[0]
         new_listener.port=ap[1]
         new_listener.portproto=str(new_listener.port + '.' + new_listener.versionless_proto)
+        new_listener.ltype="listener"
         new_listener.lookup_name() #populates self.service and self.desc
-        new_listener.type="listener"
+        new_listener.get_priv_info()
         return new_listener
-        
+
+    def get_priv_info(self):
+        """If we're root, get info that only root can see."""
+        if not os.getuid() == 0: return
+        if self.ltype == "header": return
+        self.get_pids()
+
+    def get_pids(self):
+        "Gets the pid(s) for a port number. Requires root privs to do this for processes that aren't yours." 
+        if self.ltype == "header": return
+        if self.proto == "tcp6": 
+            DEBUG("lsof can't deal with ipv6 addresses, ugh. Can't find pids for port {}".format(self.port))
+            return
+        else:
+            return #fix this
+        DEBUG("Inside get_pids(); my ltype is: {}".format(self.ltype))
+        lsof_bin=find_in_system_path("lsof")
+        lsof_cmd=[lsof_bin, "+M", "-t", "-i", '@' + self.addr + ':' + self.port]
+        lsof_output=""
+        try:
+            lsof_output=subprocess.check_output(lsof_cmd)#this should return a simple process name
+        except subprocess.CalledProcessError as cpe:
+            DEBUG("""CalledProcessError with lsof commandline: '{}'\nReturn code was: '{}'""".format(
+                    str(lsof_cmd), str(cpe.returncode)))
+        finally:
+            self.pids=re.split(r'\\n', str(lsof_output))
 
     def lookup_name(self):
+        if self.ltype == "header": return
         services_file = open('/etc/services', 'r')
         services_re = re.compile(r"(\S+)\s+" + self.portproto + "\s+(.*)", re.M)
         for serviceline in services_file: 
@@ -61,25 +110,27 @@ class Listener:
     def padded_port(self):
         # useful for sorting
         p_port = '{:0>5}'.format(self.port)
-        #DEBUG("Listener obj for port {}... padde3d_port: {}".format(self.port, p_port))
+        DEBUG("Listener obj for port {}... padde3d_port: {}".format(self.port, p_port))
         return p_port
 
     def separate_addrport(self, addrport):
         """addrport is the address/port column of netstat -an output
-        It will look like one of these: *.#, octet.#, ::1.#, ipv6.#
+        It might look like one of these: 
+        - 0.0.0.0.17500
+        - ::1:631 -- ipv6 local interface, port 631
+        - :::22 -- all ipv5 interfaces, port 22
+        - ::.22 -- maybe? same, but in os x notation
+        - 2.2.2.2.2 -- addr 2.2.2.2, port 2, mac os x notation
+        - *.84 -- I think Linux doesn't do '*', but OS X does
+        - don't forget about giant long ass ipv6 addresses, which also might be here. 
+        The address/port separator is either '.' (on at least OS X) or ':' (on at least Linux)
+        The address/port string should look something like: *.#, octet.#, ::1.#, ipv6.#, :::2, 
         Return a list with the address in slot 0 and port in slot 1
         """
-        ap = re.split(r"\.", addrport)
-        if (len(ap) == 2):
-            #then we have *.# or ::1.# or ipv6.#
-            return ap # split nicely for us already
-        elif (len(ap) == 5): 
-            #then we have a dotted-quad ipv4 address
-            a = ap[0] + '.' + ap[1] + '.' + ap[2] + '.' + ap[3]
-            p = ap[4]
-            return [a,p]
-        else:
-            raise Error("Bad call to separate_addrport(), ERROROMG")
+        ap_match = re.match(r'(.*)[:\.]([0-9]{0,2})', addrport)
+        a=ap_match.group(1)
+        p=ap_match.group(2)
+        return [a,p]
 
     def printable(self):
         # proto is 4-5 chars - tcp4, tcp64
@@ -104,46 +155,81 @@ class Listener:
         return output
 
 class ListenersArray:
-    """A wrapper for an array of listeners. Provides header and ordering"""
+    """A wrapper for an array of listeners. Provides header, ordering, printing"""
     def __init__(self):
         self._array=[]
     def sort_by(self, criterion):
         if (criterion == "port"):
-            _array2 = sorted(self._array, key=lambda listener: listener.padded_port())
-            self._array=_array2
+            tmparray = sorted(self._array, key=lambda listener: listener.padded_port())
+            self._array=tmparray
     def sort(self):
         self.sort_by("port")
     def append_line(self, listen_line):
         l = Listener.listener_from_listenline(listen_line)
         if not l:
-            raise Error("Failed to create new Listener object from listener line")
+            raise Exception("Failed to create new Listener object from listener line")
         else:
             self._array.append(l)
     def append_listener(self, listener):
         if type(listener) is not Listener:
-            raise Error("Object passed to ListenersArray.append_listener was not a Listener object")
+            raise Exception("Object passed to ListenersArray.append_listener was not a Listener object")
         else: 
             self._array.append(listener)
-    def print(self):
-        print(Listener.header_listener().printable())
-        for l in self._array:
-            print (l.printable())
+    def print_listeners(self):
+        """Print out the list of listening services
+        We add the header item now to a separate array so we don't fuck up sorting.
+        Some things like port or protocol are a fixed length, but longer things like address
+        and service name are variable
+        """
+        # pretty_array = copy.deepcopy(self._array)
+        # pretty_array.insert(0, Listener.header_listener())
+        pretty_array = []
+        pretty_array.append(Listener.header_listener())
+        for item in self._array:
+            pretty_array.append(item)
+        if DEBUG_MODE: 
+            for item in pretty_array:
+                DEBUG("New item in pretty_array: " + str(item))
+        longest_addr = longest_svc = longest_comment = 0
+        for l in pretty_array: 
+            # doing it this way includes the lenght of the header fields too
+            if len(l.addr) > longest_addr:
+                longest_addr = len(l.addr)
+            if len(l.servicename) > longest_svc:
+                longest_svc = len(l.servicename)
+            if len(l.servicecomment) > longest_comment:
+                longest_comment = len(l.servicecomment)
+        for l in pretty_array:
+            print( '{pr:<5}  {p:>5}  {a:<{alen}}  {svc:<{svclen}}  {comm:<{commlen}}  {pids:<}'.format(
+                pr=l.proto, p=l.port, a=l.addr, svc=l.servicename, comm=l.servicecomment, 
+                alen=longest_addr, svclen=longest_svc, commlen=longest_comment, pids=str(l.pids)))
+
+def find_in_system_path(exename):
+    path_e = os.environ['PATH']
+    path_e_array = re.split(':', path_e)
+    for p in path_e_array:
+        trypath = p + '/' + exename
+        if os.path.exists(trypath): return trypath
+    else:
+        raise Exception("Failed to find command '{}' in system $PATH variable, exiting...".format(exename))
 
 
 def main(*args):
-    netstat_bin = "/usr/sbin/netstat"
+    netstat_bin = find_in_system_path('netstat')
     netstat_cmd=[netstat_bin, "-an"]
     netstat_output = str(subprocess.check_output(netstat_cmd), "utf-8")
     netstat_output_array = re.split(r"\n", netstat_output, flags=re.M) # it is *much* easier to work with like this
     
-    listen_re = re.compile(r".*LISTEN.*", re.M)
+    listen_re = re.compile(r".*((tcp)|(udp)).*LISTEN.*", re.M)
+    DEBUG("listen_re is " + listen_re.pattern)
     la = ListenersArray()
     for line in netstat_output_array:
-        if listen_re.match(line, re.M):
+        if listen_re.search(line):
+            DEBUG('Appending line: ' + line) 
             la.append_line(line)
             
     la.sort() #sort by port number
-    la.print()
+    la.print_listeners()
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))

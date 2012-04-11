@@ -48,3 +48,4 @@ This would be a "service enumerator", which is a type of "post-exploitation modu
 - shows port number + service name simultaneously
 - infer service from /etc/services
 - another way to say that is that it shows what "should" be running on that port
+
