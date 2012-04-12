@@ -27,7 +27,8 @@ Turns out there's lots of ways to get the information I want.
   - lots of repeated information which I don't understand (e.g. selene)
 - Linux has `ss`, which is designed for this. 
   - Also requires sudo. 
-- FreeBSD apparently has `sockstat` for the same purpose, but I don't have an fbsd machine on my network right now to test
+  - Linux-only because it relies on iproute2
+- FreeBSD apparently has `sockstat` for the same purpose, but I don't have an fbsd machine on my network right now to test, and it hasn't made it to OS X. 
 - Linux's `netstat` actually *can* show this information with the `-p` flag. 
   - Requires elevation to see processes you don't own. 
 - Windows' `netstat` can show this information as well, with the `-b` flag. 
