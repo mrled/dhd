@@ -105,8 +105,12 @@ The problematic line: '{}'
                 DEBUG("Couldn't couldn't lsof_output.decode() because of this error: {}".format(str(ae)))
             lsof_pids.remove("")
             for pid in lsof_pids:
-                self.proc_info[pid] = pid # for now, set the exe name to just be the PID; we'll fix this later
-        DEBUG("Result of lsof command: {}".format(str(lsof_output)))
+                ps_output = subprocess.check_output(["ps", "ax"]).decode("utf-8")
+                ps_re_str = r'\s*{}\s+\S+\s+\S+\s+\S+\s+(\S*)'.format(pid)
+                DEBUG("ps regex string: " + ps_re_str)
+                ps_re = re.compile(ps_re_str, re.M)
+                match = ps_re.search(ps_output)
+                self.proc_info[pid] = match.group(1)
 
     def lookup_name(self):
         if self.ltype == "header": return
@@ -236,9 +240,9 @@ class ListenersArray:
                 #output+='{pr:<5}  {p:>5}  {a:<{alen}}  '.format(
                 #    pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
                 for process in l.proc_info.keys():
-                    output += '\n{empty_char:{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
+                    output += '\n{empty_char:<{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
                     #output+= 'PID: {pid:<{pidlen}}  Exe: {exe:<{exelen}}'.format(
-                    output+= '{pid:<{pidlen}} / {exe:<{exelen}}'.format(
+                    output+= '{pid:<{pidlen}}  {exe:<{exelen}}'.format(
                         pid=process, pidlen=len_pid, exe=l.proc_info[process], exelen=len_exe)
             output += "\n"
 
