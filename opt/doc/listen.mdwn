@@ -1,0 +1,52 @@
+# The listen script, and open ports on a system
+
+My `listen` command originated as something like this alias in my `.bashrc`:
+
+    alias listens='netstat -an | grep 'tcp\|udp' | grep LISTEN
+
+ A more recent version is preserved there as `bash_listens`. I eventually wanted to modify it to do more: 
+
+- sort by port number, or SOMETHING 
+- tabulate data like I prefer it
+- show only important information
+- show port numbers
+- if possible, show port numbers and services from /etc/services at the same time. 
+
+All of that is possible in just bash, but I eventually ported it to Python because bash kinda sucks. However, there's one thing you *can't* get from netstat: 
+
+- show the program/process using a given porn
+
+## New information
+
+Turns out there's lots of ways to get the information I want. 
+
+- `lsof +M -i` shows it... sort of. 
+  - Requires sudo for any process you don't own, which will be most of them. 
+  - works on OS X and Linux and maybe others, but there's no LSOF for Windows
+- sometimes won't show port num at all unless it doesn't know the servicename from /etc/services... but sometimes will? (e.g. selene)
+  - lots of repeated information which I don't understand (e.g. selene)
+- Linux has `ss`, which is designed for this. 
+  - Also requires sudo. 
+  - Linux-only because it relies on iproute2
+- FreeBSD apparently has `sockstat` for the same purpose, but I don't have an fbsd machine on my network right now to test, and it hasn't made it to OS X. 
+- Linux's `netstat` actually *can* show this information with the `-p` flag. 
+  - Requires elevation to see processes you don't own. 
+- Windows' `netstat` can show this information as well, with the `-b` flag. 
+  - Requires elevation to use the flag at all.
+- Linux can query individual ports with a command like `fuser -v 80/tcp`
+  - Mac OS X has a fuser command, but it can't be used like this
+  - requires sudo
+
+## Idea: Metasploit? 
+
+Could this be useful in metasploit? I'd probably have to rewrite it to Ruby if so. 
+
+This would be a "service enumerator", which is a type of "post-exploitation module" in metasploit. 
+
+## What can my Python wrapper around netstat do? 
+
+- works with anything that has an /etc/services and supports `netstat -an` which is everything AFAICT. 
+- shows port number + service name simultaneously
+- infer service from /etc/services
+- another way to say that is that it shows what "should" be running on that port
+

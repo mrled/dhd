@@ -157,16 +157,43 @@ Note that my default screen session (used in .bashrc) is called 'camelot'."
            "\" -g 1440x860 -K fattire.neuric.internal")
    '(:title "rdesktop - fattire.neuric.internal")))
 
-(setq *mrl/remote-map* ; use setq instead of defvar so that it will work after a "restart-soft". 
+(defun bam (hostname)
+  "Run my `bam` shell script which createse a site-specific browser."
+  (run-or-raise 
+   (concat "~/.dhd/opt/bin/bam " hostname)
+   `(:title ,hostname)))
+(defcommand bam-fb () ()
+  "Bam! Facebook!"
+  (bam "facebook.com"))
+(defcommand bam-google () ()
+  "Bam! Google!"
+  (bam "google.com"))
+(defcommand bam-twitter () ()
+  "Bam! Twitter!"
+  (bam "twitter.com"))
+  
+
+; for these things, use setq instead of defvar so that it will work after a "restart-soft". 
+(setq *mrl/remote-map* 
   (let ((m (make-sparse-keymap)))
     (define-key m (kbd "s") "selene-ssh")
     (define-key m (kbd "t") "tika-ssh")
     (define-key m (kbd "l") "lawnmower-ssh")
     (define-key m (kbd "f") "fattire-rdp")
     (define-key m (kbd "h") "chelo-rdp")
+
     (define-key m (kbd "c") "convicthill-rdp")
     m))
 (define-key *root-map* (kbd "M-r") '*mrl/remote-map*)
+
+(setq *mrl/bam-map* 
+  (let ((m (make-sparse-keymap)))
+    (define-key m (kbd "f") "bam-fb")
+    (define-key m (kbd "g") "bam-google")
+    (define-key m (kbd "t") "bam-twitter")
+    m))
+(define-key *root-map* (kbd "M-b") '*mrl/bam-map*)
+
 
 ;;; other commands:
 (define-key *root-map* (kbd "l") "exec xscreensaver-command -lock")

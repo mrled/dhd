@@ -114,6 +114,14 @@
                       (local-set-key [return] 'newline))))
 ;; I'll probably be interested in flyspell and longlines if I'm in markdown...
 ;(add-hook 'markdown-mode-hook 'flyspell-mode)
+
+(setq ispell-program-name "aspell")
+(setq ispell-list-command "list")
+(setq ispell-program-name "aspell")
+(setq ispell-extra-args '("--sug-mode=ultra"))
+
+
+
 ;(add-hook 'markdown-mode-hook 'longlines-mode)
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
