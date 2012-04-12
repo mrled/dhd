@@ -487,6 +487,10 @@ htserv() {
 bash_listens() {
     netstat -an | egrep '((tcp)|(udp)).*LISTEN' | awk '{ print $1, "\t", $4 }' | sort
 }
+lsof_listens() {
+    lsof +M -iTCP -sTCP:LISTEN
+    lsof +M -iUDP
+}
 
 routes() {
     # works for macosx
