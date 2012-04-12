@@ -5513,11 +5513,14 @@ Yeah, technically you say "Samurai."
 ‎"You can’t own ones and zeros, you can’t own DNA sequences, you can’t own ideas, smells, images, or feelings. Sorry."
 - growfoodraisehell.tumblr.com
 %
-“There is a cult of ignorance in the United States, and there has always been. The strain of anti-intellectualism has been a constant thread winding its way through our political and cultural life, nurtured by the false notion that democracy means that "my ignorance is just as good as your knowledge.”
+"There is a cult of ignorance in the United States, and there has always been. The strain of anti-intellectualism has been a constant thread winding its way through our political and cultural life, nurtured by the false notion that democracy means that "my ignorance is just as good as your knowledge."
 ― Isaac Asimov 
 %
 ‎"People can't be 'disappeared' in America! Only in lawless dictatorships can intransitive verbs be used to make passive verb forms!"
 - Tom the Dancing Bug
+%
+"Now, in contemporary industrialized democracies, the legitimate administration of violence is turned over to what is euphemistically referred to as “law enforcement”—particularly, to police officers, whose real role, as police sociologists have repeatedly demonstrated, has much less to do with enforcing criminal law than with the scientific application of physical force to aid in the resolution of administrative problems. Police are, essentially, bureaucrats with weapons."
+- David Graeber, http://libcom.org/files/20060525-Graeber.pdf
 %
 "...Weaksauce Flavored Sauce Substitute (Note: contains no actual Weaksauce)..."
 - Steve Yegge
@@ -5542,4 +5545,3 @@ Did you know? If you mix taco bell sauce into your ramen, it tastes exactly like
 artifacts are the soft porn of memory
 - Fucking beautiful quote from <http://www.aaronland.info/weblog/2012/02/14/incentivize/>
 %
-
