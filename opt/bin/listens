@@ -17,7 +17,10 @@ class Listener:
         self.servicename = ""
         self.servicecomment = ""
         self.ltype = ""
+        self.proc_info = {}
         self.pids = []
+        self.pid_str = ""
+        self.exe_str = ""
 
     def init_instvars(self, proto, addr, port, servicename, servicecomment, ltype):
         self.proto = proto
@@ -26,7 +29,10 @@ class Listener:
         self.servicename = servicename
         self.servicecomment = servicecomment
         self.ltype = ltype
+        self.proc_info = {}
         self.pids = []
+        self.pid_str = ""
+        self.exe_str = ""
         self.get_priv_info()
 
     @classmethod
@@ -38,7 +44,10 @@ There are probably better ways to do this, idk.
         new_listener=Listener()
         new_listener.init_instvars("Proto", "Address", "Port", "Service name", "Service comment", "header")
         new_listener.portproto = "Port.Prot"
-        new_listener.pids = "PIDs (may require root)"
+        new_listener.pid_str = "PIDs (may require root)"
+        new_listener.exe_str = "Executable name"
+        new_listener.proc_info['PID'] = 'Exe Name'
+        #new_listener.pids = "PIDs (may require root)"
         return new_listener
     @classmethod
     def listener_from_listenline(self,listen_line):
@@ -89,7 +98,14 @@ The problematic line: '{}'
             #DEBUG("""CalledProcessError with lsof commandline: '{}'\nReturn code was: '{}'""".format(str(lsof_cmd), str(cpe.returncode)))
             pass
         finally:
-            self.pids=re.split(r'\\n', str(lsof_output)) #yes, r'\\n' is correct, no idea why
+            # re.split() will result in an empty string because there's a trailing newline... 
+            # get rid of that with the remove() call. 
+            lsof_pids=re.split(r'\n', lsof_output.decode("utf-8"))
+            lsof_pids.remove("")
+            #self.pid_str = ""
+            for pid in lsof_pids:
+                #self.pid_str += str(pid) + " "
+                self.proc_info[pid] = pid # for now, set the exe name to just be the PID; we'll fix this later
 
     def get_lsof_info(self):
         if self.ltype == "header": return
@@ -226,20 +242,96 @@ class ListenersArray:
         pretty_array.append(Listener.header_listener())
         for item in self._array:
             pretty_array.append(item)
-        longest_addr = longest_svc = longest_comment = 0
+
+        len_addr = len_svc = len_comment = len_exe = 0
         for l in pretty_array: 
             # doing it this way includes the lenght of the header fields too
-            if len(l.addr) > longest_addr:
-                longest_addr = len(l.addr)
-            if len(l.servicename) > longest_svc:
-                longest_svc = len(l.servicename)
-            if len(l.servicecomment) > longest_comment:
-                longest_comment = len(l.servicecomment)
+            if len(l.addr) > len_addr:
+                len_addr = len(l.addr)
+            if len(l.servicename) > len_svc:
+                len_svc = len(l.servicename)
+            if len(l.servicecomment) > len_comment:
+                len_comment = len(l.servicecomment)
+            if len(l.exe_str) > len_exe:
+                len_exe = len(l.exe_str)
+
+        len_proto = 5
+        len_port = 5
+        len_spacer = 2
+        len_pid = 5
+
+        idx_proto = 0
+        idx_port = idx_proto + len_proto + len_spacer
+        idx_addr = idx_port + len_port + len_spacer
+        idx_svc = idx_addr + len_addr + len_spacer
+
+        #for l in pretty_array:
+        if False:
+            output='{pr:<5}  {p:>5}  {a:<{alen}}  '.format(
+                pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
+            
+            if not l.pids:
+                # get the service name from /etc/services
+                output += '{svc:<{svclen}}  {comm:<{commlen}}  '.format(
+                    svc=l.servicename, comm=l.servicecomment, 
+                    alen=len_addr, svclen=len_svc, commlen=len_comment)
+            elif len(l.pids) == 1: 
+                output += '{pids:<}  {svc:<{svclen}}  {comm:<{commlen}}'.format(
+                    svc=l.servicename, comm=l.servicecomment, 
+                    alen=len_addr, svclen=len_svc, commlen=len_comment, pids=l.pid_str)
+            else: # l.pids >1
+                i = 1
+                for pidnum in l.pids:
+                    output += '{pi:<5} / {exe}'.format(pi=pidnum, exe=l.exe_str)
+                    if i < len(l.pids):
+                        output += '\n{empty_char:{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
+                    i=i+1
+
+
+        #for l in pretty_array:
+        if False:
+            output = ""
+            if len(l.proc_info.keys()) > 0:
+                output+='{pr:<5}  {p:>5}  {a:<{alen}}  '.format(
+                    pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
+                i=1
+                for process in l.proc_info.keys():
+                    output+= '{pid:<{pidlen}}  {exe:<{exelen}}'.format(
+                        pid=process, pidlen=len_pid, exe=l.proc_info[process], exelen=len_exe)
+                    if i < len(l.proc_info.keys()):
+                        output += '\n{empty_char:{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
+                    i=i+1
+            else:
+                output += '{pr:<{prlen}}  {p:>{plen}}  {a:<{alen}}  '.format(
+                    pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
+                output += '{pid:<{pidlen}}  {exe:<{exelen}}  {svc:<{svclen}}  {comm:<{commlen}}'.format(
+                    svc=l.servicename, comm=l.servicecomment, 
+                    alen=len_addr, svclen=len_svc, commlen=len_comment, pid="",
+                    pidlen=len_pid, exe="", exelen=len_pid)
         for l in pretty_array:
-            print( '{pr:<5}  {p:>5}  {a:<{alen}}  {svc:<{svclen}}  {comm:<{commlen}}  {pids:<}'.format(
-                pr=l.proto, p=l.port, a=l.addr, svc=l.servicename, comm=l.servicecomment, 
-                alen=longest_addr, svclen=longest_svc, commlen=longest_comment, pids=str(l.pids)))
-            if DEBUG_MODE: l.get_lsof_info()
+            output = ""
+            output += '{pr:<{prlen}}  {p:>{plen}}  {a:<{alen}}  '.format(
+                pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
+            output += '{svc:<{svclen}}  {comm:<{commlen}}'.format(
+                svc=l.servicename, comm=l.servicecomment, 
+                alen=len_addr, svclen=len_svc, commlen=len_comment)
+            if len(l.proc_info.keys()) > 0:
+                #output+='{pr:<5}  {p:>5}  {a:<{alen}}  '.format(
+                #    pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
+                for process in l.proc_info.keys():
+                    output += '\n{empty_char:{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
+                    output+= 'PID: {pid:<{pidlen}}  Exe: {exe:<{exelen}}'.format(
+                        pid=process, pidlen=len_pid, exe=l.proc_info[process], exelen=len_exe)
+
+
+#             print( '{pr:<5}  {p:>5}  {a:<{alen}}  {svc:<{svclen}}  {comm:<{commlen}}  {pids:<}'.format(
+#                 pr=l.proto, p=l.port, a=l.addr, svc=l.servicename, comm=l.servicecomment, 
+#                 alen=len_addr, svclen=len_svc, commlen=len_comment, pids=l.pid_str))
+# #            if not l.ltype == 'Header':
+#             for pid in l.pids:
+#                 print( '                         PID: {:<5}  exe: {}'.format(pid, pid))
+#            if DEBUG_MODE: l.get_lsof_info()
+            print(output)  
 
 def find_in_system_path(exename):
     path_e = os.environ['PATH']
