@@ -4,7 +4,7 @@
 import os, sys, subprocess, re, copy
 
 DEBUG_MODE = False
-#DEBUG_MODE = True
+DEBUG_MODE = True
 def DEBUG(x):
     if DEBUG_MODE: 
         print("DEBUG: " + x)
@@ -60,7 +60,11 @@ The problematic line: '{}'
 """.format(listen_line, line_array[3]))
             raise
             
-        new_listener.addr=ap[0]
+        if ap[0] == '*':
+            # if we pass an address of '*' to lsof, it will freak out and die
+            new_listener.addr='0.0.0.0'
+        else:
+            new_listener.addr=ap[0]
         new_listener.port=ap[1]
         new_listener.portproto=str(new_listener.port + '.' + new_listener.versionless_proto)
         new_listener.ltype="listener"
@@ -79,6 +83,7 @@ The problematic line: '{}'
         lsof_bin=find_in_system_path("lsof")
         lsof_cmd=[lsof_bin, "+M", "-t", "-i", '@' + self.addr + ':' + self.port]
         lsof_output=""
+        DEBUG("Attemptint to run lsof command: {}".format(str(lsof_cmd)))
         try:
             lsof_output=subprocess.check_output(lsof_cmd)#this should return a simple process name
         except subprocess.CalledProcessError as cpe:
@@ -86,10 +91,12 @@ The problematic line: '{}'
         finally:
             # re.split() will result in an empty string because there's a trailing newline... 
             # get rid of that with the remove() call. 
-            lsof_pids=re.split(r'\n', lsof_output.decode("utf-8"))
+            lsof_pids=re.split(r'\n', lsof_output.decode())
+            DEBUG("lsof_pids is {}".format(lsof_pids))
             lsof_pids.remove("")
             for pid in lsof_pids:
                 self.proc_info[pid] = pid # for now, set the exe name to just be the PID; we'll fix this later
+        DEBUG("Result of lsof command: {}".format(str(lsof_output)))
 
     def lookup_name(self):
         if self.ltype == "header": return
