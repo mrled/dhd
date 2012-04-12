@@ -196,8 +196,8 @@ class ListenersArray:
         """
         # pretty_array = copy.deepcopy(self._array)
         # pretty_array.insert(0, Listener.header_listener())
-        pretty_array = []
-        pretty_array.append(Listener.header_listener())
+        pretty_array = [Listener.header_listener(), ]
+        #pretty_array.append(
         for item in self._array:
             pretty_array.append(item)
 
