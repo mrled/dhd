@@ -77,16 +77,27 @@ The problematic line: '{}'
             DEBUG("lsof can't deal with ipv6 addresses, ugh. Can't get_pids for port {}".format(self.port))
             return
         lsof_bin=find_in_system_path("lsof")
-        lsof_cmd=[lsof_bin, "+M", "-t", "-i", '@' + self.addr + ':' + self.port]
+        # an example of this command: lsof +M -t -i @0.0.0.0:443 -sTCP:LISTEN
+        lsof_cmd=[lsof_bin, "+M", "-t", "-i", '@' + self.addr + ':' + self.port,
+                  '-s'+self.versionless_proto.upper()+":LISTEN"]
         lsof_output=""
         try:
-            lsof_output=subprocess.check_output(lsof_cmd)#this should return a simple process name
+            lsof_output=subprocess.check_output(lsof_cmd)#this should return PIDS, one per line
         except subprocess.CalledProcessError as cpe:
+            # lsof will exit 1 if it can't find one; we don't want to quit in that case.
             pass
         finally:
             # re.split() will result in an empty string because there's a trailing newline... 
             # get rid of that with the remove() call. 
-            lsof_pids=re.split(r'\n', lsof_output.decode("utf-8"))
+            # edit: ugh, wrap this in a try block in case lsof_output is a *string* (no .decode())
+            # rather than a *bytes object* (requires .decode()). Fucking dynamic typing.
+            #lsof_pids=re.split(r'\n', lsof_output.decode("utf-8"))
+            DEBUG("lsof_output: {}".format(lsof_output))
+            try:
+                lsof_pids=re.split(r'\n', lsof_output.decode())
+            except AttributeError as ae:
+                lsof_pids = re.split(r'\n', lsof_output)
+                DEBUG("Couldn't couldn't lsof_output.decode() because of this error: {}".format(str(ae)))
             lsof_pids.remove("")
             for pid in lsof_pids:
                 self.proc_info[pid] = pid # for now, set the exe name to just be the PID; we'll fix this later
