@@ -194,15 +194,13 @@ class ListenersArray:
         Some things like port or protocol are a fixed length, but longer things like address
         and service name are variable
         """
-        # pretty_array = copy.deepcopy(self._array)
-        # pretty_array.insert(0, Listener.header_listener())
-        pretty_array = [Listener.header_listener(), ]
-        #pretty_array.append(
-        for item in self._array:
-            pretty_array.append(item)
-
+        #array_with_header = [Listener.header_listener(), ]
+        #for item in self._array:
+        #    array_with_header.append(item)
+        header_l = Listener.header_listener()
+        self._array.insert(0, header_l)
         len_addr = len_svc = len_comment = len_exe = 0
-        for l in pretty_array: 
+        for l in self._array:
             # doing it this way includes the lenght of the header fields too
             if len(l.addr) > len_addr:
                 len_addr = len(l.addr)
@@ -223,22 +221,26 @@ class ListenersArray:
         idx_addr = idx_port + len_port + len_spacer
         idx_svc = idx_addr + len_addr + len_spacer
 
-        for l in pretty_array:
-            output = ""
+        output = ""
+        for l in self._array:
             output += '{pr:<{prlen}}  {p:>{plen}}  {a:<{alen}}  '.format(
                 pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
             output += '{svc:<{svclen}}  {comm:<{commlen}}'.format(
                 svc=l.servicename, comm=l.servicecomment, 
                 alen=len_addr, svclen=len_svc, commlen=len_comment)
-            if len(l.proc_info.keys()) > 0:
+            if len(l.proc_info.keys()) > 0 and not l.ltype == "header":
                 #output+='{pr:<5}  {p:>5}  {a:<{alen}}  '.format(
                 #    pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
                 for process in l.proc_info.keys():
                     output += '\n{empty_char:{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
-                    output+= 'PID: {pid:<{pidlen}}  Exe: {exe:<{exelen}}'.format(
+                    #output+= 'PID: {pid:<{pidlen}}  Exe: {exe:<{exelen}}'.format(
+                    output+= '{pid:<{pidlen}} / {exe:<{exelen}}'.format(
                         pid=process, pidlen=len_pid, exe=l.proc_info[process], exelen=len_exe)
+            output += "\n"
 
-            print(output)  
+        sys.stdout.write(output) #print() will add an extra newline
+        self._array.remove(header_l)
+            
 
 def find_in_system_path(exename):
     path_e = os.environ['PATH']
