@@ -344,7 +344,7 @@ magicp() {
 }
 
 esxtop() {
-    ssh antimony -t TERM=xterm esxtop
+    ssh root@antimony.djinn.internal -t TERM=xterm esxtop
 }
 
 alias canhazip='curl icanhazip.com'
