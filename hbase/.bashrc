@@ -485,15 +485,7 @@ htserv() {
 # Other Functions #
 ###################
 bash_listens() {
-    netstat_cmd=netstat
-    netstat_args=''
-    if [[ ! `echo $1 | grep 's'` ]]; then #look up services
-        netstat_args='-n'
-    fi
-
-    netstat_output=`${netstat_cmd} -a ${netstat_args} | grep LISTEN | grep 'tcp\|udp' `
-    processed_output=`printf "$netstat_output" | awk '{ print $1, "\t", $4 }' | sort`
-    printf "${processed_output}\n"
+    netstat -an | egrep '((tcp)|(udp)).*LISTEN' | awk '{ print $1, "\t", $4 }' | sort
 }
 
 routes() {
