@@ -25,11 +25,11 @@ set MYPATH=
 
 call :s_check_exists %HOME%\.dhd\opt\win32bin
 call :s_check_exists %HOME%\opt\win32bin
+call :s_check_exists %HOME%\opt\Console2
+call :s_check_exists %HOME%\opt\SysinternalsSuite
 call :s_check_exists C:\strawberry\perl\bin
 call :s_check_exists C:\Python32
 call :s_check_exists C:\opt\local\bin
-call :s_check_exists C:\opt\ntemacs24\bin
-call :s_check_exists C:\opt\git\bin
 call :s_check_exists C:\opt\svn\bin
 call :s_check_exists C:\opt\SysinternalsSuite
 call :s_check_exists C:\opt\nirsoft64
@@ -38,6 +38,7 @@ call :s_check_exists C:\opt\Console2
 call :s_check_exists C:\opt\UnxUtils\bin
 call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
 call :s_check_exists C:\opt\sqlite
+call :s_check_exists C:\Program Files (x86)\Git\cmd
 call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files\7-Zip
 call :s_check_exists C:\Program Files (x86)\7-Zip
@@ -46,8 +47,7 @@ call :s_check_exists C:\Program Files\Windows SDKs\Windows\v7.0\Bin
 call :s_check_exists C:\Program Files\NSIS
 
 rem These are no longer used: 
-rem call :s_check_exists C:\Program Files\Emacs\emacs
-rem call :s_check_exists C:\Program Files (x86)\Emacs\emacs
+rem - the emacs\bin\ directory, because of .dhd\opt\win32bin\emacs.bat
 
 setx PATH %MYPATH%
 set MYPATH=
