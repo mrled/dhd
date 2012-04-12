@@ -18,9 +18,6 @@ class Listener:
         self.servicecomment = ""
         self.ltype = ""
         self.proc_info = {}
-        self.pids = []
-        self.pid_str = ""
-        self.exe_str = ""
 
     def init_instvars(self, proto, addr, port, servicename, servicecomment, ltype):
         self.proto = proto
@@ -30,9 +27,6 @@ class Listener:
         self.servicecomment = servicecomment
         self.ltype = ltype
         self.proc_info = {}
-        self.pids = []
-        self.pid_str = ""
-        self.exe_str = ""
         self.get_priv_info()
 
     @classmethod
@@ -44,10 +38,7 @@ There are probably better ways to do this, idk.
         new_listener=Listener()
         new_listener.init_instvars("Proto", "Address", "Port", "Service name", "Service comment", "header")
         new_listener.portproto = "Port.Prot"
-        new_listener.pid_str = "PIDs (may require root)"
-        new_listener.exe_str = "Executable name"
         new_listener.proc_info['PID'] = 'Exe Name'
-        #new_listener.pids = "PIDs (may require root)"
         return new_listener
     @classmethod
     def listener_from_listenline(self,listen_line):
@@ -81,11 +72,7 @@ The problematic line: '{}'
         """If we're root, get info that only root can see."""
         if not os.getuid() == 0: return
         if self.ltype == "header": return
-        self.get_pids()
 
-    def get_pids(self):
-        "Gets the pid(s) for a port number. Requires root privs to do this for processes that aren't yours." 
-        if self.ltype == "header": return
         if self.proto == "tcp6": 
             DEBUG("lsof can't deal with ipv6 addresses, ugh. Can't get_pids for port {}".format(self.port))
             return
@@ -101,9 +88,7 @@ The problematic line: '{}'
             # get rid of that with the remove() call. 
             lsof_pids=re.split(r'\n', lsof_output.decode("utf-8"))
             lsof_pids.remove("")
-            #self.pid_str = ""
             for pid in lsof_pids:
-                #self.pid_str += str(pid) + " "
                 self.proc_info[pid] = pid # for now, set the exe name to just be the PID; we'll fix this later
 
     def lookup_name(self):
@@ -208,8 +193,10 @@ class ListenersArray:
                 len_svc = len(l.servicename)
             if len(l.servicecomment) > len_comment:
                 len_comment = len(l.servicecomment)
-            if len(l.exe_str) > len_exe:
-                len_exe = len(l.exe_str)
+            if len(l.proc_info.keys()) > 0 and not l.ltype == "header":
+                for process in l.proc_info.keys():
+                    if len(l.proc_info[process]) > len_exe:
+                        len_exe = len(l.proc_info[process])
 
         len_proto = 5
         len_port = 5
