@@ -1,3 +1,4 @@
+# -*- mode: powershell -*-
 # In order to set this file as your profile, the easiest
 # way is to open up PowerShell, type `$profile`, and save the 
 # following text in that file: 
@@ -6,6 +7,8 @@
 # Note that to run commands on remote machines you'll need WinRM
 # enabled - it isn't by default. 
 # <http://technet.microsoft.com/en-us/magazine/ff700227.aspx>
+
+$hostname=[System.Net.Dns]::GetHostName()
 
 function .p {
     . $Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1 
@@ -73,4 +76,19 @@ function trid {
 
 function conkeror {
     C:\opt\xulrunner\xulrunner.exe "$home\opt\src\conkeror\application.ini" $args
+}
+
+function sz {
+    & "C:\Program Files\7-Zip\7z.exe" $args
+}
+
+
+function prompt {
+    Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
+    Write-Host (" " + $hostname) -nonewline -foregroundcolor Blue
+    Write-Host (":") -nonewline -foregroundcolor White
+    Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
+    Write-Host ("PS>") -nonewline -foregroundcolor White
+    # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
+    return " "
 }
