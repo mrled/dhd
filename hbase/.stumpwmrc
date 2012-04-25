@@ -40,10 +40,10 @@
 
 ; this is a stupid hack, but it works. 
 ; there is no "next-head" command, so I have to settle for this hack. 
-(enable-mode-line (current-screen) (current-head) t *mrl/left-ml-fmt*)  ; enable the mode-line on the first head
-(focus-next-frame (current-group))                                      ; switch to the next frame, which at startup time is the empty frame on the other head
-(enable-mode-line (current-screen) (current-head) t *mrl/right-ml-fmt*) ; enable the mode-line on the other head
-(focus-next-frame (current-group))                                      ; switch back to the first frame, so that messages show up where I expect
+;(enable-mode-line (current-screen) (current-head) t *mrl/left-ml-fmt*)  ; enable the mode-line on the first head
+;(focus-next-frame (current-group))                                      ; switch to the next frame, which at startup time is the empty frame on the other head
+;(enable-mode-line (current-screen) (current-head) t *mrl/right-ml-fmt*) ; enable the mode-line on the other head
+;(focus-next-frame (current-group))                                      ; switch back to the first frame, so that messages show up where I expect
 
 
 ;;;;; Keybindings
