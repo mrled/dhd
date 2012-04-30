@@ -80,6 +80,9 @@ define_webjump("wb", "javascript:location.href='http://web.archive.org/web/*/'+d
 // neuric stuff
 define_webjump("rt","https://bugs.neuric.internal/Dashboards/31/Micah%27s%20Tickets");
 
+// 1password
+define_webjump("1p", "file:///home/mrled/Dropbox/1Password.agilekeychain/1Password.html");
+
 requires("noscript"); // load required code for noscript (still need to add the extension)
 
 //define_key(content_buffer_normal_keymap, "C-c w", 
