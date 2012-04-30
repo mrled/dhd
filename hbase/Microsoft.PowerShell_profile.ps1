@@ -15,11 +15,51 @@ $hostname=[System.Net.Dns]::GetHostName()
 # Therefore, I can't have a ".b" command like I have to re-source my bash profile.
 # If you dot source a function which dot sources a file, it uses your shell scope to pull in the functions
 # Therefore, you can run ". p" (note the space) and get the same effect. 
+# ...
+# also I guess I still don't have this right, here's what I need to do: 
+# 1) make changes to home-and-path-vars.bat (in a separate editor process)
+# 2) install those changes (as I do below)
+# 3) pull the installed changes into the current environment (which I'm STILL not doing correctly).
 function p {
     . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1" 
-    & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
+    #& "$Home\.dhd\opt\win32\home-and-path-vars.bat"
 }
-function reinit { write-host "You meant to type '. p'. Sorry I can't do this for you! Powershell sucks!" }
+#function reinit { write-host "You meant to type '. p'. Sorry I can't do this for you! Powershell sucks!" }
+
+# OOOOKKKK. This actually does it. 
+# It re-sets home and path vars from my batch file
+# And the instead of reloading the PowerShell profile it just launches a new PowerShell
+# Then it exits when it's done. This sucks more than bash's exec, which outright replaces
+# the current shell with the new one, but it seems to work so I'm going with it.
+function reinit {
+    & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
+    & C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    exit
+}
+
+# restarting PowerShell 
+# function reinit{
+#     & "$Home\.dhd\opt\win32\home-and-path-vars.bat" 
+#     $cmd = "Set oShell = CreateObject(""WScript.Shell"") `n"
+#     $cmd += "WScript.Sleep 1000 `n"
+#     $cmd += "oShell.Run ""PowerShell.exe""" | Out-File -filePath $env:temp"\ps.vbs" -inputobject  
+#     $cmd -encoding ASCII -force WScript.exe $env:temp"\ps.vbs"
+#     exit
+# } 
+# function Restart-PowerShell {
+#     # the $cmd here-string is passed to VBS, which uses the single-quote as the comment indicator 
+#     # (yes, really)
+#     $cmd = ""
+#     #$cmd += @"'This is a temporary script to Restart a PowerShell Session`n"@
+#     #$cmd += @"'Created $(Get-Date)`n"@
+#     $cmd += @"Set oShell = CreateObject("WScript.Shell")`n"@
+#     $cmd += @"WScript.Sleep 1000`n"@
+#     $cmd += @"oShell.Run "PowerShell.exe"`n"@
+#     Out-File -filePath $env:temp"\Restart-PowerShell.vbs" -inputobject $cmd -encoding ASCII -force
+#     WScript.exe $env:temp"\Restart-PowerShell.vbs"
+#     exit
+# }
+#Set-Alias rsps Restart-PowerShell
 
 
 # original version from <http://www.techmumbojumblog.com/?p=39>
@@ -109,15 +149,26 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
     set-alias devenv "$vs2010path\devenv.exe"
 }
 
-
+# Make the output of get-childitem better for interactive use
+# Note: there's an extra newline before AND after $gcm.Definition if it is a function, 
+# so when we use that, we use -nonewline TWICE. 
+# Note: For alias, the function calls itself recursively, so if you have an alias chain
+# x->y->z->, where x and y are aliases and z is a function, you'll get the whole
+# relationship and the function definition as well. 
 function whence {
-    # Useful because it returns a function definition like bash does
     foreach ($a in $args) {
         $gcm = get-command $a
-        $gcm # write it to the terminal
-        if ( $gcm.CommandType -eq "Function") {
-            write-host ("`nDefinition: ")
-            $gcm.Definition
+        switch ($gcm.CommandType) {
+            "Function" {
+                write-host ($gcm.Name + ": " + $gcm.CommandType) -nonewline
+                write-host ($gcm.Definition) -nonewline 
+                }
+            "Alias" {
+                write-host ($gcm.Name + ": Aliased to " + $gcm.Definition)
+                whence $gcm.Definition
+                }
+            "Application" { write-host ($gcm.Definition) }
+            default { write-host ($gcm.Name + ": " + $gcm.CommandType) }
         }
     }
 }

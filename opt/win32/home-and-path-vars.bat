@@ -12,8 +12,8 @@ setx HOME %USERPROFILE%
 
 
 :s_path
-rem If you want to set the system %PATH%, use the -m flag like: 
-rem     setx PATH "C:\opt\bin;C:\opt\ntemacs\bin;" 
+rem If you want to set the system %PATH%, use the /m flag like: 
+rem     setx PATH "C:\opt\bin;C:\opt\ntemacs\bin;" /m
 
 rem Note: Windows does not require double-quotes around entries in %PATH% --
 rem   even entries with spaces. In fact, when I call the setx argument, it
@@ -28,7 +28,7 @@ call :s_check_exists %HOME%\opt\win32bin
 call :s_check_exists %HOME%\opt\Console2
 call :s_check_exists %HOME%\opt\SysinternalsSuite
 call :s_check_exists %HOME%\opt\mupdf
-call :s_check_exists %HOME%\opt\ntemacs24
+rem call :s_check_exists %HOME%\opt\ntemacs24
 call :s_check_exists C:\opt\strawberry\perl\bin
 call :s_check_exists C:\opt\Python32
 rem call :s_check_exists C:\opt\local\bin
@@ -48,9 +48,6 @@ call :s_check_exists C:\Program Files (x86)\PuTTY
 rem call :s_check_exists C:\Program Files\Windows SDKs\Windows\v7.0\Bin
 call :s_check_exists C:\Program Files\NSIS
 call :s_check_exists C:\Program Files (x86)\NSIS
-
-rem These are no longer used: 
-rem - the emacs\bin\ directory, because of .dhd\opt\win32bin\emacs.bat
 
 setx PATH %MYPATH%
 set MYPATH=
