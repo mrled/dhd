@@ -150,44 +150,33 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
 }
 
 # Make the output of get-childitem better for interactive use
-# Note: there's an extra newline before AND after $gcm.Definition if it is a function, 
-# so when we use that, we use -nonewline TWICE. 
-# Note: For alias, the function calls itself recursively, so if you have an alias chain
-# x->y->z->, where x and y are aliases and z is a function, you'll get the whole
-# relationship and the function definition as well. 
-function Show-Command {
-    foreach ($a in $args) {
-        $gcm = get-command $a
-        switch ($gcm.CommandType) {
-            "Function" {
-                write-host ($gcm.Name + ": " + $gcm.CommandType) -nonewline
-                write-host ($gcm.Definition) -nonewline 
-                }
-            "Alias" {
-                write-host ($gcm.Name + ": Aliased to " + $gcm.Definition)
-                whence $gcm.Definition
-                }
-            "Application" { write-host ($gcm.Definition) }
-            default { write-host ($gcm.Name + ": " + $gcm.CommandType) }
-        }
-    }
-}
-set-alias whereis show-command
-
+# NOTE: there's an extra newline before AND after $gcm.Definition if it is a function, 
+# UNLESS the function definition includes an ARGUMENT, in which case there's only an extra
+# newline AFTER the definition. 
+# NOTE: For alias, the processing function calls the show function again - this is recursive!
+# it's so if you have an alias chain like x->y->z->, where x and y are aliases
+# and z is a function, you'll get the whole relationship + the function definition as well. 
+# NOTE: 
 function Process-GcmOutput ($gcmobj) {
     if ($gcmobj.CommandType) { #sometime get-command passes us an empty object! awesome!!
         switch ($gcmobj.CommandType) {
             "Alias" {
-                write-host ($gcmobj.Name + ": Aliased to " + $gcmobj.Definition)
+                write-host ($gcmobj.Name + ": Aliased to " + $gcmobj.Definition) #-nonewline
+                write-host ("-> ") -nonewline
+                #Process-GcmOutput (get-command $gcmobj.Definition)
+                Show-Allcommands $gcmobj.Definition
             }
             "Application" { 
-                write-host ($gcmobj.Name + ": Application at " + $gcmobj.Definition) 
+                write-host ($gcmobj.Name + ": Executable at " + $gcmobj.Definition) 
             }
+            "Function" {
+                write-host ($gcmobj.Name + ": " + $gcmobj.CommandType) 
+                write-host ($gcmobj.Definition) -nonewline 
+                }
             default { write-host ($gcmobj.Name + ": " + $gcmobj.CommandType) }
         }
     }
 }
-
 function Show-Allcommands {
     foreach ($a in $args) {
         $gcm = get-command $a
