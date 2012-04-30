@@ -155,7 +155,7 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
 # Note: For alias, the function calls itself recursively, so if you have an alias chain
 # x->y->z->, where x and y are aliases and z is a function, you'll get the whole
 # relationship and the function definition as well. 
-function whence {
+function Show-Command {
     foreach ($a in $args) {
         $gcm = get-command $a
         switch ($gcm.CommandType) {
@@ -172,7 +172,36 @@ function whence {
         }
     }
 }
-set-alias wh whence
+set-alias whereis show-command
+
+function Process-GcmOutput ($gcmobj) {
+    if ($gcmobj.CommandType) { #sometime get-command passes us an empty object! awesome!!
+        switch ($gcmobj.CommandType) {
+            "Alias" {
+                write-host ($gcmobj.Name + ": Aliased to " + $gcmobj.Definition)
+            }
+            "Application" { 
+                write-host ($gcmobj.Name + ": Application at " + $gcmobj.Definition) 
+            }
+            default { write-host ($gcmobj.Name + ": " + $gcmobj.CommandType) }
+        }
+    }
+}
+
+function Show-Allcommands {
+    foreach ($a in $args) {
+        $gcm = get-command $a
+        if ($gcm.count) { # we're dealing with SEVERAL results
+            for ($i=0; $i -le $gcm.count; $i++) {
+                Process-GcmOutput($gcm[$i])
+            }
+        }
+        else {
+            Process-GcmOutput($gcm)
+        }
+    }
+}
+set-alias wh show-allcommands
 
 # TODO: Fixme: accept a -n argument like head and tail on Unix do. 
 function head {

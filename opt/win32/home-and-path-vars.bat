@@ -31,6 +31,8 @@ call :s_check_exists %HOME%\opt\mupdf
 rem call :s_check_exists %HOME%\opt\ntemacs24
 call :s_check_exists C:\opt\strawberry\perl\bin
 call :s_check_exists C:\opt\Python32
+call :s_check_exists C:\opt\GnuWin32\bin
+call :s_check_exists C:\opt\GnuWin32\sbin
 rem call :s_check_exists C:\opt\local\bin
 rem call :s_check_exists C:\opt\svn\bin
 rem call :s_check_exists C:\opt\SysinternalsSuite
