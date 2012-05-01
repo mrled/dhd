@@ -15,51 +15,19 @@ $hostname=[System.Net.Dns]::GetHostName()
 # Therefore, I can't have a ".b" command like I have to re-source my bash profile.
 # If you dot source a function which dot sources a file, it uses your shell scope to pull in the functions
 # Therefore, you can run ". p" (note the space) and get the same effect. 
-# ...
-# also I guess I still don't have this right, here's what I need to do: 
-# 1) make changes to home-and-path-vars.bat (in a separate editor process)
-# 2) install those changes (as I do below)
-# 3) pull the installed changes into the current environment (which I'm STILL not doing correctly).
+# Note: does NOT take into account new home/path vars (it cannot without relaunching PS)
 function p {
     . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1" 
-    #& "$Home\.dhd\opt\win32\home-and-path-vars.bat"
 }
-#function reinit { write-host "You meant to type '. p'. Sorry I can't do this for you! Powershell sucks!" }
 
-# OOOOKKKK. This actually does it. 
-# It re-sets home and path vars from my batch file
-# And the instead of reloading the PowerShell profile it just launches a new PowerShell
-# Then it exits when it's done. This sucks more than bash's exec, which outright replaces
+# re-set home and path vars from my batch file & launch a new powershell. 
+# when new PS exits, this PS exits too. Sucks more than bash's exec, which outright replaces
 # the current shell with the new one, but it seems to work so I'm going with it.
 function reinit {
     & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
     & C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
     exit
 }
-
-# restarting PowerShell 
-# function reinit{
-#     & "$Home\.dhd\opt\win32\home-and-path-vars.bat" 
-#     $cmd = "Set oShell = CreateObject(""WScript.Shell"") `n"
-#     $cmd += "WScript.Sleep 1000 `n"
-#     $cmd += "oShell.Run ""PowerShell.exe""" | Out-File -filePath $env:temp"\ps.vbs" -inputobject  
-#     $cmd -encoding ASCII -force WScript.exe $env:temp"\ps.vbs"
-#     exit
-# } 
-# function Restart-PowerShell {
-#     # the $cmd here-string is passed to VBS, which uses the single-quote as the comment indicator 
-#     # (yes, really)
-#     $cmd = ""
-#     #$cmd += @"'This is a temporary script to Restart a PowerShell Session`n"@
-#     #$cmd += @"'Created $(Get-Date)`n"@
-#     $cmd += @"Set oShell = CreateObject("WScript.Shell")`n"@
-#     $cmd += @"WScript.Sleep 1000`n"@
-#     $cmd += @"oShell.Run "PowerShell.exe"`n"@
-#     Out-File -filePath $env:temp"\Restart-PowerShell.vbs" -inputobject $cmd -encoding ASCII -force
-#     WScript.exe $env:temp"\Restart-PowerShell.vbs"
-#     exit
-# }
-#Set-Alias rsps Restart-PowerShell
 
 
 # original version from <http://www.techmumbojumblog.com/?p=39>
@@ -80,13 +48,8 @@ function Get-InstalledPrograms ($computer = 'localhost') {
 	return $programs_installed;
 }
 
-# mklink isn't an exe - it's a cmd.exe builtin! 
-# what the fuck
-# also note that if you want to do this without elevating first 
-# secpol.msc -> Security Settings -> Local Policies -> User Rights Assignment -> Create symbolic links
-# you have to log out after this ahahahahaha fuck
-# aaaand just kidding you canNOT do this without elevating first if you're a user that CAN elevate. 
-# what. the. actual. fuck. 
+# mklink isn't an exe - it's a cmd.exe builtin! what the fuck. 
+# also note that you cannot do this without elevating the prompt first lolololololol
 function mklink {
     echo "(Running mklink from cmd.exe...)"
     cmd /c mklink $args
@@ -97,8 +60,6 @@ function mklink {
 # via: http://www.ainotenshi.org/710/%E2%80%98sudo%E2%80%99-for-powershell-sorta
 # this works OK for things like "notepad C:\Windows\something.txt"
 # it doesn't preserve CWD and other things though
-# and it fucking requires that dumb fucking secure desktop bullshit because it's using UAC
-# FFFFFFFFFFFFFFFFFFF
 function sudo()
 {
     if ($args.Length -eq 1)
@@ -111,28 +72,16 @@ function sudo()
     }
 }
 
-function .. {
-   cd ..
-}
-
-# function e {
-#     emacsclient -n $args
-# }
-
-function trid {
-    C:\opt\trid\trid.exe $args
-}
+function .. { cd .. }
 
 function conkeror {
     $xulrunnerbin = $home + "\opt\xulrunner\xulrunner.exe"
     & $xulrunnerbin  "$home\opt\src\conkeror\application.ini" $args
 }
 
-function sz {
-    # note: 7-zip is in the same place on both 64 bit and 32 bit Windows
-    & "C:\Program Files\7-Zip\7z.exe" $args
-}
-
+# note: 7-zip is in the same place on both 64 bit and 32 bit Windows
+# note: in some cases it won't complete commands starting with a digit, so we are reduced to this
+set-alias sz "C:\Program Files\7-Zip\7z.exe" 
 
 function prompt {
     Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
@@ -149,24 +98,8 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
     set-alias devenv "$vs2010path\devenv.exe"
 }
 
-# return an array, whether it finds 0, 1, or many results for a command matching 
-# $cmdstring in the path.
-function Find-CommandObjs-FromPath ($cmdstring) {
-    $gcm = get-command $cmdstring
-    $output = @()
-    if ($gcm.count) { #there was more than one result
-        for ($i=0; $i -le $gcm.count; $i++) {
-            $output += $gcm[$i]
-        }
-    }
-    else {
-        $output += $gcm
-    }
-    return $output
-}
-
 # Make output of get-command better (more like Unix) for interactive use. 
-# NOTE: For alias, the processing function calls the show function again - this is recursive!
+# NOTE: For aliases, the processing function calls the show function again - this is recursive!
 # it's so if you have an alias chain like x->y->z->, where x and y are aliases
 # and z is a function, you'll get the whole relationship + the function definition as well. 
 function Display-AllCommands {
@@ -195,7 +128,11 @@ function Display-AllCommands {
             else { $levelprefix += "   " }
         }
 
-        $cmdobjs = Find-CommandObjs-FromPath ($a)
+        $cmdobjs = @()
+        $gcmoutput = get-command $a
+        if ($gcmoutput.count) { $cmdobjs = $gcmoutput } #there was an array of results; use it
+        else { $cmdobjs += $gcmoutput } #there was just one result; make a one-item array
+
         foreach ($c in $cmdobjs) {
             if ($c.CommandType) { #sometime get-command passes us an empty object! awesome!!
                 switch ($c.CommandType) {
@@ -251,17 +188,25 @@ function Display-AllCommands {
 }
 set-alias wh display-allcommands
 
-# TODO: Fixme: accept a -n argument like head and tail on Unix do. 
 function head {
+    param(
+        [int]$n=10,
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
+    )
     foreach ($file in $args) {
-        select-object -first 10
+        get-content $file | select-object -first $n
     }
 }
 function tail {
+    param(
+        [int]$n=10,
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
+    )
     foreach ($file in $args) {
-        select-object -last 10
+        get-content $file | select-object -last $n
     }
 }
+
 function more {
     # immediately starts paging output, rather than waiting till the command finishes 
     # before starting to page.
