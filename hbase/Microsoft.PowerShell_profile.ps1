@@ -149,48 +149,107 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
     set-alias devenv "$vs2010path\devenv.exe"
 }
 
-# Make the output of get-childitem better for interactive use
-# NOTE: there's an extra newline before AND after $gcm.Definition if it is a function, 
-# UNLESS the function definition includes an ARGUMENT, in which case there's only an extra
-# newline AFTER the definition. 
+# return an array, whether it finds 0, 1, or many results for a command matching 
+# $cmdstring in the path.
+function Find-CommandObjs-FromPath ($cmdstring) {
+    $gcm = get-command $cmdstring
+    $output = @()
+    if ($gcm.count) { #there was more than one result
+        for ($i=0; $i -le $gcm.count; $i++) {
+            $output += $gcm[$i]
+        }
+    }
+    else {
+        $output += $gcm
+    }
+    return $output
+}
+
+# Make output of get-command better (more like Unix) for interactive use. 
 # NOTE: For alias, the processing function calls the show function again - this is recursive!
 # it's so if you have an alias chain like x->y->z->, where x and y are aliases
 # and z is a function, you'll get the whole relationship + the function definition as well. 
-# NOTE: 
-function Process-GcmOutput ($gcmobj) {
-    if ($gcmobj.CommandType) { #sometime get-command passes us an empty object! awesome!!
-        switch ($gcmobj.CommandType) {
-            "Alias" {
-                write-host ($gcmobj.Name + ": Aliased to " + $gcmobj.Definition) #-nonewline
-                write-host ("-> ") -nonewline
-                #Process-GcmOutput (get-command $gcmobj.Definition)
-                Show-Allcommands $gcmobj.Definition
-            }
-            "Application" { 
-                write-host ($gcmobj.Name + ": Executable at " + $gcmobj.Definition) 
-            }
-            "Function" {
-                write-host ($gcmobj.Name + ": " + $gcmobj.CommandType) 
-                write-host ($gcmobj.Definition) -nonewline 
-                }
-            default { write-host ($gcmobj.Name + ": " + $gcmobj.CommandType) }
-        }
-    }
-}
-function Show-Allcommands {
+function Display-AllCommands {
+    param(
+        [switch]$recurse, [switch]$r,
+        [int]$recursionlevel=0,
+        # weird syntax means that if the $recursionlevel isn't specified, 
+        # $args[0] doesn't become $recursionlevel:
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
+    )
+    if ($recurse.IsPresent -or $r.IsPresent) { $recursing = $true }
+    else { $recursing = $false }
+    if ($args.Count -le 0) {return}
+    #for ($a=0; $a -le $args.count; $a++) {
     foreach ($a in $args) {
-        $gcm = get-command $a
-        if ($gcm.count) { # we're dealing with SEVERAL results
-            for ($i=0; $i -le $gcm.count; $i++) {
-                Process-GcmOutput($gcm[$i])
-            }
+        $level = $recursionlevel
+        if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
+        if ($level -gt 20) { 
+            $errstr  = "Recursion is greater than 20 levels deep. Probably a circular set of aliases? "
+            write-error ($errstr)
+            return
         }
-        else {
-            Process-GcmOutput($gcm)
+        $levelprefix = ""
+        for ($i=0; $i -le $level; $i++) {
+            if ($i -eq $level) { $levelprefix += "-> " }
+            else { $levelprefix += "   " }
+        }
+
+        $cmdobjs = Find-CommandObjs-FromPath ($a)
+        foreach ($c in $cmdobjs) {
+            if ($c.CommandType) { #sometime get-command passes us an empty object! awesome!!
+                switch ($c.CommandType) {
+                    "Alias" {
+                        write-host ($levelprefix + $c.Name + ": Aliased to " + $c.Definition) #-nonewline
+                        if ($recursing) {
+                            $level = $level +1
+                            Display-AllCommands $c.Definition -recurse -recursionlevel $level
+                        }
+                    }
+                    "Application" { 
+                        write-host ($levelprefix + $c.Name + ": Executable at " + $c.Definition) 
+                    }
+                    "Function" {
+                        write-host ($levelprefix + $c.Name + ": " + $c.CommandType)
+                        $defstr = $c.Definition
+                        # $c.Definition is a string. 
+                        # - SOMETIMES, it begins w/ a new line. if so, chomp.
+                        # - SOMETIMES it ends w/ a new line too; chomp that. 
+                        # - Then, add the $levelprefix to the beginning of every line 
+                        #   AND to the beginning of the whole string
+                        # ending with a newline (chomp that too because write-host inserts one).
+                        # additionally, insert the $functionprefix at the beginning of every line
+                        # AND at the beginning of the whole string
+                        # I try to match both \n and \r\n because I've had it give me BOTH (lol)
+
+                        $re_firstnewline = new-object system.text.regularexpressions.regex `
+                            ('\A\r?\n', `
+                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
+                        $re_lastnewline = new-object system.text.regularexpressions.regex `
+                            ('\Z\r?\n', `
+                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
+                        $re_newline = new-object system.text.regularexpressions.regex `
+                            ('\r?\n', `
+                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
+                        $re_stringbegin = new-object system.text.regularexpressions.regex `
+                            ('\A', `
+                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
+
+                        $functionprefix = $levelprefix + "   " #indent the funct definitions a bit further
+                        $defstr = $re_firstnewline.replace($defstr, '')
+                        $defstr = $re_lastnewline.replace($defstr, '')
+                        $defstr = $re_newline.replace($defstr, [environment]::NewLine + $functionprefix)
+                        $defstr = $re_stringbegin.replace($defstr, $functionprefix)
+
+                        write-host ($defstr) 
+                    }
+                    default { write-host ($levelprefix + $c.Name + ": " + $c.CommandType) }
+                }
+            }
         }
     }
 }
-set-alias wh show-allcommands
+set-alias wh display-allcommands
 
 # TODO: Fixme: accept a -n argument like head and tail on Unix do. 
 function head {
