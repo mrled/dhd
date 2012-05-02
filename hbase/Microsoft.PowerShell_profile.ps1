@@ -234,17 +234,11 @@ function Initialize-PuttyRsaKey {
     $pageantlnk.Save()
     & (gcm $pageantlnk_path).definition
 
-    # by default putty saves pub key files with linebreaks everywhere
-    # $pcontent = get-content $putty_pub
-    # $newcontent = "ssh-rsa "
-    # for ($i=2; $i -lt $pcontent.count -1; $i++) {
-    #     $newcontent += $pcontent[$i]
-    # }
-    # $comment = "$env:username@$hostname-" + $pcontent[1].split("`"")[1]
-    # $newcontent += " $comment"
     $newcontent = Convert-PuttyRsaPubKey($putty_pub)
     add-content -path $pub -value $newcontent
     write-host ("Your pubkey has been saved in openssh format to $pub.")
+    # note: i don't echo it at the end because copy/pasting from Win terminals
+    # gives you linebreaks which don't work. C/O $pub from your editor instead. 
 }
 
 # By default, putty saves pub key files with linebreaks everywhere. Convert them to openssh format. 
