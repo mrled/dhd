@@ -10,6 +10,10 @@
 
 $hostname=[System.Net.Dns]::GetHostName()
 
+$Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+$SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+# $me.identity.{name,user,groups} also potentially useful
+
 $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
 
 
@@ -22,12 +26,23 @@ function p {
     . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1" 
 }
 
-# re-set home and path vars from my batch file & launch a new powershell. 
-# when new PS exits, this PS exits too. Sucks more than bash's exec, which outright replaces
-# the current shell with the new one, but it seems to work so I'm going with it.
+function resolve-hostname {
+    foreach ($a in $args) {
+        [System.Net.Dns]::Resolve($a).AddressList
+    }
+}
+
+# reinit: re-set home and path vars from my batch file & launch a new powershell. 
+# this reinit will launch a new PS but stay alive in the background until the new one exists. works in Console. 
 function reinit {
     & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
-    & C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    start-process "powershell.exe" -NoNewWindow -Wait
+    exit
+}
+# this reinit launches a new PS in the same window, and exits current PS immediately; doesn't work with Console
+function reinit2 {
+    & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
+    start-process "powershell.exe" -NoNewWindow
     exit
 }
 
@@ -106,14 +121,12 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
 # and z is a function, you'll get the whole relationship + the function definition as well. 
 function Display-AllCommands {
     param(
-        [switch]$recurse, [switch]$r,
+        [alias("r")] [switch]$recurse,
         [int]$recursionlevel=0,
         # weird syntax means that if the $recursionlevel isn't specified, 
         # $args[0] doesn't become $recursionlevel:
         [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
     )
-    if ($recurse.IsPresent -or $r.IsPresent) { $recursing = $true }
-    else { $recursing = $false }
     if ($args.Count -le 0) {return}
     #for ($a=0; $a -le $args.count; $a++) {
     foreach ($a in $args) {
@@ -140,7 +153,7 @@ function Display-AllCommands {
                 switch ($c.CommandType) {
                     "Alias" {
                         write-host ($levelprefix + $c.Name + ": Aliased to " + $c.Definition) #-nonewline
-                        if ($recursing) {
+                        if ($recurse.ispresent) {
                             $level = $level +1
                             Display-AllCommands $c.Definition -recurse -recursionlevel $level
                         }
@@ -190,13 +203,113 @@ function Display-AllCommands {
 }
 set-alias wh display-allcommands
 
+# demonstration:
+# - a much-too-complex string of aliases to aliases to aliases...
+# - what happens when there's more than one command for a given string.
+# - recursion.
+# remember that you have to dot-source this bitch
+function Setup-TestForWh {
+    set-alias ttt___ttt uuu___uuu 
+    set-alias uuu___uuu vvv___vvv
+    set-alias vvv___vvv WSManHTTPConfig #an exe file in system32 on x64 win7
+    set-alias WSManHTTPConfig xxx___xxx
+    set-alias xxx___xxx get-authenticodesignature #existing cmdlet
+    set-alias get-authenticodesignature zzz___zzz
+    set-alias zzz___zzz create-shortcut
+    function ttt___ttt { echo "functiontest" }
+    function xxx___xxx { echo "functiontest" }
+    function ttt___ttt { echo "functiontest" }
+    function ttt___ttt { echo "functiontest" }
+    function WSManHTTPConfig { echo "hurr's a function"; cmd.exe }
+    function get-authenticodesignature { echo "functest"; get-content C:\boot.ini; echo "ZUHH" }
+    set-alias aaa___aaa bbb___bbb #recursive
+    set-alias bbb___bbb aaa___aaa #recursive
+}
+
 function Create-Shortcut {
     param(
-        [string]$location
+        [parameter(Mandatory=$true)] [string]$filename,
+        [parameter(Mandatory=$true)] [string]$target,
+        [string]$arguments = $null,
+        [alias("f")] [switch]$force
     )
+    if (-not $filename.tolower().endswith(".lnk")) {
+        # required, or you'll get an error message and fail. 
+        $filename = "$filename.lnk"
+    }
+    if ((test-path $filename) -and (-not $force.ispresent)) {
+        # I don't think I care to check if there's a non-link file named .lnk that we're going to overwrite
+        write-error ("Filename $filename already exists; use the -f argument to overwrite.")
+        return $null
+    }
     $wshshell = New-Object -ComObject WScript.Shell
-    $lnk = $wshshell.CreateShortcut($location)
+    $lnk = $wshshell.CreateShortcut($filename)
+    $lnk.TargetPath = "$target"
+    $lnk.Arguments = "$arguments" #it's ok if this is $null
+    $lnk.save()
     return $lnk
+}
+
+# seperating file/dir hard/soft links, because they're different in windows
+# i wanted to autodetect the target so you didn't have to care, but then you 
+# couldn't make hard/soft links that point to a nonexistent file. 
+# note that this does not apply to shortcuts
+# also, softlinks require admin privs (...wtf)
+# finally, note that you have to `remove-item -recurse -force` to delete a junction
+# and that this does in fact ONLY delete the hardlink not the target, or the files in the target.
+# future ideas: http://stackoverflow.com/questions/2311105/test-in-powershell-code-if-a-folder-is-a-junction-point
+function Create-Link {
+    param(
+        [Parameter(ParameterSetName='shortcut',Mandatory=$true)] [alias("c")] [switch]$shortcut, 
+        [Parameter(ParameterSetName='shortcut')] [string]$arguments = $null, 
+#        [Parameter(ParameterSetName='shortcut')] [alias("f")] [switch]$force, 
+        [Parameter(ParameterSetName='fhardlink',Mandatory=$true)] [alias("h")] [switch]$fhardlink, 
+        [Parameter(ParameterSetName='fsoftlink',Mandatory=$true)] [alias("s")] [switch]$fsoftlink, 
+        [Parameter(ParameterSetName='dhardlink',Mandatory=$true)] [alias("j")] [switch]$dhardlink, 
+        [Parameter(ParameterSetName='dsoftlink',Mandatory=$true)] [alias("d")] [switch]$dsoftlink, 
+        [Parameter(Mandatory=$true)] [string]$target,
+        [Parameter(Mandatory=$true)] [string]$source
+    )
+    if (test-path $source) {
+        write-error "Filename $source already exists." #cannot overwrite - what if it's not a link?
+        return $null
+    }
+    switch ($pscmdlet.parametersetname) {
+        "shortcut" { 
+            $a = @{filename = $source
+                   target = $target
+                   arguments = $arguments
+                   force = $force 
+            }
+            create-shortcut @a 
+        }
+        "fhardlink" {
+            start-process "cmd.exe" -ArgumentList "/c mklink /h $source $target" -wait -NoNewWindow
+        }
+        "fsoftlink" {
+            start-process "cmd.exe" -ArgumentList "/c mklink $source $target" -verb "runAs" -wait
+        }
+        "dhardlink" {
+            start-process "cmd.exe" -ArgumentList "/c mklink /j $source $target" -NoNewWindow -wait
+        }
+        "dsoftlink" {
+            start-process "cmd.exe" -ArgumentList "/c mklink /d $source $target" -verb "runAs" -wait
+        }
+    }
+}
+function ln {
+    param(
+        [Parameter(ParameterSetName='type',Mandatory=$true)] [switch]$s, 
+
+        [string]$trg,
+        [string]$src
+    )
+    if ($f.ispresent) {
+        create-shortcut -filename $src -target $trg -force
+    }
+    else {
+        create-shortcut -filename $src -target $trg
+    }
 }
 
 # a hack but it is a pain to remember how to do this every time ugh. 
@@ -253,6 +366,16 @@ function Convert-PuttyRsaPubKey {
     $newcontent += " $comment"
     return $newcontent
 }
+function EfsEncrypt-File {
+    param (
+        [alias("r")] [switch]$recurse
+    )
+    foreach ($a in $args) {
+        foreach ($f in get-childitem $a) {
+            $f.Encrypt()
+        }
+    }
+}
 
 function head {
     param(
@@ -273,8 +396,82 @@ function tail {
     }
 }
 
-function more {
-    # immediately starts paging output, rather than waiting till the command finishes 
-    # before starting to page.
-    $input | Out-Host -paging
+#if (gcm less 2> $null) { set-alias l less }
+#else { set-alias l more }
+set-alias l more # the GnuWin32 less.exe is crashing Console2, ugh.
+
+$nzbgetdir = "$home\opt\nzbget"
+if (test-path $nzbgetdir) {
+    set-alias nzbget "$nzbgetdir\nzbget.exe"
+}
+
+function llm {
+    get-childitem $args | sort-object -property lastwritetime
+}
+function lse {
+    get-childitem $args Get-ChildItem -Include * -Recurse -Force -ErrorAction SilentlyContinue `
+        | Where-Object {$_.Attributes -ge "Encrypted"} `
+        | Select-Object FullName 
+}
+
+function man {
+    foreach ($a in $args) {
+        get-help $a -detailed | more
+    }
+}
+if (gci alias:cd 2>&1 > $null) { rm alias:cd }
+function cd {
+    if ($args.Count -le 0) {
+        set-location $home
+    }
+    else {
+        set-location "$args"
+    }
+}
+set-alias nc ncat
+function uploadid ($host) {
+    $akeys = "~/.ssh/authorized_keys"
+    pscp ~/.ssh/id_rsa.pub $host:~/.ssh/
+    get-content ~/.ssh/id_rsa.pub `
+        | plink $args "mkdir -p ~/.ssh && cat - >> $akeys && chmod 600 $akeys"
+}
+function youtube-dl {
+    python "$home\opt\src\youtube-dl\youtube-dl" $args
+}
+
+
+function Display-Path {
+    #$re_semicolon = new-object system.text.regularexpressions.regex ("`;")
+    foreach ($pathitem in $env:path.split("`;")) {
+        write-host $pathitem
+    }
+}
+
+# Word wrap function, return word wrapped version of passed string
+# via: http://blog.wolfplusplus.com/?tag=powershell
+function WordWrapStr($str)
+{
+	# Holds the final version of $str with newlines
+	$strWithNewLines = ""
+	# current line, never contains more than screen width
+	$curLine = ""
+	# Loop over the words and write a line out just short of window size
+	foreach ($word in $str.Split(" "))
+	{
+		# Lets see if adding a word makes our string longer then window width
+		$checkLinePlusWord = $curLine + " " + $word
+		if ($checkLinePlusWord.length -gt (get-host).ui.rawui.windowsize.width)
+		{
+			# With the new word we've gone over width
+			# append newline before we append new word
+			$strWithNewLines += [Environment]::Newline
+			# Reset current line
+			$curLine = ""
+		}
+		# Append word to current line and final str
+		$curLine += $word + " "
+		$strWithNewLines += $word + " "
+	}
+	# return our word wrapped string
+	return $strWithNewLines
 }

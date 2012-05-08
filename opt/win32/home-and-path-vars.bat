@@ -50,6 +50,8 @@ call :s_check_exists C:\Program Files (x86)\PuTTY
 rem call :s_check_exists C:\Program Files\Windows SDKs\Windows\v7.0\Bin
 call :s_check_exists C:\Program Files\NSIS
 call :s_check_exists C:\Program Files (x86)\NSIS
+call :s_check_exists C:\Program Files\Nmap
+call :s_check_exists C:\Program Files (x86)\Nmap
 
 setx PATH %MYPATH%
 set MYPATH=
