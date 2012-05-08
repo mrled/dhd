@@ -4,7 +4,7 @@
 import os, sys, subprocess, re, copy
 
 DEBUG_MODE = False
-#DEBUG_MODE = True
+DEBUG_MODE = True
 def DEBUG(x):
     if DEBUG_MODE: 
         print("DEBUG: " + x)
@@ -60,7 +60,11 @@ The problematic line: '{}'
 """.format(listen_line, line_array[3]))
             raise
             
-        new_listener.addr=ap[0]
+        if ap[0] == '*':
+            # if we pass an address of '*' to lsof, it will freak out and die
+            new_listener.addr='0.0.0.0'
+        else:
+            new_listener.addr=ap[0]
         new_listener.port=ap[1]
         new_listener.portproto=str(new_listener.port + '.' + new_listener.versionless_proto)
         new_listener.ltype="listener"
@@ -81,6 +85,7 @@ The problematic line: '{}'
         lsof_cmd=[lsof_bin, "+M", "-t", "-i", '@' + self.addr + ':' + self.port,
                   '-s'+self.versionless_proto.upper()+":LISTEN"]
         lsof_output=""
+        DEBUG("Attemptint to run lsof command: {}".format(str(lsof_cmd)))
         try:
             lsof_output=subprocess.check_output(lsof_cmd)#this should return PIDS, one per line
         except subprocess.CalledProcessError as cpe:
@@ -100,7 +105,12 @@ The problematic line: '{}'
                 DEBUG("Couldn't couldn't lsof_output.decode() because of this error: {}".format(str(ae)))
             lsof_pids.remove("")
             for pid in lsof_pids:
-                self.proc_info[pid] = pid # for now, set the exe name to just be the PID; we'll fix this later
+                ps_output = subprocess.check_output(["ps", "ax"]).decode("utf-8")
+                ps_re_str = r'\s*{}\s+\S+\s+\S+\s+\S+\s+(\S*)'.format(pid)
+                DEBUG("ps regex string: " + ps_re_str)
+                ps_re = re.compile(ps_re_str, re.M)
+                match = ps_re.search(ps_output)
+                self.proc_info[pid] = match.group(1)
 
     def lookup_name(self):
         if self.ltype == "header": return
@@ -230,9 +240,9 @@ class ListenersArray:
                 #output+='{pr:<5}  {p:>5}  {a:<{alen}}  '.format(
                 #    pr=l.proto, p=l.port, a=l.addr, prlen=len_proto, plen=len_port, alen=len_addr)
                 for process in l.proc_info.keys():
-                    output += '\n{empty_char:{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
+                    output += '\n{empty_char:<{fill_len}}'.format(empty_char=' ', fill_len=idx_svc)
                     #output+= 'PID: {pid:<{pidlen}}  Exe: {exe:<{exelen}}'.format(
-                    output+= '{pid:<{pidlen}} / {exe:<{exelen}}'.format(
+                    output+= '{pid:<{pidlen}}  {exe:<{exelen}}'.format(
                         pid=process, pidlen=len_pid, exe=l.proc_info[process], exelen=len_exe)
             output += "\n"
 

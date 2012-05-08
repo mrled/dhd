@@ -1,5 +1,15 @@
 // -*- mode: javascript -*-
 
+// Windows Note: 
+// On Unix, I would symlink .emacs to .dhd/hbase/.emacs
+// On Windows, this doesn't work very well, because the symlink
+// ends up turning into a straight up copy or something, idk...
+// I use an app-specific (load-file "~/.dhd/hbase/.emacs") inside
+// %USERPROFILE%\.eamcs on Windows
+// Conkeror doesn't seem to have a way to do that. (?). So, change
+// the location of the preferences file instead: 
+// M-: user_pref('conkeror.rcfile', 'C:\\Users\\mrled\\.dhd\\hbase\\.conkerorrc'); RET
+
 // handy bullshit: 
 // M-x ssl-certificate-manager
 // M-x extensions
@@ -70,6 +80,9 @@ define_webjump("wb", "javascript:location.href='http://web.archive.org/web/*/'+d
 // neuric stuff
 define_webjump("rt","https://bugs.neuric.internal/Dashboards/31/Micah%27s%20Tickets");
 
+// 1password
+define_webjump("1p", "file:///home/mrled/Dropbox/1Password.agilekeychain/1Password.html");
+
 requires("noscript"); // load required code for noscript (still need to add the extension)
 
 //define_key(content_buffer_normal_keymap, "C-c w", 
@@ -79,3 +92,14 @@ can_kill_last_buffer = false;
 define_key(content_buffer_normal_keymap, "C-x C-c", "confirm-quit");
 
 
+// Set the CWD of conkeror to always be ~/Downloads so files go there by default. 
+//... doesn't work wtf
+//cwd=get_home_directory(); 
+//cwd.append("Downloads"); 
+
+//download_buffer_automatic_open_target
+
+// never open download buffer automatically
+// you can then use M-x download-show to see the download buffer for something
+//... ugh this doesn't work either wtf. 
+//remove_hook("download_added_hook", open_download_buffer_automatically)

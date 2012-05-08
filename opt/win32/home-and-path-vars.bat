@@ -12,8 +12,8 @@ setx HOME %USERPROFILE%
 
 
 :s_path
-rem If you want to set the system %PATH%, use the -m flag like: 
-rem     setx PATH "C:\opt\bin;C:\opt\ntemacs\bin;" 
+rem If you want to set the system %PATH%, use the /m flag like: 
+rem     setx PATH "C:\opt\bin;C:\opt\ntemacs\bin;" /m
 
 rem Note: Windows does not require double-quotes around entries in %PATH% --
 rem   even entries with spaces. In fact, when I call the setx argument, it
@@ -25,29 +25,33 @@ set MYPATH=
 
 call :s_check_exists %HOME%\.dhd\opt\win32bin
 call :s_check_exists %HOME%\opt\win32bin
-call :s_check_exists C:\strawberry\perl\bin
-call :s_check_exists C:\Python32
-call :s_check_exists C:\opt\local\bin
-call :s_check_exists C:\opt\ntemacs24\bin
-call :s_check_exists C:\opt\git\bin
-call :s_check_exists C:\opt\svn\bin
-call :s_check_exists C:\opt\SysinternalsSuite
-call :s_check_exists C:\opt\nirsoft64
-call :s_check_exists C:\opt\nirsoft_package
-call :s_check_exists C:\opt\Console2
-call :s_check_exists C:\opt\UnxUtils\bin
-call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
-call :s_check_exists C:\opt\sqlite
+call :s_check_exists %HOME%\opt\Console2
+call :s_check_exists %HOME%\opt\SysinternalsSuite
+call :s_check_exists %HOME%\opt\mupdf
+rem call :s_check_exists %HOME%\opt\ntemacs24
+call :s_check_exists C:\opt\strawberry\perl\bin
+call :s_check_exists C:\opt\Python32
+call :s_check_exists C:\opt\GnuWin32\bin
+call :s_check_exists C:\opt\GnuWin32\sbin
+rem call :s_check_exists C:\opt\local\bin
+rem call :s_check_exists C:\opt\svn\bin
+rem call :s_check_exists C:\opt\SysinternalsSuite
+rem call :s_check_exists C:\opt\nirsoft64
+rem call :s_check_exists C:\opt\nirsoft_package
+rem call :s_check_exists C:\opt\Console2
+rem call :s_check_exists C:\opt\UnxUtils\bin
+rem call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
+rem call :s_check_exists C:\opt\sqlite
+call :s_check_exists C:\Program Files (x86)\Git\cmd
 call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files\7-Zip
 call :s_check_exists C:\Program Files (x86)\7-Zip
 call :s_check_exists C:\Program Files (x86)\PuTTY
-call :s_check_exists C:\Program Files\Windows SDKs\Windows\v7.0\Bin
+rem call :s_check_exists C:\Program Files\Windows SDKs\Windows\v7.0\Bin
 call :s_check_exists C:\Program Files\NSIS
-
-rem These are no longer used: 
-rem call :s_check_exists C:\Program Files\Emacs\emacs
-rem call :s_check_exists C:\Program Files (x86)\Emacs\emacs
+call :s_check_exists C:\Program Files (x86)\NSIS
+call :s_check_exists C:\Program Files\Nmap
+call :s_check_exists C:\Program Files (x86)\Nmap
 
 setx PATH %MYPATH%
 set MYPATH=
