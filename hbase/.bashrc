@@ -67,6 +67,7 @@ cmd_grep="grep"
 
 if type -P gsed >/dev/null; then cmd_sed=gsed; fi
 if type -P gdu  >/dev/null; then cmd_du=gdu;   fi
+if type -P ack-grep >/dev/null; then alias ack=ack-grep; fi
 
 ## Defaults which can be overridden in the system-specific configurations below
 psargs="ax"
@@ -187,6 +188,15 @@ maildirtree2mboxes_all_users() {
     cd "$homedirs"
     for user in *; do cd "$user/$maildirname"; maildirtree2mboxes; cd ../..; done
 }
+
+findunreadable() {
+    for path in $*; do
+        # find all of $path, print each found file to /dev/null, and then redirect stderr to stdout
+        # the final redirection lets us pipe this command into e.g. wc -l
+        find "$path" -fprint /dev/null 2>&1
+    done
+}
+
 
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
