@@ -99,11 +99,11 @@
   (run-or-raise "chromium-browser" '(:class "Chromium")))
 
 ;; m: mail
-(defcommand mail () () 
-  "Run or raise mail clients for Neuric and Home."
-  ;(run-or-raise "sh -c \"LC_TIME=en_DK.utf8 thunderbird\"" '(:class "Thunderbird"))) ; setting the environment like this does appears to actually work.
-  (run-or-raise "~/.dhd/opt/bin/tbird.sh" '(:class "Thunderbird"))) 
-(define-key *root-map* (kbd "M-m") "mail")
+;; (defcommand mail () () 
+;;   "Run or raise mail clients for Neuric and Home."
+;;   ;(run-or-raise "sh -c \"LC_TIME=en_DK.utf8 thunderbird\"" '(:class "Thunderbird"))) ; setting the environment like this does appears to actually work.
+;;   (run-or-raise "~/.dhd/opt/bin/tbird.sh" '(:class "Thunderbird"))) 
+;; (define-key *root-map* (kbd "M-m") "mail")
 
 (defcommand ircterm () () 
   "Run or raise irc in an xterm"
