@@ -43,6 +43,8 @@ Could this be useful in metasploit? I'd probably have to rewrite it to Ruby if s
 
 This would be a "service enumerator", which is a type of "post-exploitation module" in metasploit. 
 
+<https://metasploit.com/svn/framework3/trunk/modules/post/windows/gather/enum_services.rb> maybe useful? 
+
 ## What can my Python wrapper around netstat do? 
 
 - works with anything that has an /etc/services and supports `netstat -an` which is everything AFAICT. 
@@ -50,3 +52,8 @@ This would be a "service enumerator", which is a type of "post-exploitation modu
 - infer service from /etc/services
 - another way to say that is that it shows what "should" be running on that port
 
+## UDP
+
+Wait. UDP is stateless so doesn't that mean that `netstat -an | grep LISTEN` isn't going to come up with any UDP services? 
+
+Shit. How do I find these? 
