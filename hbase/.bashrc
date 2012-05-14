@@ -67,6 +67,7 @@ cmd_grep="grep"
 
 if type -P gsed >/dev/null; then cmd_sed=gsed; fi
 if type -P gdu  >/dev/null; then cmd_du=gdu;   fi
+if type -P ack-grep >/dev/null; then alias ack=ack-grep; fi
 
 ## Defaults which can be overridden in the system-specific configurations below
 psargs="ax"
@@ -621,4 +622,5 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01
 #export PS1="\t \w \$ "
 
 unset lcop
+
 
