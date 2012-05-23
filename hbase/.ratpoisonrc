@@ -1,0 +1,7 @@
+escape C-i
+# for some reason by default it is bound to x-terminal-emulator or something retarded
+# and it also doesn't pick up on shit in .Xresources
+# omgwtf
+bind c exec xterm
+
+
