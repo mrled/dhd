@@ -1,14 +1,14 @@
 SHELL=/bin/sh
-MAILDIR=$HOME/Maildir/
-DEFAULT=$MAILDIR
+
 LOGFILE=$HOME/.pmlog
 LOGABSTRACT="all"
 VERBOSE="on"
 
-# Backups while I'm messing with .procmailrc
-#:0 hc:
-#/users/home/mledbetter/Backup/mbox-procmailtest-3
-
+# try to use dovecot to deliver
+#DELIVER="/usr/lib/dovecot/deliver"
+# fallback
+MAILDIR=$HOME/.maildir/
+DEFAULT=$MAILDIR
 
 # Condition scoring
 # (mostly taken from <http://perlcode.org/tutorials/procmail/proctut/proctip2.pod> )
@@ -44,153 +44,120 @@ SPR=2147483647
 * $ $SPR^0 ^To:.*vlack\@howe\.textdrive\.com
 * $ $SPR^0 ^To:.*vlack.*marin\.joyent\.us
 * $ $SPR^0 ^To:.*mledbetter\@marin\.joyent\.us
+* $ $SPR^0 ^From:.*Club.*VIP.*
+* $ $SPR^0 ^From:.*RuneScape.*
 /dev/null
-
-# MAILMAN REMINDERS
-# to quote young Jeffrey:
-# "I'm so completely not interested in receiving these at the end of every month"
-#:0:
-#* ^From: .*mailman-owner@
-#* ^Subject: .* mailing list memberships reminder
-#/dev/null
 
 # Capstone
 :0
 * ^X-Original-To: .*vlack\+capstone\@vlack\.com
-.Capstone/
+/dev/null
+#.Capstone/
+
+# SXSW shit
+:0
+* ^X-Original-To: sxsw@micahrl.com
+.SXSW/
+
 
 # Facebook agh so many messages
 :0
 * $ $SPR^0 ^From: .*facebookmail\.com
 * $ $SPR^0 ^From: .*postmaster\.twitter\.com
-.Facebook/
-
-
-# Evernote: Email here to file stuff directly into Evernote
-:0
-* ^X-Original-To: .*vlack\+evernote@vlack\.com
-! mrled.82214@m.evernote.com  
-
+* $ $SPR^0 ^Subject:.*FACEBOOKRULETESTOMGLOL.*
+{
+  # this block marks all the messages read; see http://raamdev.com/2007/using-procmail-to-mark-as-read/
+  foldername=Facebook #without leading . or training / and I dunno if this works on subfolders like .Facebook.Bullshit or anything
+ 
+  :0c
+  .$foldername/ # stores in .$foldername/new/
+ 
+  :0
+  * LASTFOLDER ?? /\/[^/]+$
+  { tail=$MATCH }
+ 
+  TRAP="mv $LASTFOLDER .$foldername/cur/$tail:2,S"
+ 
+  HOST
+}
 
 ### my lists stuff. based on 
-    ## Jamie Wilkinson's http://spacepants.org/dot.procmailrc
-    ## and more that I don't have mentioned here mmmk
+## Jamie Wilkinson's http://spacepants.org/dot.procmailrc
+## and more that I don't have mentioned here mmmk
 
-# Commented so that ALL email gets this processing
-# I hope this doesn't break anything, and it lets me migrate to 
-# no vlack-lists in the future (which will be awesome).
+## announce lists can all go in the same place as far as I'm concerned
+:0 
+* $ $SPR^0 ^List-Id:.*announce.*
+* $ $SPR^0 ^List-Id:.*freeverse.*
+* $ $SPR^0 ^List-Id:.*ambrosia.*
+* $ $SPR^0 ^Sender:.*owner.*announce.*
+* $ $SPR^0 ^Sender:.*announce.*owner.*
+* $ $SPR^0 ^List-Id:.*gentoo-gwn\.gentoo\.org
+* $ $SPR^0 ^List-Id:.*fvpr\.fridge\.net 
+* $ $SPR^0 ^List-Id:.*security-announce\.lists\.apple\.com
+* $ $SPR^0 ^List-Id:.*spokengroove.*
+* $ $SPR^0 ^Subject:.*testingannouncerule.*
+* $ $SPR^0 ^To:.*lemswap\@googlegroups\.com
+* $ $SPR^0 ^List-Id:.*Improv\*Everywhere
+* $ $SPR^0 ^List-Id:.*yellowbike.*
+.lists.announce/
 
-#:0
-#* ^Delivered-To:.*vlack-lists-vlack\.com
-#{
-    
-    
-    ## I want to rename these lists
-    
-    # ooh, here's a cool way to do this
-    # from http://www.opensubscriber.com/message/euglug@euglug.org/2802827.html
-    
-    # sunhelp
-    :0  
-    * ^List-Id:.*<[-A-Za-z0-9]*\.sunhelp\.org>  
-    * ^List-Id:.*<\/[-A-Za-z0-9]*  
-    .lists.sunhelp-${MATCH}/  
-    # sgihelp - changed from @sgihelp.org to @lists.synack-hosting.com
-    :0  
-    * ^List-Id:.*<[-A-Za-z0-9]*\.lists\.synack-hosting\.com>  
-    * ^List-Id:.*<\/[-A-Za-z0-9]*  
-    .lists.sgihelp-${MATCH}/  
+## bring on the automatic list filtering. long time in coming.
 
-    ## statically-defined lists
+# generic ezmlm filter, comes before mailman otherwise mailman's filter
+# will put everything into .list.contact/
+:0
+* ^Mailing-list: contact .*; run by ezmlm
+* ^List-Post: [<]mailto:\/.*
+{
+    LISTID=$MATCH
     
     :0
-    * ^Sender:.*college-owner\@oiketes.hopeoffice.org
-    .lists.hsl-college/
-    :0
-    * ^Sender:.*MACENTERPRISE\@lists\.psu\.edu
-    .lists.macenterprise/
-    :0
-    * ^List-ID: alt\.sysadmin\.recovery\.googlegroups\.com
-    .lists.asr/
-
-    
-    ## announce lists can all go in the same place as far as I'm concerned
-    :0 
-    * $ $SPR^0 ^List-Id:.*announce.*
-    * $ $SPR^0 ^List-Id:.*freeverse.*
-    * $ $SPR^0 ^List-Id:.*ambrosia.*
-    * $ $SPR^0 ^Sender:.*owner.*announce.*
-    * $ $SPR^0 ^Sender:.*announce.*owner.*
-    * $ $SPR^0 ^List-Id:.*gentoo-gwn\.gentoo\.org
-    * $ $SPR^0 ^List-Id:.*fvpr\.fridge\.net 
-    * $ $SPR^0 ^List-Id:.*security-announce\.lists\.apple\.com
-    * $ $SPR^0 ^List-Id:.*spokengroove.*
-    * $ $SPR^0 ^Subject:.*testingannouncerule.*
-    * $ $SPR^0 ^To:.*lemswap\@googlegroups\.com
-    * $ $SPR^0 ^List-Id:.*Improv\*Everywhere
-    .lists.announce/
-    
-    ## bring on the automatic list filtering. long time in coming.
-    
-    # generic ezmlm filter, comes before mailman otherwise mailman's filter
-    # will put everything into .list.contact/
-    :0
-    * ^Mailing-list: contact .*; run by ezmlm
-    * ^List-Post: [<]mailto:\/.*
+    * LISTID ?? ^ *\/[^@]*
     {
-        LISTID=$MATCH
+        LIST=$MATCH
         
         :0
-        * LISTID ?? ^ *\/[^@]*
-        {
-            LIST=$MATCH
-            
-            :0
-            * LISTID ?? ^.*@\/[^>\.]*
-            .lists.$MATCH-$LIST/
-        }
+        * LISTID ?? ^.*@\/[^>\.]*
+        .lists.$MATCH-$LIST/
     }
+}
+
+# onelist/egroups/yahoogroups/whatever_they're_called_today
+# lists with their non-standard header format, and ad nuker
+:0
+* ^Mailing-List: list \/[^@]+
+{
+    LISTID=$MATCH
     
-    # onelist/egroups/yahoogroups/whatever_they're_called_today
-    # lists with their non-standard header format, and ad nuker
-    :0
-    * ^Mailing-List: list \/[^@]+
-    {
-        LISTID=$MATCH
-        
-        :0 fbw
-        | sed '/-\~-->$/,/--\~->$/d'    
-        
-        :0
-        .lists.$LISTID/
-    }
+    :0 fbw
+    | sed '/-\~-->$/,/--\~->$/d'    
     
-    # Automagically handle nice standards conformant mailing lists - this
-    # rule and the majordomo recipe appear courtesy of Jeff Waugh Records
     :0
-    * ^(List-Id|(X-)?Mailing-List|X-List):\/.*
-    {
-        LISTID=$MATCH
-        
-        :0
-        * LISTID ?? ^.*[<]\/[^@>\.]*
-        .lists.$MATCH/
-        
-        :0
-        * LISTID ?? ^\/[^@\.]*
-        .lists.$MATCH/
-    }
+    .lists.$LISTID/
+}
+
+# Automagically handle nice standards conformant mailing lists - this
+# rule and the majordomo recipe appear courtesy of Jeff Waugh Records
+:0
+* ^(List-Id|(X-)?Mailing-List|X-List):\/.*
+{
+    LISTID=$MATCH
     
-    # majordomo lists
     :0
-    * ^Sender: owner-[^@]+@[^@]+
-    * ^Sender: owner-\/[^@]+
+    * LISTID ?? ^.*[<]\/[^@>\.]*
     .lists.$MATCH/
     
-    # if none of these match, it should go into the lists dir
-#    :0
-#    .lists/
-#}
+    :0
+    * LISTID ?? ^\/[^@\.]*
+    .lists.$MATCH/
+}
 
+# majordomo lists
+:0
+* ^Sender: owner-[^@]+@[^@]+
+* ^Sender: owner-\/[^@]+
+.lists.$MATCH/
+    
 ### The rest of the email will be delivered into my default mailbox,
 ### so no more rules are necessary
