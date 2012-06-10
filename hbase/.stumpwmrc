@@ -115,8 +115,6 @@
 ;   Where * is a key that I give to a common connection, whether it's for "ssh $hostname screen -rd" or "rdesktop -u $user -p $pass -d $domain -g $geometry -K $hostname"
 ;   This requires that I make a new keymap
 
-(load "~/.uenc/hbase/.stumpwm.secret.el") ; contains passwords
-
 (defun remote-camelot (hostname title)
   "Generic function to run-or-raise an xterm->ssh->screen session. 
 Note that my default screen session (used in .bashrc) is called 'camelot'."
@@ -127,35 +125,13 @@ Note that my default screen session (used in .bashrc) is called 'camelot'."
  
 (defcommand lawnmower-ssh () () 
   "Run or raise xterm->ssh->screen to lawnmower."
-  (remote-camelot "lawnmower.neuric.internal" "xterm-lawnmower"))
+  (remote-camelot "mrled@lawnmower.neuric.internal" "xterm-lawnmower"))
 (defcommand selene-ssh () () 
   "Run or raise xterm->ssh->screen to selene."
-  (remote-camelot "h.younix.us" "xterm-selene"))
+  (remote-camelot "mrled@h.younix.us" "xterm-selene"))
 (defcommand tika-ssh () () 
   "Run or raise xterm->ssh->screen to tika."
-  (remote-camelot "tika.younix.us" "xterm-tika"))
-
-(defcommand chelo-rdp () () 
-  "Run or raise an RDP session to chelo."
-  (run-or-raise 
-   (concat "rdesktop -u mrled -d djinn.internal -p \"" 
-           mrl/passwords/djinn-ad 
-           "\" -g 1440x860 -K h.younix.us")
-   '(:title "rdesktop - h.younix.us")))
-(defcommand convicthill-rdp () () 
-  "Run or raise an RDP session to convicthill at Neuric."
-  (run-or-raise 
-   (concat "rdesktop -u mrled -d neuric.internal -p \"" 
-           mrl/passwords/neuric-ad 
-           "\" -g 1440x860 -K convicthill.neuric.internal")
-   '(:title "rdesktop - convicthill.neuric.internal")))
-(defcommand fattire-rdp () () 
-  "Run or raise an RDP session to fattire at Neuric."
-  (run-or-raise 
-   (concat "rdesktop -u mrled -d neuric.internal -p \""
-           mrl/passwords/neuric-ad 
-           "\" -g 1440x860 -K fattire.neuric.internal")
-   '(:title "rdesktop - fattire.neuric.internal")))
+  (remote-camelot "mrled@tika.younix.us" "xterm-tika"))
 
 (defun bam (hostname)
   "Run my `bam` shell script which createse a site-specific browser."
@@ -179,10 +155,6 @@ Note that my default screen session (used in .bashrc) is called 'camelot'."
     (define-key m (kbd "s") "selene-ssh")
     (define-key m (kbd "t") "tika-ssh")
     (define-key m (kbd "l") "lawnmower-ssh")
-    (define-key m (kbd "f") "fattire-rdp")
-    (define-key m (kbd "h") "chelo-rdp")
-
-    (define-key m (kbd "c") "convicthill-rdp")
     m))
 (define-key *root-map* (kbd "M-r") '*mrl/remote-map*)
 
