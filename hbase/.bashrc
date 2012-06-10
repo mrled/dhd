@@ -554,6 +554,8 @@ matrix() { # shows matrix code. via @climagic
 # silly progress spinner from @climagic
 roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
 
+export PYTHONSTARTUP=~/.dhd/hbase/python.profile
+
 ###################
 # Global Settings #
 ###################
