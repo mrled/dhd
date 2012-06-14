@@ -38,8 +38,10 @@ origps2 = ansi_norm + "... "
 
 term_with_colors = ['xterm', 'xterm-color', 'xterm-256color', 'linux', 'screen', 'screen-256color', 'screen-bce']
 if os.environ.get('TERM') in term_with_colors:
-    newps1 = ansi_bold + ansi_fg_blue + pv       + ansi_fg_green + " >>> " + ansi_norm
-    newps2 = ansi_bold + ansi_fg_blue + "     "  + ansi_fg_green + " ... " + ansi_norm
+    # newps1 = ansi_bold + ansi_fg_blue + pv       + ansi_fg_green + " >>> " + ansi_norm
+    # newps2 = ansi_bold + ansi_fg_blue + "     "  + ansi_fg_green + " ... " + ansi_norm
+    newps1 = ansi_bold + ansi_fg_green + pv       + " >>> " + ansi_norm
+    newps2 = ansi_bold + ansi_fg_green + "     "  + " ... " + ansi_norm
 else:
     newps1 = pv      + " >>> "
     newps2 = "     " + " ... "
