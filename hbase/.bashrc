@@ -82,6 +82,8 @@ if [ -d /cygdrive ]; then    # Cygwin
     export winc="/cygdrive/c"
 elif [[ $uname == MINGW* ]]; then
     ls_args="${ls_args} --color"
+elif [[ $uname == FreeBSD ]]; then
+    ls_args="-hFG"
 elif [ -d /dev/fs ]; then # SFU/SUA
     export winc="/dev/fs/C"
     export SVN_SSH="/usr/pkg/bin/ssh"
