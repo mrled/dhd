@@ -51,10 +51,8 @@ done
 export PATH
 unset d h
 
+# I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
-host=`hostname`
-me=`whoami`
-menum=`id -u`
 
 umask 077
 export CVS_RSH="ssh"
@@ -80,9 +78,11 @@ if [ -d /cygdrive ]; then    # Cygwin
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     export CYGWIN="binmode ntsec stty"	# I don't know what this does
     export winc="/cygdrive/c"
-elif [[ $uname == MINGW* ]]; then
+#elif [[ $uname == MINGW* ]]; then
+elif [[ $OSTYPE == mingw ]]; then
     ls_args="${ls_args} --color"
-elif [[ $uname == FreeBSD ]]; then
+#elif [[ $uname == FreeBSD ]]; then
+elif [[ $OSTYPE == freebsd* ]]; then
     ls_args="-hFG"
 elif [ -d /dev/fs ]; then # SFU/SUA
     export winc="/dev/fs/C"
@@ -108,7 +108,7 @@ fi
 #######################
 # Host-specific stuff #
 #######################
-if [ $host == "selene" ]; then
+if [[ $HOST == "selene" ]]; then
     alias anonymize="sudo -H -u t"
 fi
 
@@ -139,7 +139,7 @@ alias psaj="ps $psargs$psargs_user"
 alias psawcl="ps $psargs | wc -l"
 psother() {
     # return all processes except my own
-    psaj | grep -v "$me" 
+    psaj | grep -v "$USER" 
 }
 psaf() { 
     # (the second call to grep prevents this function from being returned as a hit)
@@ -292,28 +292,60 @@ e() {
 
 # screen stuff
 cmd_screen=`type -P screen`
-if [ $cmd_screen ]; then
-    default_session_name="camelot" # totally arbitrary session name; note that it IS used elsewhere, though, such as .xsession-stumpwm, where I have it launch an xterm that connects to this session
-    
-    # attach to session if extant, otherwise create a new one
-    scr() {
-        if [ $1 ]; then
-            sessionname="$1"
-        else
-            sessionname="$default_session_name"
-        fi
-        $cmd_screen -D -R -S "$sessionname"
-    }
+default_session_name="camelot" # totally arbitrary session name; note that it IS used elsewhere, though, such as .xsession-stumpwm, where I have it launch an xterm that connects to this session
 
-    #alias screen="screen -D -R" 
-    alias scrl="$cmd_screen -list"
-    alias scrw="$cmd_screen -wipe"
+# Creates an Xterm window title of user@host <screen session name>, but only if running inside screen
+if [ $STY ]; then
+    # $STY looks like 123123.camelot; just grab the text name and ignore the number:
+    session_name=${STY#*.} 
+    screen_window_hardstatus="${USER}@${HOSTNAME} <${session_name}>"
+    echo -ne "\033]2;${screen_window_hardstatus}\007"
 fi
+
+# attach to session if it exists, otherwise create a new one
+scr() {
+    if [ $1 ]; then
+        sessionname="$1"
+    else
+        sessionname="${default_session_name}"
+    fi
+
+    if [[ $TERM == "screen" ]]; then
+        # -c /path/to/screenrc :: changes the screenrc file
+        # -e :: changes the screen escape key. default in .screenrc 
+        #       is 't'. Not set in screenrc.base
+        scrargs="-c ${HOME}/.dhd/hbase/screenrc.secondary -e^]]"
+    else
+        scrargs=""
+    fi
+
+    $cmd_screen $scrargs -D -R -S "$sessionname" 
+}
+
+alias scrl="$cmd_screen -list"
+alias scrw="$cmd_screen -wipe"
+remote() {
+    if [ $2 ]; then 
+        sessionname="$2"
+    else 
+        sessionname="$default_session_name"
+    fi
+    if [[ $TERM == "screen" ]]; then
+        # -c /path/to/screenrc :: changes the screenrc file
+        # -e :: changes the screen escape key. default in .screenrc 
+        #       is 't'. Not set in screenrc.base
+        scrargs="-c ${HOME}/.dhd/hbase/screenrc.base -e^]]"
+    else
+        scrargs=""
+    fi
+
+    ssh -t "$1" "screen $scrargs -D -R -S $sessionname"
+} 
 
 ##
 ## Remote Commands
 ##
-alias ssh="ssh -A"
+
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
@@ -461,15 +493,6 @@ changext() {
     /bin/ls -1 *.$oldext | sed 's/\(.*\)\.$oldext/mv \"\1.$oldext\"  \"\1.$newext\"/' | /bin/sh
 }
 
-remote() {
-    if [ $2 ]; then 
-        sessionname="$2"
-    else 
-        sessionname="$default_session_name"
-    fi
-    ssh -t "$1" "screen -D -R -S $sessionname"
-} 
-
 # Mac metadata files: .DS_Store and ._Doomsday.mkv for example
 mmf() { 
     case $1 in 
@@ -600,9 +623,9 @@ export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # last character of prompt
-if   [ $menum = 0 ]; then #root user
+if   [ $UID = 0 ]; then #root user
     lcop='#'
-elif [ $me = "t" ]; then  #tor user
+elif [ $USER = "t" ]; then  #tor user
     lcop='?'
 else                      #normal user
     lcop='>'

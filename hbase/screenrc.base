@@ -1,13 +1,6 @@
-# Right now this is a stupid copy of .screenrc. Should change this and that to source a common file. 
-
-
 nethack on          # :)
 autodetach on       # detach on hangup
 startup_message off # suppress splash
-
-# Use a different meta key for secondary screen sessions - ones that will go inside another screen session
-escape ^]]
-
 nonblock on         # if a window goes unresponsive, don't block whole session
 
 #bind c screen 1     # window numbering starts at 1, not 0
@@ -20,7 +13,6 @@ defscrollback 100000 # default is a mere 100 lines of suck.
 shelltitle sh        # default window title: shorter than 'bash'
 
 termcapinfo xterm ti@:te@ 
-#termcapinfo xterm ti@:te@ 
 
 #### emacs keybindings for navigation in copy mode
 markkeys ^B=Y:^F=V:h=^B:l=^F:0=^A:$=^E
@@ -47,13 +39,4 @@ markkeys @=\033
 markkeys B=[:E=]:b={:e=}:w=>
 bindkey -m ^[Od stuff {  #"[[}"
 bindkey -m ^[Oc stuff ]  #"}]^f"
-
-
-caption always "%{= gk}%H %l"
-
-hardstatus on
-hardstatus alwayslastline 
-hardstatus string "%-Lw%{= gk}%50>%n%f* %t%{-}%+Lw%<"
-
-
 
