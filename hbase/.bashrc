@@ -362,7 +362,8 @@ esxtop() {
 alias canhazip='curl icanhazip.com'
 alias whatismyip=canhazip
 alias icanhazip=canhazip
-
+alias hping=hping3
+alias hp=hping3
 
 # Torrent &c stuff
 seedbox() {
