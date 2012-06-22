@@ -304,42 +304,74 @@ fi
 
 # attach to session if it exists, otherwise create a new one
 scr() {
-    if [ $1 ]; then
-        sessionname="$1"
+    # First: grab out named arguments like -r
+    # After that: grab positional arguments like $1, which will be the session name if it is present
+    # Note that you can specify -r <host> <session name>, and it will process the host fiest
+    #   and still see <session name> as $1. 
+    i=0; pctr=0; argcount=$#; declare -a posargs; remote=false
+    
+    #execute the argumentsd directory (normal mode; will change this in debug mode)
+    ee(){ $*; }
+    #noop; totally ignore arguments
+    debugprint() { false; }
+
+    while [ $i -lt $argcount ]; do
+        case "$1" in
+            -r | --remote )
+                # increment i twice because we are eating 2 arguments
+                remote=true; rhost=$2; ((i+=2)); 
+                shift 2;;
+            -d | --debug )
+                # don't execute, just print
+                ee() { echo $*; }
+                # print debug statements too
+                debugprint() { echo $*; }
+                debugprint "Debuggin'"
+                shift;; 
+            *)
+                #posargs = positional args
+                posargs[pctr]=$1; ((pctr++)); ((i++)); 
+                shift;;
+        esac
+    done
+
+    if [ $pctr -gt 1 ]; then
+        echo "Error: you supplied too many positional arguments"
+        return
+    elif [ $posargs ]; then
+        sessionname=$posargs #posargs will never have more than 1 so this is safe in this function
     else
         sessionname="${default_session_name}"
     fi
+    debugprint "Session name: $sessionname"
 
+    # Use a different screen configuration and escape key for screens inside screens
     if [[ $TERM == "screen" ]]; then
+        debugprint "Running inside a screen session, going to use secondary config"
         # -c /path/to/screenrc :: changes the screenrc file
         # -e :: changes the screen escape key. default in .screenrc 
         #       is 't'. Not set in screenrc.base
-        scrargs="-c ${HOME}/.dhd/hbase/screenrc.secondary -e^]]"
+        scrconfig="${HOME}/.dhd/hbase/screenrc.secondary"
+        scrargs="-e^]]"
     else
+        scrconfig="${HOME}/.dhd/hbase/.screenrc"
         scrargs=""
     fi
 
-    $cmd_screen $scrargs -D -R -S "$sessionname" 
+    screen_call="screen $scrargs -D -R -S $sessionname"
+    if $remote; then
+        # Have to check if $scrconfig exists because screen will actually exit if it doesn't
+        # fucking hack
+        ee ssh -t $rhost bash -c "\"if [ -r \"$scrconfig\" ]; then $screen_call -c $scrconfig; else $screen_call -c /dev/null; fi\""
+    else
+        ee $screen_call -c $scrconfig
+    fi
 }
-
 alias scrl="$cmd_screen -list"
 alias scrw="$cmd_screen -wipe"
 remote() {
-    if [ $2 ]; then 
-        sessionname="$2"
-    else 
-        sessionname="$default_session_name"
-    fi
-    if [[ $TERM == "screen" ]]; then
-        # -c /path/to/screenrc :: changes the screenrc file
-        # -e :: changes the screen escape key. default in .screenrc 
-        #       is 't'. Not set in screenrc.base
-        scrargs="-c ${HOME}/.dhd/hbase/screenrc.base -e^]]"
-    else
-        scrargs=""
-    fi
-
-    ssh -t "$1" "screen $scrargs -D -R -S $sessionname"
+    # I should really call ssh -r instead, but just in case I forget
+    ssh -r $1 $2
 } 
 
 ##
