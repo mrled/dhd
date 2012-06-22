@@ -329,6 +329,9 @@ scr() {
                 debugprint "Debuggin'"
                 shift;; 
             *)
+                # TODO: if the argument begins with - and it's not one of the ones I've specified above, exit with an error
+                # TODO: help? 
+                # TODO: this should probably be its own script now god
                 #posargs = positional args
                 posargs[pctr]=$1; ((pctr++)); ((i++)); 
                 shift;;
