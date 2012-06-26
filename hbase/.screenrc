@@ -7,7 +7,7 @@ escape ^tt
 hardstatus on
 hardstatus alwayslastline 
 hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
-hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<   %>%h %>%l"
+hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw %<%{=  kB} %h %>%l "
 
 # %h
 #  - 'man screen' says 'the window hardstatus'
