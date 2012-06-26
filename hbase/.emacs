@@ -138,11 +138,11 @@
 
 
 ; ikiwiki stuff
-(setq younix-blog-dir "~/Personal/yus")
+(setq younix-blog-dir "~/Documents/yus")
 (defun iki/new-blog-post ()
   "Creates a new younix.us/blog post with a temporary name."
   (interactive)
-  (find-file (concat younix-blog-dir "/soc/" (format-time-string "%Y%m%d") "-tmp.mdwn")))
+  (find-file (concat younix-blog-dir "/soc/" (format-time-string "%Y%m%d") "-tmp.markdown")))
 (defun iki/get-title ()
   "Read the contents of the current file and return the title specified in [[!m\
 eta title=\"\"]]"
@@ -156,7 +156,7 @@ eta title=\"\"]]"
    (downcase
     (replace-regexp-in-string "[^-_a-zA-Z0-9]" "" 
                               (replace-regexp-in-string "[ 	]" "-" (iki/get-title))))
-   ".mdwn"))
+   ".markdown"))
 (defun iki/rename-to-title ()
   "Renames current buffer and associated file to the result of iki/urlify-title"
   (interactive)
@@ -166,7 +166,8 @@ eta title=\"\"]]"
   (insert "[[!meta title=\"\"]]"))
 (defun iki/insert-meta-date ()
   (interactive)
-  (insert "[[!meta date=\"\"]]"))
+  ;(insert (concat "[[!meta date=\"" (format-time-string "%Y%m%d") "\"]]")))
+  (insert (concat "[[!meta date=\"\"]]")))
 (defun iki/insert-directive-tag ()
   (interactive)
   (insert "[[!tag]]"))
