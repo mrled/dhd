@@ -463,6 +463,8 @@ esxtop() {
 alias canhazip='curl icanhazip.com'
 alias whatismyip=canhazip
 alias icanhazip=canhazip
+
+alias truecrypt="/Applications/TrueCrypt.app/Contents/MacOS/TrueCrypt"
 alias hping=hping3
 alias hp=hping3
 
@@ -575,6 +577,16 @@ mmf() {
             ;;
     esac
 }
+
+# fucking quarantine thing
+# could also turn it off completely: 
+# defaults write com.apple.LaunchServices LSQuarantine -bool false
+unquarantine() { 
+    for f in $@; do
+        xattr -r -d com.apple.quarantine $f
+    done
+}
+    
 
 # Serve files over http. This rules. 
 # Serve all files under the directory this was run in. Does NOT serve an
