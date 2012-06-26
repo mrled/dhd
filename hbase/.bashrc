@@ -309,10 +309,11 @@ scr() {
     # Note that you can specify -r <host> <session name>, and it will process the host fiest
     #   and still see <session name> as $1. 
     i=0; pctr=0; argcount=$#; declare -a posargs; remote=false
-    
+
+    # These functions are redefined if debug mode is turned on
     #execute the argumentsd directory (normal mode; will change this in debug mode)
     ee(){ $*; }
-    #noop; totally ignore arguments
+    #noop; totally ignore arguments.
     debugprint() { false; }
 
     while [ $i -lt $argcount ]; do
@@ -328,6 +329,30 @@ scr() {
                 debugprint() { echo $*; }
                 debugprint "Debuggin'"
                 shift;; 
+            -h | --help )
+                echo "scr() [-h|--help] [-r <REMOTE HOST>] [-d|--debug] [SESSION NAME] [-- <SSH ARGUMENTS>"
+                echo "    Screen session management wrapper thing."
+                echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
+                echo "    -d: Print debug messages (probably useless)."
+                echo "    -h: Print help and exit."
+                echo "    SESSION NAME: provide an optional session name. Default is 'camelot'."
+                echo "        It is recommended to use the default until you need more than one"
+                echo "        session on a given host."
+                echo "    --: Indicates that all remaining arguments should be passed to ssh."
+                echo "        For example: scr -r example.com -- -i ~/.ssh/special_id_rsa"
+                return
+                ;;
+            --)
+                declare -a sa
+                sctr=0
+                shift
+                while [ $i -lt $argcount ]; do
+                    sa[$sctr]=$1
+                    ((sctr++))
+                    ((i++))
+                    shift
+                done
+                ;;
             *)
                 # TODO: if the argument begins with - and it's not one of the ones I've specified above, exit with an error
                 # TODO: help? 
@@ -361,11 +386,20 @@ scr() {
         scrargs=""
     fi
 
+    sshargs=" "
+    if $sa; then
+        i=0
+        while [ $i -lt ${#sa} ]; do
+            sshargs+=" ${sshargs[$i]}"
+            ((i++))
+        done
+    fi
+
     screen_call="screen $scrargs -D -R -S $sessionname"
     if $remote; then
         # Have to check if $scrconfig exists because screen will actually exit if it doesn't
         # fucking hack
-        ee ssh -t $rhost bash -c "\"if [ -r \"$scrconfig\" ]; then $screen_call -c $scrconfig; else $screen_call -c /dev/null; fi\""
+        ee ssh $sshargs -t $rhost bash -c "\"if [ -r \"$scrconfig\" ]; then $screen_call -c $scrconfig; else $screen_call -c /dev/null; fi\""
     else
         ee $screen_call -c $scrconfig
     fi
@@ -373,8 +407,8 @@ scr() {
 alias scrl="$cmd_screen -list"
 alias scrw="$cmd_screen -wipe"
 remote() {
-    # I should really call ssh -r instead, but just in case I forget
-    ssh -r $1 $2
+    # I should really call scr -r instead, but just in case I forget
+    scr -r $1 $2
 } 
 
 ##
