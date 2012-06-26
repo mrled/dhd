@@ -51,10 +51,8 @@ done
 export PATH
 unset d h
 
+# I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
-host=`hostname`
-me=`whoami`
-menum=`id -u`
 
 umask 077
 export CVS_RSH="ssh"
@@ -80,8 +78,12 @@ if [ -d /cygdrive ]; then    # Cygwin
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     export CYGWIN="binmode ntsec stty"	# I don't know what this does
     export winc="/cygdrive/c"
-elif [[ $uname == MINGW* ]]; then
+#elif [[ $uname == MINGW* ]]; then
+elif [[ $OSTYPE == mingw ]]; then
     ls_args="${ls_args} --color"
+#elif [[ $uname == FreeBSD ]]; then
+elif [[ $OSTYPE == freebsd* ]]; then
+    ls_args="-hFG"
 elif [ -d /dev/fs ]; then # SFU/SUA
     export winc="/dev/fs/C"
     export SVN_SSH="/usr/pkg/bin/ssh"
@@ -106,7 +108,7 @@ fi
 #######################
 # Host-specific stuff #
 #######################
-if [ $host == "selene" ]; then
+if [[ $HOST == "selene" ]]; then
     alias anonymize="sudo -H -u t"
 fi
 
@@ -137,7 +139,7 @@ alias psaj="ps $psargs$psargs_user"
 alias psawcl="ps $psargs | wc -l"
 psother() {
     # return all processes except my own
-    psaj | grep -v "$me" 
+    psaj | grep -v "$USER" 
 }
 psaf() { 
     # (the second call to grep prevents this function from being returned as a hit)
@@ -290,28 +292,95 @@ e() {
 
 # screen stuff
 cmd_screen=`type -P screen`
-if [ $cmd_screen ]; then
-    default_session_name="camelot" # totally arbitrary session name; note that it IS used elsewhere, though, such as .xsession-stumpwm, where I have it launch an xterm that connects to this session
-    
-    # attach to session if extant, otherwise create a new one
-    scr() {
-        if [ $1 ]; then
-            sessionname="$1"
-        else
-            sessionname="$default_session_name"
-        fi
-        $cmd_screen -D -R -S "$sessionname"
-    }
+default_session_name="camelot" # totally arbitrary session name; note that it IS used elsewhere, though, such as .xsession-stumpwm, where I have it launch an xterm that connects to this session
 
-    #alias screen="screen -D -R" 
-    alias scrl="$cmd_screen -list"
-    alias scrw="$cmd_screen -wipe"
+# Creates an Xterm window title of user@host <screen session name>, but only if running inside screen
+if [ $STY ]; then
+    # $STY looks like 123123.camelot; just grab the text name and ignore the number:
+    session_name=${STY#*.} 
+    screen_window_hardstatus="${USER}@${HOSTNAME} <${session_name}>"
+    echo -ne "\033]2;${screen_window_hardstatus}\007"
 fi
+
+# attach to session if it exists, otherwise create a new one
+scr() {
+    # First: grab out named arguments like -r
+    # After that: grab positional arguments like $1, which will be the session name if it is present
+    # Note that you can specify -r <host> <session name>, and it will process the host fiest
+    #   and still see <session name> as $1. 
+    i=0; pctr=0; argcount=$#; declare -a posargs; remote=false
+    
+    #execute the argumentsd directory (normal mode; will change this in debug mode)
+    ee(){ $*; }
+    #noop; totally ignore arguments
+    debugprint() { false; }
+
+    while [ $i -lt $argcount ]; do
+        case "$1" in
+            -r | --remote )
+                # increment i twice because we are eating 2 arguments
+                remote=true; rhost=$2; ((i+=2)); 
+                shift 2;;
+            -d | --debug )
+                # don't execute, just print
+                ee() { echo $*; }
+                # print debug statements too
+                debugprint() { echo $*; }
+                debugprint "Debuggin'"
+                shift;; 
+            *)
+                # TODO: if the argument begins with - and it's not one of the ones I've specified above, exit with an error
+                # TODO: help? 
+                # TODO: this should probably be its own script now god
+                #posargs = positional args
+                posargs[pctr]=$1; ((pctr++)); ((i++)); 
+                shift;;
+        esac
+    done
+
+    if [ $pctr -gt 1 ]; then
+        echo "Error: you supplied too many positional arguments"
+        return
+    elif [ $posargs ]; then
+        sessionname=$posargs #posargs will never have more than 1 so this is safe in this function
+    else
+        sessionname="${default_session_name}"
+    fi
+    debugprint "Session name: $sessionname"
+
+    # Use a different screen configuration and escape key for screens inside screens
+    if [[ $TERM == "screen" ]]; then
+        debugprint "Running inside a screen session, going to use secondary config"
+        # -c /path/to/screenrc :: changes the screenrc file
+        # -e :: changes the screen escape key. default in .screenrc 
+        #       is 't'. Not set in screenrc.base
+        scrconfig="${HOME}/.dhd/hbase/screenrc.secondary"
+        scrargs="-e^]]"
+    else
+        scrconfig="${HOME}/.dhd/hbase/.screenrc"
+        scrargs=""
+    fi
+
+    screen_call="screen $scrargs -D -R -S $sessionname"
+    if $remote; then
+        # Have to check if $scrconfig exists because screen will actually exit if it doesn't
+        # fucking hack
+        ee ssh -t $rhost bash -c "\"if [ -r \"$scrconfig\" ]; then $screen_call -c $scrconfig; else $screen_call -c /dev/null; fi\""
+    else
+        ee $screen_call -c $scrconfig
+    fi
+}
+alias scrl="$cmd_screen -list"
+alias scrw="$cmd_screen -wipe"
+remote() {
+    # I should really call ssh -r instead, but just in case I forget
+    ssh -r $1 $2
+} 
 
 ##
 ## Remote Commands
 ##
-alias ssh="ssh -A"
+
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
@@ -362,6 +431,8 @@ alias whatismyip=canhazip
 alias icanhazip=canhazip
 
 alias truecrypt="/Applications/TrueCrypt.app/Contents/MacOS/TrueCrypt"
+alias hping=hping3
+alias hp=hping3
 
 # Torrent &c stuff
 seedbox() {
@@ -458,15 +529,6 @@ changext() {
     newext="$2"
     /bin/ls -1 *.$oldext | sed 's/\(.*\)\.$oldext/mv \"\1.$oldext\"  \"\1.$newext\"/' | /bin/sh
 }
-
-remote() {
-    if [ $2 ]; then 
-        sessionname="$2"
-    else 
-        sessionname="$default_session_name"
-    fi
-    ssh -t "$1" "screen -D -R -S $sessionname"
-} 
 
 # Mac metadata files: .DS_Store and ._Doomsday.mkv for example
 mmf() { 
@@ -565,6 +627,8 @@ matrix() { # shows matrix code. via @climagic
 # silly progress spinner from @climagic
 roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
 
+export PYTHONSTARTUP=~/.dhd/hbase/python.profile
+
 ###################
 # Global Settings #
 ###################
@@ -606,9 +670,9 @@ export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # last character of prompt
-if   [ $menum = 0 ]; then #root user
+if   [ $UID = 0 ]; then #root user
     lcop='#'
-elif [ $me = "t" ]; then  #tor user
+elif [ $USER = "t" ]; then  #tor user
     lcop='?'
 else                      #normal user
     lcop='>'
@@ -633,4 +697,5 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01
 #export PS1="\t \w \$ "
 
 unset lcop
+
 

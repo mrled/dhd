@@ -1,60 +1,17 @@
-nethack on          # :)
-autodetach on       # detach on hangup
-startup_message off # suppress splash
+source ~/.dhd/hbase/screenrc.base
+
 escape ^tt
-#escape ^]]          # I really wish this could be ' or . yarg! C-q is quoted-insert in emacs. I used to use C-t, but that's the default prefix in stumpwm so...
-nonblock on         # if a window goes unresponsive, don't block whole session
-
-#bind c screen 1     # window numbering starts at 1, not 0
-#bind 0 select 10    # window 0 refers to window 10
-
-bind ^g              # by default, this toggles bell visibility, but I really want it to be a noop like Emacs. 
-
-shell -$SHELL        # make every shell a login shell
-defscrollback 100000 # default is a mere 100 lines of suck. 
-shelltitle sh        # default window title: shorter than 'bash'
-
-termcapinfo xterm ti@:te@ 
-#termcapinfo xterm ti@:te@ 
-
-#### emacs keybindings for navigation in copy mode
-markkeys ^B=Y:^F=V:h=^B:l=^F:0=^A:$=^E
-
-# C-space sets mark. markkeys does it in screen 4.0 and higher, but 3.9x
-# needs the bindkey command. (note the ^@ escape sequence for C-space.)
-markkeys ' '=^@
-# bindkey -m ^@ stuff ' '
-
-# page up and page down
-bindkey -m -k kP stuff Y
-bindkey -m -k kN stuff V
-
-# failed attempt to make C-space work in i-search too
-# bindkey -m ^@ eval "stuff \033" "stuff ^@" 
-
-# special hack for C-e, since it should go *past*
-# the last char. -m means this is for copy mode only.
-bindkey -m ^e stuff "$^f"
-
-# C-g and other keys just quit copy mode. Esc does nothing.
-markkeys \033=\015=^G=^D=h=j=k=l=H=M=L=G=g=y=c=v=a=x=b=e=B=E=w
-markkeys @=\033
-
-# control arrows move by words. (set B, e, and w to F keys so that i can
-# use them to move by words, but they themselves still quit copy mode.)
-markkeys B=[:E=]:b={:e=}:w=>
-bindkey -m ^[Od stuff {  #"[[}"
-bindkey -m ^[Oc stuff ]  #"}]^f"
 
 
 ### hardstatus stuffs
 hardstatus on
 hardstatus alwayslastline 
-#hardstatus string "%w %==]===-"
 hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
-#hardstatus alwayslastline "%{-b ck} %?%-w%?%{+b}%n%f %t%{-b} %?%+w%? %= %l %D %d/%m/%Y %0c "
+hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<   %>%h %>%l"
 
-#hardstatus string "%w%=%m/%d %c"
+# %h
+#  - 'man screen' says 'the window hardstatus'
+#  - what this means is window title as set by the shell
+#     - (via <http://stackoverflow.com/questions/2479683/how-do-i-display-the-current-session-name-or-sockname-of-a-screen-session-in>)
+#     - ie if you set the xterm window title (google for this), that becomes %h
 
-#hardstatus alwayslastline "%{=b}%{G} Screen: %{b}%w %=%{kG}%C%A  %D, %M/%d/%Y "
-#hardstatus string '%{gk}[ %{G}%H %{g}][%= %{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u)%?%{=b kR})%{= kw}%?%+Lw%?%?%= %{g}][%{Y}%l%{g}]%{=b C}[ %m/%d %c ]%{W}'

@@ -25,23 +25,29 @@
 (defun add-to-load-path-if-exists (dir)
      (if (file-exists-p (expand-file-name dir))
          (add-to-load-path (expand-file-name dir))))
-(add-to-load-path-if-exists "~/opt/share/emacs")
-(add-to-load-path-if-exists "~/opt/share/emacs/site-lisp")
-(add-to-load-path-if-exists "~/doc/dhd/opt/emacs")
-(add-to-load-path-if-exists (concat "~/doc/dhd/host/" host-name "/emacs/"))
-(add-to-load-path-if-exists "~/.dhd/opt/emacs")
-(add-to-load-path-if-exists (concat "~/.dhd/host/" host-name "/emacs/"))
-;(add-to-load-path-if-exists "~/doc/remote/dhd/hbase/emacs")
 (add-to-load-path-if-exists "~/doc/uenc/emacs")
+(add-to-load-path-if-exists "~/.dhd/opt/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
-(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/w3m")
-(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/apel")
-(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/flim")
-(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/semi")
-(add-to-load-path-if-exists "/usr/share/emacs/site-lisp/wl")
-(add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp/erc")
 (add-to-load-path-if-exists "~/opt/src/zenburn-el")
-(add-to-load-path-if-exists "C:/opt/site-lisp")
+
+;(require 'apache-mode)
+;(require 'apache)
+
+(autoload 'apache-mode "apache-mode" nil t)
+(add-to-list 'auto-mode-alist '("\\.htaccess\\'"   . apache-mode))
+(add-to-list 'auto-mode-alist '("httpd\\.conf\\'"  . apache-mode))
+(add-to-list 'auto-mode-alist '("srm\\.conf\\'"    . apache-mode))
+(add-to-list 'auto-mode-alist '("access\\.conf\\'" . apache-mode))
+(add-to-list 'auto-mode-alist '("sites-\\(available\\|enabled\\)/" . apache-mode))
+
+
+(require 'batch-mode)
+(require 'hide-lines)
+(require 'highlight-tail)
+(require 'motion-and-kill-dwim)
+(require 'powershell-mode)
+(require 'tail)
+
 
 ; settings (not custom variables)
 ;;;; fix the visible bell! w/ ring-bell-function or something
@@ -77,11 +83,6 @@
 
 (require 'python)
 
-(require 'motion-and-kill-dwim)
-(require 'hide-lines)
-(require 'tail)
-(require 'highlight-tail)
-(require 'apache-mode)
 
 ; I feel like it should do this for me, ugh
 (server-start)
