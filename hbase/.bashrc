@@ -330,8 +330,9 @@ scr() {
                 debugprint "Debuggin'"
                 shift;; 
             -h | --help )
-                echo "scr() [-h|--help] [-r <REMOTE HOST>] [-d|--debug] [SESSION NAME] [-- <SSH ARGUMENTS>"
-                echo "    Screen session management wrapper thing."
+                echo "scr() [-h|--help] [-r|--remote <REMOTE HOST>] [-d|--debug] "
+                echo "      [SESSION NAME] [-- <SSH ARGUMENTS>]"
+                echo "Screen session management wrapper thing."
                 echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
                 echo "    -d: Print debug messages (probably useless)."
                 echo "    -h: Print help and exit."
@@ -373,17 +374,14 @@ scr() {
     fi
     debugprint "Session name: $sessionname"
 
-    # Use a different screen configuration and escape key for screens inside screens
+    # if you're in a screen session and creating a new one, use a different escape key (handy)
     if [[ $TERM == "screen" ]]; then
-        debugprint "Running inside a screen session, going to use secondary config"
-        # -c /path/to/screenrc :: changes the screenrc file
-        # -e :: changes the screen escape key. default in .screenrc 
-        #       is 't'. Not set in screenrc.base
-        scrconfig="${HOME}/.dhd/hbase/screenrc.secondary"
+        # -e :: changes the screen escape key. NOT set in .screenrc! otherwise that *sometimes* overrides cli option (bug?)
         scrargs="-e^]]"
+        debugprint "Running inside a screen session, going to use srcargs: ${srcargs}"
     else
-        scrconfig="${HOME}/.dhd/hbase/.screenrc"
-        scrargs=""
+        scrargs="-e^tt"
+        debugprint "Not running inside screen, going to use srcargs: ${srcargs}"
     fi
 
     sshargs=" "
@@ -397,11 +395,9 @@ scr() {
 
     screen_call="screen $scrargs -D -R -S $sessionname"
     if $remote; then
-        # Have to check if $scrconfig exists because screen will actually exit if it doesn't
-        # fucking hack
-        ee ssh $sshargs -t $rhost bash -c "\"if [ -r \"$scrconfig\" ]; then $screen_call -c $scrconfig; else $screen_call -c /dev/null; fi\""
+        ee ssh $sshargs -t $rhost "$screen_call"
     else
-        ee $screen_call -c $scrconfig
+        ee $screen_call
     fi
 }
 alias scrl="$cmd_screen -list"
