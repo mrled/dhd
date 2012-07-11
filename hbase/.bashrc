@@ -429,6 +429,10 @@ esxtop() {
 alias canhazip='curl icanhazip.com'
 alias whatismyip=canhazip
 alias icanhazip=canhazip
+# gets public ip via dns. can help for when behind pay hotspots. 
+# via https://twitter.com/climagic/status/220977468360765442 / @brimston3
+# some hotspots fuck with udp/53; you might try dig +tcp if that happens
+alias dnsip='dig myip.opendns.com  @resolver1.opendns.com +short' 
 
 alias truecrypt="/Applications/TrueCrypt.app/Contents/MacOS/TrueCrypt"
 alias hping=hping3
