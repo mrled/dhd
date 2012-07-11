@@ -316,6 +316,19 @@ scr() {
     #noop; totally ignore arguments.
     debugprint() { false; }
 
+    scr_help() {
+        echo "scr() [-h|--help] [-r|--remote <REMOTE HOST>] [-d|--debug] "
+        echo "      [SESSION NAME] [-- <SSH ARGUMENTS>]"
+        echo "Screen session management wrapper thing."
+        echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
+        echo "    -d: Print debug messages (probably useless)."
+        echo "    -h: Print help and exit."
+        echo "    SESSION NAME: provide an optional session name. Default is 'camelot'."
+        echo "        It is recommended to use the default until you need more than one"
+        echo "        session on a given host."
+        echo "    --: Indicates that all remaining arguments should be passed to ssh."
+        echo "        For example: scr -r example.com -- -i ~/.ssh/special_id_rsa"
+    }
     while [ $i -lt $argcount ]; do
         case "$1" in
             -r | --remote )
@@ -330,17 +343,7 @@ scr() {
                 debugprint "Debuggin'"
                 shift;; 
             -h | --help )
-                echo "scr() [-h|--help] [-r|--remote <REMOTE HOST>] [-d|--debug] "
-                echo "      [SESSION NAME] [-- <SSH ARGUMENTS>]"
-                echo "Screen session management wrapper thing."
-                echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
-                echo "    -d: Print debug messages (probably useless)."
-                echo "    -h: Print help and exit."
-                echo "    SESSION NAME: provide an optional session name. Default is 'camelot'."
-                echo "        It is recommended to use the default until you need more than one"
-                echo "        session on a given host."
-                echo "    --: Indicates that all remaining arguments should be passed to ssh."
-                echo "        For example: scr -r example.com -- -i ~/.ssh/special_id_rsa"
+                scr_help
                 return
                 ;;
             --)
@@ -355,9 +358,13 @@ scr() {
                 done
                 ;;
             *)
-                # TODO: if the argument begins with - and it's not one of the ones I've specified above, exit with an error
-                # TODO: help? 
-                # TODO: this should probably be its own script now god
+                # if the first character of $1 is a '-', give an error
+                # for the syntax see e.g.: http://www.softpanorama.org/Scripting/Shellorama/Reference/string_operations_in_shell.shtml
+                if [ ${1:0:1} == "-" ]; then 
+                    echo "Error: you supplied option '$1', but there is no such option"
+                    scr_help
+                    return
+                fi
                 #posargs = positional args
                 posargs[pctr]=$1; ((pctr++)); ((i++)); 
                 shift;;
@@ -366,6 +373,7 @@ scr() {
 
     if [ $pctr -gt 1 ]; then
         echo "Error: you supplied too many positional arguments"
+        scr_help
         return
     elif [ $posargs ]; then
         sessionname=$posargs #posargs will never have more than 1 so this is safe in this function
