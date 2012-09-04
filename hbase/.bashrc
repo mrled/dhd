@@ -51,10 +51,8 @@ done
 export PATH
 unset d h
 
+# I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
-host=`hostname`
-me=`whoami`
-menum=`id -u`
 
 umask 077
 export CVS_RSH="ssh"
@@ -80,8 +78,12 @@ if [ -d /cygdrive ]; then    # Cygwin
     # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
     export CYGWIN="binmode ntsec stty"	# I don't know what this does
     export winc="/cygdrive/c"
-elif [[ $uname == MINGW* ]]; then
+#elif [[ $uname == MINGW* ]]; then
+elif [[ $OSTYPE == mingw ]]; then
     ls_args="${ls_args} --color"
+#elif [[ $uname == FreeBSD ]]; then
+elif [[ $OSTYPE == freebsd* ]]; then
+    ls_args="-hFG"
 elif [ -d /dev/fs ]; then # SFU/SUA
     export winc="/dev/fs/C"
     export SVN_SSH="/usr/pkg/bin/ssh"
@@ -106,7 +108,7 @@ fi
 #######################
 # Host-specific stuff #
 #######################
-if [ $host == "selene" ]; then
+if [[ $HOST == "selene" ]]; then
     alias anonymize="sudo -H -u t"
 fi
 
@@ -137,7 +139,7 @@ alias psaj="ps $psargs$psargs_user"
 alias psawcl="ps $psargs | wc -l"
 psother() {
     # return all processes except my own
-    psaj | grep -v "$me" 
+    psaj | grep -v "$USER" 
 }
 psaf() { 
     # (the second call to grep prevents this function from being returned as a hit)
@@ -290,28 +292,133 @@ e() {
 
 # screen stuff
 cmd_screen=`type -P screen`
-if [ $cmd_screen ]; then
-    default_session_name="camelot" # totally arbitrary session name; note that it IS used elsewhere, though, such as .xsession-stumpwm, where I have it launch an xterm that connects to this session
-    
-    # attach to session if extant, otherwise create a new one
-    scr() {
-        if [ $1 ]; then
-            sessionname="$1"
-        else
-            sessionname="$default_session_name"
-        fi
-        $cmd_screen -D -R -S "$sessionname"
-    }
+default_session_name="camelot" # totally arbitrary session name; note that it IS used elsewhere, though, such as .xsession-stumpwm, where I have it launch an xterm that connects to this session
 
-    #alias screen="screen -D -R" 
-    alias scrl="$cmd_screen -list"
-    alias scrw="$cmd_screen -wipe"
+# Creates an Xterm window title of user@host <screen session name>, but only if running inside screen
+if [ $STY ]; then
+    # $STY looks like 123123.camelot; just grab the text name and ignore the number:
+    session_name=${STY#*.} 
+    screen_window_hardstatus="${USER}@${HOSTNAME} <${session_name}>"
+    echo -ne "\033]2;${screen_window_hardstatus}\007"
 fi
+
+# attach to session if it exists, otherwise create a new one
+scr() {
+    # First: grab out named arguments like -r
+    # After that: grab positional arguments like $1, which will be the session name if it is present
+    # Note that you can specify -r <host> <session name>, and it will process the host fiest
+    #   and still see <session name> as $1. 
+    i=0; pctr=0; argcount=$#; declare -a posargs; remote=false
+
+    # These functions are redefined if debug mode is turned on
+    #execute the argumentsd directory (normal mode; will change this in debug mode)
+    ee(){ $*; }
+    #noop; totally ignore arguments.
+    debugprint() { false; }
+
+    scr_help() {
+        echo "scr() [-h|--help] [-r|--remote <REMOTE HOST>] [-d|--debug] "
+        echo "      [SESSION NAME] [-- <SSH ARGUMENTS>]"
+        echo "Screen session management wrapper thing."
+        echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
+        echo "    -d: Print debug messages (probably useless)."
+        echo "    -h: Print help and exit."
+        echo "    SESSION NAME: provide an optional session name. Default is 'camelot'."
+        echo "        It is recommended to use the default until you need more than one"
+        echo "        session on a given host."
+        echo "    --: Indicates that all remaining arguments should be passed to ssh."
+        echo "        For example: scr -r example.com -- -i ~/.ssh/special_id_rsa"
+    }
+    while [ $i -lt $argcount ]; do
+        case "$1" in
+            -r | --remote )
+                # increment i twice because we are eating 2 arguments
+                remote=true; rhost=$2; ((i+=2)); 
+                shift 2;;
+            -d | --debug )
+                # don't execute, just print
+                ee() { echo $*; }
+                # print debug statements too
+                debugprint() { echo $*; }
+                debugprint "Debuggin'"
+                shift;; 
+            -h | --help )
+                scr_help
+                return
+                ;;
+            --)
+                declare -a sa
+                sctr=0
+                shift
+                while [ $i -lt $argcount ]; do
+                    sa[$sctr]=$1
+                    ((sctr++))
+                    ((i++))
+                    shift
+                done
+                ;;
+            *)
+                # if the first character of $1 is a '-', give an error
+                # for the syntax see e.g.: http://www.softpanorama.org/Scripting/Shellorama/Reference/string_operations_in_shell.shtml
+                if [ ${1:0:1} == "-" ]; then 
+                    echo "Error: you supplied option '$1', but there is no such option"
+                    scr_help
+                    return
+                fi
+                #posargs = positional args
+                posargs[pctr]=$1; ((pctr++)); ((i++)); 
+                shift;;
+        esac
+    done
+
+    if [ $pctr -gt 1 ]; then
+        echo "Error: you supplied too many positional arguments"
+        scr_help
+        return
+    elif [ $posargs ]; then
+        sessionname=$posargs #posargs will never have more than 1 so this is safe in this function
+    else
+        sessionname="${default_session_name}"
+    fi
+    debugprint "Session name: $sessionname"
+
+    # if you're in a screen session and creating a new one, use a different escape key (handy)
+    if [[ $TERM == "screen" ]]; then
+        # -e :: changes the screen escape key. NOT set in .screenrc! otherwise that *sometimes* overrides cli option (bug?)
+        scrargs="-e^]]"
+        debugprint "Running inside a screen session, going to use srcargs: ${srcargs}"
+    else
+        scrargs="-e^tt"
+        debugprint "Not running inside screen, going to use srcargs: ${srcargs}"
+    fi
+
+    sshargs=" "
+    if $sa; then
+        i=0
+        while [ $i -lt ${#sa} ]; do
+            sshargs+=" ${sshargs[$i]}"
+            ((i++))
+        done
+    fi
+
+    screen_call="screen $scrargs -D -R -S $sessionname"
+    if $remote; then
+        ee ssh $sshargs -t $rhost "$screen_call"
+    else
+        ee $screen_call
+    fi
+}
+alias scrl="$cmd_screen -list"
+alias scrw="$cmd_screen -wipe"
+remote() {
+    # I should really call scr -r instead, but just in case I forget
+    scr -r $1 $2
+} 
 
 ##
 ## Remote Commands
 ##
-alias ssh="ssh -A"
+
 # this way it won't save ssh host keys to ~/.ssh/known_hosts
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
@@ -360,7 +467,14 @@ esxtop() {
 alias canhazip='curl icanhazip.com'
 alias whatismyip=canhazip
 alias icanhazip=canhazip
+# gets public ip via dns. can help for when behind pay hotspots. 
+# via https://twitter.com/climagic/status/220977468360765442 / @brimston3
+# some hotspots fuck with udp/53; you might try dig +tcp if that happens
+alias dnsip='dig myip.opendns.com  @resolver1.opendns.com +short' 
 
+alias truecrypt="/Applications/TrueCrypt.app/Contents/MacOS/TrueCrypt"
+alias hping=hping3
+alias hp=hping3
 
 # Torrent &c stuff
 seedbox() {
@@ -458,15 +572,6 @@ changext() {
     /bin/ls -1 *.$oldext | sed 's/\(.*\)\.$oldext/mv \"\1.$oldext\"  \"\1.$newext\"/' | /bin/sh
 }
 
-remote() {
-    if [ $2 ]; then 
-        sessionname="$2"
-    else 
-        sessionname="$default_session_name"
-    fi
-    ssh -t "$1" "screen -D -R -S $sessionname"
-} 
-
 # Mac metadata files: .DS_Store and ._Doomsday.mkv for example
 mmf() { 
     case $1 in 
@@ -480,6 +585,16 @@ mmf() {
             ;;
     esac
 }
+
+# fucking quarantine thing
+# could also turn it off completely: 
+# defaults write com.apple.LaunchServices LSQuarantine -bool false
+unquarantine() { 
+    for f in $@; do
+        xattr -r -d com.apple.quarantine $f
+    done
+}
+    
 
 # Serve files over http. This rules. 
 # Serve all files under the directory this was run in. Does NOT serve an
@@ -597,9 +712,9 @@ export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # last character of prompt
-if   [ $menum = 0 ]; then #root user
+if   [ $UID = 0 ]; then #root user
     lcop='#'
-elif [ $me = "t" ]; then  #tor user
+elif [ $USER = "t" ]; then  #tor user
     lcop='?'
 else                      #normal user
     lcop='>'

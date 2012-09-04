@@ -1,8 +1,6 @@
 nethack on          # :)
 autodetach on       # detach on hangup
 startup_message off # suppress splash
-escape ^tt
-#escape ^]]          # I really wish this could be ' or . yarg! C-q is quoted-insert in emacs. I used to use C-t, but that's the default prefix in stumpwm so...
 nonblock on         # if a window goes unresponsive, don't block whole session
 
 #bind c screen 1     # window numbering starts at 1, not 0
@@ -15,7 +13,6 @@ defscrollback 100000 # default is a mere 100 lines of suck.
 shelltitle sh        # default window title: shorter than 'bash'
 
 termcapinfo xterm ti@:te@ 
-#termcapinfo xterm ti@:te@ 
 
 #### emacs keybindings for navigation in copy mode
 markkeys ^B=Y:^F=V:h=^B:l=^F:0=^A:$=^E
@@ -28,9 +25,6 @@ markkeys ' '=^@
 # page up and page down
 bindkey -m -k kP stuff Y
 bindkey -m -k kN stuff V
-
-# failed attempt to make C-space work in i-search too
-# bindkey -m ^@ eval "stuff \033" "stuff ^@" 
 
 # special hack for C-e, since it should go *past*
 # the last char. -m means this is for copy mode only.
@@ -50,11 +44,12 @@ bindkey -m ^[Oc stuff ]  #"}]^f"
 ### hardstatus stuffs
 hardstatus on
 hardstatus alwayslastline 
-#hardstatus string "%w %==]===-"
 hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
-#hardstatus alwayslastline "%{-b ck} %?%-w%?%{+b}%n%f %t%{-b} %?%+w%? %= %l %D %d/%m/%Y %0c "
+hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw %<%{=  kB} %h %>%l "
 
-#hardstatus string "%w%=%m/%d %c"
+# %h
+#  - 'man screen' says 'the window hardstatus'
+#  - what this means is window title as set by the shell
+#     - (via <http://stackoverflow.com/questions/2479683/how-do-i-display-the-current-session-name-or-sockname-of-a-screen-session-in>)
+#     - ie if you set the xterm window title (google for this), that becomes %h
 
-#hardstatus alwayslastline "%{=b}%{G} Screen: %{b}%w %=%{kG}%C%A  %D, %M/%d/%Y "
-#hardstatus string '%{gk}[ %{G}%H %{g}][%= %{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u)%?%{=b kR})%{= kw}%?%+Lw%?%?%= %{g}][%{Y}%l%{g}]%{=b C}[ %m/%d %c ]%{W}'
