@@ -4,11 +4,13 @@ rem Setting the %HOME% variable to %USERPROFILE%
 rem Setting the %PATH% variable 
 
 
-:s_home
+:s_environment
 rem Note that this will copy the VALUE of %USERPROFILE% to %HOME%
 rem so if %USERPROFILE% changes, %HOME% will not unless you do it manually
 setx HOME %USERPROFILE%
-:s_home_end
+setx PYTHONSTARTUP %HOME%\.dhd\hbase\python.profile
+set PYTHONSTARTUP=%HOME%\.dhd\hbase\python.profile
+:s_environment_end
 
 
 :s_path
@@ -28,9 +30,11 @@ call :s_check_exists %HOME%\opt\win32bin
 call :s_check_exists %HOME%\opt\Console2
 call :s_check_exists %HOME%\opt\SysinternalsSuite
 call :s_check_exists %HOME%\opt\mupdf
-rem call :s_check_exists %HOME%\opt\ntemacs24
 call :s_check_exists C:\opt\strawberry\perl\bin
 call :s_check_exists C:\opt\Python32
+call :s_check_exists C:\opt\Python32\scripts
+rem call :s_check_exists C:\opt\Python27
+call :s_check_exists C:\opt\Python27\scripts
 call :s_check_exists C:\opt\GnuWin32\bin
 call :s_check_exists C:\opt\GnuWin32\sbin
 rem call :s_check_exists C:\opt\local\bin
@@ -52,6 +56,8 @@ call :s_check_exists C:\Program Files\NSIS
 call :s_check_exists C:\Program Files (x86)\NSIS
 call :s_check_exists C:\Program Files\Nmap
 call :s_check_exists C:\Program Files (x86)\Nmap
+call :s_check_exists C:\Program Files (x86)\VMware\VMware Virtual Disk Development Kit\bin
+call :s_check_exists C:\Program Files\VMware\VMware Virtual Disk Development Kit\bin
 
 setx PATH %MYPATH%
 set MYPATH=
