@@ -670,6 +670,12 @@ matrix() { # shows matrix code. via @climagic
 roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
 
 export PYTHONSTARTUP=~/.dhd/hbase/python.profile
+#export IPYTHONDIR=~/.dhd/hbase/ipython
+# fuck python2
+if type -P ipython3  >/dev/null; then
+    alias ipy=ipython3
+    alias ipython=ipython3
+fi
 
 ###################
 # Global Settings #
