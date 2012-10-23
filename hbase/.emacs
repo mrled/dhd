@@ -46,6 +46,8 @@
 (require 'highlight-tail)
 (require 'motion-and-kill-dwim)
 (require 'powershell-mode)
+(add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
+(add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 (require 'tail)
 
 
@@ -287,15 +289,14 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
 
-
   ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
  (if (eq host-name "anyanka")
   (set-default-font "Terminus-10")
   (if (member "ProFontX" (font-family-list))
-      (set-default-font "ProFontX-9")
+      (set-face-attribute 'default nil :font "ProFontX-9")
     (if (member "Terminus" (font-family-list))
         (set-default-font "Terminus-8")))
-  ) ;; too small on teh netboko
+  )
 
 
 

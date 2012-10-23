@@ -14,6 +14,14 @@ $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]
 $SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 # $me.identity.{name,user,groups} also potentially useful
 
+function whoami {
+    $me.identity.name
+}
+function id {
+    $output = "" + $me.identity.name + "(" + $me.identity.user.value + ")"
+    $output
+}
+
 $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
 
 
@@ -85,7 +93,7 @@ function sudo()
     }
     if ($args.Length -gt 1)
     {
-        start-process $args[0] -ArgumentList $args[1..$args.Length] -verb "runAs"
+        start-process $args[0] -ArgumentList $args[1..$args.Length] -verb "runAs" 
     }
 }
 
@@ -100,12 +108,42 @@ function conkeror {
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
 set-alias sz "C:\Program Files\7-Zip\7z.exe" 
 
+
+# Checking if I'm running as admin
+$currentPrincipal = New-Object Security.Principal.WindowsPrincipal( [Security.Principal.WindowsIdentity]::GetCurrent() ) 
+$username = $currentprincipal.Identity.Name
+$adminrole = [Security.Principal.WindowsBuiltInRole]::Administrator
+if ($currentPrincipal.IsInRole($adminrole)) {
+    #(get-host).UI.RawUI.Backgroundcolor="DarkRed"
+    #clear-host
+    #write-host "Warning: PowerShell is running as an Administrator.`n"
+    $admin = $true
+}
+else {
+    $admin = $false
+}
+
+
+
 function prompt {
     Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
-    Write-Host (" " + $hostname) -nonewline -foregroundcolor Blue
-    Write-Host (":") -nonewline -foregroundcolor White
+    Write-Host (" ") -nonewline
+    # if ($admin) {
+    #     Write-Host ($username ) -nonewline -foregroundcolor Blue -backgroundcolor Red
+    # }
+    # else {    
+    #     Write-Host ($username ) -nonewline -foregroundcolor Blue
+    # }
+    # Write-Host ("@") -nonewline
+    Write-Host ($hostname) -nonewline -foregroundcolor Blue
+    #Write-Host (":") -nonewline -foregroundcolor White
     Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
-    Write-Host ("PS>") -nonewline -foregroundcolor White
+    if ($admin) {
+        Write-Host ("PSADMIN#") -nonewline -foregroundcolor White -backgroundcolor Red
+    }
+    else {
+        Write-Host ("PS>") -nonewline -foregroundcolor White
+    }
     # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
     return " "
 }
@@ -248,6 +286,67 @@ function Create-Shortcut {
     $lnk.Arguments = "$arguments" #it's ok if this is $null
     $lnk.save()
     return $lnk
+}
+# Put something in your PATH by creating a .bat file there that calls it (ewwwwww)
+# Was gonna use shortcuts for this but guess what, you have to call them with the .lnk at the end. 
+# fucking lol. 
+function Install-Exe
+{
+    param(
+        [parameter(Mandatory=$true)] [string] $exe,
+        [string] [alias("name")] $installname,
+        [switch] $force,
+        [string] $installdir="$Home\opt\win32bin"
+    )
+    if (-not (test-path $exe))
+    {
+        write-error ("No such file: '$exe'.")
+        return
+    }
+    $fsio = get-item $exe
+    $justname = (($fsio.name -replace ("\.lnk$","")) -replace ("\.exe$",""))
+    $fullpath = $fsio.fullname
+
+    if ($installname)
+    {
+        $scpath = "$installdir\$installname.bat"
+    }
+    else
+    {
+        $scpath = "$installdir\$justname.bat"
+    }
+    
+    if (test-path $scpath)
+    {
+        if ($force.ispresent)
+        {
+            rm $scpath
+        }
+        else
+        {
+            write-error ("Shortcut path '$scpath' exists, and '-force' was not supplied.")
+            return
+        }
+    }
+
+    mkdir -force $installdir > $null # just in case we're on a new box
+
+    # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
+
+    "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
+    "`"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
+}
+
+function Get-RelativePath
+{
+    # Return a relative path to a file. Only works if the basepath is in the fullpath. 
+    param(
+        [parameter(mandatory=$true)] [string] $fullpath,
+        [parameter(mandatory=$true)] [string] $basepath
+    )
+    #$relpath = [system.io.path]::GetFullPath($fullpath).SubString([system.io.path]::GetFullPath($basepath).Length + 1)
+    #return $relpath
+    return [system.io.path]::GetFullPath($fullpath).SubString([system.io.path]::GetFullPath($basepath).Length + 1)
 }
 
 # seperating file/dir hard/soft links, because they're different in windows
@@ -395,6 +494,28 @@ function tail {
         get-content $file | select-object -last $n
     }
 }
+if (test-path alias:more) { del alias:more }
+if (test-path function:more) { del function:more }
+function more { #TODO: support getting stuff from $input and also command line arguments. 
+    $input | out-host -paging
+}
+set-alias less more
+
+# by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
+if (test-path alias:touch) {del alias:touch}
+function touch 
+{
+    param([parameter(mandatory=$true)] $file)
+    if (test-path $file)
+    {
+        set-filetime $file
+    }
+    else
+    {
+        new-item -ItemType file $file
+    }
+
+}
 
 #if (gcm less 2> $null) { set-alias l less }
 #else { set-alias l more }
@@ -414,12 +535,41 @@ function lse {
         | Select-Object FullName 
 }
 
+function echoexec {
+    write-host ("$args")
+    invoke-expression "$args"
+}
+
+
+function Echoexec-Expression {
+    $expression = ""
+    foreach ($a in $args) {
+        foreach ($char in " ;{}".tochararray()) {
+            if ($a -match "$char") {
+                $quoteme = $true
+            }
+        }
+        if ($quoteme) { 
+            $expression += "`"$a`" "
+        }
+        else {
+            $expression += "$a "
+        }
+    }
+    write-host ("Echoexec-Expression: #: " + $args.count + "; args: " + $expression)
+    invoke-expression "$expression"
+}
+set-alias echoexec echoexec-expression
+
+
+if (test-path alias:man) { del alias:man }
 function man {
     foreach ($a in $args) {
-        get-help $a -detailed | more
+        get-help $a -full | more
     }
 }
-if (gci alias:cd 2>&1 > $null) { rm alias:cd }
+
+if (test-path alias:cd) { del alias:cd }
 function cd {
     if ($args.Count -le 0) {
         set-location $home
@@ -429,9 +579,13 @@ function cd {
     }
 }
 set-alias nc ncat
-function uploadid ($host) {
+function uploadid 
+{
+    param(
+        [parameter(mandatory=$True)]  [alias("host")]  [string]  $hostname
+    )
     $akeys = "~/.ssh/authorized_keys"
-    pscp ~/.ssh/id_rsa.pub $host:~/.ssh/
+    pscp ~/.ssh/id_rsa.pub "$($hostname):~/.ssh/"
     get-content ~/.ssh/id_rsa.pub `
         | plink $args "mkdir -p ~/.ssh && cat - >> $akeys && chmod 600 $akeys"
 }
@@ -446,6 +600,15 @@ function Display-Path {
         write-host $pathitem
     }
 }
+
+function Generate-Password 
+{
+    param([int]$length=8)
+    # From: http://ronalddameron.blogspot.com/2009/09/two-lines-of-powershell-random.html
+    $null = [Reflection.Assembly]::LoadWithPartialName("System.Web")
+    [System.Web.Security.Membership]::GeneratePassword($length,2)  # 8 bytes long
+}
+set-alias pwgen generate-password
 
 # Word wrap function, return word wrapped version of passed string
 # via: http://blog.wolfplusplus.com/?tag=powershell
@@ -474,4 +637,19 @@ function WordWrapStr($str)
 	}
 	# return our word wrapped string
 	return $strWithNewLines
+}
+
+
+function ConvertTo-Base64($string) {
+   $bytes  = [System.Text.Encoding]::UTF8.GetBytes($string);
+   $encoded = [System.Convert]::ToBase64String($bytes); 
+
+   return $encoded;
+}
+
+function ConvertFrom-Base64($string) {
+   $bytes  = [System.Convert]::FromBase64String($string);
+   $decoded = [System.Text.Encoding]::UTF8.GetString($bytes); 
+
+   return $decoded;
 }
