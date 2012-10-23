@@ -287,10 +287,18 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
 
+
+  ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
+ (if (eq host-name "anyanka")
+  (set-default-font "Terminus-10")
   (if (member "ProFontX" (font-family-list))
       (set-default-font "ProFontX-9")
     (if (member "Terminus" (font-family-list))
         (set-default-font "Terminus-8")))
+  ) ;; too small on teh netboko
+
+
+
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
 
   (global-hl-line-mode t) ;; Highlight the current line. 
