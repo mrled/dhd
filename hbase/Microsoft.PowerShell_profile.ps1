@@ -24,6 +24,12 @@ function id {
 
 $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
 
+$adkpath = "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
+if (test-path $adkpath)
+{
+    import-module $adkpath
+}
+
 
 # aliases can't take parameters (wtf), and functions have different scope than your shell. 
 # Therefore, I can't have a ".b" command like I have to re-source my bash profile.
@@ -53,7 +59,6 @@ function reinit2 {
     start-process "powershell.exe" -NoNewWindow
     exit
 }
-
 
 # original version from <http://www.techmumbojumblog.com/?p=39>
 # I changed it so it uses invoke-command rather than WMI for remoting
@@ -331,8 +336,9 @@ function Install-Exe
 
     mkdir -force $installdir > $null # just in case we're on a new box
 
-    # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
+    write-host "Installing $fullpath to $scpath..."
 
+    # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
     "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
     "`"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
 }
@@ -590,7 +596,7 @@ function uploadid
         | plink $args "mkdir -p ~/.ssh && cat - >> $akeys && chmod 600 $akeys"
 }
 function youtube-dl {
-    python "$home\opt\src\youtube-dl\youtube-dl" $args
+    C:\opt\Python27\python.exe "$home\opt\src\youtube-dl\youtube-dl" $args
 }
 
 
