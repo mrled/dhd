@@ -12,6 +12,8 @@ d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
 d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9.3-p0/bin"
+d="${d} $h/opt/android-sdk/platform-tools $h/opt/android-sdk/tools"
+d="${d} $h/opt/arm-eabi-4.4.3/bin "
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -105,12 +107,27 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     }
 fi
 
+# acutally, might want to use `see` instead, hmm. 
+# oh geez there is also `gnome-open`.
+# also consider using a gconf errors file, like ~/.fucking-stupid-gconf-bullshit
+# and exporting that from .bashrc so that other scripts can use it too #ballin #sorry
+if [ $uname != "Darwin" ]; then
+    if type -p xdg-open 2>&1 > /dev/null ; then
+        alias open=xdg-open
+    fi
+fi
+
 #######################
 # Host-specific stuff #
 #######################
 if [[ $HOST == "selene" ]]; then
     alias anonymize="sudo -H -u t"
 fi
+
+#if [[ $HOST == "anyanka" ]]; then
+#    export USE_CCACHE=1
+#fi
+# suggested ccache size is 50-100gb fuck
 
 
 ##################
@@ -333,8 +350,7 @@ scr() {
         case "$1" in
             -r | --remote )
                 # increment i twice because we are eating 2 arguments
-                remote=true; rhost=$2; ((i+=2)); 
-                shift 2;;
+                remote=true; rhost=$2; ((i+=2)); shift 2;;
             -d | --debug )
                 # don't execute, just print
                 ee() { echo $*; }
@@ -360,7 +376,7 @@ scr() {
             *)
                 # if the first character of $1 is a '-', give an error
                 # for the syntax see e.g.: http://www.softpanorama.org/Scripting/Shellorama/Reference/string_operations_in_shell.shtml
-                if [ ${1:0:1} == "-" ]; then 
+                [ $1 ] && if [ ${1:0:1} == "-" ]; then 
                     echo "Error: you supplied option '$1', but there is no such option"
                     scr_help
                     return
@@ -603,7 +619,8 @@ unquarantine() {
 # From <http://www.linuxscrew.com/2007/09/06/web-server-on-bash-in-one-line/>
 htserv() {
     port=$1
-    :;while [ $? -eq 0 ];do nc -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
+#    :;while [ $? -eq 0 ];do nc -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
+    :;while [ $? -eq 0 ];do nc.traditional -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
 }
 
 ###################
@@ -670,6 +687,12 @@ matrix() { # shows matrix code. via @climagic
 roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
 
 export PYTHONSTARTUP=~/.dhd/hbase/python.profile
+#export IPYTHONDIR=~/.dhd/hbase/ipython
+# fuck python2
+if type -P ipython3  >/dev/null; then
+    alias ipy=ipython3
+    alias ipython=ipython3
+fi
 
 ###################
 # Global Settings #
