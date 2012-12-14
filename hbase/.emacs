@@ -292,13 +292,12 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
   ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
  (if (eq host-name "anyanka")
-  (set-default-font "Terminus-10")
+  (setq myfont "Terminus-10")
   (if (member "ProFontX" (font-family-list))
-      (set-face-attribute 'default nil :font "ProFontX-9")
+      (setq myfont "ProFontX-9")
     (if (member "Terminus" (font-family-list))
-        (set-default-font "Terminus-8")))
-  )
-
+        (setq myfont "Terminus-8"))))
+ (set-face-attribute 'default nil :font myfont)
 
 
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
