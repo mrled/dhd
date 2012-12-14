@@ -51,7 +51,6 @@
 (add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 (require 'tail)
 
-
 ; settings (not custom variables)
 ;;;; fix the visible bell! w/ ring-bell-function or something
 (setq visible-bell t              ; Is this vi? Should there be beeping? 
@@ -269,6 +268,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
         w32-pass-apps-to-system nil ; let Emacs interpret meta keys
         w32-apps-modifier 'hyper) ;; Menu key -> Hyper
+  (autoload 'powershell "powershell" "Run powershell as a shell within emacs." t) 
 )
 
 ; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
