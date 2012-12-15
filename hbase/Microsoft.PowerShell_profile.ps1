@@ -86,21 +86,23 @@ function mklink {
 }
 
 
-# via: https://github.com/stephenn/powershell_sudo
-# via: http://www.ainotenshi.org/710/%E2%80%98sudo%E2%80%99-for-powershell-sorta
-# this works OK for things like "notepad C:\Windows\something.txt"
-# it doesn't preserve CWD and other things though
-function sudo()
-{
-    if ($args.Length -eq 1)
-    {
-        start-process $args[0] -verb "runAs"
-    }
-    if ($args.Length -gt 1)
-    {
-        start-process $args[0] -ArgumentList $args[1..$args.Length] -verb "runAs" 
-    }
+# This works. Caveat: Emacs is iffy for some reason. 
+# You can 'elevate-process emacs \somefile.txt' just fine
+# You can 'elevate-process notepad "\somefile with spaces.txt"'
+# But if you 'elevate-process emacs "\somefile with spaces.txt"', Emacs will fail
+# I am not sure why. 
+function Elevate-Process {
+    param(
+        $process,
+        [string]$arguments = $args
+    )
+    $psi = new-object System.Diagnostics.ProcessStartInfo $process;
+    $psi.Arguments = $arguments;
+    $psi.Verb = "runas";
+    $psi.WorkingDirectory = get-location;
+    $started = [System.Diagnostics.Process]::Start($psi);
 }
+set-alias sudo elevate-process
 
 function .. { cd .. }
 
@@ -111,7 +113,7 @@ function conkeror {
 
 # note: 7-zip is in the same place on both 64 bit and 32 bit Windows
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
-set-alias sz "C:\Program Files\7-Zip\7z.exe" 
+set-alias sz "$env:programfiles\7-Zip\7z.exe" 
 
 
 # Checking if I'm running as admin
@@ -268,6 +270,22 @@ function Setup-TestForWh {
     set-alias aaa___aaa bbb___bbb #recursive
     set-alias bbb___bbb aaa___aaa #recursive
 }
+
+$emacsbin = "$Home\opt\emacs-23.4\bin" # this is going to change every time I upgrade Emacs or whatever, ugh
+$emacsclient = "$emacsbin\emacsclientw.exe"
+$runemacs = "$emacsbin\runemacs.exe"
+set-alias emacsclient $emacsclient
+set-alias runemacs $runemacs
+function emacs {
+    # If there's already an Emacs session, start emacsclient.exe and connect to it. 
+    # If not, start runemacs.exe instead. 
+    # No bullshit with two separate Win7 taskbar icons, no persistent DOS window. 
+    param(
+        [string]$filename
+    )
+    emacsclient -na $runemacs "$filename"
+}
+set-alias e emacs
 
 function Create-Shortcut {
     param(
