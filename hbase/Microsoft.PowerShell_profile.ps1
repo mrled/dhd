@@ -104,6 +104,18 @@ function Elevate-Process {
 }
 set-alias sudo elevate-process
 
+function Export-ConemuConfig {
+    param(
+        [parameter(mandatory=$true)] [string] $filename,
+        [switch] $force
+    )
+    if ($force.ispresent) {
+        reg export "HKCU\Software\ConEmu\.Vanilla" "$filename" /y
+    } else {
+        reg export "HKCU\Software\ConEmu\.Vanilla" "$filename" 
+    }
+}
+
 function .. { cd .. }
 
 function conkeror {
