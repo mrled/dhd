@@ -10,6 +10,13 @@ rem so if %USERPROFILE% changes, %HOME% will not unless you do it manually
 setx HOME %USERPROFILE%
 setx PYTHONSTARTUP %HOME%\.dhd\hbase\python.profile
 set PYTHONSTARTUP=%HOME%\.dhd\hbase\python.profile
+
+:: Something is setting TERM=dumb and that means that git displays everything with
+:: no color, and git's less warns that my term is dumb before displaying in e.g.
+:: git log. 
+:: Changing this to msys seems to work for me even in cmd.exe so...
+set TERM=msys
+setx TERM msys
 :s_environment_end
 
 
