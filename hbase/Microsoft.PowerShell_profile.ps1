@@ -677,3 +677,10 @@ function ConvertFrom-Base64($string) {
 
    return $decoded;
 }
+
+function ftype {
+    cmd /c ftype $args
+}
+function assoc {
+    cmd /c assoc $args
+}
