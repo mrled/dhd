@@ -142,30 +142,25 @@ else {
     $admin = $false
 }
 
-
-
-function prompt {
-    Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
-    Write-Host (" ") -nonewline
-    # if ($admin) {
-    #     Write-Host ($username ) -nonewline -foregroundcolor Blue -backgroundcolor Red
-    # }
-    # else {    
-    #     Write-Host ($username ) -nonewline -foregroundcolor Blue
-    # }
-    # Write-Host ("@") -nonewline
-    Write-Host ($hostname) -nonewline -foregroundcolor Blue
-    #Write-Host (":") -nonewline -foregroundcolor White
-    Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
-    if ($admin) {
-        Write-Host ("PSADMIN#") -nonewline -foregroundcolor White -backgroundcolor Red
+# In Emacs 'M-x powershell', if you define this function, your prompt has an extra newline at the end
+# that I can't figure out how to get rid of. 
+if (-not ($env:term -eq "emacs")) {
+    function prompt {
+        Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
+        Write-Host (" ") -nonewline
+        Write-Host ($hostname) -nonewline -foregroundcolor Blue
+        Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
+        if ($admin) {
+            Write-Host ("PSADMIN#") -nonewline -foregroundcolor White -backgroundcolor Red
+        }
+        else {
+            Write-Host ("PS>") -nonewline -foregroundcolor White
+        }
+        # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
+        return " "
     }
-    else {
-        Write-Host ("PS>") -nonewline -foregroundcolor White
-    }
-    # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
-    return " "
 }
+
 
 if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
     $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
