@@ -46,10 +46,10 @@
 (require 'highlight-tail)
 (require 'motion-and-kill-dwim)
 (require 'powershell-mode)
+(setq powershell-indent 4) ;powershell-mode thinks it knows better than me
 (add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 (require 'tail)
-
 
 ; settings (not custom variables)
 ;;;; fix the visible bell! w/ ring-bell-function or something
@@ -260,6 +260,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
 
 (when (eq system-type 'windows-nt)
+  (cd mrl-home) ; otherwise it'll start off in the directory where emacs.exe resides
   ; some things are useful to have here just in case they're not in your system %PATH%
   (add-to-list 'exec-path "C:/Program Files/PuTTY")
   (add-to-list 'exec-path "C:/Program Files (x86)/PuTTY")
@@ -268,6 +269,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
         w32-pass-apps-to-system nil ; let Emacs interpret meta keys
         w32-apps-modifier 'hyper) ;; Menu key -> Hyper
+  (autoload 'powershell "powershell" "Run powershell as a shell within emacs." t) 
 )
 
 ; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
@@ -291,13 +293,12 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
   ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
  (if (eq host-name "anyanka")
-  (set-default-font "Terminus-10")
+  (setq myfont "Terminus-10")
   (if (member "ProFontX" (font-family-list))
-      (set-face-attribute 'default nil :font "ProFontX-9")
+      (setq myfont "ProFontX-9")
     (if (member "Terminus" (font-family-list))
-        (set-default-font "Terminus-8")))
-  )
-
+        (setq myfont "Terminus-8"))))
+ (set-face-attribute 'default nil :font myfont)
 
 
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar

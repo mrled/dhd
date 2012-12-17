@@ -1,7 +1,7 @@
 @echo off
 
 set EMACSBINPATH=%USERPROFILE%\opt\emacs-23.4\bin
-"%EMACSBINPATH%\emacsclientw.exe" -na "%EMACSBINPATH%\runemacs.exe" "%1"
+"%EMACSBINPATH%\emacsclientw.exe" -na "%EMACSBINPATH%\runemacs.exe" "%*"
 
 
 rem runemacs.exe if there's no server, emacsclientw.exe if there is. 
