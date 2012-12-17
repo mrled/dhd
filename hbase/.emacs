@@ -263,6 +263,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
 
 (when (eq system-type 'windows-nt)
+  (cd mrl-home) ; otherwise it'll start off in the directory where emacs.exe resides
   ; some things are useful to have here just in case they're not in your system %PATH%
   (add-to-list 'exec-path "C:/Program Files/PuTTY")
   (add-to-list 'exec-path "C:/Program Files (x86)/PuTTY")
@@ -294,7 +295,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
   (setq initial-frame-alist default-frame-alist)
 
   ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
- (if (eq host-name "anyanka")
+ (if (equal host-name "anyanka")
   (setq myfont "Terminus-10")
   (if (member "ProFontX" (font-family-list))
       (setq myfont "ProFontX-9")
