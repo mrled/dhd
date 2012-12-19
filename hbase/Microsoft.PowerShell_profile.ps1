@@ -24,6 +24,12 @@ function id {
 
 $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
 
+$adkpath = "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
+if (test-path $adkpath)
+{
+    import-module $adkpath
+}
+
 
 # aliases can't take parameters (wtf), and functions have different scope than your shell. 
 # Therefore, I can't have a ".b" command like I have to re-source my bash profile.
@@ -54,7 +60,6 @@ function reinit2 {
     exit
 }
 
-
 # original version from <http://www.techmumbojumblog.com/?p=39>
 # I changed it so it uses invoke-command rather than WMI for remoting
 # this means it works only w/ PowerShell 2.0 I think
@@ -81,19 +86,33 @@ function mklink {
 }
 
 
-# via: https://github.com/stephenn/powershell_sudo
-# via: http://www.ainotenshi.org/710/%E2%80%98sudo%E2%80%99-for-powershell-sorta
-# this works OK for things like "notepad C:\Windows\something.txt"
-# it doesn't preserve CWD and other things though
-function sudo()
-{
-    if ($args.Length -eq 1)
-    {
-        start-process $args[0] -verb "runAs"
-    }
-    if ($args.Length -gt 1)
-    {
-        start-process $args[0] -ArgumentList $args[1..$args.Length] -verb "runAs" 
+# This works. Caveat: Emacs is iffy for some reason. 
+# You can 'elevate-process emacs \somefile.txt' just fine
+# You can 'elevate-process notepad "\somefile with spaces.txt"'
+# But if you 'elevate-process emacs "\somefile with spaces.txt"', Emacs will fail
+# I am not sure why. 
+function Elevate-Process {
+    param(
+        $process,
+        [string]$arguments = $args
+    )
+    $psi = new-object System.Diagnostics.ProcessStartInfo $process;
+    $psi.Arguments = $arguments;
+    $psi.Verb = "runas";
+    $psi.WorkingDirectory = get-location;
+    $started = [System.Diagnostics.Process]::Start($psi);
+}
+set-alias sudo elevate-process
+
+function Export-ConemuConfig {
+    param(
+        [parameter(mandatory=$true)] [string] $filename,
+        [switch] $force
+    )
+    if ($force.ispresent) {
+        reg export "HKCU\Software\ConEmu\.Vanilla" "$filename" /y
+    } else {
+        reg export "HKCU\Software\ConEmu\.Vanilla" "$filename" 
     }
 }
 
@@ -106,7 +125,7 @@ function conkeror {
 
 # note: 7-zip is in the same place on both 64 bit and 32 bit Windows
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
-set-alias sz "C:\Program Files\7-Zip\7z.exe" 
+set-alias sz "$env:programfiles\7-Zip\7z.exe" 
 
 
 # Checking if I'm running as admin
@@ -123,30 +142,25 @@ else {
     $admin = $false
 }
 
-
-
-function prompt {
-    Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
-    Write-Host (" ") -nonewline
-    # if ($admin) {
-    #     Write-Host ($username ) -nonewline -foregroundcolor Blue -backgroundcolor Red
-    # }
-    # else {    
-    #     Write-Host ($username ) -nonewline -foregroundcolor Blue
-    # }
-    # Write-Host ("@") -nonewline
-    Write-Host ($hostname) -nonewline -foregroundcolor Blue
-    #Write-Host (":") -nonewline -foregroundcolor White
-    Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
-    if ($admin) {
-        Write-Host ("PSADMIN#") -nonewline -foregroundcolor White -backgroundcolor Red
+# In Emacs 'M-x powershell', if you define this function, your prompt has an extra newline at the end
+# that I can't figure out how to get rid of. 
+if (-not ($env:term -eq "emacs")) {
+    function prompt {
+        Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
+        Write-Host (" ") -nonewline
+        Write-Host ($hostname) -nonewline -foregroundcolor Blue
+        Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
+        if ($admin) {
+            Write-Host ("PSADMIN#") -nonewline -foregroundcolor White -backgroundcolor Red
+        }
+        else {
+            Write-Host ("PS>") -nonewline -foregroundcolor White
+        }
+        # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
+        return " "
     }
-    else {
-        Write-Host ("PS>") -nonewline -foregroundcolor White
-    }
-    # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
-    return " "
 }
+
 
 if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
     $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
@@ -272,6 +286,22 @@ function Setup-TestForWh {
     set-alias bbb___bbb aaa___aaa #recursive
 }
 
+$emacsbin = "$Home\opt\emacs-23.4\bin" # this is going to change every time I upgrade Emacs or whatever, ugh
+$emacsclient = "$emacsbin\emacsclientw.exe"
+$runemacs = "$emacsbin\runemacs.exe"
+set-alias emacsclient $emacsclient
+set-alias runemacs $runemacs
+function emacs {
+    # If there's already an Emacs session, start emacsclient.exe and connect to it. 
+    # If not, start runemacs.exe instead. 
+    # No bullshit with two separate Win7 taskbar icons, no persistent DOS window. 
+    param(
+        [string]$filename
+    )
+    emacsclient -na $runemacs "$filename"
+}
+set-alias e emacs
+
 function Create-Shortcut {
     param(
         [parameter(Mandatory=$true)] [string]$filename,
@@ -339,8 +369,9 @@ function Install-Exe
 
     mkdir -force $installdir > $null # just in case we're on a new box
 
-    # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
+    write-host "Installing $fullpath to $scpath..."
 
+    # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
     "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
     "`"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
 }
@@ -598,7 +629,7 @@ function uploadid
         | plink $args "mkdir -p ~/.ssh && cat - >> $akeys && chmod 600 $akeys"
 }
 function youtube-dl {
-    python "$home\opt\src\youtube-dl\youtube-dl" $args
+    C:\opt\Python27\python.exe "$home\opt\src\youtube-dl\youtube-dl" $args
 }
 
 
@@ -660,4 +691,11 @@ function ConvertFrom-Base64($string) {
    $decoded = [System.Text.Encoding]::UTF8.GetString($bytes); 
 
    return $decoded;
+}
+
+function ftype {
+    cmd /c ftype $args
+}
+function assoc {
+    cmd /c assoc $args
 }

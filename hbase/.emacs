@@ -1,15 +1,13 @@
-; mrl's emacs file
-
-;    http://bc.tech.coop/emacs.html
-;    http://homepages.inf.ed.ac.uk/s0243221/emacs/
-;    http://www.student.northpark.edu/pemente/emacs_tabs.htm
-
+; mrled's emacs file
+;
+; lots of shit stolen from lots of interwebz
+;
 ; "If you are an idiot, you should use Emacs." 
 
 ; my vars:
 (setq host-name (nth 0 (split-string system-name  "\\."))) ; emacs doesnt set by default? 
 
-(setq mrl-home (if (getenv "HOME") ; need this to work on Windows and Unix :)
+(setq mrled/home (if (getenv "HOME") ; need this to work on Windows and Unix :)
                    (getenv "HOME")
                  (getenv "USERPROFILE")))
 ;; Add the given path to the load-path variable.
@@ -25,7 +23,7 @@
 (defun add-to-load-path-if-exists (dir)
      (if (file-exists-p (expand-file-name dir))
          (add-to-load-path (expand-file-name dir))))
-(add-to-load-path-if-exists "~/doc/uenc/emacs")
+(add-to-load-path-if-exists "~/.uenc/emacs")
 (add-to-load-path-if-exists "~/.dhd/opt/emacs")
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
 (add-to-load-path-if-exists "~/opt/src/zenburn-el")
@@ -46,9 +44,14 @@
 (require 'highlight-tail)
 (require 'motion-and-kill-dwim)
 (require 'powershell-mode)
+(setq powershell-indent 4) ;powershell-mode thinks it knows better than me
 (add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 (require 'tail)
+
+; eshell stuff
+(setq eshell-glob-case-insensitive t
+      eshell-directory-name "~/.dhd/hbase/.eshell")
 
 
 ; settings (not custom variables)
@@ -93,11 +96,11 @@
 (setq tramp-default-method "ssh")
 ; this next line: you can `C-xC-f /sudo:root@host:/path/to/file` and it will 
 ; ssh to the host using your default user, then run sudo, then find file. 
-(setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/ssh:%h:")))) 
+(setq mrled/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/ssh:%h:")))) 
 (when (eq system-type 'windows-nt) ; windows-specific settings & overrides for tramp
   (setq tramp-default-method "plink")
-  (setq mrl/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
-(set-default 'tramp-default-proxies-alist mrl/tramp-sudo-proxy)
+  (setq mrled/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
+(set-default 'tramp-default-proxies-alist mrled/tramp-sudo-proxy)
 
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
@@ -108,8 +111,8 @@
       auto-mode-alist (cons '("\\.mkd"      . markdown-mode) auto-mode-alist) ; VS Markdown Mode
       auto-mode-alist (cons '("\\.md"       . markdown-mode) auto-mode-alist) ; MarkdownPad, others
       auto-mode-alist (cons '("\\.mdown"    . markdown-mode) auto-mode-alist) ; MarkdownPad
-      markdown-command (concat mrl-home "/.dhd/opt/bin/Markdown.pl")
-      markdown-css-path (concat mrl-home "/.dhd/doc/css/mrl-swiss.css"))
+      markdown-command (concat mrled/home "/.dhd/opt/bin/Markdown.pl")
+      markdown-css-path (concat mrled/home "/.dhd/doc/css/mrl-swiss.css"))
 
 ; because markdown-mode + longlines-mode = fucked up [return] key
 (add-hook 'markdown-mode-hook
@@ -260,6 +263,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
 
 (when (eq system-type 'windows-nt)
+  (cd mrl-home) ; otherwise it'll start off in the directory where emacs.exe resides
   ; some things are useful to have here just in case they're not in your system %PATH%
   (add-to-list 'exec-path "C:/Program Files/PuTTY")
   (add-to-list 'exec-path "C:/Program Files (x86)/PuTTY")
@@ -268,6 +272,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         pr-gv-command "C:\\Program Files\\Ghostgum\\gsview\\gsview32.exe"
         w32-pass-apps-to-system nil ; let Emacs interpret meta keys
         w32-apps-modifier 'hyper) ;; Menu key -> Hyper
+  (autoload 'powershell "powershell" "Run powershell as a shell within emacs." t) 
 )
 
 ; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
@@ -289,14 +294,15 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
 
-  ;; (if (member "ProFontX" (font-family-list))
-  ;;     (set-default-font "ProFontX-9")
-  ;;   (if (member "Terminus" (font-family-list))
-  ;;       (set-default-font "Terminus-8")))
+  ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
+ (if (equal host-name "anyanka")
+  (setq myfont "Terminus-10")
   (if (member "ProFontX" (font-family-list))
-      (set-face-attribute 'default nil :font "ProFontX-9")
+      (setq myfont "ProFontX-9")
     (if (member "Terminus" (font-family-list))
-        (set-face-attribute 'default nil :font "Terminus-8")))
+        (setq myfont "Terminus-8"))))
+ (set-face-attribute 'default nil :font myfont)
+
 
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
 
