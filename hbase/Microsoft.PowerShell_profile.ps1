@@ -161,6 +161,9 @@ if (-not ($env:term -eq "emacs")) {
     }
 }
 
+function gcollect {
+    [GC]::Collect()
+}
 
 if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
     $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
