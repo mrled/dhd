@@ -45,7 +45,7 @@ rem call :s_check_exists C:\opt\nirsoft_package
 rem call :s_check_exists C:\opt\Console2
 rem call :s_check_exists C:\opt\UnxUtils\bin
 rem call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
-rem call :s_check_exists C:\opt\sqlite
+call :s_check_exists C:\opt\sqlite
 call :s_check_exists C:\Program Files (x86)\Git\cmd
 call :s_check_exists C:\Program Files\PuTTY
 call :s_check_exists C:\Program Files\7-Zip
