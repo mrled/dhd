@@ -98,7 +98,7 @@ rem call :s_check_exists C:\opt\UnxUtils\bin
 echo j
 rem call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
 echo k
-rem call :s_check_exists C:\opt\sqlite
+call :s_check_exists C:\opt\sqlite
 echo l
 call :s_check_exists C:\Program Files (x86)\Git\cmd
 echo m

@@ -170,6 +170,14 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
     set-alias devenv "$vs2010path\devenv.exe"
 }
 
+if (test-path "C:\opt\trid\trid.exe") {
+	set-alias trid "C:\opt\trid\trid.exe"
+}
+if (test-path "C:\Program Files (x86)\Notepad++\notepad++.exe") {
+	set-alias npp "C:\Program Files (x86)\Notepad++\notepad++.exe"	
+	set-alias notepad++ "C:\Program Files (x86)\Notepad++\notepad++.exe"	
+	}
+	
 # Make output of get-command better (more like Unix) for interactive use. 
 # NOTE: For aliases, the processing function calls the show function again - this is recursive!
 # it's so if you have an alias chain like x->y->z->, where x and y are aliases
