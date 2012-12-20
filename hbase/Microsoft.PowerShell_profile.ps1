@@ -8,6 +8,8 @@
 # enabled - it isn't by default. 
 # <http://technet.microsoft.com/en-us/magazine/ff700227.aspx>
 
+#### BASIC SETUP
+
 $hostname=[System.Net.Dns]::GetHostName()
 
 $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -24,12 +26,30 @@ function id {
 
 $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
 
+# You have to set the EAP to "stop" if you want try/catch to do anything, so...
+# I want it to be stop anyway (I think?) but I'll save the default here just in case.
+$default_eap = $ErrorActionPreference
+$ErrorActionPreference = "stop"
+
+#### MODULES
+# See what modules are installed on your system with Get-Module -ListAvailable
+# After loading a module, see what commands it has: Get-Command -Module <name>
+
 $adkpath = "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
-if (test-path $adkpath)
-{
+if (test-path $adkpath) {
     import-module $adkpath
 }
+$metap_path = "$home\.dhd\opt\powershell\lib\MetaProgramming"
+if (test-path $metap_path) {
+    # http://blogs.msdn.com/b/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx
+    import-module $metap_path
+}
 
+# override some default display values for objects, this feature ruelz
+update-formatdata -prependpath "$home\.dhd\opt\powershell\lib\mrl.format.ps1xml"
+
+
+#### EVERYTHING ELSE
 
 # aliases can't take parameters (wtf), and functions have different scope than your shell. 
 # Therefore, I can't have a ".b" command like I have to re-source my bash profile.
@@ -58,6 +78,39 @@ function reinit2 {
     & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
     start-process "powershell.exe" -NoNewWindow
     exit
+}
+
+function Send-Notification {
+    # We use start-job so that the function can return right away, but also sleep for $seconds
+    # before removing the icon from the systray. $objNotifyIcon.ShowBaloonTip() returns immediately
+    # and the icon remains even after $seconds, so I needed a way to sleep, but I didn't want it
+    # to lock my PS session while it did so. Anyway.
+    $sb = {
+        param(
+            [parameter(mandatory=$true)][string]$message,
+            [string]$title="Powershell Notification",
+            [ValidateSet("Info","Warning","Error")][string]$icon="Info",
+            [int32]$seconds=10
+        )
+
+        [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+        $objNotifyIcon = New-Object System.Windows.Forms.NotifyIcon 
+        #systray icon - make this customizable too? It is required but that path doesn't look universal.
+        $objNotifyIcon.Icon = "C:\Windows\Installer\{3156336D-8E44-3671-A6FE-AE51D3D6564E}\Icon_app.ico"
+        
+        $objNotifyIcon.BalloonTipIcon = $icon  #in-balloon icon
+        $objNotifyIcon.BalloonTipText = $message
+        $objNotifyIcon.BalloonTipTitle = $title
+        
+        $objNotifyIcon.Visible = $True 
+        $objNotifyIcon.ShowBalloonTip($seconds * 1000)
+        start-sleep $seconds
+        $objNotifyIcon.Visible = $False
+        $objNotifyIcon = $null
+    }
+    $job = start-job -scriptblock $sb -argumentlist @args 
+
+    #return $job #useful for debugging
 }
 
 # original version from <http://www.techmumbojumblog.com/?p=39>
