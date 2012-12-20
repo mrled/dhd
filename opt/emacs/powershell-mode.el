@@ -196,8 +196,8 @@ differently from the other variables.")
 ;;      2))
 ;;   "List of regexps matching important expressions, for speebar & imenu.")
 
-(if (require 'speedbar nil t)
-    (speedbar-add-supported-extension ".ps1?"))
+;(if (require 'speedbar nil t)
+;    (speedbar-add-supported-extension ".ps1?"))
 
 (require 'compile nil t)
 ;; A better command would be something like "powershell.exe -NoLogo
