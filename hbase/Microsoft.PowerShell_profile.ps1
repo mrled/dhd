@@ -149,9 +149,16 @@ if (-not ($env:term -eq "emacs")) {
         Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
         Write-Host (" ") -nonewline
         Write-Host ($hostname) -nonewline -foregroundcolor Blue
-        Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
+
+        # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
+        # Make some other optimizations for space.
+        $mypwd = $pwd
+        $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
+        $mypwd = $mypwd -replace [regex]::Escape($home),"~"
+        Write-Host (" " + $mypwd + " ") -nonewline -foregroundcolor Green
+
         if ($admin) {
-            Write-Host ("PSADMIN#") -nonewline -foregroundcolor White -backgroundcolor Red
+            Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red
         }
         else {
             Write-Host ("PS>") -nonewline -foregroundcolor White
