@@ -46,6 +46,8 @@
 (require 'powershell-mode)
 (setq powershell-indent 4) ;powershell-mode thinks it knows better than me
 (add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
+(add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
+(add-to-list 'auto-mode-alist '("\\.psd1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 (require 'tail)
 
