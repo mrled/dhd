@@ -391,16 +391,16 @@ function Create-Shortcut {
 # Put something in your PATH by creating a .bat file there that calls it (ewwwwww)
 # Was gonna use shortcuts for this but guess what, you have to call them with the .lnk at the end. 
 # fucking lol. 
-function Install-Exe
-{
+function Install-Exe {
     param(
         [parameter(Mandatory=$true)] [string] $exe,
         [string] [alias("name")] $installname,
+        [string] [validateset("exe", "python")] $exetype = "exe",
         [switch] $force,
         [string] $installdir="$Home\opt\win32bin"
     )
-    if (-not (test-path $exe))
-    {
+    $pythonexe = "C:\opt\Python32\python.exe" #this is obviously not standard / ideal
+    if (-not (test-path $exe)) {
         write-error ("No such file: '$exe'.")
         return
     }
@@ -408,23 +408,18 @@ function Install-Exe
     $justname = (($fsio.name -replace ("\.lnk$","")) -replace ("\.exe$",""))
     $fullpath = $fsio.fullname
 
-    if ($installname)
-    {
+    if ($installname) {
         $scpath = "$installdir\$installname.bat"
     }
-    else
-    {
+    else { 
         $scpath = "$installdir\$justname.bat"
     }
     
-    if (test-path $scpath)
-    {
-        if ($force.ispresent)
-        {
+    if (test-path $scpath) { 
+        if ($force.ispresent) {
             rm $scpath
         }
-        else
-        {
+        else {
             write-error ("Shortcut path '$scpath' exists, and '-force' was not supplied.")
             return
         }
@@ -434,9 +429,16 @@ function Install-Exe
 
     write-host "Installing $fullpath to $scpath..."
 
-    # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
-    "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
-    "`"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
+    if ($exetype -eq "exe") { 
+        # Here we are writing out a .bat file (in ASCII, not the default UTF-8).
+        # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
+        "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
+        "`"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
+    }
+    elseif ($exetype -eq "python") {
+        "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
+        "$pythonexe `"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
+    }
 }
 
 function Get-RelativePath
