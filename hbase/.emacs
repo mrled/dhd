@@ -265,7 +265,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
 
 (when (eq system-type 'windows-nt)
-  (cd mrl-home) ; otherwise it'll start off in the directory where emacs.exe resides
+  (cd mrled/home) ; otherwise it'll start off in the directory where emacs.exe resides
   ; some things are useful to have here just in case they're not in your system %PATH%
   (add-to-list 'exec-path "C:/Program Files/PuTTY")
   (add-to-list 'exec-path "C:/Program Files (x86)/PuTTY")
