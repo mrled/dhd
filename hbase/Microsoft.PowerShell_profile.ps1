@@ -30,6 +30,8 @@ $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
 # I want it to be stop anyway (I think?) but I'll save the default here just in case.
 $default_eap = $ErrorActionPreference
 $ErrorActionPreference = "stop"
+set-psdebug -strict # throw an exception for variable reference before assignment 
+#set-psdebug -off # disable all debugging stuff / reset to "normal" 
 
 #### MODULES
 # See what modules are installed on your system with Get-Module -ListAvailable
@@ -230,9 +232,6 @@ if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE")
     set-alias devenv "$vs2010path\devenv.exe"
 }
 
-if (test-path "C:\opt\trid\trid.exe") {
-	set-alias trid "C:\opt\trid\trid.exe"
-}
 if (test-path "C:\Program Files (x86)\Notepad++\notepad++.exe") {
 	set-alias npp "C:\Program Files (x86)\Notepad++\notepad++.exe"	
 	set-alias notepad++ "C:\Program Files (x86)\Notepad++\notepad++.exe"	
@@ -254,7 +253,8 @@ function Display-AllCommands {
     #for ($a=0; $a -le $args.count; $a++) {
     foreach ($a in $args) {
         $level = $recursionlevel
-        if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
+        # This next line helps keep track if there is lots of output, but also clutters everything. Hmm. 
+        #if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
         if ($level -gt 20) { 
             $errstr  = "Recursion is greater than 20 levels deep. Probably a circular set of aliases? "
             write-error ($errstr)
@@ -275,19 +275,19 @@ function Display-AllCommands {
             if ($c.CommandType) { #sometime get-command passes us an empty object! awesome!!
                 switch ($c.CommandType) {
                     "Alias" {
-                        write-host ($levelprefix + $c.Name + ": Aliased to " + $c.Definition) #-nonewline
+                        write-output ($levelprefix + $c.Name + ": Aliased to " + $c.Definition) #-nonewline
                         if ($recurse.ispresent) {
                             $level = $level +1
                             Display-AllCommands $c.Definition -recurse -recursionlevel $level
                         }
                     }
                     "Application" { 
-                        write-host ($levelprefix + $c.Name + ": Executable at " + $c.Definition) 
+                        write-output ($levelprefix + $c.Name + ": Executable at " + $c.Definition) 
                     }
                     "Function" {
                         # TODO: don't display function definition unless I do -recurse
                         # Can I still show just the parameters though? Hmm. 
-                        write-host ($levelprefix + $c.Name + ": " + $c.CommandType)
+                        write-output ($levelprefix + $c.Name + ": " + $c.CommandType)
                         $defstr = $c.Definition
                         # $c.Definition is a string. 
                         # - SOMETIMES, it begins w/ a new line. if so, chomp.
@@ -318,9 +318,9 @@ function Display-AllCommands {
                         $defstr = $re_newline.replace($defstr, [environment]::NewLine + $functionprefix)
                         $defstr = $re_stringbegin.replace($defstr, $functionprefix)
 
-                        write-host ($defstr) 
+                        write-output ($defstr) 
                     }
-                    default { write-host ($levelprefix + $c.Name + ": " + $c.CommandType) }
+                    default { write-output ($levelprefix + $c.Name + ": " + $c.CommandType) }
                 }
             }
         }
@@ -604,6 +604,8 @@ function tail {
 # 'out-host -paging' is the Powershell pager, but it fucking sucks. it litters the screen with 
 # '<SPACE> next page; <CR> next line; Q quit' when you hit enter. It doesn't calculate
 # screen height properly. It's done those things since at least PS v2, and continues in v3. 
+# Plus, in v3, it throws an exception when you hit 'q' to end the paging, and tells you that
+# you hit 'q' to end the paging. what the fuck is that about.
 # more.com is "the official workaround". I guess nobody fucking using out-host -paging. lol. 
 # 
 # OTOH, out-host -paging is the only way to get a pager that behaves like 'less', where it 
@@ -616,8 +618,11 @@ function tail {
 # If you're running less.exe from inside cmd.exe and powershell.exe or cmd.exe, it works fine.
 # But if you're running it from console2/conemu and powershell.exe, it fucking crashes.
 # http://sourceforge.net/projects/console/forums/forum/143117/topic/4629708
-# 2 data points: v394 has the problem, v436 does NOT. If you have recent msys, you have v436
-# or later.
+# 2 data points: v394 has the problem, v436 does NOT. 
+# Recent msys has 436.
+#
+# This tries to solve the problem, but doesn't work for piped data lolwut: 
+# http://mow001.blogspot.com/2005/11/enhanced-more-function-for-msh.html
 # 
 # Lots of stuff (including some of my functions) assume that 'more' is the pager.
 #
