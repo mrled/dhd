@@ -37,6 +37,8 @@ set-psdebug -strict # throw an exception for variable reference before assignmen
 # See what modules are installed on your system with Get-Module -ListAvailable
 # After loading a module, see what commands it has: Get-Command -Module <name>
 
+#import-module PSReadline  # You gotta do this after the prompt because it modifies it
+
 $adkpath = "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
 if (test-path $adkpath) {
     import-module $adkpath
@@ -197,30 +199,79 @@ else {
     $admin = $false
 }
 
-# In Emacs 'M-x powershell', if you define this function, your prompt has an extra newline at the end
-# that I can't figure out how to get rid of. 
-if (-not ($env:term -eq "emacs")) {
-    function prompt {
-        Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
-        Write-Host (" ") -nonewline
-        Write-Host ($hostname) -nonewline -foregroundcolor Blue
-
-        # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
-        # Make some other optimizations for space.
-        $mypwd = $pwd
-        $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
-        $mypwd = $mypwd -replace [regex]::Escape($home),"~"
-        Write-Host (" " + $mypwd + " ") -nonewline -foregroundcolor Green
-
-        if ($admin) {
-            Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red
-        }
-        else {
-            Write-Host ("PS>") -nonewline -foregroundcolor White
-        }
-        # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
-        return " "
+# A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
+# doesn't play nice with other things. 
+function colorPrompt {
+    Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
+    Write-Host (" ") -nonewline
+    Write-Host ($hostname) -nonewline -foregroundcolor Blue
+    
+    # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
+    # Make some other optimizations for space.
+    $mypwd = $pwd
+    $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
+    $mypwd = $mypwd -replace [regex]::Escape($home),"~"
+    Write-Host (" " + $mypwd + " ") -nonewline -foregroundcolor Green
+    
+    if ($admin) {
+        Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red
     }
+    else {
+        Write-Host ("PS>") -nonewline -foregroundcolor White
+    }
+    # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
+    return " "
+}
+
+# A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
+# Useful for at least PSReadline
+function simplePrompt {
+    $dt = $(get-date).Tostring("HH:mm:ss")
+    $hn = [System.Net.Dns]::GetHostName()
+    
+    # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
+    # Make some other optimizations for space.
+    $mypwd = $pwd
+    $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
+    $mypwd = $mypwd -replace [regex]::Escape($home),"~"
+    
+    if ($admin) { $lcop = "#" }
+    else { $lcop = ">" }
+    
+    return "$dt $hn $mypwd PS$lcop "
+}
+
+if ($env:term -eq "emacs") {
+    # Emacs' "M-x powershell" seems to handle the prompt itself, and you get extra newlines if you 
+    # define one 
+    if (test-path function:\prompt) { del function:\prompt }
+}
+else {
+    function global:prompt { colorPrompt }
+}
+
+function Disable-Prompt {
+    if (test-path function:\prompt) { del function:\prompt }
+}    
+function Enable-ColorPrompt { 
+    disable-prompt
+    function global:prompt { colorPrompt }
+}
+function Enable-SimplePrompt { 
+    disable-prompt
+    function global:prompt { simplePrompt }
+}
+function Enable-Readline {
+    # This is pretty broken right now
+    # prompt for PSReadline must be single-line only, without write-host 
+    disable-prompt
+    enable-simpleprompt
+    import-module PSReadline # you have to define the prompt before importing this
+}
+function Disable-Readline {
+    disable-prompt
+    remove-module PSReadline
+    enable-colorprompt
 }
 
 function gcollect {
@@ -726,9 +777,6 @@ function uploadid
     pscp ~/.ssh/id_rsa.pub "$($hostname):~/.ssh/"
     get-content ~/.ssh/id_rsa.pub `
         | plink $args "mkdir -p ~/.ssh && cat - >> $akeys && chmod 600 $akeys"
-}
-function youtube-dl {
-    C:\opt\Python27\python.exe "$home\opt\src\youtube-dl\youtube-dl" $args
 }
 
 
