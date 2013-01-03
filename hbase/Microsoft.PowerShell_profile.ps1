@@ -267,7 +267,7 @@ function Display-AllCommands {
         }
 
         $cmdobjs = @()
-        $gcmoutput = get-command $a
+        $gcmoutput = get-command -all $a
         if ($gcmoutput.count) { $cmdobjs = $gcmoutput } #there was an array of results; use it
         else { $cmdobjs += $gcmoutput } #there was just one result; make a one-item array
 
@@ -285,6 +285,8 @@ function Display-AllCommands {
                         write-host ($levelprefix + $c.Name + ": Executable at " + $c.Definition) 
                     }
                     "Function" {
+                        # TODO: don't display function definition unless I do -recurse
+                        # Can I still show just the parameters though? Hmm. 
                         write-host ($levelprefix + $c.Name + ": " + $c.CommandType)
                         $defstr = $c.Definition
                         # $c.Definition is a string. 
@@ -598,32 +600,59 @@ function tail {
         get-content $file | select-object -last $n
     }
 }
+
+# 'out-host -paging' is the Powershell pager, but it fucking sucks. it litters the screen with 
+# '<SPACE> next page; <CR> next line; Q quit' when you hit enter. It doesn't calculate
+# screen height properly. It's done those things since at least PS v2, and continues in v3. 
+# more.com is "the official workaround". I guess nobody fucking using out-host -paging. lol. 
+# 
+# OTOH, out-host -paging is the only way to get a pager that behaves like 'less', where it 
+# displays information as it becomes available, rather than like 'more', which requires that the
+# whole command finishes before it will display any information. UGH.
+# 
+# Old versions of less.exe from GnuWin32 (this means the one shipping with both pscx and git) 
+# won't work either.
+# If you're running less.exe from inside console2/conemu and GnuWin32's sh.exe, it works fine.
+# If you're running less.exe from inside cmd.exe and powershell.exe or cmd.exe, it works fine.
+# But if you're running it from console2/conemu and powershell.exe, it fucking crashes.
+# http://sourceforge.net/projects/console/forums/forum/143117/topic/4629708
+# 2 data points: v394 has the problem, v436 does NOT. If you have recent msys, you have v436
+# or later.
+# 
+# Lots of stuff (including some of my functions) assume that 'more' is the pager.
+#
 if (test-path alias:more) { del alias:more }
 if (test-path function:more) { del function:more }
-function more { #TODO: support getting stuff from $input and also command line arguments. 
-    $input | out-host -paging
+if (test-path alias:l) { del alias:l }
+#function more { #TODO: support getting stuff from $input and also command line arguments. 
+#    $input | out-host -paging
+#}
+if (test-path "C:\opt\MinGW\msys\1.0\bin\less.exe") {
+    set-alias less "C:\opt\MinGW\msys\1.0\bin\less.exe"
+    set-alias l less
+    set-alias more less
+    set-alias m less
 }
-set-alias less more
+else {
+    set-alias more "$env:windir\system32\more.com"
+    set-alias m more
+}
+#set-alias more "$env:windir\system32\more.com"
+#set-alias less more
+#set-alias l less
 
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
 if (test-path alias:touch) {del alias:touch}
-function touch 
-{
+function touch {
     param([parameter(mandatory=$true)] $file)
-    if (test-path $file)
-    {
+    if (test-path $file) {
         set-filetime $file
     }
-    else
-    {
+    else {
         new-item -ItemType file $file
     }
 
 }
-
-#if (gcm less 2> $null) { set-alias l less }
-#else { set-alias l more }
-set-alias l more # the GnuWin32 less.exe is crashing Console2, ugh.
 
 $nzbgetdir = "$home\opt\nzbget"
 if (test-path $nzbgetdir) {
@@ -682,7 +711,7 @@ function cd {
         set-location "$args"
     }
 }
-set-alias nc ncat
+if (get-command ncat) { set-alias nc ncat }
 function uploadid 
 {
     param(
