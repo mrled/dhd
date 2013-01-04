@@ -767,7 +767,11 @@ function cd {
         set-location "$args"
     }
 }
-if (get-command ncat) { set-alias nc ncat }
+#if (($env:path).split(";") | gci -filter "ncat.exe") { set-alias nc ncat }
+try {
+    get-command ncat > $null
+    set-alias nc ncat
+} catch { continue } 
 function uploadid 
 {
     param(
@@ -782,9 +786,12 @@ function uploadid
 
 function Display-Path {
     #$re_semicolon = new-object system.text.regularexpressions.regex ("`;")
-    foreach ($pathitem in $env:path.split("`;")) {
-        write-host $pathitem
-    }
+
+    # foreach ($pathitem in $env:path.split("`;")) {
+    #     write-host $pathitem
+    # }
+
+    ($env:path).split(";")
 }
 
 function Generate-Password 
