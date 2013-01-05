@@ -39,9 +39,11 @@ set-psdebug -strict # throw an exception for variable reference before assignmen
 
 #import-module PSReadline  # You gotta do this after the prompt because it modifies it
 
-$adkpath = "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
-if (test-path $adkpath) {
-    import-module $adkpath
+if ($psversiontable.psversion.major -ge 3) {
+    # fuck this path
+    $adkpath =  "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit"
+    $adkpath += "\Deployment Tools\${env:Processor_Architecture}\DISM"
+    if (test-path $adkpath) { import-module $adkpath }
 }
 $metap_path = "$home\.dhd\opt\powershell\lib\MetaProgramming"
 if (test-path $metap_path) {
@@ -50,6 +52,9 @@ if (test-path $metap_path) {
 }
 
 # override some default display values for objects, this feature ruelz
+# TODO: in PS3.0 you can run this multiple times and it doesn't care... dunno if it ignores or reloads, I think reloads. 
+#       in PS2.0 it gives an error after the first time. 
+#       figure out how to unload it and then check again.
 update-formatdata -prependpath "$home\.dhd\opt\powershell\lib\mrl.format.ps1xml"
 
 
