@@ -58,8 +58,10 @@ echo You're starting from the top of s_path...
 set MYPATH=
 
 echo 0: START
-call :s_check_exists %HOME%\.dhd\opt\win32bin
+call :s_check_exists C:\Chocolatey\bin
 echo 1
+call :s_check_exists %HOME%\.dhd\opt\win32bin
+echo 11
 call :s_check_exists %HOME%\opt\win32bin
 echo 2
 call :s_check_exists %HOME%\opt\Console2
@@ -98,7 +100,7 @@ rem call :s_check_exists C:\opt\UnxUtils\bin
 echo j
 rem call :s_check_exists C:\opt\UnxUtils\usr\local\wbin
 echo k
-rem call :s_check_exists C:\opt\sqlite
+call :s_check_exists C:\opt\sqlite
 echo l
 call :s_check_exists C:\Program Files (x86)\Git\cmd
 echo m

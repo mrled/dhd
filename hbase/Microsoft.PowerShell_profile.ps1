@@ -8,6 +8,8 @@
 # enabled - it isn't by default. 
 # <http://technet.microsoft.com/en-us/magazine/ff700227.aspx>
 
+#### BASIC SETUP
+
 $hostname=[System.Net.Dns]::GetHostName()
 
 $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -24,12 +26,39 @@ function id {
 
 $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
 
-$adkpath = "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
-if (test-path $adkpath)
-{
-    import-module $adkpath
+# You have to set the EAP to "stop" if you want try/catch to do anything, so...
+# I want it to be stop anyway (I think?) but I'll save the default here just in case.
+$default_eap = $ErrorActionPreference
+$ErrorActionPreference = "stop"
+set-psdebug -strict # throw an exception for variable reference before assignment 
+#set-psdebug -off # disable all debugging stuff / reset to "normal" 
+
+#### MODULES
+# See what modules are installed on your system with Get-Module -ListAvailable
+# After loading a module, see what commands it has: Get-Command -Module <name>
+
+#import-module PSReadline  # You gotta do this after the prompt because it modifies it
+
+if ($psversiontable.psversion.major -ge 3) {
+    # fuck this path
+    $adkpath =  "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit"
+    $adkpath += "\Deployment Tools\${env:Processor_Architecture}\DISM"
+    if (test-path $adkpath) { import-module $adkpath }
+}
+$metap_path = "$home\.dhd\opt\powershell\lib\MetaProgramming"
+if (test-path $metap_path) {
+    # http://blogs.msdn.com/b/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx
+    import-module $metap_path
 }
 
+# override some default display values for objects, this feature ruelz
+# TODO: in PS3.0 you can run this multiple times and it doesn't care... dunno if it ignores or reloads, I think reloads. 
+#       in PS2.0 it gives an error after the first time. 
+#       figure out how to unload it and then check again.
+update-formatdata -prependpath "$home\.dhd\opt\powershell\lib\mrl.format.ps1xml"
+
+
+#### EVERYTHING ELSE
 
 # aliases can't take parameters (wtf), and functions have different scope than your shell. 
 # Therefore, I can't have a ".b" command like I have to re-source my bash profile.
@@ -58,6 +87,39 @@ function reinit2 {
     & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
     start-process "powershell.exe" -NoNewWindow
     exit
+}
+
+function Send-Notification {
+    # We use start-job so that the function can return right away, but also sleep for $seconds
+    # before removing the icon from the systray. $objNotifyIcon.ShowBaloonTip() returns immediately
+    # and the icon remains even after $seconds, so I needed a way to sleep, but I didn't want it
+    # to lock my PS session while it did so. Anyway.
+    $sb = {
+        param(
+            [parameter(mandatory=$true)][string]$message,
+            [string]$title="Powershell Notification",
+            [ValidateSet("Info","Warning","Error")][string]$icon="Info",
+            [int32]$seconds=10
+        )
+
+        [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+        $objNotifyIcon = New-Object System.Windows.Forms.NotifyIcon 
+        #systray icon - make this customizable too? It is required but that path doesn't look universal.
+        $objNotifyIcon.Icon = "C:\Windows\Installer\{3156336D-8E44-3671-A6FE-AE51D3D6564E}\Icon_app.ico"
+        
+        $objNotifyIcon.BalloonTipIcon = $icon  #in-balloon icon
+        $objNotifyIcon.BalloonTipText = $message
+        $objNotifyIcon.BalloonTipTitle = $title
+        
+        $objNotifyIcon.Visible = $True 
+        $objNotifyIcon.ShowBalloonTip($seconds * 1000)
+        start-sleep $seconds
+        $objNotifyIcon.Visible = $False
+        $objNotifyIcon = $null
+    }
+    $job = start-job -scriptblock $sb -argumentlist @args 
+
+    #return $job #useful for debugging
 }
 
 # original version from <http://www.techmumbojumblog.com/?p=39>
@@ -142,23 +204,22 @@ else {
     $admin = $false
 }
 
-
-
-function prompt {
+# A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
+# doesn't play nice with other things. 
+function colorPrompt {
     Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
     Write-Host (" ") -nonewline
-    # if ($admin) {
-    #     Write-Host ($username ) -nonewline -foregroundcolor Blue -backgroundcolor Red
-    # }
-    # else {    
-    #     Write-Host ($username ) -nonewline -foregroundcolor Blue
-    # }
-    # Write-Host ("@") -nonewline
     Write-Host ($hostname) -nonewline -foregroundcolor Blue
-    #Write-Host (":") -nonewline -foregroundcolor White
-    Write-Host (" " + $pwd + " ") -nonewline -foregroundcolor Green
+    
+    # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
+    # Make some other optimizations for space.
+    $mypwd = $pwd
+    $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
+    $mypwd = $mypwd -replace [regex]::Escape($home),"~"
+    Write-Host (" " + $mypwd + " ") -nonewline -foregroundcolor Green
+    
     if ($admin) {
-        Write-Host ("PSADMIN#") -nonewline -foregroundcolor White -backgroundcolor Red
+        Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red
     }
     else {
         Write-Host ("PS>") -nonewline -foregroundcolor White
@@ -167,11 +228,71 @@ function prompt {
     return " "
 }
 
+# A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
+# Useful for at least PSReadline
+function simplePrompt {
+    $dt = $(get-date).Tostring("HH:mm:ss")
+    $hn = [System.Net.Dns]::GetHostName()
+    
+    # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
+    # Make some other optimizations for space.
+    $mypwd = $pwd
+    $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
+    $mypwd = $mypwd -replace [regex]::Escape($home),"~"
+    
+    if ($admin) { $lcop = "#" }
+    else { $lcop = ">" }
+    
+    return "$dt $hn $mypwd PS$lcop "
+}
+
+if ($env:term -eq "emacs") {
+    # Emacs' "M-x powershell" seems to handle the prompt itself, and you get extra newlines if you 
+    # define one 
+    if (test-path function:\prompt) { del function:\prompt }
+}
+else {
+    function global:prompt { colorPrompt }
+}
+
+function Disable-Prompt {
+    if (test-path function:\prompt) { del function:\prompt }
+}    
+function Enable-ColorPrompt { 
+    disable-prompt
+    function global:prompt { colorPrompt }
+}
+function Enable-SimplePrompt { 
+    disable-prompt
+    function global:prompt { simplePrompt }
+}
+function Enable-Readline {
+    # This is pretty broken right now
+    # prompt for PSReadline must be single-line only, without write-host 
+    disable-prompt
+    enable-simpleprompt
+    import-module PSReadline # you have to define the prompt before importing this
+}
+function Disable-Readline {
+    disable-prompt
+    remove-module PSReadline
+    enable-colorprompt
+}
+
+function gcollect {
+    [GC]::Collect()
+}
+
 if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
     $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
     set-alias devenv "$vs2010path\devenv.exe"
 }
 
+if (test-path "C:\Program Files (x86)\Notepad++\notepad++.exe") {
+	set-alias npp "C:\Program Files (x86)\Notepad++\notepad++.exe"	
+	set-alias notepad++ "C:\Program Files (x86)\Notepad++\notepad++.exe"	
+	}
+	
 # Make output of get-command better (more like Unix) for interactive use. 
 # NOTE: For aliases, the processing function calls the show function again - this is recursive!
 # it's so if you have an alias chain like x->y->z->, where x and y are aliases
@@ -188,7 +309,8 @@ function Display-AllCommands {
     #for ($a=0; $a -le $args.count; $a++) {
     foreach ($a in $args) {
         $level = $recursionlevel
-        if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
+        # This next line helps keep track if there is lots of output, but also clutters everything. Hmm. 
+        #if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
         if ($level -gt 20) { 
             $errstr  = "Recursion is greater than 20 levels deep. Probably a circular set of aliases? "
             write-error ($errstr)
@@ -201,7 +323,7 @@ function Display-AllCommands {
         }
 
         $cmdobjs = @()
-        $gcmoutput = get-command $a
+        $gcmoutput = get-command -all $a
         if ($gcmoutput.count) { $cmdobjs = $gcmoutput } #there was an array of results; use it
         else { $cmdobjs += $gcmoutput } #there was just one result; make a one-item array
 
@@ -209,17 +331,19 @@ function Display-AllCommands {
             if ($c.CommandType) { #sometime get-command passes us an empty object! awesome!!
                 switch ($c.CommandType) {
                     "Alias" {
-                        write-host ($levelprefix + $c.Name + ": Aliased to " + $c.Definition) #-nonewline
+                        write-output ($levelprefix + $c.Name + ": Aliased to " + $c.Definition) #-nonewline
                         if ($recurse.ispresent) {
                             $level = $level +1
                             Display-AllCommands $c.Definition -recurse -recursionlevel $level
                         }
                     }
                     "Application" { 
-                        write-host ($levelprefix + $c.Name + ": Executable at " + $c.Definition) 
+                        write-output ($levelprefix + $c.Name + ": Executable at " + $c.Definition) 
                     }
                     "Function" {
-                        write-host ($levelprefix + $c.Name + ": " + $c.CommandType)
+                        # TODO: don't display function definition unless I do -recurse
+                        # Can I still show just the parameters though? Hmm. 
+                        write-output ($levelprefix + $c.Name + ": " + $c.CommandType)
                         $defstr = $c.Definition
                         # $c.Definition is a string. 
                         # - SOMETIMES, it begins w/ a new line. if so, chomp.
@@ -250,9 +374,9 @@ function Display-AllCommands {
                         $defstr = $re_newline.replace($defstr, [environment]::NewLine + $functionprefix)
                         $defstr = $re_stringbegin.replace($defstr, $functionprefix)
 
-                        write-host ($defstr) 
+                        write-output ($defstr) 
                     }
-                    default { write-host ($levelprefix + $c.Name + ": " + $c.CommandType) }
+                    default { write-output ($levelprefix + $c.Name + ": " + $c.CommandType) }
                 }
             }
         }
@@ -325,16 +449,16 @@ function Create-Shortcut {
 # Put something in your PATH by creating a .bat file there that calls it (ewwwwww)
 # Was gonna use shortcuts for this but guess what, you have to call them with the .lnk at the end. 
 # fucking lol. 
-function Install-Exe
-{
+function Install-Exe {
     param(
         [parameter(Mandatory=$true)] [string] $exe,
         [string] [alias("name")] $installname,
+        [string] [validateset("exe", "python")] $exetype = "exe",
         [switch] $force,
         [string] $installdir="$Home\opt\win32bin"
     )
-    if (-not (test-path $exe))
-    {
+    $pythonexe = "C:\opt\Python32\python.exe" #this is obviously not standard / ideal
+    if (-not (test-path $exe)) {
         write-error ("No such file: '$exe'.")
         return
     }
@@ -342,23 +466,18 @@ function Install-Exe
     $justname = (($fsio.name -replace ("\.lnk$","")) -replace ("\.exe$",""))
     $fullpath = $fsio.fullname
 
-    if ($installname)
-    {
+    if ($installname) {
         $scpath = "$installdir\$installname.bat"
     }
-    else
-    {
+    else { 
         $scpath = "$installdir\$justname.bat"
     }
     
-    if (test-path $scpath)
-    {
-        if ($force.ispresent)
-        {
+    if (test-path $scpath) { 
+        if ($force.ispresent) {
             rm $scpath
         }
-        else
-        {
+        else {
             write-error ("Shortcut path '$scpath' exists, and '-force' was not supplied.")
             return
         }
@@ -368,9 +487,16 @@ function Install-Exe
 
     write-host "Installing $fullpath to $scpath..."
 
-    # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
-    "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
-    "`"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
+    if ($exetype -eq "exe") { 
+        # Here we are writing out a .bat file (in ASCII, not the default UTF-8).
+        # ascii because: http://bytes.com/topic/net/answers/546745-ef-bb-bf-prepended
+        "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
+        "`"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
+    }
+    elseif ($exetype -eq "python") {
+        "@ECHO OFF" | out-file $scpath -encoding "ASCII" -append
+        "$pythonexe `"$fullpath`" %*" | out-file $scpath -encoding "ASCII" -append
+    }
 }
 
 function Get-RelativePath
@@ -530,32 +656,64 @@ function tail {
         get-content $file | select-object -last $n
     }
 }
+
+# 'out-host -paging' is the Powershell pager, but it fucking sucks. it litters the screen with 
+# '<SPACE> next page; <CR> next line; Q quit' when you hit enter. It doesn't calculate
+# screen height properly. It's done those things since at least PS v2, and continues in v3. 
+# Plus, in v3, it throws an exception when you hit 'q' to end the paging, and tells you that
+# you hit 'q' to end the paging. what the fuck is that about.
+# more.com is "the official workaround". I guess nobody fucking using out-host -paging. lol. 
+# 
+# OTOH, out-host -paging is the only way to get a pager that behaves like 'less', where it 
+# displays information as it becomes available, rather than like 'more', which requires that the
+# whole command finishes before it will display any information. UGH.
+# 
+# Old versions of less.exe from GnuWin32 (this means the one shipping with both pscx and git) 
+# won't work either.
+# If you're running less.exe from inside console2/conemu and GnuWin32's sh.exe, it works fine.
+# If you're running less.exe from inside cmd.exe and powershell.exe or cmd.exe, it works fine.
+# But if you're running it from console2/conemu and powershell.exe, it fucking crashes.
+# http://sourceforge.net/projects/console/forums/forum/143117/topic/4629708
+# 2 data points: v394 has the problem, v436 does NOT. 
+# Recent msys has 436.
+#
+# This tries to solve the problem, but doesn't work for piped data lolwut: 
+# http://mow001.blogspot.com/2005/11/enhanced-more-function-for-msh.html
+# 
+# Lots of stuff (including some of my functions) assume that 'more' is the pager.
+#
 if (test-path alias:more) { del alias:more }
 if (test-path function:more) { del function:more }
-function more { #TODO: support getting stuff from $input and also command line arguments. 
-    $input | out-host -paging
+if (test-path alias:l) { del alias:l }
+#function more { #TODO: support getting stuff from $input and also command line arguments. 
+#    $input | out-host -paging
+#}
+if (test-path "C:\opt\MinGW\msys\1.0\bin\less.exe") {
+    set-alias less "C:\opt\MinGW\msys\1.0\bin\less.exe"
+    set-alias l less
+    set-alias more less
+    set-alias m less
 }
-set-alias less more
+else {
+    set-alias more "$env:windir\system32\more.com"
+    set-alias m more
+}
+#set-alias more "$env:windir\system32\more.com"
+#set-alias less more
+#set-alias l less
 
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
 if (test-path alias:touch) {del alias:touch}
-function touch 
-{
+function touch {
     param([parameter(mandatory=$true)] $file)
-    if (test-path $file)
-    {
+    if (test-path $file) {
         set-filetime $file
     }
-    else
-    {
+    else {
         new-item -ItemType file $file
     }
 
 }
-
-#if (gcm less 2> $null) { set-alias l less }
-#else { set-alias l more }
-set-alias l more # the GnuWin32 less.exe is crashing Console2, ugh.
 
 $nzbgetdir = "$home\opt\nzbget"
 if (test-path $nzbgetdir) {
@@ -614,27 +772,60 @@ function cd {
         set-location "$args"
     }
 }
-set-alias nc ncat
-function uploadid 
-{
+#if (($env:path).split(";") | gci -filter "ncat.exe") { set-alias nc ncat }
+try {
+    get-command ncat > $null
+    set-alias nc ncat
+} catch { continue } 
+
+
+# convert a key that putty uselessly put out in a bullshit format into the format expected by authorized_keys
+# expects an rsa2 key. not sure what happens if this is wrong. probably won't work. 
+function Convert-PuttyPublicKey {
     param(
-        [parameter(mandatory=$True)]  [alias("host")]  [string]  $hostname
+        [parameter(mandatory=$True)]  [string]  $keyfile
     )
-    $akeys = "~/.ssh/authorized_keys"
-    pscp ~/.ssh/id_rsa.pub "$($hostname):~/.ssh/"
-    get-content ~/.ssh/id_rsa.pub `
-        | plink $args "mkdir -p ~/.ssh && cat - >> $akeys && chmod 600 $akeys"
+    $keydata = get-content $keyfile
+    if (-not (($keydata[0].StartsWith("---- BEGIN")) -and ($keydata[-1].StartsWith("---- END"))) ) {
+        write-error "Invalid Putty public key file"
+        return
+    }
+    $comment = $keydata[1]
+    $newcomment = $comment -replace "Comment: `"","" -replace "`"",""
+    $xdata = $keydata[2..($keydata.count-2)]  # get only the key data, no comments or header shit
+    $newdata = "ssh-rsa "
+    foreach ($l in $xdata) { $newdata += $l } # get rid of linebreaks
+    $newdata += " $newcomment"
+    return $newdata
 }
-function youtube-dl {
-    C:\opt\Python27\python.exe "$home\opt\src\youtube-dl\youtube-dl" $args
+
+function uploadid {
+    param(
+        [parameter(mandatory=$True)]  [alias("host")]  [string]  $hostname,
+        [string]  $keyfile="$home\.ssh\id_rsa.pub" 
+    )
+    $keydata = get-content $keyfile
+    write-host "using keyfile $keyfile" -color green
+    write-host "key data: $keydata" -color green
+
+    # if its in the putty format, fix it first. 
+    if ($keydata.startswith("---- BEGIN")) { 
+        $keydata = convert-puttypublickey $keyfile
+    }
+
+    $akeys = "~/.ssh/authorized_keys"
+    "",$keydata | plink $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
 
 
 function Display-Path {
     #$re_semicolon = new-object system.text.regularexpressions.regex ("`;")
-    foreach ($pathitem in $env:path.split("`;")) {
-        write-host $pathitem
-    }
+
+    # foreach ($pathitem in $env:path.split("`;")) {
+    #     write-host $pathitem
+    # }
+
+    ($env:path).split(";")
 }
 
 function Generate-Password 

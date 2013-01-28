@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<!-- *******************************************************************
+Change the way objects are displayed.
+<http://technet.microsoft.com/en-us/library/hh847831.aspx>
+******************************************************************** -->
+<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>children</Name>
+      <ViewSelectedBy>
+        <SelectionSetName>FileSystemTypes</SelectionSetName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>PSParentPath</PropertyName> 
+        <CustomControlName>FileSystemTypes-GroupingFormat</CustomControlName>  
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Mode</Label>
+            <Width>7</Width>
+            <Alignment>left</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>LastWriteTime</Label>
+            <Width>25</Width>
+            <Alignment>right</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Length</Label>
+            <Width>10</Width>
+            <Alignment>right</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader/>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <Wrap/>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Mode</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  [String]::Format("{0,10}  {1,8}", $_.LastWriteTime.ToString("d"), $_.LastWriteTime.ToString("t"))
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <!--<PropertyName>Length</PropertyName>-->
+                <!-- Some explanation about this. 
+                     We rule out DirectoryInfo because (get-item /path/to/dir).Length is 1, but by default
+                     it somehow just doesn't show at all. 
+                     Questions:
+                     - I'm calculating binary bytes, do I need to waste 2 extra chars to say KiB instead of just K?
+                -->
+                <scriptblock>
+                  [string]$l = $_.Length
+                  $ll = $l.length #this'll be the length of the string i.e. the decimal places
+                  if ($_.gettype().name -eq "DirectoryInfo") { "" } 
+                  elseif ($ll -le 3)  { [string]($_.Length)+"B" } 
+                  elseif ($ll -le 6)  { [string][int64]($_.Length/1024)+"K" }
+                  elseif ($ll -le 9)  { [string][int64]($_.Length/1024/1024)+"M" }
+                  elseif ($ll -le 12) { [string][int64]($_.Length/1024/1024/1024)+"G" }
+                  elseif ($ll -le 15) { [string][int64]($_.Length/1024/1024/1024/1024)+"T" }
+                  elseif ($ll -le 18) { [string][int64]($_.Length/1024/1024/1024/1024/1024)+"P" }
+                  elseif ($ll -le 21) { [string][int64]($_.Length/1024/1024/1024/1024/1024/1024)+"E" }
+                  elseif ($ll -le 24) { [string][int64]($_.Length/1024/1024/1024/1024/1024/1024/1024)+"Z" }
+                  else                { [string][int64]($_.Length/1024/1024/1024/1024/1024/1024/1024/1024)+"Y" }
+                </scriptblock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
+      <Name>children</Name>
+      <ViewSelectedBy>
+        <SelectionSetName>FileSystemTypes</SelectionSetName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>PSParentPath</PropertyName> 
+        <CustomControlName>FileSystemTypes-GroupingFormat</CustomControlName>  
+      </GroupBy>
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <EntrySelectedBy>
+              <TypeName>System.IO.FileInfo</TypeName>
+            </EntrySelectedBy>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Name</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Length</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>CreationTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LastWriteTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LastAccessTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>VersionInfo</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Name</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>CreationTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LastWriteTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LastAccessTime</PropertyName>
+              </ListItem>
+              
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+    </View>
+    <View>
+      <Name>children</Name>
+      <ViewSelectedBy>
+        <SelectionSetName>FileSystemTypes</SelectionSetName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>PSParentPath</PropertyName> 
+        <CustomControlName>FileSystemTypes-GroupingFormat</CustomControlName>  
+      </GroupBy>
+      <WideControl>
+        <WideEntries>
+          <WideEntry>
+            <WideItem>
+              <PropertyName>Name</PropertyName>
+            </WideItem>
+          </WideEntry>
+          <WideEntry>
+            <EntrySelectedBy>
+              <TypeName>System.IO.DirectoryInfo</TypeName>
+            </EntrySelectedBy>
+            <WideItem>
+              <PropertyName>Name</PropertyName>
+              <FormatString>[{0}]</FormatString>
+            </WideItem>
+          </WideEntry>
+        </WideEntries>
+      </WideControl>
+    </View>
+    <View>
+      <Name>FileSecurityTable</Name>
+      <ViewSelectedBy>
+        <TypeName>System.Security.AccessControl.FileSystemSecurity</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>PSParentPath</PropertyName> 
+        <CustomControlName>FileSystemTypes-GroupingFormat</CustomControlName>  
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Path</Label>
+          </TableColumnHeader>
+          <TableColumnHeader />
+          <TableColumnHeader>
+            <Label>Access</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>
+                  split-path $_.Path -leaf
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Owner</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  $_.AccessToString
+                </ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
+      <Name>FileSystemStream</Name>
+      <ViewSelectedBy>
+        <TypeName>Microsoft.PowerShell.Commands.AlternateStreamData</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>Filename</PropertyName> 
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Width>20</Width>
+            <Alignment>left</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Width>10</Width>
+            <Alignment>right</Alignment>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Stream</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Length</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>          
+  </ViewDefinitions>
+</Configuration>
