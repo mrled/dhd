@@ -777,15 +777,44 @@ try {
     get-command ncat > $null
     set-alias nc ncat
 } catch { continue } 
-function uploadid 
-{
+
+
+# convert a key that putty uselessly put out in a bullshit format into the format expected by authorized_keys
+# expects an rsa2 key. not sure what happens if this is wrong. probably won't work. 
+function Convert-PuttyPublicKey {
     param(
-        [parameter(mandatory=$True)]  [alias("host")]  [string]  $hostname
+        [parameter(mandatory=$True)]  [string]  $keyfile
     )
+    $keydata = get-content $keyfile
+    if (-not (($keydata[0].StartsWith("---- BEGIN")) -and ($keydata[-1].StartsWith("---- END"))) ) {
+        write-error "Invalid Putty public key file"
+        return
+    }
+    $comment = $keydata[1]
+    $newcomment = $comment -replace "Comment: `"","" -replace "`"",""
+    $xdata = $keydata[2..($keydata.count-2)]  # get only the key data, no comments or header shit
+    $newdata = "ssh-rsa "
+    foreach ($l in $xdata) { $newdata += $l } # get rid of linebreaks
+    $newdata += " $newcomment"
+    return $newdata
+}
+
+function uploadid {
+    param(
+        [parameter(mandatory=$True)]  [alias("host")]  [string]  $hostname,
+        [string]  $keyfile="$home\.ssh\id_rsa.pub" 
+    )
+    $keydata = get-content $keyfile
+    write-host "using keyfile $keyfile" -color green
+    write-host "key data: $keydata" -color green
+
+    # if its in the putty format, fix it first. 
+    if ($keydata.startswith("---- BEGIN")) { 
+        $keydata = convert-puttypublickey $keyfile
+    }
+
     $akeys = "~/.ssh/authorized_keys"
-    pscp ~/.ssh/id_rsa.pub "$($hostname):~/.ssh/"
-    get-content ~/.ssh/id_rsa.pub `
-        | plink $args "mkdir -p ~/.ssh && cat - >> $akeys && chmod 600 $akeys"
+    "",$keydata | plink $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
 
 
