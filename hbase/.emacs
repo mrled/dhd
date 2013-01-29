@@ -250,6 +250,10 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 ; (setq confirm-nonexistent-file-or-buffer nil)
 )
 
+; ido requires tramp. requiring it here means I don't have to load it when 
+; I do my first C-x C-f
+(require 'tramp) 
+
 ; irc
 ;(load-file "~/doc/uenc/hbase/ercrc.el")
 
