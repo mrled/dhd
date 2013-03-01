@@ -3,6 +3,8 @@
 
 # Query RT
 
+# http://requesttracker.wikia.com/wiki/REST
+
 import sys
 import os
 import time
