@@ -409,6 +409,7 @@ function Setup-TestForWh {
 
 $emacsbin = "$Home\opt\emacs-23.4\bin" # this is going to change every time I upgrade Emacs or whatever, ugh
 $emacsclient = "$emacsbin\emacsclientw.exe"
+$emacsclient_quoted = '"' + $emacsclient + '"' # unixy programs can't deal with backslashes/spaces, so
 $runemacs = "$emacsbin\runemacs.exe"
 set-alias emacsclient $emacsclient
 set-alias runemacs $runemacs
@@ -422,6 +423,10 @@ function emacs {
     emacsclient -na $runemacs "$filename"
 }
 set-alias e emacs
+$env:GIT_EDITOR = $emacsclient_quoted
+$env:SVN_EDITOR = $emacsclient_quoted
+$env:EDITOR = $emacsclient_quoted
+$env:VISUAL = $emacsclient_quoted
 
 function Create-Shortcut {
     param(
@@ -455,6 +460,7 @@ function Install-Exe {
         [string] [alias("name")] $installname,
         [string] [validateset("exe", "python")] $exetype = "exe",
         [switch] $force,
+        [switch] $IncludeUninstallers,
         [string] $installdir="$Home\opt\win32bin"
     )
     $pythonexe = "C:\opt\Python32\python.exe" #this is obviously not standard / ideal
@@ -465,6 +471,15 @@ function Install-Exe {
     $fsio = get-item $exe
     $justname = (($fsio.name -replace ("\.lnk$","")) -replace ("\.exe$",""))
     $fullpath = $fsio.fullname
+
+    # Ignore uninstallers
+    if (-not ($IncludeUninstallers.ispresent)) {
+        if (($fsio.name -eq "unins000.exe") -or ($fsio.name -eq "uninstall.exe")) {
+            write-host "Tried to run Install-Exe on an uninstaller executable called $($fsio.fullname), but -IncludeUninstallers switch was not present." -foreground Yellow
+            return
+        }
+    }
+                
 
     if ($installname) {
         $scpath = "$installdir\$installname.bat"
@@ -887,3 +902,8 @@ function ftype {
 function assoc {
     cmd /c assoc $args
 }
+
+# not gonna call this grep because it's not usable everywhere grep is usable
+# however, you can 'ss expression *.txt' and that works as a replacement for a lot of
+# my use of grep
+set-alias ss select-string
