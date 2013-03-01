@@ -55,6 +55,10 @@
 (setq eshell-glob-case-insensitive t
       eshell-directory-name "~/.dhd/hbase/.eshell")
 
+(require 'nsis-mode)
+(add-to-list 'auto-mode-alist '("\\.nsi\\'" . nsis-mode))
+(add-to-list 'auto-mode-alist '("\\.nsh\\'" . nsis-mode))
+
 
 ; settings (not custom variables)
 ;;;; fix the visible bell! w/ ring-bell-function or something
@@ -164,25 +168,27 @@ eta title=\"\"]]"
    (downcase
     (replace-regexp-in-string "[^-_a-zA-Z0-9]" "" 
                               (replace-regexp-in-string "[ 	]" "-" (iki/get-title))))
-   ".markdown"))
+   ".mdwn"))
 (defun iki/rename-to-title ()
   "Renames current buffer and associated file to the result of iki/urlify-title"
   (interactive)
   (rename-file-and-buffer (iki/urlify-title)))
-(defun iki/insert-meta-title ()
+(fset 'iki/insert-meta-title
+   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("[[!meta title=\"\"]]" 0 "%d")) arg)))
+(fset 'iki/insert-meta-date
+   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([91 91 33 109 101 116 97 32 100 97 116 101 61 34 34 93 93 15 15 2 2 2] 0 "%d")) arg)))
+(fset 'iki/insert-directive-tag
+   [?\[ ?\[ ?! ?t ?a ?g ?\] ?\] ?\C-o ?\C-o ?\C-b ?\C-b ? ])
+(defun iki/insert-directive-toc ()
+  "Add a table of contents."
   (interactive)
-  (insert "[[!meta title=\"\"]]"))
-(defun iki/insert-meta-date ()
-  (interactive)
-  ;(insert (concat "[[!meta date=\"" (format-time-string "%Y%m%d") "\"]]")))
-  (insert (concat "[[!meta date=\"\"]]")))
-(defun iki/insert-directive-tag ()
-  (interactive)
-  (insert "[[!tag]]"))
+  (insert "[[!toc levels=5]]"))
+
 (global-set-key "\C-cir" 'iki/rename-to-title)
 (global-set-key "\C-cit" 'iki/insert-meta-title)
 (global-set-key "\C-cid" 'iki/insert-meta-date)
 (global-set-key "\C-ciy" 'iki/insert-directive-tag)
+(global-set-key "\C-cic" 'iki/insert-directive-toc)
 
 
 ; from stevey:   
@@ -444,7 +450,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 	  return (format "%s/%s" (directory-file-name dir)
 			 filename))))
 
-; this is probably horribly embarrassing but I am so fucking sick of different fucking modes redefinig my fucking spacebar fuck
+; this is probably horribly embarrassing but I am so fucking sick of different fucking modes redefinig fucking tab fuck
 (defun mrled/eight-fucking-spaces ()
   (interactive)
   (insert "        "))
