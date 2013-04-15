@@ -25,7 +25,30 @@ SPR=2147483647
 #       * $ $SPR^0 ^Subject:.*cows   # this matches "cows"
 #   will be evaluated much differently than you think.
 
-:0:
+# All email for api@<postfix_domains> gets its own deal
+:0
+* ^Delivered-To: api.*
+{
+    # For debugging, copy all email to my api folder first: 
+    :0c
+    .api/
+
+    # For now, I'm only going to accept mail to api@younix.us...
+    # api@anything.else gets nuked
+    :0
+    * !^Delivered-To: api\@younix\.us
+    /dev/null
+
+    # Everything else belongs in the .pmapi rc file
+    INCLUDERC=$HOME/.pmapi
+
+    # API email shouldn't go to main mailbox; if it wasn't handled by the
+    # .pmapi rc file, just bit bucket that shit
+    :0
+    /dev/null
+}
+
+:0
 #* ^Delivered-To:.*mledbetter\@neuric\.com.*
 * ^X-Original-To:.*micah\+neuric\@micahrl\.com.*
 .Neuric/
@@ -56,7 +79,8 @@ SPR=2147483647
 
 # SXSW shit
 :0
-* ^X-Original-To: sxsw@micahrl.com
+* $ $SPR^0 ^X-Original-To: sxsw@micahrl.com
+* $ $SPR^0 ^X-Original-To: sxsw@younix.us
 .SXSW/
 
 
@@ -67,11 +91,17 @@ SPR=2147483647
 * $ $SPR^0 ^Subject:.*FACEBOOKRULETESTOMGLOL.*
 {
   # this block marks all the messages read; see http://raamdev.com/2007/using-procmail-to-mark-as-read/
-  foldername=Facebook #without leading . or training / and I dunno if this works on subfolders like .Facebook.Bullshit or anything
+
+
+  #without leading . or training / and I dunno if this works on subfolders like .Facebook.Bullshit or anything
+  foldername=Facebook 
  
+  # store the mail in the folder:
   :0c
-  .$foldername/ # stores in .$foldername/new/
+  .$foldername/ 
  
+  # use 'mv' to take the mail from $foldername/new to $foldername/cur
+  # ... in essence, marking the mail read
   :0
   * LASTFOLDER ?? /\/[^/]+$
   { tail=$MATCH }
