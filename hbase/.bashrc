@@ -8,6 +8,7 @@ PATH=
 d=
 d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
+d="${d} $h/.rvm/bin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
@@ -52,6 +53,10 @@ for p in ${d}; do
 done
 export PATH
 unset d h
+
+# Ruby RVM bullshit
+# install with `curl -L https://get.rvm.io | bash -s stable --ruby`
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
@@ -733,6 +738,10 @@ export FSEDIT="$myeditor"
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
+# fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
+cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
+pip()          { sudo -H sh -c "umask 022; pip $*"; }
+easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
 
 # last character of prompt
 if   [ $UID = 0 ]; then #root user
@@ -762,5 +771,6 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01
 #export PS1="\t \w \$ "
 
 unset lcop
+
 
 
