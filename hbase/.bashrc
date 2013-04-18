@@ -8,10 +8,13 @@ PATH=
 d=
 d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 d="${d} /usr/local/texlive/2008/bin/universal-darwin"
+d="${d} $h/.rvm/bin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
 d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9.3-p0/bin"
+d="${d} $h/opt/android-sdk/platform-tools $h/opt/android-sdk/tools"
+d="${d} $h/opt/arm-eabi-4.4.3/bin "
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
 d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
@@ -50,6 +53,10 @@ for p in ${d}; do
 done
 export PATH
 unset d h
+
+# Ruby RVM bullshit
+# install with `curl -L https://get.rvm.io | bash -s stable --ruby`
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
@@ -105,12 +112,27 @@ elif [ $uname == "Darwin" ]; then # Mac OS X
     }
 fi
 
+# acutally, might want to use `see` instead, hmm. 
+# oh geez there is also `gnome-open`.
+# also consider using a gconf errors file, like ~/.fucking-stupid-gconf-bullshit
+# and exporting that from .bashrc so that other scripts can use it too #ballin #sorry
+if [ $uname != "Darwin" ]; then
+    if type -p xdg-open 2>&1 > /dev/null ; then
+        alias open=xdg-open
+    fi
+fi
+
 #######################
 # Host-specific stuff #
 #######################
 if [[ $HOST == "selene" ]]; then
     alias anonymize="sudo -H -u t"
 fi
+
+#if [[ $HOST == "anyanka" ]]; then
+#    export USE_CCACHE=1
+#fi
+# suggested ccache size is 50-100gb fuck
 
 
 ##################
@@ -316,12 +338,24 @@ scr() {
     #noop; totally ignore arguments.
     debugprint() { false; }
 
+    scr_help() {
+        echo "scr() [-h|--help] [-r|--remote <REMOTE HOST>] [-d|--debug] "
+        echo "      [SESSION NAME] [-- <SSH ARGUMENTS>]"
+        echo "Screen session management wrapper thing."
+        echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
+        echo "    -d: Print debug messages (probably useless)."
+        echo "    -h: Print help and exit."
+        echo "    SESSION NAME: provide an optional session name. Default is 'camelot'."
+        echo "        It is recommended to use the default until you need more than one"
+        echo "        session on a given host."
+        echo "    --: Indicates that all remaining arguments should be passed to ssh."
+        echo "        For example: scr -r example.com -- -i ~/.ssh/special_id_rsa"
+    }
     while [ $i -lt $argcount ]; do
         case "$1" in
             -r | --remote )
                 # increment i twice because we are eating 2 arguments
-                remote=true; rhost=$2; ((i+=2)); 
-                shift 2;;
+                remote=true; rhost=$2; ((i+=2)); shift 2;;
             -d | --debug )
                 # don't execute, just print
                 ee() { echo $*; }
@@ -330,16 +364,7 @@ scr() {
                 debugprint "Debuggin'"
                 shift;; 
             -h | --help )
-                echo "scr() [-h|--help] [-r <REMOTE HOST>] [-d|--debug] [SESSION NAME] [-- <SSH ARGUMENTS>"
-                echo "    Screen session management wrapper thing."
-                echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
-                echo "    -d: Print debug messages (probably useless)."
-                echo "    -h: Print help and exit."
-                echo "    SESSION NAME: provide an optional session name. Default is 'camelot'."
-                echo "        It is recommended to use the default until you need more than one"
-                echo "        session on a given host."
-                echo "    --: Indicates that all remaining arguments should be passed to ssh."
-                echo "        For example: scr -r example.com -- -i ~/.ssh/special_id_rsa"
+                scr_help
                 return
                 ;;
             --)
@@ -354,9 +379,13 @@ scr() {
                 done
                 ;;
             *)
-                # TODO: if the argument begins with - and it's not one of the ones I've specified above, exit with an error
-                # TODO: help? 
-                # TODO: this should probably be its own script now god
+                # if the first character of $1 is a '-', give an error
+                # for the syntax see e.g.: http://www.softpanorama.org/Scripting/Shellorama/Reference/string_operations_in_shell.shtml
+                [ $1 ] && if [ ${1:0:1} == "-" ]; then 
+                    echo "Error: you supplied option '$1', but there is no such option"
+                    scr_help
+                    return
+                fi
                 #posargs = positional args
                 posargs[pctr]=$1; ((pctr++)); ((i++)); 
                 shift;;
@@ -365,6 +394,7 @@ scr() {
 
     if [ $pctr -gt 1 ]; then
         echo "Error: you supplied too many positional arguments"
+        scr_help
         return
     elif [ $posargs ]; then
         sessionname=$posargs #posargs will never have more than 1 so this is safe in this function
@@ -373,17 +403,14 @@ scr() {
     fi
     debugprint "Session name: $sessionname"
 
-    # Use a different screen configuration and escape key for screens inside screens
+    # if you're in a screen session and creating a new one, use a different escape key (handy)
     if [[ $TERM == "screen" ]]; then
-        debugprint "Running inside a screen session, going to use secondary config"
-        # -c /path/to/screenrc :: changes the screenrc file
-        # -e :: changes the screen escape key. default in .screenrc 
-        #       is 't'. Not set in screenrc.base
-        scrconfig="${HOME}/.dhd/hbase/screenrc.secondary"
+        # -e :: changes the screen escape key. NOT set in .screenrc! otherwise that *sometimes* overrides cli option (bug?)
         scrargs="-e^]]"
+        debugprint "Running inside a screen session, going to use srcargs: ${srcargs}"
     else
-        scrconfig="${HOME}/.dhd/hbase/.screenrc"
-        scrargs=""
+        scrargs="-e^tt"
+        debugprint "Not running inside screen, going to use srcargs: ${srcargs}"
     fi
 
     sshargs=" "
@@ -397,11 +424,9 @@ scr() {
 
     screen_call="screen $scrargs -D -R -S $sessionname"
     if $remote; then
-        # Have to check if $scrconfig exists because screen will actually exit if it doesn't
-        # fucking hack
-        ee ssh $sshargs -t $rhost bash -c "\"if [ -r \"$scrconfig\" ]; then $screen_call -c $scrconfig; else $screen_call -c /dev/null; fi\""
+        ee ssh $sshargs -t $rhost "$screen_call"
     else
-        ee $screen_call -c $scrconfig
+        ee $screen_call
     fi
 }
 alias scrl="$cmd_screen -list"
@@ -463,6 +488,10 @@ esxtop() {
 alias canhazip='curl icanhazip.com'
 alias whatismyip=canhazip
 alias icanhazip=canhazip
+# gets public ip via dns. can help for when behind pay hotspots. 
+# via https://twitter.com/climagic/status/220977468360765442 / @brimston3
+# some hotspots fuck with udp/53; you might try dig +tcp if that happens
+alias dnsip='dig myip.opendns.com  @resolver1.opendns.com +short' 
 
 alias truecrypt="/Applications/TrueCrypt.app/Contents/MacOS/TrueCrypt"
 alias hping=hping3
@@ -586,6 +615,41 @@ unquarantine() {
         xattr -r -d com.apple.quarantine $f
     done
 }
+
+
+# via: http://stackoverflow.com/questions/296536/urlencode-from-a-bash-script
+# THIS IS BROKEN if it encounters a space it just stops processing altogether ugh.
+rawurlencode() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}"    # You can either set a return variable (FASTER) 
+  REPLY="${encoded}"   #+or echo the result (EASIER)... or both... :p
+}
+
+# Returns a string in which the sequences with percent (%) signs followed by
+# two hex digits have been replaced with literal characters.
+rawurldecode() {
+
+  # This is perhaps a risky gambit, but since all escape characters must be
+  # encoded, we can replace %NN with \xNN and pass the lot to printf -b, which
+  # will decode hex for us
+
+  printf -v REPLY '%b' "${1//%/\\x}" # You can either set a return variable (FASTER)
+
+  echo "${REPLY}"  #+or echo the result (EASIER)... or both... :p
+}
+
+
     
 
 # Serve files over http. This rules. 
@@ -595,7 +659,8 @@ unquarantine() {
 # From <http://www.linuxscrew.com/2007/09/06/web-server-on-bash-in-one-line/>
 htserv() {
     port=$1
-    :;while [ $? -eq 0 ];do nc -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
+#    :;while [ $? -eq 0 ];do nc -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
+    :;while [ $? -eq 0 ];do nc.traditional -vlp $port -c'(r=read;e=echo;$r a b c;z=$r;while [ ${#z} -gt 2 ];do $r z;done;f=`$e $b|sed 's/[^a-z0-9_.-]//gi'`;h="HTTP/1.0";o="$h 200 OK\r\n";c="Content";if [ -z $f ];then($e $o;ls|(while $r n;do if [ -f "$n" ]; then $e "`ls -gh $n`";fi;done););elif [ -f $f ];then $e "$o$c-Type: `file -ib $f`\n$c-Length: `stat -c%s $f`";$e;cat $f;else $e -e "$h 404 Not Found\n\n404\n";fi)';done
 }
 
 ###################
@@ -662,6 +727,12 @@ matrix() { # shows matrix code. via @climagic
 roll () { for t in {1..20} ; do for i in '|' / - '\' ; do echo -ne "\b\b $i" ; sleep 0.1 ; done ; done ; echo ;} 
 
 export PYTHONSTARTUP=~/.dhd/hbase/python.profile
+#export IPYTHONDIR=~/.dhd/hbase/ipython
+# fuck python2
+if type -P ipython3  >/dev/null; then
+    alias ipy=ipython3
+    alias ipython=ipython3
+fi
 
 ###################
 # Global Settings #
@@ -702,6 +773,10 @@ export FSEDIT="$myeditor"
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
+# fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
+cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
+pip()          { sudo -H sh -c "umask 022; pip $*"; }
+easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
 
 # last character of prompt
 if   [ $UID = 0 ]; then #root user
@@ -731,5 +806,6 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01
 #export PS1="\t \w \$ "
 
 unset lcop
+
 
 

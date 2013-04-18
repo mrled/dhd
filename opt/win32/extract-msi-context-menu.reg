@@ -1,0 +1,3 @@
+Windows Registry Editor Version 5.00
+[HKEY_CURRENT_USER\Software\Classes\Msi.Package\shell\Extract MSI\command]
+@="msiexec.exe /a \"%1\" /qb TARGETDIR=\"%1 Extracted\""
