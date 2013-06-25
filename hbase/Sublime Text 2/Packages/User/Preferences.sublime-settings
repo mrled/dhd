@@ -1,7 +1,9 @@
 {
-	"color_scheme": "Packages/Color Scheme - Default/SpaceCadet.tmTheme",
+	"color_scheme": "Packages/Color Scheme - Default/All Hallow's Eve.tmTheme",
 	"font_face": "Terminus",
 	"font_size": 9,
+	//"remember_open_files": false,
+	//"hot_exit": false,
 	"ignored_packages":
 	[
 		"Vintage"

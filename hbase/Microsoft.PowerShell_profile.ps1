@@ -912,6 +912,10 @@ function listens {
     netstat -a -n -o | where {$_ -match "LISTENING"}
 }
 
+$sublpath = "C:\Program Files\Sublime Text 2\sublime_text.exe"
+if (test-path $sublpath) {
+    set-alias subl "$sublpath"
+}
 
 #### Oracle crap
 
