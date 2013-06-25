@@ -1,6 +1,12 @@
 #!/usr/bin/python3 
 # -*- mode: python -*-
 
+"""Rt METrics (for Neuric)
+
+Note: depends on qrt.py
+
+"""
+
 import qrt
 import argparse
 import configparser
@@ -14,6 +20,9 @@ RMET_DEBUG = False
 def debugprint(text):
     if RMET_DEBUG:
         print("DEBUG: " + str(text))
+
+#def svnreport(startdate, enddate, config):
+#    
 
 def rmet(startdate, enddate, config):
     RT = qrt.RTServer(config['rtserver']['host'],
@@ -63,7 +72,7 @@ def rmet(startdate, enddate, config):
 
 def mkdate(datestring):
     """Return a date object from a string that looks like 2013-01-30"""
-    return datetime.date.strptime(datestring, "%Y-%m-%d").date()
+    return datetime.datetime.strptime(datestring, "%Y-%m-%d").date()
 def previous_monday(refdate=datetime.date.today()):
     """Find the Monday most immediately preceding the given date.
     When passed a Monday, returns it right back.

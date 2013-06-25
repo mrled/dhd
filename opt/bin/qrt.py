@@ -1,6 +1,28 @@
 #!/usr/bin/python3 
 # -*- mode: python -*-
 
+""" Query RT
+
+Config file example: 
+
+    [general]
+    username = <username>
+    password = <rt password>
+    
+    [rtserver]
+    cacert = ~/path/to/cacert.pem
+    host = rtserver.domain.tld
+    
+    [svn.<repo name>]
+    url = https://svnserver.domain.tld/path/to/repo
+    viewvc = https://svnserver.domain.tld/path/to/repo #this feature relies on viewvc being installed
+    desc = <repo description>
+    exclude = /Path/To/Exclude # path (relative to SVN server) to exclude commits from
+    
+Note that the svn.whatever sections are used only by rmet2, and that you can have as many of them as you want.
+
+"""
+
 # Query RT
 
 # http://requesttracker.wikia.com/wiki/REST
