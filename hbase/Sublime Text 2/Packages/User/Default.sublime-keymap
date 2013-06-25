@@ -1,0 +1,13 @@
+// -*- mode: json -*-
+
+[
+	{
+		"keys": ["alt+x"], 
+		"command":"show_overlay", 
+		"args":{"overlay":"command_palette"}
+	},
+	{
+		"keys": ["ctrl+x", "ctrl+f"], 
+		"command": "prompt_open_file"
+	}
+]
