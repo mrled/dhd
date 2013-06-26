@@ -1,0 +1,26 @@
+// -*- mode: json -*-
+
+[
+
+	// useful in sublemacspro. does nothing by default. 
+	{
+		"keys": ["alt+x"], 
+		"command":"show_overlay", 
+		"args":{"overlay":"command_palette"}
+	},
+
+	// by default in sublemacspro, opens command "goto_open_file" which is the open 
+	// buffer list
+	{"keys": ["ctrl+x", "ctrl+f"], "command": "prompt_open_file"},
+
+	// sublemacspro has C-x 5 2 to open window but not this?
+	{"keys":["ctrl+x", "5", "0"], "command": "close_window"},
+
+    // by default in sublemacspro does "next_view" ie. switches to next tab
+    // This way is more like Emacs where you can type part of the buffer and it works.
+    {"keys": ["ctrl+x", "b"], "command": "goto_open_file"},
+
+	// the default is like Opera: completely incomprehensible and constantly reordering
+	{"keys":["ctrl+tab"],       "command":"next_view" },
+	{"keys":["ctrl+shift+tab"], "command":"prev_view" }
+]

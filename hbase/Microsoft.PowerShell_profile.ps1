@@ -907,3 +907,38 @@ function assoc {
 # however, you can 'ss expression *.txt' and that works as a replacement for a lot of
 # my use of grep
 set-alias ss select-string
+
+function listens {
+    netstat -a -n -o | where {$_ -match "LISTENING"}
+}
+
+$sublpath = "C:\Program Files\Sublime Text 2\sublime_text.exe"
+if (test-path $sublpath) {
+    set-alias subl "$sublpath"
+}
+
+#### Oracle crap
+
+# hack for clients that have Oracle installed but no database configured
+# note that I *read* from $env:ORACLE_HOME to see if Oracle thinks its installed, but
+# I use the Powershell var $myorahome if I detect an Oracle directory some other way.
+if (-not $env:ORACLE_HOME) {
+    $ora_default_loc = "C:\oracle\product\11.2.0\dbhome_1"
+    if (test-path $ora_default_loc) { $myorahome=$ora_default_loc }
+}
+else {
+    $myorahome = $env:ORACLE_HOME
+}
+
+if ($myorahome) { 
+    set-alias oraperl $myorahome\perl\bin\perl.exe
+    function crsdiag { oraperl $myorahome\BIN\crsdiag.pl $* }
+    function crs11g_upgrade { oraperl $myorahome\sysman\admin\scripts\has\crs11g_upgrade.pl $* }
+    function crs_status_cluster { oraperl $myorahome\sysman\admin\scripts\rac\crs_status_cluster.pl $* }
+    function crs_resources { oraperl $myorahome\sysman\admin\scripts\crs_resources.pl $* }
+    function crs_status { oraperl $myorahome\sysman\admin\scripts\crs_status.pl $* }
+    function crs_vip { oraperl $myorahome\sysman\admin\scripts\crs_vip.pl $* }
+    $listener_ora="$myorahome\network\admin\listener.ora"
+    $tnsnames_ora="$myorahome\network\admin\tnsnames.ora"
+    $sqlnet_ora=  "$myorahome\network\admin\sqlnet.ora"
+}

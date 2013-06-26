@@ -1,0 +1,109 @@
+#!/usr/bin/python3 
+# -*- mode: python -*-
+
+"""Rt METrics (for Neuric)
+
+Note: depends on qrt.py
+
+"""
+
+import qrt
+import argparse
+import configparser
+import os
+import datetime
+import sys
+
+configfile=os.path.abspath(os.path.expanduser('~/.qrt_config'))
+
+RMET_DEBUG = False
+def debugprint(text):
+    if RMET_DEBUG:
+        print("DEBUG: " + str(text))
+
+#def svnreport(startdate, enddate, config):
+#    
+
+def rmet(startdate, enddate, config):
+    RT = qrt.RTServer(config['rtserver']['host'],
+                      ssl=True if config['rtserver']['cacert'] else False,
+                      cacert=os.path.abspath(os.path.expanduser(config['rtserver']['cacert'])),
+                      username = config['general']['username'],
+                      password = config['general']['password'])
+    startstring = startdate.strftime("%Y-%m-%d")
+    endstring = enddate.strftime("%Y-%m-%d")
+
+    markdown = "# {}'s progress report: {} to {}\n\n".format(RT.username, startstring, endstring)
+
+    ### build the query: 
+    #boilerplate that goes on everything
+    query_owner = "Owner='{}' AND ".format(RT.username)
+
+    # get resolved tickets
+    resolved_query = query_owner
+    resolved_query+= "Status='resolved' AND Resolved>='{}' and Resolved<='{}'".format(
+        startstring, endstring)
+    resolved_tickets = RT.get_query_results(resolved_query)
+
+    markdown += "Tickets I resolved this week:\n\n"
+    if resolved_tickets:
+        for t in resolved_tickets:
+            markdown += "{}\n".format(t.markdownify())
+    else:
+        markdown += "- (None.)\n"
+    markdown += "\n"
+
+    # this will get tickets that are new or have been modified in the daterange, but 
+    # not rejected/resolved ones
+    modified_query = query_owner
+    modified_query+= "Status!='rejected' AND Status!='resolved' AND Status!='deleted' AND "
+    modified_query+= "LastUpdated>='{}' and LastUpdated<='{}'".format(startstring, endstring)
+    modified_tickets = RT.get_query_results(modified_query)
+
+    markdown += "Other tickets I worked on this week: \n\n"
+    if modified_tickets:
+        for t in modified_tickets:
+            markdown += "{}\n".format(t.markdownify())
+    else:
+        markdown += "- (None.)\n"
+    markdown += "\n"
+
+    return markdown
+
+def mkdate(datestring):
+    """Return a date object from a string that looks like 2013-01-30"""
+    return datetime.datetime.strptime(datestring, "%Y-%m-%d").date()
+def previous_monday(refdate=datetime.date.today()):
+    """Find the Monday most immediately preceding the given date.
+    When passed a Monday, returns it right back.
+    (Who really wants Mondays anyway?)
+    """
+    return refdate - datetime.timedelta(days=refdate.weekday())
+def next_sunday(refdate=datetime.date.today()):
+    """Find the Sunday most immediately following the given date.
+    When passed a Sunday, returns it right back.
+    """
+    return refdate + datetime.timedelta(days=6-refdate.weekday())
+
+def main(*args):
+    argparser = argparse.ArgumentParser()
+
+    argparser.add_argument('start', type=mkdate, nargs='?',
+                           default=previous_monday(),
+                           help="Start date of the report")
+    argparser.add_argument('end', type=mkdate, nargs='?',
+                           default=next_sunday(),
+                           help="End date of the report")
+
+    args = argparser.parse_args()
+
+
+    config = configparser.ConfigParser()
+    config.read(configfile)
+
+    report = rmet(args.start, args.end, config)
+    print(report)
+
+
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv))
