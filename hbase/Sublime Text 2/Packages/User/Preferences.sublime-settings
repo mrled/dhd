@@ -1,11 +1,12 @@
 {
-	"color_scheme": "Packages/Color Scheme - Default/All Hallow's Eve.tmTheme",
+	"caret_style": "phase",
+	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
 	"font_face": "Terminus",
 	"font_size": 9,
-	//"remember_open_files": false,
-	//"hot_exit": false,
 	"ignored_packages":
 	[
 		"Vintage"
-	]
+	],
+	"theme": "Soda Dark.sublime-theme",
+	"wide_caret": true
 }

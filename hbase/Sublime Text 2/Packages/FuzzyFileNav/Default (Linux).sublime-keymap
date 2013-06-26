@@ -1,0 +1,81 @@
+[
+    {
+        "keys": ["tab"],
+        "command": "fuzzy_path_complete",
+        "context": [{"key": "fuzzy_path_complete"}]
+    },
+    {
+        "keys": ["shift+tab"],
+        "command": "fuzzy_path_complete",
+        "context": [{"key": "fuzzy_path_complete_back"}],
+        "args": {"back": true}
+    },
+    {
+        "keys": ["ctrl+h"],
+        "command": "fuzzy_toggle_hidden",
+        "context": [{"key": "fuzzy_toggle_hidden"}]
+    },
+    {
+        "keys": ["ctrl+b"],
+        "command": "fuzzy_bookmarks_load",
+        "context": [{"key": "fuzzy_bookmarks_load"}]
+    },
+    {
+        "keys": ["ctrl+d"],
+        "command": "fuzzy_delete",
+        "context": [{"key": "fuzzy_delete"}]
+    },
+    {
+        "keys": ["ctrl+c"],
+        "command": "fuzzy_clipboard",
+        "context": [{"key": "fuzzy_copy"}],
+        "args": {"action": "copy"}
+    },
+    {
+        "keys": ["ctrl+x"],
+        "command": "fuzzy_clipboard",
+        "context": [{"key": "fuzzy_cut"}],
+        "args": {"action": "cut"}
+    },
+    {
+        "keys": ["ctrl+v"],
+        "command": "fuzzy_clipboard",
+        "context": [{"key": "fuzzy_paste"}],
+        "args": {"action": "paste"}
+    },
+    {
+        "keys": ["ctrl+n"],
+        "command": "fuzzy_make_file",
+        "context": [{"key": "fuzzy_make_file"}]
+    },
+    {
+        "keys": ["ctrl+shift+n"],
+        "command": "fuzzy_make_folder",
+        "context": [{"key": "fuzzy_make_folder"}]
+    },
+    {
+        "keys": ["ctrl+forward_slash"],
+        "command": "fuzzy_get_cwd",
+        "context": [{"key": "fuzzy_get_cwd"}]
+    },
+    {
+        "keys": ["ctrl+r"],
+        "command": "fuzzy_reveal",
+        "context": [{"key": "fuzzy_reveal"}]
+    },
+    {
+        "keys": ["ctrl+s"],
+        "command": "fuzzy_save_file",
+        "context": [{"key": "fuzzy_save_as"}]
+    },
+    {
+        "keys": ["ctrl+."],
+        "command": "fuzzy_current_working_view",
+        "context": [{"key": "fuzzy_cwv"}]
+    },
+    {
+        "keys": ["ctrl+f"],
+        "command": "fuzzy_search_folder",
+        "context": [{"key": "fuzzy_search"}]
+    }
+]

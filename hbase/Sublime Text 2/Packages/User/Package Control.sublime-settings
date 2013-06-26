@@ -1,8 +1,10 @@
 {
 	"installed_packages":
 	[
+		"FuzzyFileNav",
 		"Package Control",
 		"SFTP",
-		"sublemacspro"
+		"sublemacspro",
+		"Theme - Soda"
 	]
 }

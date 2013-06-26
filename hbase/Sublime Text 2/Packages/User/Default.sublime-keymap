@@ -11,7 +11,7 @@
 
 	// by default in sublemacspro, opens command "goto_open_file" which is the open 
 	// buffer list
-	{"keys": ["ctrl+x", "ctrl+f"], "command": "prompt_open_file"},
+	//{"keys": ["ctrl+x", "ctrl+f"], "command": "prompt_open_file"},
 
 	// sublemacspro has C-x 5 2 to open window but not this?
 	{"keys":["ctrl+x", "5", "0"], "command": "close_window"},
@@ -22,5 +22,9 @@
 
 	// the default is like Opera: completely incomprehensible and constantly reordering
 	{"keys":["ctrl+tab"],       "command":"next_view" },
-	{"keys":["ctrl+shift+tab"], "command":"prev_view" }
+	{"keys":["ctrl+shift+tab"], "command":"prev_view" },
+
+	// requires FuzzyFileNav
+	{"keys": ["ctrl+x", "ctrl+f"], "command": "fuzzy_start_from_file"
+
 ]
