@@ -56,7 +56,13 @@ unset d h
 
 # Ruby RVM bullshit
 # install with `curl -L https://get.rvm.io | bash -s stable --ruby`
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+#[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+if [[ -s "/usr/local/rvm/scripts/rvm" ]]; then
+    source "/usr/local/rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+fi
+# this is actually not necessary for rvm WHOA WOW WHOA
+#rvm() { sudo -H sh -c "umask 022; rvm $*"; }
+
 
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
@@ -773,10 +779,13 @@ export FSEDIT="$myeditor"
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
+
 # fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
+
 cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
 pip()          { sudo -H sh -c "umask 022; pip $*"; }
 easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
+
 
 # last character of prompt
 if   [ $UID = 0 ]; then #root user
@@ -809,3 +818,5 @@ unset lcop
 
 
 
+
+PATH=$PATH:/usr/local/rvm/bin # Add RVM to PATH for scripting
