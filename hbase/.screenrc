@@ -8,7 +8,7 @@ nonblock on         # if a window goes unresponsive, don't block whole session
 
 bind ^g              # by default, this toggles bell visibility, but I really want it to be a noop like Emacs. 
 
-shell -$SHELL        # make every shell a login shell
+#shell -$SHELL        # make every shell a login shell
 defscrollback 100000 # default is a mere 100 lines of suck. 
 shelltitle sh        # default window title: shorter than 'bash'
 
