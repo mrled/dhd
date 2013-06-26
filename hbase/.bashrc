@@ -13,6 +13,7 @@ d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
 d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9.3-p0/bin"
+d="${d} /usr/local/homebrew/bin /usr/local/homebrew/sbin /usr/local/homebrew/Cellar/ruby/1.9.3-p0/bin"
 d="${d} $h/opt/android-sdk/platform-tools $h/opt/android-sdk/tools"
 d="${d} $h/opt/arm-eabi-4.4.3/bin "
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
@@ -56,7 +57,13 @@ unset d h
 
 # Ruby RVM bullshit
 # install with `curl -L https://get.rvm.io | bash -s stable --ruby`
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+#[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+if [[ -s "/usr/local/rvm/scripts/rvm" ]]; then
+    source "/usr/local/rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+fi
+# this is actually not necessary for rvm WHOA WOW WHOA
+#rvm() { sudo -H sh -c "umask 022; rvm $*"; }
+
 
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
@@ -284,7 +291,7 @@ epoch() {
 # emacsy goodness
 e() {
 # note: emacsclient -n returns without waiting for you to kill the buffer in emacs
-    macosxemacs="/Applications/Emacs for Mac OS X.app"
+    macosxemacs="/Applications/Emacs.app"
     if [[ $uname == MINGW* ]]; then
         # try /c/opt/ntemacs24 first. then try the EmacsW32 possible locations.
         emacsdir="/c/opt/ntemacs24"
@@ -448,22 +455,29 @@ uploadid() {
     cat ~/.ssh/id_rsa.pub | ssh $* 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys'
 }
 alias ssh-uploadid="uploadid"
+_fingerprint='
+    # it is usually in /etc/ssh
+    if ls /etc/ssh/ssh_host*key.pub >/dev/null 2>&1; then
+        for publickey in /etc/ssh/ssh_host*key.pub; do 
+            ssh-keygen -lf "$publickey"
+        done
+    # but on the mac the ssh configuration is just directly in /etc
+    elif ls /etc/ssh_host*key.pub >/dev/null 2>&1; then
+        for publickey in /etc/ssh_host*key.pub; do
+            ssh-keygen -lf "$publickey"
+        done
+    fi
+'
 fingerprint() {
-    for publickey in /etc/ssh/*.pub; do 
-        echo "Local key: " `ssh-keygen -lf "$publickey"`
-    done
-    for argument in $@; do
-        echo "$argument key: " `ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'`
-    done
-}
-alias ssh-fingerprint="fingerprint"
-rfingerprint() {
-    for argument in $@; do
-        echo "SSH keys for $argument"
-        ssh $argument 'for publickey in /etc/ssh/*.pub; do ssh-keygen -lf $publickey; done'
+    echo "Local key(s):"
+    echo "$_fingerprint" | /bin/bash
+
+    for host in $@; do
+        echo "Remote key(s) on $host:"
+        echo "$_fingerprint" | ssh -Tq $host
     done
 }
-alias ssh-rfingerprint="rfingerprint"
+
 
 # wake-on-lan information so I don't have to always remember it
 magicp() { 
@@ -773,10 +787,13 @@ export FSEDIT="$myeditor"
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
+
 # fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
+
 cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
 pip()          { sudo -H sh -c "umask 022; pip $*"; }
 easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
+
 
 # last character of prompt
 if   [ $UID = 0 ]; then #root user
@@ -809,3 +826,5 @@ unset lcop
 
 
 
+
+PATH=$PATH:/usr/local/rvm/bin # Add RVM to PATH for scripting
