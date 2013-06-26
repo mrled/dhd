@@ -60,6 +60,36 @@
 (add-to-list 'auto-mode-alist '("\\.nsh\\'" . nsis-mode))
 
 
+(require 'nxml-mode)
+(add-to-list 'auto-mode-alist '("\\.mako\\'" . nxml-mode))
+
+;; (require 'package)
+;; (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+;;                          ("melpa" . "http://melpa.milkbox.net/packages/")))
+;; (unless package-archive-contents (package-refresh-contents)) ;; Refresh the packages descriptions
+;; (setq package-load-list '(all))     ;; List of packages to load
+
+;; (package-initialize)
+
+;; (unless (package-installed-p 'mmm-mode) (package-install 'mmm-mode))
+;; (unless (package-installed-p 'mmm-mako) (package-install 'mmm-mako))
+;; (require 'mmm-auto)
+;; (require 'mmm-mako)
+;; (setq mmm-global-mode 'maybe)
+;; (add-to-list 'auto-mode-alist '("\\.mako\\'" . html-mode))
+;; (mmm-add-mode-ext-class 'html-mode "\\.mako\\'" 'mako)
+;; (global-set-key "\M-p"  'mmm-parse-buffer)
+
+;(unless (package-installed-p 'web-mode) (package-install 'web-mode))
+;(add-to-list 'auto-mode-alist '("\\.mako\\'" . web-mode))
+;(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+
+(load "~/opt/src/nxhtml/autostart.el")
+;(add-to-list 'auto-mode-alist '("\\.mako$" . mako-html-mumamo))
+
+
+
+
 ; settings (not custom variables)
 ;;;; fix the visible bell! w/ ring-bell-function or something
 (setq visible-bell t              ; Is this vi? Should there be beeping? 
@@ -94,9 +124,6 @@
 
 (require 'python)
 
-
-; I feel like it should do this for me, ugh
-(server-start)
 
 ;;;;; tramp shit
 (setq tramp-default-method "ssh")
@@ -174,7 +201,7 @@ eta title=\"\"]]"
   (interactive)
   (rename-file-and-buffer (iki/urlify-title)))
 (fset 'iki/insert-meta-title
-   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("[[!meta title=\"\"]]" 0 "%d")) arg)))
+   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("[[!meta title=\"\"]]" 0 "%d")) arg)))
 (fset 'iki/insert-meta-date
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([91 91 33 109 101 116 97 32 100 97 116 101 61 34 34 93 93 15 15 2 2 2] 0 "%d")) arg)))
 (fset 'iki/insert-directive-tag
@@ -331,15 +358,18 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
   (setq initial-frame-alist default-frame-alist)
 
   ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
- (if (equal host-name "anyanka")
-  (setq myfont "Terminus-10")
-  (if (member "ProFontX" (font-family-list))
-      (setq myfont "ProFontX-9")
-    (if (member "Terminus" (font-family-list))
-        (setq myfont "Terminus-8"))))
- (set-face-attribute 'default nil :font myfont)
 
-
+  
+;    (set-face-attribute 'default nil :font "Terminus-10"))
+  
+  (set-face-attribute 'default nil :font 
+                      (cond
+                       ((equal host-name "anyanka") "Terminus-10")
+                       ((equal host-name "andraia") "Monaco-10")
+                       ((member "ProFontX" (font-family-list)) "ProFontX-9")
+                       ((member "Terminus" (font-family-list)) "Terminus-8")
+                       (t (face-font 'default))))
+  
   (tool-bar-mode 0)    ; this just gets rid of the silly toolbar w/ icons below the menu bar
 
   (global-hl-line-mode t) ;; Highlight the current line. 
@@ -378,6 +408,12 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
     (forward-word)
     (setq end (point))
     (buffer-substring-no-properties start end)))
+
+(defun what-face (pos)
+  (interactive "d")
+  (let ((face (or (get-char-property (point) 'read-face-name)
+                  (get-char-property (point) 'face))))
+    (if face (message "Face: %s" face) (message "No face at %d" pos))))
 
 (defvar wordnet-bin-path
   "C:/Programs/WordNet/2.1/bin/wn.exe"
@@ -471,3 +507,8 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
     (if prefix (write-file filename) (write-region (region-beginning) (region-end) filename)) ; if invoked with the universal argument / prefix, upload the whole file, else upload just the region
     (insert (shell-command-to-string (concat "curl -s -F 'sprunge=<" filename "' http://sprunge.us")))
     (delete-char -1))) ; Newline after URL
+
+
+; I feel like it should do this for me, ugh
+(server-start)
+
