@@ -1,6 +1,6 @@
 @echo off
 
-set EMACSBINPATH=%USERPROFILE%\opt\emacs-23.4\bin
+set EMACSBINPATH=%USERPROFILE%\opt\emacs\bin
 "%EMACSBINPATH%\emacsclientw.exe" -na "%EMACSBINPATH%\runemacs.exe" "%*"
 
 
