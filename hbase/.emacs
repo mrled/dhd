@@ -84,7 +84,7 @@
 ;(add-to-list 'auto-mode-alist '("\\.mako\\'" . web-mode))
 ;(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 
-(load "~/opt/src/nxhtml/autostart.el")
+;(load "~/opt/src/nxhtml/autostart.el")
 ;(add-to-list 'auto-mode-alist '("\\.mako$" . mako-html-mumamo))
 
 
