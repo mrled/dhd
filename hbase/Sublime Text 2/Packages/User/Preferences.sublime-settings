@@ -1,5 +1,5 @@
 {
-	"caret_style": "phase",
+	"caret_style": "wide",
 	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
 	"font_face": "Terminus",
 	"font_size": 9,
@@ -7,6 +7,5 @@
 	[
 		"Vintage"
 	],
-	"theme": "Soda Dark.sublime-theme",
-	"wide_caret": true
+	"theme": "Soda Dark.sublime-theme"
 }

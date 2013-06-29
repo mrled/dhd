@@ -25,6 +25,6 @@
 	{"keys":["ctrl+shift+tab"], "command":"prev_view" },
 
 	// requires FuzzyFileNav
-	{"keys": ["ctrl+x", "ctrl+f"], "command": "fuzzy_start_from_file"
+	{"keys": ["ctrl+x", "ctrl+f"], "command": "fuzzy_start_from_file"}
 
 ]
