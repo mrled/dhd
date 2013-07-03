@@ -38,6 +38,8 @@
 (add-to-list 'auto-mode-alist '("access\\.conf\\'" . apache-mode))
 (add-to-list 'auto-mode-alist '("sites-\\(available\\|enabled\\)/" . apache-mode))
 
+(setq vc-handled-backends nil) ; I never use Version Control in Emacs, just slows it down
+
 
 (require 'batch-mode)
 (require 'hide-lines)
@@ -171,8 +173,7 @@
   (interactive)
   (shell-command 
    (format "open -a /Applications/Marked.app %s" 
-       (shell-quote-argument (buffer-file-name))))
-)
+       (shell-quote-argument (buffer-file-name)))))
 (global-set-key "\C-cm" 'markdown-preview-file)
 
 
@@ -287,26 +288,6 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 ; I do my first C-x C-f
 (require 'tramp) 
 
-; irc
-;(load-file "~/doc/uenc/hbase/ercrc.el")
-
-;; w3/w3m stuff
-;(require 'w3m-load)
-;(require 'mime-w3m) 
-(setq w3m-coding-system 'utf-8
-      w3m-file-coding-system 'utf-8
-      w3m-file-name-coding-system 'utf-8
-      w3m-input-coding-system 'utf-8
-      w3m-output-coding-system 'utf-8
-      w3m-terminal-coding-system 'utf-8
-      w3m-use-cookies t
-      browse-url-browser-function 'w3m-browse-url
-      w3m-use-title-buffer-name t)                ; html title is buffer name
-(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-
-;; optional keyboard short-cut
-; (global-set-key "\C-xm" 'browse-url-at-point)
-
 
 ; for the love of mercy, indent the same way every time!
 (setq-default indent-tabs-mode nil) ; only ever use regular spaces, never tab
@@ -357,11 +338,6 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
       (cons 'cursor-color'  "green")))
   (setq initial-frame-alist default-frame-alist)
 
-  ;; ugh, ifs in Emacs are ugly, maybe they are prettifiable some other way? 
-
-  
-;    (set-face-attribute 'default nil :font "Terminus-10"))
-  
   (set-face-attribute 'default nil :font 
                       (cond
                        ((equal host-name "anyanka") "Terminus-10")
@@ -378,80 +354,19 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
 ;; keybindings
 ; http://steve.yegge.googlepages.com/effective-emacs
-;(global-set-key "\C-w" 'backward-kill-word) ; replaces the kill-region default
-;(global-set-key "\C-c\C-w" 'kill-region)    ; rebinds kill-region to my space
-; you should use the "\C-c" "name"space for defining your own keys
-;(global-set-key "\C-cr"    'revert-buffer)
 (global-set-key "\C-c\C-r" 'revert-buffer)
 (global-set-key (kbd "C-c o") 'occur)
-(global-set-key (kbd "C-c C-k") 'copy-region-as-kill)
-
 (global-set-key [(meta down)] 'forward-block-dwim)
 (global-set-key [(meta up)]  'backward-block-dwim)
-
 (global-set-key "\C-xs" 'save-buffer) ; so tired of 'save-some-buffers, the default
-
 (global-set-key "\M-`" 'other-frame) ; mimic the way macosx switches between windows of the same application
 
-
-;; no-word: use antiword to view .doc in emacs
-(autoload 'no-word "no-word" "word to txt")
-(add-to-list 'auto-mode-alist '("\\.doc\\'" . no-word))
-
-
-;; For use with WordNet
-(defun get-current-word ()
-  "Returns the current, or the last entered word."
-  (save-excursion
-    (backward-word)
-    (setq start (point))
-    (forward-word)
-    (setq end (point))
-    (buffer-substring-no-properties start end)))
-
-(defun what-face (pos)
-  (interactive "d")
-  (let ((face (or (get-char-property (point) 'read-face-name)
-                  (get-char-property (point) 'face))))
-    (if face (message "Face: %s" face) (message "No face at %d" pos))))
-
-(defvar wordnet-bin-path
-  "C:/Programs/WordNet/2.1/bin/wn.exe"
-  "This should point to the full path of the wordnet command")
-
-(defun wordnet-current-word ()
-  "Shows the Wordnet overview for the current word."
-  (interactive)
-  (save-window-excursion
-    (let ((buf (get-buffer-create "*wordnet*"))
-          (word (get-current-word)))
-      (save-window-excursion
-        (set-buffer buf)
-        (clear-buffer buf)
-        (insert (concat "Wordnet overview for " word ": "))
-        (call-process wordnet-bin-path nil "*wordnet*" t word "-over")
-        (switch-to-buffer "*wordnet*")
-        (beginning-of-buffer)
-        (read-string "Press Enter to continue...")))))
-(global-set-key "\C-c\C-d" 'wordnet-current-word)
 
 (defun clear-buffer (buf)
   "Clear a buffer"
   (save-excursion
     (set-buffer buf)
     (kill-region (point-min) (point-max))))
-
-;; from the illustrious & preeminent Sacha Chua
-(defun sacha/isearch-yank-current-word ()
-  "Pull current word from buffer into search string."
-  (interactive)
-  (save-excursion
-    (skip-syntax-backward "w_")
-    (isearch-yank-internal
-     (lambda ()
-       (skip-syntax-forward "w_")
-       (point)))))
-;(global-set-key "\C-c" 'backward-kill-word) ; replaces the kill-region default
 
 ;; my own functions
 (defun mrled/insert-time ()
@@ -466,9 +381,6 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 (defun mrled/insert-date ()
   (interactive)
   (insert (format-time-string "%Y%m%d")))
-(defun mrled/insert-time-blos ()
-  (interactive) 
-  (insert (format-time-string "%Y-%m-%d-%H-%M")))
 
 
 ; Search the load path for a file
@@ -485,19 +397,6 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 	  when (member filename (directory-files dir))
 	  return (format "%s/%s" (directory-file-name dir)
 			 filename))))
-
-; this is probably horribly embarrassing but I am so fucking sick of different fucking modes redefinig fucking tab fuck
-(defun mrled/eight-fucking-spaces ()
-  (interactive)
-  (insert "        "))
-(defun mrled/four-fucking-spaces ()
-  (interactive)
-  (insert "        "))
-(global-set-key "\C-c\C-t" 'mrled/four-fucking-spaces)
-(global-set-key "\C-ct"    'mrled/four-fucking-spaces)
-(global-set-key "\C-c\C-T" 'mrled/eight-fucking-spaces)
-(global-set-key "\C-cT"    'mrled/eight-fucking-spaces)
-
 
 ; sprunge.us owns
 (defun sprunge (prefix)
