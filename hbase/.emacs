@@ -167,15 +167,6 @@
 (global-set-key (kbd "C-c C-l") 'longlines-mode)
 (global-set-key (kbd "C-c l")   'longlines-mode)
 (setq line-move-visual nil) ; necessary I think b/c of something markdown-mode does
-; Marked (Mac OS X only):
-(defun markdown-preview-file ()
-  "run Marked on the current file and revert the buffer"
-  (interactive)
-  (shell-command 
-   (format "open -a /Applications/Marked.app %s" 
-       (shell-quote-argument (buffer-file-name)))))
-(global-set-key "\C-cm" 'markdown-preview-file)
-
 
 ; ikiwiki stuff
 (setq younix-blog-dir "~/Documents/yus")
@@ -317,6 +308,9 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         w32-pass-apps-to-system nil ; let Emacs interpret meta keys
         w32-apps-modifier 'hyper) ;; Menu key -> Hyper
   (autoload 'powershell "powershell" "Run powershell as a shell within emacs." t) 
+  (setq markdown-preview-command 
+        ;(shell-quote-argument "C:\\Users\\mrled\\AppData\\Local\\MarkdownPad 2\\MarkdownPad2.exe"))
+        (shell-quote-argument "C:/Users/mrled/AppData/Local/MarkdownPad 2/MarkdownPad2.exe"))
 )
 
 ; Note: on OS X, it reads initial path info from your .MacOSX/Environment.plist file, not .bashrc!
@@ -326,8 +320,22 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
   (setq mac-option-modifier 'alt
         mac-command-modifier 'meta
         mac-allow-anti-aliasing nil)
-  (global-set-key "\M-h" 'ns-do-hide-emacs))
+  (global-set-key "\M-h" 'ns-do-hide-emacs)
+  (setq markdown-preview-command "open -a /Applications/Marked.app")
 ;(when (eq window-system 'x) ...)
+)
+
+(if (boundp 'markdown-preview-command)
+    (defun markdown-preview-file ()
+      "run Marked on the current file and revert the buffer"
+      (interactive)
+      (shell-command
+       (format "%s %s &" 
+               markdown-preview-command
+               (shell-quote-argument (buffer-file-name))))))
+  ;(shell-command (shell-quote-argument markdown-preview-command))
+(global-set-key "\C-cm" 'markdown-preview-file)
+
 
 (unless (eq window-system nil) ;if we are NOT running in the console
 
