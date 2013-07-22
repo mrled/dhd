@@ -50,8 +50,12 @@
 (add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.psd1\\'" . powershell-mode))
-(add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 (require 'tail)
+(load "~/.dhd/opt/emacs/taskpaper.el")
+(require 'taskpaper-mode)
+(add-to-list 'auto-mode-alist '("\\.taskpaper\\'" . taskpaper-mode))
+
+(add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 
 ; eshell stuff
 (setq eshell-glob-case-insensitive t
@@ -324,19 +328,23 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         mac-allow-anti-aliasing nil)
   (global-set-key "\M-h" 'ns-do-hide-emacs)
   (setq markdown-preview-command "open -a /Applications/Marked.app")
-;(when (eq window-system 'x) ...)
-)
+  (defun markdown-preview-file ()
+    "run Marked on the current file and revert the buffer"
+    (interactive)
+    (shell-command
+     (format "%s %s" 
+             markdown-preview-command (shell-quote-argument buffer-file-name)))))
 
-(if (boundp 'markdown-preview-command)
-    (defun markdown-preview-file ()
-      "run Marked on the current file and revert the buffer"
-      (interactive)
-      (shell-command
-       (format "%s %s &" 
-               markdown-preview-command
-               (shell-quote-argument (buffer-file-name))))))
-  ;(shell-command (shell-quote-argument markdown-preview-command))
-(global-set-key "\C-cm" 'markdown-preview-file)
+;; (if (boundp 'markdown-preview-command)
+;;     (defun markdown-preview-file ()
+;;       "run Marked on the current file and revert the buffer"
+;;       (interactive)
+;;       (shell-command
+;;        (format "%s %s &" 
+;;                markdown-preview-command
+;;                (shell-quote-argument (buffer-file-name))))))
+;;   ;(shell-command (shell-quote-argument markdown-preview-command))
+;; (global-set-key "\C-cm" 'markdown-preview-file)
 
 
 (unless (eq window-system nil) ;if we are NOT running in the console
@@ -350,8 +358,8 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 
   (set-face-attribute 'default nil :font 
                       (cond
-                       ((equal host-name "anyanka") "Terminus-10")
-                       ((equal host-name "andraia") "Monaco-10")
+                       ((equal (downcase host-name) "anyanka") "Terminus-10")
+                       ((equal (downcase host-name) "andraia") "Monaco-10")
                        ((member "ProFontX" (font-family-list)) "ProFontX-9")
                        ((member "Terminus" (font-family-list)) "Terminus-8")
                        (t (face-font 'default))))
