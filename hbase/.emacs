@@ -137,6 +137,9 @@
   (setq mrled/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
 (set-default 'tramp-default-proxies-alist mrled/tramp-sudo-proxy)
 
+(load-file "~/.dhd/opt/emacs/taskpaper.el")
+(require 'taskpaper)
+(setq auto-mode-alist (cons '("\\.taskpaper" . taskpaper-mode) auto-mode-alist))
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
