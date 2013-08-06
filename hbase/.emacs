@@ -141,6 +141,9 @@
   (setq mrled/tramp-sudo-proxy (quote ((".*" "\\`root\\'" "/plink:%h:")))))
 (set-default 'tramp-default-proxies-alist mrled/tramp-sudo-proxy)
 
+(load-file "~/.dhd/opt/emacs/taskpaper.el")
+(require 'taskpaper)
+(setq auto-mode-alist (cons '("\\.taskpaper" . taskpaper-mode) auto-mode-alist))
 ; markdown shit
 (autoload 'markdown-mode "markdown-mode.el"
    "Major mode for editing Markdown files" t)
@@ -321,7 +324,6 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
         w32-apps-modifier 'hyper) ;; Menu key -> Hyper
   (autoload 'powershell "powershell" "Run powershell as a shell within emacs." t) 
   (setq markdown-preview-command 
-        ;(shell-quote-argument "C:\\Users\\mrled\\AppData\\Local\\MarkdownPad 2\\MarkdownPad2.exe"))
         (shell-quote-argument "C:/Users/mrled/AppData/Local/MarkdownPad 2/MarkdownPad2.exe"))
 )
 
