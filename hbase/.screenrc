@@ -12,7 +12,7 @@ bind ^g              # by default, this toggles bell visibility, but I really wa
 defscrollback 100000 # default is a mere 100 lines of suck. 
 shelltitle sh        # default window title: shorter than 'bash'
 
-termcapinfo xterm ti@:te@ 
+termcapinfo xterm-256color|xterm-color|xterm|xterms|xs|rxvt ti@:te@ 
 
 #### emacs keybindings for navigation in copy mode
 markkeys ^B=Y:^F=V:h=^B:l=^F:0=^A:$=^E
