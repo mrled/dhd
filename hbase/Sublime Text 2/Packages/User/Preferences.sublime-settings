@@ -1,7 +1,7 @@
 {
 	"caret_style": "wide",
 	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
-	"font_face": "Monaco",
+	//"color_scheme": "Packages/Color Scheme - Default/Cobalt.tmTheme",
 	"font_size": 10,
 	"ignored_packages":
 	[
