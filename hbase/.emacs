@@ -51,9 +51,9 @@
 (add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.psd1\\'" . powershell-mode))
 (require 'tail)
-(load "~/.dhd/opt/emacs/taskpaper.el")
-(require 'taskpaper-mode)
-(add-to-list 'auto-mode-alist '("\\.taskpaper\\'" . taskpaper-mode))
+;(load "~/.dhd/opt/emacs/taskpaper.el")
+;(require 'taskpaper-mode)
+;(add-to-list 'auto-mode-alist '("\\.taskpaper\\'" . taskpaper-mode))
 
 (add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 

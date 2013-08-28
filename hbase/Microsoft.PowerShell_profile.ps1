@@ -690,28 +690,35 @@ function tail {
 # But if you're running it from console2/conemu and powershell.exe, it fucking crashes.
 # http://sourceforge.net/projects/console/forums/forum/143117/topic/4629708
 # 2 data points: v394 has the problem, v436 does NOT. 
-# Recent msys has 436.
+# Recent msys (as of 2012 sometime I think) has 436.
+# Edit: Ooh sweet, recent (as of 20130822) Git installs 444. 
 #
 # This tries to solve the problem, but doesn't work for piped data lolwut: 
 # http://mow001.blogspot.com/2005/11/enhanced-more-function-for-msh.html
 # 
 # Lots of stuff (including some of my functions) assume that 'more' is the pager.
 #
+# One more thing. After installing (at least) Strawberry Perl, it changes the TERM environment
+# variable to "dumb". This should be unset, or set to "MSYS", otherwise, less will report:
+# "WARNING: terminal is not fully functional" every time you launch it. UGH. 
 if (test-path alias:more) { del alias:more }
 if (test-path function:more) { del function:more }
 if (test-path alias:l) { del alias:l }
 #function more { #TODO: support getting stuff from $input and also command line arguments. 
 #    $input | out-host -paging
 #}
-if (test-path "C:\opt\MinGW\msys\1.0\bin\less.exe") {
-    set-alias less "C:\opt\MinGW\msys\1.0\bin\less.exe"
-    set-alias l less
-    set-alias more less
-    set-alias m less
-}
-else {
-    set-alias more "$env:windir\system32\more.com"
-    set-alias m more
+
+$possibless = @("C:\opt\MinGW\msys\1.0\bin\less.exe",
+    "C:\Program Files (x86)\Git\bin\less.exe",
+    "$env:windir\system32\more.com")
+foreach ($pl in $possibless) {
+    if (test-path $pl) {
+        set-alias less "$pl"
+        set-alias l less
+        set-alias more less
+        set-alias m less
+        break
+    }
 }
 #set-alias more "$env:windir\system32\more.com"
 #set-alias less more
@@ -788,11 +795,13 @@ function cd {
     }
 }
 #if (($env:path).split(";") | gci -filter "ncat.exe") { set-alias nc ncat }
-try {
-    get-command ncat > $null
-    set-alias nc ncat
-} catch { continue } 
-
+# try {
+#     get-command ncat > $null
+#     set-alias nc ncat
+# } 
+# catch { 
+#     continue
+# }
 
 # convert a key that putty uselessly put out in a bullshit format into the format expected by authorized_keys
 # expects an rsa2 key. not sure what happens if this is wrong. probably won't work. 
@@ -917,28 +926,44 @@ if (test-path $sublpath) {
     set-alias subl "$sublpath"
 }
 
-#### Oracle crap
+# Note that this adds it to your Powershell history but not your command prompt history :(
+$historyfile = "$profile" -replace "_profile.ps1","_history.csv"
 
-# hack for clients that have Oracle installed but no database configured
-# note that I *read* from $env:ORACLE_HOME to see if Oracle thinks its installed, but
-# I use the Powershell var $myorahome if I detect an Oracle directory some other way.
-if (-not $env:ORACLE_HOME) {
-    $ora_default_loc = "C:\oracle\product\11.2.0\dbhome_1"
-    if (test-path $ora_default_loc) { $myorahome=$ora_default_loc }
-}
-else {
-    $myorahome = $env:ORACLE_HOME
+$historyExitEvent = {
+    if (test-path $historyfile) {
+
+        $shellhist = get-history -count 1000
+
+        # only get shell history that has occurred since we added history from the hist file
+        for ( $i = $shellhist.length; $i -ge 0; $i--) {
+            if ($shellhist[$i].id -eq $global:finalFileHistoryId) {
+                break;
+            }
+        }
+        $newshellhist = $shellhist[$i..$shellhist.length]
+
+
+        # we get the file history again so that we don't clobber history added by another
+        # exiting shell. 
+        clear-history
+        import-csv $historyfile | add-history
+        $newshellhist | add-history 
+    }
+
+    get-history | export-csv $historyfile
 }
 
-if ($myorahome) { 
-    set-alias oraperl $myorahome\perl\bin\perl.exe
-    function crsdiag { oraperl $myorahome\BIN\crsdiag.pl $* }
-    function crs11g_upgrade { oraperl $myorahome\sysman\admin\scripts\has\crs11g_upgrade.pl $* }
-    function crs_status_cluster { oraperl $myorahome\sysman\admin\scripts\rac\crs_status_cluster.pl $* }
-    function crs_resources { oraperl $myorahome\sysman\admin\scripts\crs_resources.pl $* }
-    function crs_status { oraperl $myorahome\sysman\admin\scripts\crs_status.pl $* }
-    function crs_vip { oraperl $myorahome\sysman\admin\scripts\crs_vip.pl $* }
-    $listener_ora="$myorahome\network\admin\listener.ora"
-    $tnsnames_ora="$myorahome\network\admin\tnsnames.ora"
-    $sqlnet_ora=  "$myorahome\network\admin\sqlnet.ora"
+$historyStartupEvent = {
+    if (test-path $historyfile) {
+        import-csv $historyfile | add-history
+        $global:finalFileHistoryId = (get-history)[-1].id
+    }
+    else {
+        $global:finalFileHistoryId = 0
+    }
 }
+
+Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
+& $historyStartupEvent
+set-alias gh get-history
+set-alias hist get-history
