@@ -43,7 +43,7 @@ function Get-IPConfiguration {
         if (-not ($line -replace '\s+','') -eq "") {
 
             # if the 4th character is a space, it's a sub entry thing, like for multiple DNS servers
-            if ($line[3] -eq " ") {
+            if (($line[0] -eq " ") -and ($line[3] -eq " ")) {
                 $k = [string]$entry.keys[0] # there will only be one key
                 $sanitized = $line -replace '\s+',''
                 $curvalue = $entry.$k
@@ -67,7 +67,7 @@ function Get-IPConfiguration {
             else {
                 if ($entry.count -gt 0) {
                     $adapter += $entry
-                    $entry = @()
+                    $entry = @{}
                 }
                 if ($adapter.count -gt 0) {
                     $ipcs += @($adapter)
