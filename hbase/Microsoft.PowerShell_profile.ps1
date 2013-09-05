@@ -83,6 +83,7 @@ function reinit {
     exit
 }
 # this reinit launches a new PS in the same window, and exits current PS immediately; doesn't work with Console
+# oh. apparently this DOES work with ConEmu + Powershell 3 on Windows 7 x64. SWEET. 
 function reinit2 {
     & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
     start-process "powershell.exe" -NoNewWindow
@@ -459,7 +460,7 @@ function Install-Exe {
         [switch] $IncludeUninstallers,
         [string] $installdir="$Home\opt\win32bin"
     )
-    $pythonexe = "C:\opt\Python32\python.exe" #this is obviously not standard / ideal
+    $pythonexe = "C:\Python33\python.exe" #this is obviously not standard / ideal
     if (-not (test-path $exe)) {
         write-error ("No such file: '$exe'.")
         return
@@ -510,6 +511,19 @@ function Install-Exe {
     }
 }
 
+function Display-ScriptContents {
+    param(
+        [paramater(mandatory=$true)] [string] $commandName
+    )
+    $contents = @()
+    foreach ($c in (get-command $commaneName)) {
+        if ($c.path) {
+            $contents += $c.path
+        }
+    }
+    return $contents
+}
+
 function Get-RelativePath
 {
     # Return a relative path to a file. Only works if the basepath is in the fullpath. 
@@ -521,6 +535,7 @@ function Get-RelativePath
     #return $relpath
     return [system.io.path]::GetFullPath($fullpath).SubString([system.io.path]::GetFullPath($basepath).Length + 1)
 }
+
 
 # seperating file/dir hard/soft links, because they're different in windows
 # i wanted to autodetect the target so you didn't have to care, but then you 
@@ -968,3 +983,8 @@ Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
 & $historyStartupEvent
 set-alias gh get-history
 set-alias hist get-history
+
+
+foreach ($file in (gci -recurse -include *.psm1 ~/.dhd/opt/powershell/lib)) {
+    import-module $file.fullname
+}
