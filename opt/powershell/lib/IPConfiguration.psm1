@@ -139,7 +139,19 @@ function Show-IPConfiguration {
     }
     else {
         foreach ($a in $allconfigs) {
-            if (-not ($a.'Media State' -eq 'Media disconnected')) {
+            $ms = $a.'Media State'
+            $desc = $a.Description
+
+            if ($ms -eq 'Media disconnected') {
+                # do nothing
+            }
+            elseif (($desc) -and ($desc.contains("VMware Virtual Ethernet Adapter"))) {
+                # do nothing
+            }
+            elseif (($desc) -and ($desc.contains("Microsoft ISATAP Adapter"))) {
+                # do nothing
+            }
+            else {
                 $requestedconfigs += @($a)
             }
         }
