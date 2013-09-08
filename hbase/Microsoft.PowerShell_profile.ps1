@@ -423,10 +423,6 @@ function emacs {
     emacsclient -na $runemacs "$filename"
 }
 set-alias e emacs
-$env:GIT_EDITOR = $emacsclient_quoted
-$env:SVN_EDITOR = $emacsclient_quoted
-$env:EDITOR = $emacsclient_quoted
-$env:VISUAL = $emacsclient_quoted
 
 function Create-Shortcut {
     param(
@@ -925,6 +921,11 @@ $sublpath = "C:\Program Files\Sublime Text 2\sublime_text.exe"
 if (test-path $sublpath) {
     set-alias subl "$sublpath"
 }
+$env:GIT_EDITOR = $sublpath
+$env:SVN_EDITOR = $sublpath
+$env:EDITOR = $sublpath
+$env:VISUAL = $sublpath
+
 
 # Note that this adds it to your Powershell history but not your command prompt history :(
 $historyfile = "$profile" -replace "_profile.ps1","_history.csv"
