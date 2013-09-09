@@ -511,7 +511,7 @@ function Install-Exe {
     }
 }
 
-function Display-ScriptContents {
+function Show-ScriptContents {
     param(
         [paramater(mandatory=$true)] [string] $commandName
     )
@@ -719,9 +719,11 @@ if (test-path alias:l) { del alias:l }
 #    $input | out-host -paging
 #}
 
-$possibless = @("C:\opt\MinGW\msys\1.0\bin\less.exe",
+$possibless = @(
+    "C:\opt\MinGW\msys\1.0\bin\less.exe",
     "C:\Program Files (x86)\Git\bin\less.exe",
-    "$env:windir\system32\more.com")
+    "$env:windir\system32\more.com"
+)
 foreach ($pl in $possibless) {
     if (test-path $pl) {
         set-alias less "$pl"
@@ -853,18 +855,11 @@ function uploadid {
 }
 
 
-function Display-Path {
-    #$re_semicolon = new-object system.text.regularexpressions.regex ("`;")
-
-    # foreach ($pathitem in $env:path.split("`;")) {
-    #     write-host $pathitem
-    # }
-
+function Get-SystemPath {
     ($env:path).split(";")
 }
 
-function Generate-Password 
-{
+function Generate-Password {
     param([int]$length=8)
     # From: http://ronalddameron.blogspot.com/2009/09/two-lines-of-powershell-random.html
     $null = [Reflection.Assembly]::LoadWithPartialName("System.Web")
@@ -916,6 +911,11 @@ function ConvertFrom-Base64($string) {
    return $decoded;
 }
 
+function canhazip {
+    invoke-restmethod icanhazip.com
+}
+set-alias icanhazip canhazip
+
 function ftype {
     cmd /c ftype $args
 }
@@ -929,7 +929,7 @@ function assoc {
 set-alias ss select-string
 
 function listens {
-    netstat -a -n -o | where {$_ -match "LISTENING"}
+    netstat -a -n -o |% {$_ -match "LISTENING"}
 }
 
 $sublpath = "C:\Program Files\Sublime Text 2\sublime_text.exe"

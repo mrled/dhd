@@ -1,4 +1,20 @@
 
+$MRLDEBUG = $false
+function Write-MrlDebug {
+    param( 
+        [string] $message,
+        [switch] $nonewline
+    )
+    $params = @{
+        foreground = "yellow"
+        nonewline = $nonewline
+        object = $message
+    }
+    if ($MRLDEBUG) {
+        write-host @params
+    }
+}
+
 <#
 Get-IPConfiguration returns a hashtable representing a network adapter based on the output of ipconfig /all
 
@@ -25,25 +41,56 @@ Ethernet adapter lan:
 
 #>
 
+<#
+I'd like to be able to easily show any of these: 
 
-# this is kinda hacky
-# ideally you'd generate Adapter objects or something and be able to display them differently
-# also if I just run "ifconfig"  it shows me too much info, not separated by adapter
-# But it works for now. :)
+
+- all
+- all connected
+- all physical
+- connected, physical -- the default
+- virtual not connected
+- specific adapter by name
+
+But for now, all I can do is: 
+
+- all
+- all connected, physical 
+- specific adapter by name
+
+#>
+
+<#
+You'd kind of like to have a separate object type (with separate default display properties)
+for the Windows IP Configuration section, but that fucks up the display of the rest of the
+interfaces.
+
+If you specify too many default display properties, it displays each item as a list, not a 
+table, which is also not desirable. 
+
+In the end, I decided to leave in Show-IPConfiguration/ifconfig because it's more compact. 
+Maybe I can bring Get-IPConfiguration up to par eventually though as I learn more shit.
+#>
+
 function Get-IPConfiguration {
+    [CmdletBinding(DefaultParameterSetName="Show All")]
     param(
-        [string] $adaptername
+        [parameter(ParameterSetName="Show All")] [switch] $all,
+        [parameter(ParameterSetName="By Adapter")] $adaptername
     )
+
     $ipconfig = ipconfig /all
-    $ipcs = @()
-    $adapter = @{}
+    $allconfigs = @()
+    $adapter = new-object psobject
     $entry = @{}
     foreach ($line in $ipconfig) {
+        write-mrldebug -nonewline $line 
         # ensure the line isn't empty
         if (-not ($line -replace '\s+','') -eq "") {
 
             # if the 4th character is a space, it's a sub entry thing, like for multiple DNS servers
             if (($line[0] -eq " ") -and ($line[3] -eq " ")) {
+                write-mrldebug -nonewline " +subentry"
                 $k = [string]$entry.keys[0] # there will only be one key
                 $sanitized = $line -replace '\s+',''
                 $curvalue = $entry.$k
@@ -53,8 +100,10 @@ function Get-IPConfiguration {
 
             # if the 1st character is a space, it's (the first line of) an entry, like for an ip address or a Description
             elseif ($line[0] -eq " ") {
+                write-mrldebug -nonewline " +entry"
                 if ($entry.count -gt 0) {
-                    $adapter += $entry
+                    write-mrldebug -nonewline ", saving old entry"
+                    add-member -inputobject $adapter -notepropertymembers $entry
                 }
 
                 $f,$v = $line -split " ?[. ]*.? ?: "
@@ -65,46 +114,92 @@ function Get-IPConfiguration {
 
             # if the first character isn't whitespace, it's the header for a new adapter
             else {
+                write-mrldebug -nonewline " _new"
                 if ($entry.count -gt 0) {
-                    $adapter += $entry
+                    write-mrldebug -nonewline ", saving old entry"
+                    add-member -inputobject $adapter -notepropertymembers $entry
                     $entry = @{}
                 }
-                if ($adapter.count -gt 0) {
-                    $ipcs += @($adapter)
+                if ($adapter.name) {
+                    write-mrldebug -nonewline ", saving old adapter"
+                    $allconfigs += @($adapter)
                 }
 
                 # this is general config info that appears at the top
                 if ($line -eq "Windows IP Configuration") {
                     $n = "Windows IP Configuration"
                     $t = ""
-                }
+
+                    $adapter = new-object psobject
+                    add-member -inputobject $adapter -notepropertymembers @{ Name = $n }
+
+                    # $defaultprops = @('Name', 'Host Name', 'DNS Suffix Search List')
+                    # $defaultdisplayprops = new-object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet',
+                    #     [string[]]$defaultprops)
+                    # $pssm = [system.management.automation.psmemberinfo[]] @($defaultdisplayprops)
+                    # add-member -inputobject $adapter MemberSet PSStandardMembers $pssm 
+               }
                 # if it's not that, it's a specific adapter
                 else {
                     $t, $n = $line -split " adapter "
                     $n = $n.substring(0, $n.length -1)
+
+                    $adapter = new-object psobject
+                    add-member -inputobject $adapter -notepropertymembers @{ Type = $t; Name = $n }
                 }
-                $adapter = @{ Type = $t; Name = $n }
+                #$defaultprops = @('Name', 'Type', 'IPv4 Address', 'Subnet Mask', 'Default Gateway', 'DNS Servers')
+                $defaultprops = @('Name', 'IPv4 Address', 'Default Gateway')
+                $defaultdisplayprops = new-object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet',
+                    [string[]]$defaultprops)
+                $pssm = [system.management.automation.psmemberinfo[]] @($defaultdisplayprops)
+                add-member -inputobject $adapter MemberSet PSStandardMembers $pssm
             }
         }
+        write-mrldebug ""
     }
-
     if ($entry.count -gt 0) {
-        $adapter += $entry
+        add-member -inputobject $adapter -notepropertymembers $entry
     }
-    if ($adapter.count -gt 0) {
-        $ipcs += @($adapter)
+    if ($adapter.name) {
+        $allconfigs += @($adapter)
     }
+    write-mrldebug "`nNumber of configurations found: $($allconfigs.length)"
 
-    if ($adaptername) {
-        foreach ($a in $ipcs) {
-            if ($a.name -eq $adaptername) {
-                return $a
+    $requestedconfigs = @()
+    if ($adaptername.length -gt 0) {
+        write-mrldebug "getting adapter: $adaptername"
+        foreach ($adapter in $allconfigs) {
+            foreach ($an in $adaptername) {
+                if ($adapter.Name.tolower() -eq $an.tolower()) {
+                    $requestedconfigs += @($adapter)
+                }
             }
         }
+    }
+    elseif ($all.ispresent) {
+        write-mrldebug "returning all adapters..."
+        $requestedconfigs = $allconfigs
     }
     else {
-        return $ipcs
+        write-mrldebug "getting only physical, connected adapters..."
+        foreach ($a in $allconfigs) {
+            $ms = $a.'Media State'
+            $desc = $a.Description
+            $name = $a.Name
+
+            if ($ms -eq 'Media disconnected') {} # do nothing
+            elseif ($name -eq 'Windows IP Configuration') {} #do nothing
+            elseif (($desc) -and ($desc.contains("VMware Virtual Ethernet Adapter"))) {} # do nothing
+            elseif (($desc) -and ($desc.contains("Microsoft ISATAP Adapter"))) {} # do nothing
+            elseif (($desc) -and ($desc.contains("VirtualBox"))) {} # do nothing
+            else {
+                write-mrldebug "getting adapter: $($a.Name)"
+                $requestedconfigs += @($a)
+            }
+        }
     }
+
+    return $requestedconfigs
 }
 
 # Another idea for this: 
@@ -118,50 +213,13 @@ function Get-IPConfig{
 
 
 function Show-IPConfiguration {
-    [CmdletBinding(DefaultParameterSetName="Show All")]
-    #[parameter(ParameterSetName="Show Disconnected")] [switch] $hideDisconnected = $false,
-    param(
-        [parameter(ParameterSetName="Show All")] [switch] $all,
-        [parameter(ParameterSetName="By Adapter")] $adaptername
-    )
-    $allconfigs = Get-IPConfiguration
-    $requestedconfigs = @()
-
-    if ($adaptername.length -gt 0) {
-        foreach ($adapter in $allconfigs) {
-            if ($adapter.name -eq $adaptername) {
-                $requestedconfigs += @($adapter)
-            }
-        }
-    }
-    elseif ($all.ispresent) {
-        $requestedconfigs = $allconfigs
-    }
-    else {
-        foreach ($a in $allconfigs) {
-            $ms = $a.'Media State'
-            $desc = $a.Description
-
-            if ($ms -eq 'Media disconnected') {
-                # do nothing
-            }
-            elseif (($desc) -and ($desc.contains("VMware Virtual Ethernet Adapter"))) {
-                # do nothing
-            }
-            elseif (($desc) -and ($desc.contains("Microsoft ISATAP Adapter"))) {
-                # do nothing
-            }
-            else {
-                $requestedconfigs += @($a)
-            }
-        }
-    }
+    $requestedconfigs = get-ipconfiguration @args
 
     foreach ($adapter in $requestedconfigs) {
         write-output $adapter.name
-        foreach ($key in $adapter.keys) {
-            if (-not ($key -eq "Name")) {
-                write-output "    $key`: $($adapter.$key)"
+        foreach ($np in ($adapter | get-member -membertype noteproperty)) {
+            if (-not ($np -eq "Name")) {
+                write-output "    $($np.name)`: $($adapter.$($np.name))"
             }
         }
         write-output ""
@@ -169,5 +227,4 @@ function Show-IPConfiguration {
 }
 
 set-alias ifconfig Show-IPConfiguration
-
 export-modulemember -function Get-IPConfiguration, Show-IPConfiguration -alias ifconfig
