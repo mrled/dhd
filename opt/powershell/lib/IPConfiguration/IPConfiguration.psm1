@@ -79,6 +79,18 @@ function Convert-HexStringToMac {
     return $mac.tolower()
 }
 
+function Get-Listeners {
+    $gloprops = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPglobalProperties()
+    $listeners = $gloprops.GetActiveTcpListeners()
+    $listeners
+}
+set-alias listens get-listeners
+set-alias listeners get-listeners
+
+function Get-PublicIPAddress {
+    invoke-restmethod icanhazip.com
+}
+
 # todo: 
 # - show more ipv6 info
 # - show dhcp 
@@ -91,6 +103,7 @@ function Convert-HexStringToMac {
 function Show-IPConfiguration {
     $global = Get-IPConfiguration -global
     write-output "Hostname: $($global.HostName).$($global.DomainName)`n"
+    write-output "    Public IP: $(Get-PublicIPAddress)"
 
     $requestedconfigs = Get-IPConfiguration @args
     foreach ($adapter in $requestedconfigs) {
@@ -116,5 +129,18 @@ function Show-IPConfiguration {
 
 set-alias ifconfig Show-IPConfiguration
 set-alias getip Get-IPConfiguration
-export-modulemember -function Get-IPConfiguration,Show-IPConfiguration -alias ifconfig,getip
 
+
+$exFunction = @(
+    'Get-IPConfiguration'
+    'Show-IPConfiguration'
+    'Get-Listeners'
+    'Get-PublicIPAddress'
+)
+$exAlias = @(
+    'ifconfig'
+    'getip'
+    'listens'
+    'listeners'
+)
+export-modulemember -function $exFunction -alias $exAlias
