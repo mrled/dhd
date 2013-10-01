@@ -37,6 +37,7 @@ goto :eof
 rem Note that this will copy the VALUE of %USERPROFILE% to %HOME%
 rem so if %USERPROFILE% changes, %HOME% will not unless you do it manually
 setx HOME %USERPROFILE%
+set HOME=%USERPROFILE%
 setx PYTHONSTARTUP %HOME%\.dhd\hbase\python.profile
 set PYTHONSTARTUP=%HOME%\.dhd\hbase\python.profile
 

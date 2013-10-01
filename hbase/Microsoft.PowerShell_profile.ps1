@@ -39,17 +39,43 @@ set-psdebug -strict # throw an exception for variable reference before assignmen
 
 #import-module PSReadline  # You gotta do this after the prompt because it modifies it
 
+try {
+    Import-Module posh-git
+    $poshgitloaded = $true
+}
+catch {
+    $poshgitloaded = $false
+}
+
 if ($psversiontable.psversion.major -ge 3) {
     # fuck this path
     $adkpath =  "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit"
     $adkpath += "\Deployment Tools\${env:Processor_Architecture}\DISM"
     if (test-path $adkpath) { import-module $adkpath }
 }
-$metap_path = "$home\.dhd\opt\powershell\lib\MetaProgramming"
-if (test-path $metap_path) {
-    # http://blogs.msdn.com/b/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx
-    import-module $metap_path
+
+$env:PSModulePath = $env:PSModulePath + ";$home\.dhd\opt\powershell\lib"
+import-module IPConfiguration
+
+# Create new modules, make a folder for them, put them inside opt/powershell/lib
+# Make the module importable by name only by doing: 
+# new-modulemanifest -path .\modulename.psd1 -rootmodule .\modulename.psm1
+
+
+function reimport-module {
+    param([parameter(mandatory=$true)] [string] $moduleName)
+    $module = get-module $moduleName
+    if ($module) {
+        write-host "Module is imported. Removing and re-adding."
+        remove-module $moduleName
+        import-module $module.path
+    }
+    else {
+        write-host "Module was not imported. Trying to add module $modulename..."
+        import-module $modulename
+    }
 }
+set-alias reimport reimport-module
 
 # override some default display values for objects, this feature ruelz
 # TODO: in PS3.0 you can run this multiple times and it doesn't care... dunno if it ignores or reloads, I think reloads. 
@@ -83,6 +109,7 @@ function reinit {
     exit
 }
 # this reinit launches a new PS in the same window, and exits current PS immediately; doesn't work with Console
+# oh. apparently this DOES work with ConEmu + Powershell 3 on Windows 7 x64. SWEET. 
 function reinit2 {
     & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
     start-process "powershell.exe" -NoNewWindow
@@ -207,16 +234,22 @@ else {
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
 function colorPrompt {
+    $realLASTEXITCODE = $LASTEXITCODE
+
+    # Reset color, which can be messed up by Enable-GitColors
+    $Host.UI.RawUI.ForegroundColor = $GitPromptSettings.DefaultForegroundColor
+
     Write-Host $(get-date).Tostring("HH:mm:ss") -nonewline -foregroundcolor White
     Write-Host (" ") -nonewline
     Write-Host ($hostname) -nonewline -foregroundcolor Blue
     
-    # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
-    # Make some other optimizations for space.
-    $mypwd = $pwd
-    $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
-    $mypwd = $mypwd -replace [regex]::Escape($home),"~"
+    $mypwd = $pwd.providerpath -replace [regex]::Escape($home),"~"
     Write-Host (" " + $mypwd + " ") -nonewline -foregroundcolor Green
+    # this is just way too slow ugh
+    # if ($poshgitloaded) {
+    #     Write-VcsStatus -nonewline
+    #     write-host " "
+    # }
     
     if ($admin) {
         Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red
@@ -224,6 +257,9 @@ function colorPrompt {
     else {
         Write-Host ("PS>") -nonewline -foregroundcolor White
     }
+
+    $global:LASTEXITCODE = $realLASTEXITCODE
+
     # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
     return " "
 }
@@ -267,21 +303,34 @@ function Enable-SimplePrompt {
     function global:prompt { simplePrompt }
 }
 function Enable-Readline {
-    # This is pretty broken right now
-    # prompt for PSReadline must be single-line only, without write-host 
-    disable-prompt
-    enable-simpleprompt
     import-module PSReadline # you have to define the prompt before importing this
-}
-function Disable-Readline {
-    disable-prompt
-    remove-module PSReadline
-    enable-colorprompt
+
+    set-psreadlineoption -editmode emacs
+
+    # A way to see possible handler methods is: 
+    # [PSConsoleUtilities.PSConsoleReadline].GetMethods().Name
+
+    $hsbhandler = { [PSConsoleUtilities.PSConsoleReadLine]::HistorySearchBackward() }
+    Set-PSReadlineKeyHandler -key Ctrl+R -BriefDescription HistorySearchBackward -Handler $hsbhandler
+    $hsfhandler = { [PSConsoleUtilities.PSConsoleReadLine]::HistorySearchForeward() }
+    Set-PSReadlineKeyHandler -key Ctrl+S -BriefDescription HistorySearchForeward -Handler $hsfhandler
+
+    # this doesn't work at all? 
+    #$rlhandler = { [PSConsoleUtilities.PSConsoleReadLine]::RevertLine() }
+    #Set-PSReadlineKeyHandler -Key Ctrl+C -BriefDescription RevertLine -Handler $rlhandler
+
+    $phhandler = { [PSConsoleUtilities.PSConsoleReadLine]::PreviousHistory() }
+    Set-PSReadlineKeyHandler -key Ctrl+P -BriefDescription PreviousHistory -Handler $phhandler
+    $nhhandler = { [PSConsoleUtilities.PSConsoleReadLine]::NextHistory() }
+    Set-PSReadlineKeyHandler -key Ctrl+N -BriefDescription NextHistory -Handler $nhhandler
 }
 
 function gcollect {
     [GC]::Collect()
 }
+
+# char7 is the beep sound. you can just type $beep and it will beep at you.
+$beep = @([char]7)
 
 if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
     $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
@@ -424,6 +473,25 @@ function emacs {
 }
 set-alias e emacs
 
+# note that PS automatically maps certificates to the drive 'cert:'. 
+# To import a cert to the local machine's trusted root certs: 
+# Import-X509Certificate -path C:\whatever.cer -rootstore LocalMachine -certstore AuthRoot
+function Import-X509Certificate {
+    param(
+        [parameter(required=$true)] [string] $Path,
+        [string] $RootStore = "CurrentUser",
+        [string] $CertStore = "My"
+    )
+ 
+    $pfx = new-object System.Security.Cryptography.X509Certificates.X509Certificate2
+    $pfx.import($Path)
+
+    $store = new-object System.Security.Cryptography.X509Certificates.X509Store($CertStore, $RootStore)
+    $store.open('MaxAllowed')
+    $store.add($pfx)
+    $store.close()
+}
+
 function Create-Shortcut {
     param(
         [parameter(Mandatory=$true)] [string]$filename,
@@ -459,7 +527,7 @@ function Install-Exe {
         [switch] $IncludeUninstallers,
         [string] $installdir="$Home\opt\win32bin"
     )
-    $pythonexe = "C:\opt\Python32\python.exe" #this is obviously not standard / ideal
+    $pythonexe = "C:\Python33\python.exe" #this is obviously not standard / ideal
     if (-not (test-path $exe)) {
         write-error ("No such file: '$exe'.")
         return
@@ -510,6 +578,19 @@ function Install-Exe {
     }
 }
 
+function Show-ScriptContents {
+    param(
+        [paramater(mandatory=$true)] [string] $commandName
+    )
+    $contents = @()
+    foreach ($c in (get-command $commaneName)) {
+        if ($c.path) {
+            $contents += $c.path
+        }
+    }
+    return $contents
+}
+
 function Get-RelativePath
 {
     # Return a relative path to a file. Only works if the basepath is in the fullpath. 
@@ -521,6 +602,7 @@ function Get-RelativePath
     #return $relpath
     return [system.io.path]::GetFullPath($fullpath).SubString([system.io.path]::GetFullPath($basepath).Length + 1)
 }
+
 
 # seperating file/dir hard/soft links, because they're different in windows
 # i wanted to autodetect the target so you didn't have to care, but then you 
@@ -704,9 +786,11 @@ if (test-path alias:l) { del alias:l }
 #    $input | out-host -paging
 #}
 
-$possibless = @("C:\opt\MinGW\msys\1.0\bin\less.exe",
-    "C:\Program Files (x86)\Git\bin\less.exe",
-    "$env:windir\system32\more.com")
+$possibless = @(
+    "C:\opt\MinGW\msys\1.0\bin\less.exe",
+    "${env:ProgramFiles(x86)}\Git\bin\less.exe",
+    "$env:windir\system32\more.com"
+)
 foreach ($pl in $possibless) {
     if (test-path $pl) {
         set-alias less "$pl"
@@ -719,6 +803,10 @@ foreach ($pl in $possibless) {
 #set-alias more "$env:windir\system32\more.com"
 #set-alias less more
 #set-alias l less
+
+if (test-path "${env:ProgramFiles(x86)}\Git\bin\diff.exe") {
+    set-alias unixdiff "${env:ProgramFiles(x86)}\Git\bin\diff.exe"
+}
 
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
 if (test-path alias:touch) {del alias:touch}
@@ -838,18 +926,11 @@ function uploadid {
 }
 
 
-function Display-Path {
-    #$re_semicolon = new-object system.text.regularexpressions.regex ("`;")
-
-    # foreach ($pathitem in $env:path.split("`;")) {
-    #     write-host $pathitem
-    # }
-
+function Get-SystemPath {
     ($env:path).split(";")
 }
 
-function Generate-Password 
-{
+function Generate-Password {
     param([int]$length=8)
     # From: http://ronalddameron.blogspot.com/2009/09/two-lines-of-powershell-random.html
     $null = [Reflection.Assembly]::LoadWithPartialName("System.Web")
@@ -901,6 +982,11 @@ function ConvertFrom-Base64($string) {
    return $decoded;
 }
 
+function canhazip {
+    invoke-restmethod icanhazip.com
+}
+set-alias icanhazip canhazip
+
 function ftype {
     cmd /c ftype $args
 }
@@ -914,7 +1000,7 @@ function assoc {
 set-alias ss select-string
 
 function listens {
-    netstat -a -n -o | where {$_ -match "LISTENING"}
+    netstat -a -n -o |% {$_ -match "LISTENING"}
 }
 
 $sublpath = "C:\Program Files\Sublime Text 2\sublime_text.exe"
@@ -968,3 +1054,4 @@ Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
 & $historyStartupEvent
 set-alias gh get-history
 set-alias hist get-history
+
