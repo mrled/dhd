@@ -79,22 +79,75 @@ function Convert-HexStringToMac {
     return $mac.tolower()
 }
 
-function Get-Listeners {
+# Much faster and less lame than parsing the output of netstat.exe
+# However, you can't get PIDs at all this way. 
+function Get-Listeners2 {
     $gloprops = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPglobalProperties()
     $listeners = $gloprops.GetActiveTcpListeners()
     $listeners
 }
+
+# This works pretty well right now, but it has a couple of areas for improvement:
+# - calling format-table at the end means I can't sort-object with the results of this command. 
+#   is there a way to not call format-table if I'm going to pipe the results?
+# - if I'm going to display the content, then this is correct. However, if I'm going to pipe
+#   the content, it'd be better to spit out the results as I receive them. 
+function Get-Listeners {
+    $listeners = @()
+    foreach ($line in (netstat -ano)) {
+        if ($line -match "LISTENING") {
+            $item = $line.split(" ", [system.stringsplitoptions]::removeemptyentries)
+
+            if (($a = $item[1] -as [ipaddress]).AddressFamily -eq 'InterNetworkV6') {
+                $address = $a.IPAddressToString
+                $port = $item[1].split('\]:')[-1] 
+                $addressFamily = 'InterNetworkV6'
+            } 
+            else {
+                $address = $item[1].split(':')[0] 
+                $port = $item[1].split(':')[-1] 
+                $addressFamily = 'InterNetwork'
+            }  
+
+            $p = @{
+                Protocol = $item[0]
+                Address = $address
+                Port = [int]$port
+                PID = [int]$item[4]
+                ProcessName = (get-process -id $item[4] -erroraction SilentlyContinue).name
+                AddressFamily = $addressFamily
+            }
+            $l = new-object PSObject -property $p
+            $listeners += @($l)
+        }
+    }
+    $ftProps = @('Address','Port','Protocol','PID','ProcessName')
+    $soProps = @('AddressFamily','Port')
+    $listeners | sort-object -property $soProps | format-table -property $ftProps 
+}
 set-alias listens get-listeners
 set-alias listeners get-listeners
 
-# Sucks because it's a netstat call, but this is the only way to get the process that's using a port. 
-function Get-Listeners2 {
-    netstat -a -n -o |% {$_ -match "LISTENING"}
+function resolve-hostname {
+    param(
+        [parameter(mandatory=$true)] [string[]] $domainName
+    )
+    foreach ($dn in $domainName) {
+        write-host "$dn\:"
+        foreach ($a in [System.Net.Dns]::Resolve($dn).AddressList) {
+            write-host "    $a"
+        }
+        
+    }
 }
+set-alias resolve resolve-hostname
+
 
 function Get-PublicIPAddress {
     invoke-restmethod icanhazip.com
 }
+set-alias icanhazip Get-PublicIPAddress
+set-alias canhazip Get-PublicIPAddress
 
 # todo: 
 # - show more ipv6 info
@@ -105,6 +158,7 @@ function Get-PublicIPAddress {
 # I think the thing to do is make Powershell objects for each one with all the data *I* want
 # and then add the .NET object in there as _DotNetAdapter or something
 # And then make it so Get-IPConfiguration displays data as nicely as ifconfig does now
+# ... oh, looks like I can do that with `format-table -property`!
 function Show-IPConfiguration {
     $global = Get-IPConfiguration -global
     write-output "Hostname: $($global.HostName).$($global.DomainName)`n"
@@ -140,12 +194,17 @@ $exFunction = @(
     'Get-IPConfiguration'
     'Show-IPConfiguration'
     'Get-Listeners'
+    'Get-Listeners2'
     'Get-PublicIPAddress'
+    'Resolve-Hostname'
 )
 $exAlias = @(
     'ifconfig'
     'getip'
     'listens'
     'listeners'
+    'icanhazip'
+    'canhazip'
+    'resolve'
 )
 export-modulemember -function $exFunction -alias $exAlias
