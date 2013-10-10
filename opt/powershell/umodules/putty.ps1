@@ -48,28 +48,9 @@ function Convert-PuttyRsaPubKey {
     for ($i=2; $i -lt $pcontent.count -1; $i++) {
         $newcontent += $pcontent[$i]
     }
-    $comment = "$env:username@$hostname-" + $pcontent[1].split("`"")[1]
+    $comment = $pcontent[1].split("`"")[1]
     $newcontent += " $comment"
     return $newcontent
-}
-# convert a key that putty uselessly put out in a bullshit format into the format expected by authorized_keys
-# expects an rsa2 key. not sure what happens if this is wrong. probably won't work. 
-function Convert-PuttyPublicKey {
-    param(
-        [parameter(mandatory=$True)]  [string]  $keyfile
-    )
-    $keydata = get-content $keyfile
-    if (-not (($keydata[0].StartsWith("---- BEGIN")) -and ($keydata[-1].StartsWith("---- END"))) ) {
-        write-error "Invalid Putty public key file"
-        return
-    }
-    $comment = $keydata[1]
-    $newcomment = $comment -replace "Comment: `"","" -replace "`"",""
-    $xdata = $keydata[2..($keydata.count-2)]  # get only the key data, no comments or header shit
-    $newdata = "ssh-rsa "
-    foreach ($l in $xdata) { $newdata += $l } # get rid of linebreaks
-    $newdata += " $newcomment"
-    return $newdata
 }
 
 function uploadid {
