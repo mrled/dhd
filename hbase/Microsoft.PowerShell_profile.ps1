@@ -23,6 +23,7 @@ if ($psversiontable.psversion.major -ge 3) {
 
 $env:PSModulePath = $env:PSModulePath + ";$home\.dhd\opt\powershell\modules"
 import-module IPConfiguration
+import-module uPackageManager
 
 # umodules/micromodules are just scripts that I'm dot sourcing
 # they're not mature or large or discrete enough for modules
