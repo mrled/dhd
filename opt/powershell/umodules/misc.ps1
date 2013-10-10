@@ -19,13 +19,6 @@ function conkeror {
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
 set-alias sz "$env:programfiles\7-Zip\7z.exe" 
 
-function resolve-hostname {
-    foreach ($a in $args) {
-        [System.Net.Dns]::Resolve($a).AddressList
-    }
-}
-
-
 # This works. Caveat: Emacs is iffy for some reason. 
 # You can 'elevate-process emacs \somefile.txt' just fine
 # You can 'elevate-process notepad "\somefile with spaces.txt"'
@@ -163,17 +156,6 @@ function ConvertFrom-Base64($string) {
 
    return $decoded;
 }
-
-function icanhazip {
-    invoke-restmethod icanhazip.com
-}
-set-alias canhazip icanhazip
-
-$nzbgetdir = "$home\opt\nzbget"
-if (test-path $nzbgetdir) {
-    set-alias nzbget "$nzbgetdir\nzbget.exe"
-}
-
 
 function llm {
     get-childitem $args | sort-object -property lastwritetime
