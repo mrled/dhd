@@ -6,5 +6,6 @@
 	[
 		"Vintage"
 	],
-	"theme": "Soda Dark.sublime-theme"
+	"theme": "Soda Dark.sublime-theme",
+	"word_wrap": true
 }
