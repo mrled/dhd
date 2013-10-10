@@ -87,6 +87,11 @@ function Get-Listeners {
 set-alias listens get-listeners
 set-alias listeners get-listeners
 
+# Sucks because it's a netstat call, but this is the only way to get the process that's using a port. 
+function Get-Listeners2 {
+    netstat -a -n -o |% {$_ -match "LISTENING"}
+}
+
 function Get-PublicIPAddress {
     invoke-restmethod icanhazip.com
 }
@@ -103,7 +108,7 @@ function Get-PublicIPAddress {
 function Show-IPConfiguration {
     $global = Get-IPConfiguration -global
     write-output "Hostname: $($global.HostName).$($global.DomainName)`n"
-    write-output "    Public IP: $(Get-PublicIPAddress)"
+    #write-output "    Public IP: $(Get-PublicIPAddress)"
 
     $requestedconfigs = Get-IPConfiguration @args
     foreach ($adapter in $requestedconfigs) {
