@@ -37,7 +37,8 @@ function Install-Exe {
 
     # Ignore uninstallers
     if (-not ($IncludeUninstallers.ispresent)) {
-        if (($fsio.name -eq "unins000.exe") -or ($fsio.name -eq "uninstall.exe")) {
+        $uninstNames = @("unins000.exe", "uninstall.exe")
+        if ($uninstNames.contains($fsio.name)) {
             write-host "Tried to run Install-Exe on an uninstaller executable called $($fsio.fullname), but -IncludeUninstallers switch was not present." -foreground Yellow
             return
         }
