@@ -1,17 +1,51 @@
 # Stuff for work
 
+$dlpumodule = $myinvocation.mycommand.path
+
 $dlpCorePath = "C:\Projects\DLP\Ed-Fi-Core"
 $dlpAppsPath = "C:\Projects\DLP\Ed-Fi-Apps"
-function Get-DlpDeploymentFile {
+
+function Get-DlpProjectFile {
     param(
-        [parameter(mandatory=$true)] [string] $query,
-        [validateset("core","apps","any")] [string] $location = "any"
+        [alias("include")] [string[]] $query = @("*.ps1","*.psm1"),
+        [string[]] $exclude = $null,
+        [validateset("core","apps","any")] [string] $repo = "any",
+        [string[]] $subdir = "logistics",
+        [string[]] $containing
     )
-    if     ($location -eq "core") { $l = "$dlpCorePath\logistics" }
-    elseif ($location -eq "apps") { $l = "$dlpAppsPath\logistics" }
-    elseif ($location -eq "any")  { $l = "$dlpCorePath\logistics","$dlpAppsPath\logistics" }
+    if     ($repo -eq "core") { $l = "$dlpCorePath\$subdir" }
+    elseif ($repo -eq "apps") { $l = "$dlpAppsPath\$subdir" }
+    elseif ($repo -eq "any")  { $l = "$dlpCorePath\$subdir","$dlpAppsPath\$subdir" }
 
-    gci -recurse $l -include $query
+    $r = gci -recurse $l -include $query -exclude $exclude
+    if ($containing) {
+        $results = $r |? { $_ | sls -quiet -pattern $containing }
+    }
+    else {
+        $results = $r
+    }
+    return $results
 }
-set-alias gdpl Get-DlpDeploymentFile
+set-alias gdlp Get-DlpProjectFile
 
+function Convert-OpenSSLPemToPfx {
+    param(
+        [parameter(mandatory=$true)] [string] $pemfile,
+        [string] $displayname
+    )
+    $basename = split-path -leaf $pemfile
+    if (-not $displayname) {
+        $displayname = $basename
+    }
+    openssl pkcs12 -export -out "$basename.pfx" -in "$pemfile" -name "$displayname"
+}
+
+function Generate-DlpCredentialCertificate {
+    param(
+        [parameter(mandatory=$true)] [string] $certName,
+        [int] $keySize = 4096,
+        [int] $daysValid = 7300
+    )
+    openssl req -x509 -nodes -days $daysValid -subj "/CN=$certName" -newkey rsa:$keysize -keyout "$certName.pem" -out "$certName.pem"
+    Convert-OpenSSLPemToPfx -pemfile "$certName.pem"
+}
