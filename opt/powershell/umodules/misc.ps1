@@ -15,6 +15,17 @@ function conkeror {
     & $xulrunnerbin  "$home\opt\src\conkeror\application.ini" $args
 }
 
+$possibleOpenSSL = @(
+    'C:\Program Files\OpenSSL-Win64\bin\openssl.exe',
+    'C:\STRAWBERRY\C\BIN\openssl.exe'
+)
+foreach ($o in $possibleOpenSSL) {
+    if (test-path $o) {
+        set-alias openssl $o
+        break
+    }
+}
+
 # note: 7-zip is in the same place on both 64 bit and 32 bit Windows
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
 set-alias sz "$env:programfiles\7-Zip\7z.exe" 
