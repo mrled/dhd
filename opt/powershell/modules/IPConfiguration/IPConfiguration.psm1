@@ -118,12 +118,13 @@ function Get-Listeners {
                 AddressFamily = $addressFamily
             }
             $l = new-object PSObject -property $p
+            $l.PSObject.Typenames.insert(0,'IPConfigurationListener')
             $listeners += @($l)
         }
     }
     $ftProps = @('Address','Port','Protocol','PID','ProcessName')
     $soProps = @('AddressFamily','Port')
-    $listeners | sort-object -property $soProps | format-table -property $ftProps 
+    $listeners | sort-object -property $soProps #| format-table -property $ftProps 
 }
 set-alias listens get-listeners
 set-alias listeners get-listeners
