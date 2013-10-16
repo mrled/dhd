@@ -1,3 +1,67 @@
+function Get-IPConfiguration2 {
+    [CmdletBinding(DefaultParameterSetName="select")]
+    param(
+        [parameter(ParameterSetName="adapter", Position=0)] [string] $adaptername,
+        [parameter(ParameterSetName="select")]  [switch] [alias("virtual")] $VirtualAdapters,
+        [parameter(ParameterSetName="select")]  [switch] [alias("disconnected")] $DisconnectedAdapters,
+        [parameter(ParameterSetName="select")]  [switch] [alias("tunnels")] $TunnelAdapters,
+        [parameter(ParameterSetName="select")]  [switch] [alias("loopback")] $LoopbackAdapters,
+        [parameter(ParameterSetName="all")]     [switch] [alias("all")] $allAdapters,
+        [parameter(ParameterSetName="global")]  [switch] $globalProperties
+    )
+    $reqDotNetNics = @()
+
+    $paramset = $PSCmdlet.ParameterSetName.tolower()
+    if ($paramset -eq "global") {
+        $gloprops = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPglobalProperties()
+        $reqDotNetNics = $gloprops
+    }
+    elseif ($paramset -eq "all") {
+        $reqDotNetNics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
+    }
+    elseif ($paramset -eq "adapter") {
+        $allnics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
+        foreach ($n in $allnics) {
+            if ($n.name -eq $adaptername) {
+                $reqDotNetNics += $n
+            }
+            if ($reqDotNetNics.length -eq 0) {
+                throw "Requested a NIC called $adaptername, but no such NIC exists"
+            }
+        }
+    }
+    elseif ($paramset -eq "select") {
+        $allnics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
+        foreach ($n in $allnics) {
+            $desc = $n.Description
+            if ($n.OperationStatus -eq "Down") {
+                if ($DisconnectedAdapters.ispresent) {
+                    $reqDotNetNics += @($n)
+                }
+            }
+            elseif ($desc -and ($desc.contains("VMware Virtual Ethernet Adapter") -or $desc.contains("VirtualBox Host-Only Ethernet Adapter"))) {
+                if ($VirtualAdapters.ispresent) {
+                    $reqDotNetNics += @($n)
+                }
+            }
+            elseif (([string]$n.NetworkInterfaceType).tolower() -eq "tunnel") {
+                if ($TunnelAdapters.ispresent) {
+                    $reqDotNetNics += @($n)
+                }
+            }
+            elseif (([string]$n.NetworkInterfaceType).tolower() -eq "loopback") {
+                if ($LoopbackAdapters.ispresent) {
+                    $reqDotNetNics += @($n)
+                }
+            }
+            else {
+                $reqDotNetNics += @($n)
+            }
+        }
+    }
+    return $reqDotNetNics
+}
+
 function Get-IPConfiguration {
     [CmdletBinding(DefaultParameterSetName="select")]
     param(
@@ -9,23 +73,23 @@ function Get-IPConfiguration {
         [parameter(ParameterSetName="all")]     [switch] [alias("all")] $allAdapters,
         [parameter(ParameterSetName="global")]  [switch] $globalProperties
     )
-    $requestednics = @()
+    $reqDotNetNics = @()
 
     $paramset = $PSCmdlet.ParameterSetName.tolower()
     if ($paramset -eq "global") {
         $gloprops = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPglobalProperties()
-        $requestednics = $gloprops
+        $reqDotNetNics = $gloprops
     }
     elseif ($paramset -eq "all") {
-        $requestednics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
+        $reqDotNetNics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
     }
     elseif ($paramset -eq "adapter") {
         $allnics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
         foreach ($n in $allnics) {
             if ($n.name -eq $adaptername) {
-                $requestednics += $n
+                $reqDotNetNics += $n
             }
-            if ($requestednics.length -eq 0) {
+            if ($reqDotNetNics.length -eq 0) {
                 throw "Requested a NIC called $adaptername, but no such NIC exists"
             }
         }
@@ -36,30 +100,53 @@ function Get-IPConfiguration {
             $desc = $n.Description
             if ($n.OperationStatus -eq "Down") {
                 if ($DisconnectedAdapters.ispresent) {
-                    $requestednics += @($n)
+                    $reqDotNetNics += @($n)
                 }
             }
             elseif ($desc -and ($desc.contains("VMware Virtual Ethernet Adapter") -or $desc.contains("VirtualBox Host-Only Ethernet Adapter"))) {
                 if ($VirtualAdapters.ispresent) {
-                    $requestednics += @($n)
+                    $reqDotNetNics += @($n)
                 }
             }
             elseif (([string]$n.NetworkInterfaceType).tolower() -eq "tunnel") {
                 if ($TunnelAdapters.ispresent) {
-                    $requestednics += @($n)
+                    $reqDotNetNics += @($n)
                 }
             }
             elseif (([string]$n.NetworkInterfaceType).tolower() -eq "loopback") {
                 if ($LoopbackAdapters.ispresent) {
-                    $requestednics += @($n)
+                    $reqDotNetNics += @($n)
                 }
             }
             else {
-                $requestednics += @($n)
+                $reqDotNetNics += @($n)
             }
         }
     }
-    return $requestednics 
+
+    $reqNetworkAdapters = @()
+    foreach ($nic in $reqDotNetNics) {
+        $props = $nic.GetIPProperties()
+        $ip = @()
+        foreach ($addr in $props.UnicastAddresses) {
+            #$ip += @(@{ IPAddress = $addr.Address.IPAddressToString; CIDR = $addr.PrefixLength; })
+            $ip += @("$($addr.Address.IPAddressToString)/$($addr.PrefixLength)")
+        }
+        $property = @{
+            Name = $nic.name
+            Description = $nic.Description
+            IPAddress = $props.UnicastAddresses.Address.IPAddressToString
+            IPv4Mask = $props.UnicastAddresses.IPv4Mask.IPAddressToString
+            DefaultGateway = $props.GatewayAddresses.Address.IPAddressToString
+            DNSServer = $props.DnsAddresses.IPAddressToString
+            MAC = $nic.GetPhysicalAddress()
+            DotNetObject = $nic
+        }
+        $nicobj = new-object PSObject -property $property
+        $nicobj.PSObject.Typenames.insert(0,'IPConfigurationNeworkAdapter')
+        $reqNetworkAdapters += @($nicobj)
+    }
+    return $reqNetworkAdapters
 }
 
 function Convert-HexStringToMac {
@@ -161,11 +248,11 @@ set-alias canhazip Get-PublicIPAddress
 # And then make it so Get-IPConfiguration displays data as nicely as ifconfig does now
 # ... oh, looks like I can do that with `format-table -property`!
 function Show-IPConfiguration {
-    $global = Get-IPConfiguration -global
+    $global = Get-IPConfiguration2 -global
     write-output "Hostname: $($global.HostName).$($global.DomainName)`n"
     #write-output "    Public IP: $(Get-PublicIPAddress)"
 
-    $requestedconfigs = Get-IPConfiguration @args
+    $requestedconfigs = Get-IPConfiguration2 @args
     foreach ($adapter in $requestedconfigs) {
         $props = $adapter.GetIPProperties()
         write-output $adapter.name
