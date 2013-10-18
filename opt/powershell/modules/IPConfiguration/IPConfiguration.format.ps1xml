@@ -2,6 +2,57 @@
 <Configuration>
   <ViewDefinitions>
     <View>
+      <Name>IPConfigurationNetworkAdapterListView</Name>
+      <ViewSelectedBy>
+        <TypeName>IPConfigurationNetworkAdapter2</TypeName> <!-- Disabled... -->
+      </ViewSelectedBy>
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem><PropertyName>Name</PropertyName></ListItem>
+              <ListItem><PropertyName>Description</PropertyName></ListItem>
+              <ListItem><PropertyName>IPAddress</PropertyName></ListItem>
+              <ListItem><PropertyName>IPv4Mask</PropertyName></ListItem>
+              <ListItem><PropertyName>DefaultGateway</PropertyName></ListItem>
+              <ListItem><PropertyName>DNSServer</PropertyName></ListItem>
+              <ListItem><PropertyName>MAC</PropertyName></ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+    </View>
+    <View>
+      <Name>IPConfigurationNetworkAdapterCustomView</Name>
+      <ViewSelectedBy>
+        <TypeName>IPConfigurationNetworkAdapter</TypeName>
+      </ViewSelectedBy>
+      <CustomControl>
+        <CustomEntries>
+          <CustomEntry>
+            <CustomItem>
+              <ExpressionBinding>
+                <ScriptBlock>
+$iplines = ""
+foreach ($addr in $_.IPAddress) {
+    $iplines += "    IP Address: $addr / Netmask: $`r`n"
+}
+@"
+$($_.Name)
+    $($_.Description)
+    Address: $($_.IPAddress) / Netmask: $($_.IPv4Mask)
+    Default Gateway: $($_.DefaultGateway)
+    DNS Servers: $($_.DNSServer)
+    Link Type: $($_.NetworkInterfaceType), MAC: $($_.mac)
+"@
+                </ScriptBlock>
+              </ExpressionBinding>
+            </CustomItem>
+          </CustomEntry>
+        </CustomEntries>
+      </CustomControl>
+    </View>
+    <View>
       <Name>DefaultView</Name>
       <ViewSelectedBy>
         <TypeName>IPConfigurationListener</TypeName>
