@@ -42,7 +42,7 @@ function Get-IPConfiguration {
         $allnics = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()
         foreach ($n in $allnics) {
             $desc = $n.Description
-            if ($n.OperationStatus -eq "Down") {
+            if ($n.OperationalStatus -eq "Down") {
                 if ($DisconnectedAdapters.ispresent) {
                     $reqDotNetNics += @($n)
                 }
@@ -73,10 +73,45 @@ function Get-IPConfiguration {
         $props = $nic.GetIPProperties()
         $ip = @()
         foreach ($addr in $props.UnicastAddresses) {
-            #$ip += @(@{ IPAddress = $addr.Address.IPAddressToString; CIDR = $addr.PrefixLength; })
-            #$ip += @("$($addr.Address.IPAddressToString)/$($addr.PrefixLength)")
-            $ip += $addr.Address.IPAddressToString
+            $afam = $addr.Address.AddressFamily
+            $properties = @{
+                AddressFamily = $afam
+                DotNetObject = $addr
+            }
+            if ($afam -eq "InterNetwork") {
+                # DotNet 4.5 has .PrefixLength but 4.0 doesn't
+                if ("$($addr.PrefixLength)" -eq "") {
+                    $pl = ConvertTo-MaskLength $addr.IPv4Mask.Address
+                }
+                else { $pl = $addr.PrefixLength } 
+                $properties += @{
+                    IPAddress = $addr.Address.IPAddressToString
+                    Netmask = $addr.IPv4Mask.IPAddressToString
+                    CIDR = $pl
+                }
+                $a = new-object PSObject -property $properties
+                $a = $a | add-member -force -passthru -membertype ScriptMethod -name ToString -value { 
+                    "$($this.IPAddress)/$($pl)"
+                }
+            }
+            # TODO: I can't figure out how to determine the CIDR range from the DotNet libs? 
+            # I'm not sure it's even present at all? 
+            elseif ($afam -eq "InterNetworkV6") {
+                $properties += @{
+                    IPAddress = $addr.Address.IPAddressToString -replace '%.*',''
+                    ScopeID = $addr.Address.ScopeId
+                    Netmask = $null
+                    CIDR = $null
+                }
+                $a = new-object PSObject -property $properties
+                $a = $a | add-member -force -passthru -membertype ScriptMethod -name ToString -value { 
+                    "$($this.IPAddress)%$($this.ScopeID)"
+                }
+            }
+            $a.PSObject.Typenames.insert(0,'IPConfigurationIPAddress')
+            $ip += @($a)
         }
+
         $mac = $nic.GetPhysicalAddress()
         if ($mac.tostring().length -gt 0) { 
             $mac = Convert-HexStringToMac $mac
@@ -84,18 +119,19 @@ function Get-IPConfiguration {
         else {
             $mac = "NONE"
         }
-        $property = @{
+        $properties = @{
             Name = $nic.name
             Description = $nic.Description
-            IPAddress = $props.UnicastAddresses.Address.IPAddressToString
-            IPv4Mask = $props.UnicastAddresses.IPv4Mask.IPAddressToString
+            IPAddress = $ip
             DefaultGateway = $props.GatewayAddresses.Address.IPAddressToString
             DNSServer = $props.DnsAddresses.IPAddressToString
             MAC = $mac
             NetworkInterfaceType = $nic.NetworkInterfaceType
             DotNetObject = $nic
+            Speed = $nics.Speed
+            OperationalStatus = $nics.OperationalStatus
         }
-        $nicobj = new-object PSObject -property $property
+        $nicobj = new-object PSObject -property $properties
         $nicobj.PSObject.Typenames.insert(0,'IPConfigurationNetworkAdapter')
         $reqNetworkAdapters += @($nicobj)
     }
@@ -103,6 +139,29 @@ function Get-IPConfiguration {
 }
 set-alias ifconfig Get-IPConfiguration
 set-alias getip Get-IPConfiguration
+
+Function ConvertTo-MaskLength {
+    <#
+      .Synopsis
+        Returns the length of a subnet mask.
+      .Description
+        ConvertTo-MaskLength accepts any IPv4 address as input, however the output value 
+        only makes sense when using a subnet mask.
+        Source: http://www.indented.co.uk/index.php/2010/01/23/powershell-subnet-math/
+      .Parameter SubnetMask
+        A subnet mask to convert into length
+    #>
+    [CmdLetBinding()]
+    Param(
+        [Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)]
+        [Alias("Mask")]
+        [Net.IPAddress]$SubnetMask
+    )
+    Process {
+        $Bits = "$( $SubnetMask.GetAddressBytes() | ForEach-Object { [Convert]::ToString($_, 2) } )" -Replace '[\s0]'
+        return $Bits.Length
+    }
+}
 
 function Convert-HexStringToMac {
     param([parameter(mandatory=$true)] [string] $hex)

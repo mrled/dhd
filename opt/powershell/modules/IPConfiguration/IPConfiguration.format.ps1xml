@@ -13,7 +13,6 @@
               <ListItem><PropertyName>Name</PropertyName></ListItem>
               <ListItem><PropertyName>Description</PropertyName></ListItem>
               <ListItem><PropertyName>IPAddress</PropertyName></ListItem>
-              <ListItem><PropertyName>IPv4Mask</PropertyName></ListItem>
               <ListItem><PropertyName>DefaultGateway</PropertyName></ListItem>
               <ListItem><PropertyName>DNSServer</PropertyName></ListItem>
               <ListItem><PropertyName>MAC</PropertyName></ListItem>
@@ -40,7 +39,7 @@ foreach ($addr in $_.IPAddress) {
 @"
 $($_.Name)
     $($_.Description)
-    Address: $($_.IPAddress) / Netmask: $($_.IPv4Mask)
+    Address: $($_.IPAddress)
     Default Gateway: $($_.DefaultGateway)
     DNS Servers: $($_.DNSServer)
     Link Type: $($_.NetworkInterfaceType), MAC: $($_.mac)
