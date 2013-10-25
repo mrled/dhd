@@ -23,6 +23,7 @@
 	{"keys":["ctrl+shift+tab"], "command":"prev_view" },
 
 	// requires FuzzyFileNav
-	{"keys": ["ctrl+x", "ctrl+f"], "command": "fuzzy_start_from_file"}
-
+	{"keys": ["ctrl+x", "ctrl+f"], "command": "fuzzy_start_from_file"},
+    {"keys": ["ctrl+alt+n"], "command": "fuzzy_make_file", "context": [{"key": "fuzzy_make_file"}] },
+    {"keys": ["ctrl+alt+d"], "command": "fuzzy_delete", "context": [{"key": "fuzzy_delete"}] }
 ]
