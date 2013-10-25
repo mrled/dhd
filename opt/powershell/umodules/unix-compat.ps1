@@ -12,21 +12,20 @@ function id {
 # and z is a function, you'll get the whole relationship + the function definition as well. 
 function Display-AllCommands {
     param(
-        [alias("r")] [switch]$recurse,
+        [alias("r","a","all")] [switch]$recurse,
         [int]$recursionlevel=0,
         # weird syntax means that if the $recursionlevel isn't specified, 
         # $args[0] doesn't become $recursionlevel:
         [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
     )
     if ($args.Count -le 0) {return}
-    #for ($a=0; $a -le $args.count; $a++) {
     foreach ($a in $args) {
         $level = $recursionlevel
         # This next line helps keep track if there is lots of output, but also clutters everything. Hmm. 
         #if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
         if ($level -gt 20) { 
             $errstr  = "Recursion is greater than 20 levels deep. Probably a circular set of aliases? "
-            write-error ($errstr)
+            write-error $errstr
             return
         }
         $levelprefix = ""
@@ -68,18 +67,12 @@ function Display-AllCommands {
                         # AND at the beginning of the whole string
                         # I try to match both \n and \r\n because I've had it give me BOTH (lol)
 
-                        $re_firstnewline = new-object system.text.regularexpressions.regex `
-                            ('\A\r?\n', `
-                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
-                        $re_lastnewline = new-object system.text.regularexpressions.regex `
-                            ('\Z\r?\n', `
-                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
-                        $re_newline = new-object system.text.regularexpressions.regex `
-                            ('\r?\n', `
-                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
-                        $re_stringbegin = new-object system.text.regularexpressions.regex `
-                            ('\A', `
-                             [System.Text.RegularExpressions.RegexOptions]::MultiLine)
+                        $regex = [system.text.regularexpressions.regex]
+                        $reml = [System.Text.RegularExpressions.RegexOptions]::MultiLine 
+                        $re_firstnewline = new-object $regex ('\A\r?\n', $reml)
+                        $re_lastnewline = new-object $regex ('\Z\r?\n', $reml)
+                        $re_newline = new-object $regex ('\r?\n', $reml)
+                        $re_stringbegin = new-object $regex ('\A', $reml)
 
                         $functionprefix = $levelprefix + "   " #indent the funct definitions a bit further
                         $defstr = $re_firstnewline.replace($defstr, '')
@@ -176,6 +169,7 @@ if (test-path alias:more) { del alias:more }
 if (test-path function:more) { del function:more }
 if (test-path alias:l) { del alias:l }
 $possibless = @(
+    "$home\Documents\WindowsPowerShell\Modules\PSCX\Apps\less.exe"
     "C:\opt\MinGW\msys\1.0\bin\less.exe",
     "${env:ProgramFiles(x86)}\Git\bin\less.exe",
     "$env:windir\system32\more.com"
@@ -188,6 +182,20 @@ foreach ($pl in $possibless) {
         set-alias m less
         break
     }
+}
+
+# this will only work with a decent less.exe as described above
+# it's intended so you can do something like 
+#     gci 'c:\program files' -include *.txt | lessall
+# like I do with my subl() function 
+# TODO: this is using PSCX's less.exe by calling 'less.exe' directly. 
+#       it won't work with the one from Git. Ugh. 
+function lessall {
+    $files = @()
+    foreach ($f in $input) { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+    foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+    $allfiles = $files -join " "
+    less.exe $allfiles
 }
 
 if (test-path "${env:ProgramFiles(x86)}\Git\bin\diff.exe") {
@@ -216,12 +224,24 @@ function man {
 }
 
 if (test-path alias:cd) { del alias:cd }
+# You can pipe a path to this 
+# This is particularly useful for something like `mkdir asdf | cd` to mkdir/cd in the same command, nice
+
+# Set-LocationEx from PSCX let's you move back/forward in your location stack with these:
+#     Set-LocationEx -
+#     Set-LocationEx +
+# Calling just Set-Location displays the stack
+$setloc = "set-location"
+if (get-module pscx) {
+    $setloc = "Set-LocationEx"
+    if (test-path alias:pwd) { del alias:pwd }
+    set-alias pwd $setloc
+}
+
 function cd {
-    if ($args.Count -le 0) {
-        set-location $home
-    }
-    else {
-        set-location "$args"
-    }
+    param(
+        [parameter(position=0, valuefrompipeline=$true)] $location = $home
+    )
+    iex "$setloc `"$location`""
 }
 

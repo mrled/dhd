@@ -1,6 +1,12 @@
 # Put something in your PATH by creating a .bat file there that calls it (ewwwwww)
 # Was gonna use shortcuts for this but guess what, you have to call them with the .lnk at the end. 
 # fucking lol. 
+
+# This just gets the latest version according to the default Python install scheme
+# which gets you C:\Python27, C:\Python33, etc
+$pythondir = (get-item c:\python* | sort)[-1]
+$pythonexe = "$pythondir\python.exe"
+
 function Install-Exe {
     param(
         [parameter(Mandatory=$true)] [string] $exe,
@@ -19,12 +25,16 @@ function Install-Exe {
             }
             $pe = $pythonpath
         }
-        elseif ($global:pythonexe) {
-            if (-not (test-path $global:pythonexe)) {
-                write-error "Using the pythonexe global variable, but there is no such executable '$global:pythonexe'."
+        elseif ($pythonexe) {
+            if (-not (test-path $pythonexe)) {
+                write-error "Using the pythonexe global variable, but there is no such executable '$pythonexe'."
                 return
             }
-            $pe = $global:pythonexe
+            $pe = $pythonexe
+        }
+        else {
+            write-error "Tried to install a python script, but there is no python.exe to be found."
+            return
         }
     }
     if (-not (test-path $exe)) {

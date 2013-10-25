@@ -21,9 +21,18 @@ if ($psversiontable.psversion.major -ge 3) {
     if (test-path $adkpath) { import-module $adkpath }
 }
 
+# I need Chocolatey for stuff, including psget
+# I need psget for stuff, including PSReadline
+# I need PSReadline because duh
 $env:PSModulePath = $env:PSModulePath + ";$home\.dhd\opt\powershell\modules"
 import-module IPConfiguration
 import-module uPackageManager
+try {
+    # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
+    # so import the module before adding that format file so my format file overrides their bullshit
+    import-module PsGet,PSCX
+}
+catch {}
 
 # umodules/micromodules are just scripts that I'm dot sourcing
 # they're not mature or large or discrete enough for modules
@@ -52,31 +61,154 @@ set-alias reimport reimport-module
 #       figure out how to unload it and then check again.
 update-formatdata -prependpath "$home\.dhd\opt\powershell\mrl.format.ps1xml"
 
-# aliases can't take parameters (wtf), and functions have different scope than your shell. 
+#### PATH SECTION
+# todo : could mimic set-variable options as closely aspossible
+function Set-EnvironmentVariable {
+    param(
+        [parameter(mandatory=$true)] [string] $Name,
+        [string] $Value = "",
+        [validateset("Machine","User","Process")] [string[]] $TargetLocation = "Process"
+    )
+    foreach ($target in $TargetLocation) {
+        [Environment]::SetEnvironmentVariable($Name, $Value, $target)
+    }
+}
+set-alias setenv Set-EnvironmentVariable
+# TODO: when getting multiple targets, it outputs an array of strings for the value
+#       honestly not sure what to do here. %PATH% is *concatenated*, but others are 
+#       *replaced* when there's a user and a machine one. ?????
+function Get-EnvironmentVariable {
+    param(
+        [parameter(mandatory=$true)] [string] $Name,
+        [validateset("Machine","User","Process")] [string[]] $TargetLocation = "Process"
+    )
+    $out = ""
+    foreach ($target in $TargetLocation) {
+        ([Environment]::GetEnvironmentVariable($Name, $target))
+    }
+}
+set-alias getenv Get-EnvironmentVariable
+
+function Get-SystemPath {
+    ($env:path).split(";")
+}
+
+$possiblePaths = @(
+    "C:\Chocolatey\bin"
+    "$home\.dhd\opt\win32bin"
+    "$home\opt\win32bin"
+    "$home\opt\Console2"
+    "$home\opt\SysinternalsSuite"
+    "$home\opt\mupdf"
+    "C:\opt\strawberry\perl\bin"
+    "C:\opt\GnuWin32\bin"
+    "C:\opt\GnuWin32\sbin"
+    "C:\opt\local\bin"
+    "C:\opt\svn\bin"
+    "C:\opt\SysinternalsSuite"
+    "C:\opt\nirsoft64"
+    "C:\opt\nirsoft_package"
+    "C:\opt\Console2"
+    "C:\opt\UnxUtils\bin"
+    "C:\opt\UnxUtils\usr\local\wbin"
+    "C:\opt\sqlite"
+    "C:\Program Files (x86)\Git\cmd"
+    "C:\Program Files\PuTTY"
+    "C:\Program Files\7-Zip"
+    "C:\Program Files (x86)\7-Zip"
+    "C:\Program Files (x86)\PuTTY"
+    "C:\Program Files\Windows SDKs\Windows\v7.0\Bin"
+    "C:\Program Files\NSIS"
+    "C:\Program Files (x86)\NSIS"
+    "C:\Program Files\Nmap"
+    "C:\Program Files (x86)\Nmap"
+    "C:\Program Files (x86)\VMware\VMware Virtual Disk Development Kit\bin"
+    "C:\Program Files\VMware\VMware Virtual Disk Development Kit\bin"
+)
+foreach ($py in (get-item C:\Python*)) {
+    $possiblePaths += "$($py.fullname)"
+    $possiblePaths += "$($py.fullname)\Tools\Scripts"
+}
+#$possiblePaths += @([environment]::GetEnvironmentVariable("Path", "User") -split ";")
+$possiblePaths += @((getenv path user) -split ';')
+$possiblePaths = $possiblePaths | sort -unique
+# It doesn't do this by default because it's kinda slow maybe
+function Set-Systempath {
+    $existingPaths = @()
+    foreach ($pp in $possiblePaths) {
+        if (test-path $pp) { $existingPaths += @($pp) }
+    }
+
+    # Set the path for *future processes*
+    # We only set the User path, not the system path.
+    # This won't take effect in the current shell
+    setenv -name Path -value "$($existingPaths -join ";")" -targetlocation User
+
+    # Set the path for *the current shell*
+    # Since this will replace the path variable completely, we also have to go through the system path
+    #$existingPaths += @([environment]::GetEnvironmentVariable("Path", "Machine") -split ";")
+    $existingPaths += @((getenv path machine) -split ';')
+    setenv -name Path -value "$($existingPaths -join ";")" -targetlocation Process
+}
+
+#### END PATH SECTION
+
+# Term is important for things like less.exe, sometimes
+#set-environmentvariable -name "TERM" -value "msys" -targetlocation user,process
+
+# Set filetype associations
+### TODO: these assoc and ftype commands only work when elevated
+###       gotta replace them with something real! Probably writing to the registry.
+###       http://social.msdn.microsoft.com/Forums/vstudio/en-US/630ed1d9-73f1-4cc0-bc84-04f29cffc13b/
+###       essentially: see HKEY_CURRENT_USER\Software\Classes
+<#
+function assoc { cmd /c assoc $* }
+function ftype { cmd /c ftype $* }
+assoc .el=txtfile
+assoc .nfo=txtfile
+assoc .mdwn=txtfile
+assoc .markdown=txtfile
+assoc .md=txtfile
+assoc .text=txtfile
+#>
+
+# Python profile path shit
+set-environmentvariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
+
+# Python script execution
+# Get the latest version installed (assuming the default Python install path)
+$pythondir = (get-item c:\python* | sort)[-1]
+$pythonexe = "$pythondir\python.exe"
+<#
+assoc .py=Python.File
+ftype "Python.File=$pythonexe" "`"%1`"" %*
+#>
+<#
+if (-not (getenv pathext machine,user).tolower().contains('.py')) {
+    $userpe = (getenv pathext user)+".PY" # getenv inserts a ';' for us
+    setenv pathext $userpe user
+    # TODO: this line isn't working. fix it later. 
+    #setenv pathext "$(getenv pathext machine,user)" process
+}
+#>
+
+# random shit I figured out about pathext:
+# - setting a pathext in user overwrites the system pathext rather than being appended to it
+# - .cpl is added to the pathext... automatically? after each process starts? 
+#   because it's not in the user or machine environment, but it is in the process environment no matter what
+
+
+
+
+# aliases can't take parameters, and functions have different scope than your shell. 
 # Therefore, I can't have a ".b" command like I have to re-source my bash profile.
 # If you dot source a function which dot sources a file, it uses your shell scope to pull in the functions
 # Therefore, you can run ". p" (note the space) and get the same effect. 
 # Note: does NOT take into account new home/path vars (it cannot without relaunching PS)
 function p {
     . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1" 
+    Set-Systempath
 }
-
-# reinit: re-set home and path vars from my batch file & launch a new powershell. 
-# this reinit will launch a new PS but stay alive in the background until the new one exists. works in Console. 
-function reinit {
-    & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
-    start-process "powershell.exe" -NoNewWindow -Wait
-    exit
-}
-# this reinit launches a new PS in the same window, and exits current PS immediately; doesn't work with Console
-# oh. apparently this DOES work with ConEmu + Powershell 3 on Windows 7 x64. SWEET. 
-function reinit2 {
-    & "$Home\.dhd\opt\win32\home-and-path-vars.bat"
-    start-process "powershell.exe" -NoNewWindow
-    exit
-}
-
-function .. { cd .. }
 
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
@@ -141,6 +273,13 @@ function Enable-SimplePrompt {
     disable-prompt
     function global:prompt { simplePrompt }
 }
+function Exit-CurrentSession {
+    exit
+}
+Set-PSReadlineKeyHandler -key Ctrl+D `
+                         -BriefDescription SmartInsertQuote `
+                         -LongDescription "Exit PowerShell" `
+                         -ScriptBlock { exit }
 function Enable-Readline {
     import-module PSReadline # you have to define the prompt before importing this
 
@@ -149,35 +288,29 @@ function Enable-Readline {
     # A way to see possible handler methods is: 
     # [PSConsoleUtilities.PSConsoleReadline].GetMethods().Name
 
-    $hsbhandler = { [PSConsoleUtilities.PSConsoleReadLine]::HistorySearchBackward() }
-    Set-PSReadlineKeyHandler -key Ctrl+R -BriefDescription HistorySearchBackward -Handler $hsbhandler
-    $hsfhandler = { [PSConsoleUtilities.PSConsoleReadLine]::HistorySearchForeward() }
-    Set-PSReadlineKeyHandler -key Ctrl+S -BriefDescription HistorySearchForeward -Handler $hsfhandler
+    Set-PSReadlineKeyHandler -key Ctrl+R -function HistorySearchBackward
+    Set-PSReadlineKeyHandler -key Ctrl+S -function HistorySearchForward
 
     # this doesn't work at all? 
     #$rlhandler = { [PSConsoleUtilities.PSConsoleReadLine]::RevertLine() }
     #Set-PSReadlineKeyHandler -Key Ctrl+C -BriefDescription RevertLine -Handler $rlhandler
 
-    $phhandler = { [PSConsoleUtilities.PSConsoleReadLine]::PreviousHistory() }
-    Set-PSReadlineKeyHandler -key Ctrl+P -BriefDescription PreviousHistory -Handler $phhandler
-    $nhhandler = { [PSConsoleUtilities.PSConsoleReadLine]::NextHistory() }
-    Set-PSReadlineKeyHandler -key Ctrl+N -BriefDescription NextHistory -Handler $nhhandler
+    Set-PSReadlineKeyHandler -key Ctrl+P -function PreviousHistory
+    Set-PSReadlineKeyHandler -key Ctrl+N -function NextHistory
 }
 
 # You must do this after setting your prompt for it to work correctly
 enable-readline
-
-# This is used in at least the uPackageManager module
-$pythonexe = "C:\Python33\python.exe"
 
 $sublpath = "C:\Program Files\Sublime Text 3\sublime_text.exe"
 if (test-path $sublpath) {
     #set-alias subl "$sublpath"
     function subl {
         $files = @()
-        foreach ($f in $input) { if (-not [string]::IsNullOrEmpty($f)) { $files += @("$f") } }
-        foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("$f") } }
+        foreach ($f in $input) { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+        foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
         start-process $sublpath -argumentlist $files
+        #write-host $files
     }
 }
 $env:GIT_EDITOR = $sublpath

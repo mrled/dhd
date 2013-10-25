@@ -96,6 +96,7 @@ function Get-IPConfiguration {
             }
             # TODO: I can't figure out how to determine the CIDR range from the DotNet libs? 
             # I'm not sure it's even present at all? 
+            # http://stackoverflow.com/questions/3679652/is-ip-address-on-the-same-subnet-as-the-local-machine-with-ipv6-support
             elseif ($afam -eq "InterNetworkV6") {
                 $properties += @{
                     IPAddress = $addr.Address.IPAddressToString -replace '%.*',''

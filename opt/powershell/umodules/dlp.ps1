@@ -2,8 +2,8 @@
 
 $dlpumodule = $myinvocation.mycommand.path
 
-$dlpCorePath = "C:\Projects\DLP\Ed-Fi-Core"
-$dlpAppsPath = "C:\Projects\DLP\Ed-Fi-Apps"
+$edfiCorePath = "C:\Projects\DLP\Ed-Fi-Core"
+$edfiAppsPath = "C:\Projects\DLP\Ed-Fi-Apps"
 
 function Get-DlpProjectFile {
     param(
@@ -13,9 +13,9 @@ function Get-DlpProjectFile {
         [string[]] $subdir = "logistics",
         [string[]] $containing
     )
-    if     ($repo -eq "core") { $l = "$dlpCorePath\$subdir" }
-    elseif ($repo -eq "apps") { $l = "$dlpAppsPath\$subdir" }
-    elseif ($repo -eq "any")  { $l = "$dlpCorePath\$subdir","$dlpAppsPath\$subdir" }
+    if     ($repo -eq "core") { $l = "$edfiCorePath\$subdir" }
+    elseif ($repo -eq "apps") { $l = "$edfiAppsPath\$subdir" }
+    elseif ($repo -eq "any")  { $l = "$edfiCorePath\$subdir","$edfiAppsPath\$subdir" }
 
     $r = gci -recurse $l -include $query -exclude $exclude
     if ($containing) {
