@@ -202,3 +202,56 @@ set-alias echoexec echoexec-expression
 
 
 function .. { cd .. }
+
+
+
+#### SUBLIME TEXT and LESS
+
+if (test-path alias:more) { del alias:more }
+if (test-path function:more) { del function:more }
+if (test-path alias:l) { del alias:l }
+$possibless = @(
+    "$home\Documents\WindowsPowerShell\Modules\PSCX\Apps\less.exe"
+    "C:\opt\MinGW\msys\1.0\bin\less.exe",
+    "${env:ProgramFiles(x86)}\Git\bin\less.exe",
+    "$env:windir\system32\more.com"
+)
+foreach ($pl in $possibless) {
+    if (test-path $pl) {
+        set-alias less "$pl"
+        set-alias l less
+        set-alias more less
+        set-alias m less
+        break
+    }
+}
+
+# this will only work with a decent less.exe as described above
+# it's intended so you can do something like 
+#     gci 'c:\program files' -include *.txt | lessall
+# like I do with my subl() function 
+# TODO: this is using PSCX's less.exe by calling 'less.exe' directly. 
+#       it won't work with the one from Git. Ugh. 
+function lessall {
+    $files = @()
+    foreach ($f in $input) { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+    foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+    $allfiles = $files -join " "
+    less.exe $allfiles
+}
+
+$sublpath = "C:\Program Files\Sublime Text 3\sublime_text.exe"
+if (test-path $sublpath) {
+    #set-alias subl "$sublpath"
+    function subl {
+        $files = @()
+        foreach ($f in $input) { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+        foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+        start-process $sublpath -argumentlist $files
+        #write-host $files
+    }
+}
+$env:GIT_EDITOR = $sublpath
+$env:SVN_EDITOR = $sublpath
+$env:EDITOR = $sublpath
+$env:VISUAL = $sublpath

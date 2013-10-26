@@ -156,7 +156,6 @@ function Import-X509Certificate {
     $store.close()
 }
 
-
 function EfsEncrypt-File {
     param (
         [alias("r")] [switch]$recurse
@@ -166,4 +165,98 @@ function EfsEncrypt-File {
             $f.Encrypt()
         }
     }
+}
+
+function reimport-module {
+    param([parameter(mandatory=$true)] [string] $moduleName)
+    $module = get-module $moduleName
+    if ($module) {
+        write-host "Module is imported. Removing and re-adding."
+        remove-module $moduleName
+        import-module $module.path
+    }
+    else {
+        write-host "Module was not imported. Trying to add module $modulename..."
+        import-module $modulename
+    }
+}
+set-alias reimport reimport-module
+
+# todo : could mimic set-variable options as closely aspossible
+function Set-EnvironmentVariable {
+    param(
+        [parameter(mandatory=$true)] [string] $Name,
+        [string] $Value = "",
+        [validateset("Machine","User","Process")] [string[]] $TargetLocation = "Process"
+    )
+    foreach ($target in $TargetLocation) {
+        [Environment]::SetEnvironmentVariable($Name, $Value, $target)
+    }
+}
+set-alias setenv Set-EnvironmentVariable
+# TODO: when getting multiple targets, it outputs an array of strings for the value
+#       honestly not sure what to do here. %PATH% is *concatenated*, but others are 
+#       *replaced* when there's a user and a machine one. ?????
+function Get-EnvironmentVariable {
+    param(
+        [parameter(mandatory=$true)] [string] $Name,
+        [validateset("Machine","User","Process")] [string[]] $TargetLocation = "Process"
+    )
+    $out = ""
+    foreach ($target in $TargetLocation) {
+        ([Environment]::GetEnvironmentVariable($Name, $target))
+    }
+}
+set-alias getenv Get-EnvironmentVariable
+
+function Get-SystemPath {
+    ($env:path).split(";")
+}
+
+# http://social.msdn.microsoft.com/Forums/vstudio/en-US/630ed1d9-73f1-4cc0-bc84-04f29cffc13b/
+function Set-FileAssociation {
+    param(
+        [parameter(mandatory=$true)] [string] $extension,
+        [parameter(mandatory=$true)] [string] $association,
+        [string] $contentType,
+        [validateset("User","Machine")] $location = "User"
+    )
+    if ($location.tolower() -eq "user") {
+        $drive = "HKCU"
+    }
+    elseif ($location.tolower() -eq "machine") {
+        if (-not $SoyAdmin) {
+            write-error "Cannot set associations for the whole machine unless running as administrator."
+            return
+        }
+        $drive = "HKLM"
+    }
+    $key = "$($drive):\Software\Classes\$extension"
+    if (-not (test-path $key)) {
+        new-item -force $key | out-null
+    }
+    set-itemproperty $key "(default)" $association
+    set-itemproperty $key "Content Type" $contentType
+}
+function Set-AssociationOpenCommand {
+    param(
+        [parameter(mandatory=$true)] [string] $association,
+        [parameter(mandatory=$true)] [string] $command,
+        [validateset("User","Machine")] $location = "User"
+    )
+    if ($location.tolower() -eq "user") {
+        $drive = "HKCU"
+    }
+    elseif ($location.tolower() -eq "machine") {
+        if (-not $SoyAdmin) {
+            write-error "Cannot set associations for the whole machine unless running as administrator."
+            return
+        }
+        $drive = "HKLM"
+    }
+    $key = "$($drive):\Software\Classes\$association\shell\open\command"
+    if (-not (test-path $key)) {
+        new-item -force $key | out-null
+    }
+    set-itemproperty $key "(default)" $command
 }
