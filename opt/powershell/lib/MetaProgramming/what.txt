@@ -1,1 +1,0 @@
-Added from: http://blogs.msdn.com/b/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx
