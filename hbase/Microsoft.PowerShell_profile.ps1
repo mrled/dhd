@@ -5,7 +5,9 @@ $hostname=[System.Net.Dns]::GetHostName()
 $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
 $SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-$realProfile = $myinvocation.mycommand.path
+# $profile is actually a PS object. $profile|get-member shows other NoteProperty entries that may be of interest
+# After this line you can do $profile.dhd to get the path to this file.
+$profile | Add-Member -MemberType NoteProperty -Name "dhd" -Value $myinvocation.mycommand.path
 
 # You have to set the EAP to "stop" if you want try/catch to do anything, so...
 # I want it to be stop anyway (I think?) but I'll save the default here just in case.
@@ -44,7 +46,8 @@ import-module IPConfiguration,uPackageManager
 try {
     # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
     # so import the module before adding that format file so my format file overrides their bullshit
-    import-module PsGet,PSCX
+    import-module PsGet,PSCX,TabExpansion++
+    Set-TabExpansionOption -option AppendBackslash
 }
 catch {}
 
