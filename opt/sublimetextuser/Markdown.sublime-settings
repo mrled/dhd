@@ -10,5 +10,18 @@
 	    "markdown",
 	    "mkd"
 	],
-	"trim_trailing_whitespace_on_save": false
+	"trim_trailing_whitespace_on_save": false,
+	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
+
+	//"font_face": "Menlo",
+	//"font_options": [ "subpixel_antialias", "no_round", "directwrite"],
+	//"translate_tabs_to_spaces": true,
+	"word_wrap": true,
+	"wrap_width": false,
+	"draw_centered": false,
+	//"auto_match_enabled": true,
+	"line_padding_top": 0,
+	//"caret_style": "wide",
+	"highlight_line": false,
+	"match_header_hashes": false
 }
