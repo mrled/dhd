@@ -1,5 +1,14 @@
 # Initialization stuff doesn't need to happen very often, and it might be slow ish maybe
 
+function Get-PythonDir {
+    # Get the latest version installed (assuming the default Python install path)
+    $matchingPythonDirs = get-item C:\python* | sort 
+    if ($matchingPythonDirs.count -gt 0) {
+        $pythondir = $matchingPythonDirs[-1]
+    }
+    return $pythondir
+}
+
 function Setup-SystemPath {
     $possiblePaths = @(
         "C:\Chocolatey\bin"
@@ -33,10 +42,11 @@ function Setup-SystemPath {
         "C:\Program Files (x86)\VMware\VMware Virtual Disk Development Kit\bin"
         "C:\Program Files\VMware\VMware Virtual Disk Development Kit\bin"
     )
-    foreach ($py in (get-item C:\Python*)) {
-        $possiblePaths += "$($py.fullname)"                # contains python.exe 
-        $possiblePaths += "$($py.fullname)\Scripts"        # contains stuff installed from Distribute packages
-        $possiblePaths += "$($py.fullname)\Tools\Scripts"  # contains .py files 
+    $pythondir = Get-PythonDir
+    if ($pythondir) {
+        $possiblePaths += "$($pythondir.fullname)"                # contains python.exe 
+        $possiblePaths += "$($pythondir.fullname)\Scripts"        # contains stuff installed from Distribute packages
+        $possiblePaths += "$($pythondir.fullname)\Tools\Scripts"  # contains .py files 
     }
     $possiblePaths += @((getenv path user) -split ';')
     $possiblePaths = $possiblePaths.tolower() | sort -unique
@@ -69,23 +79,23 @@ function Setup-Environment {
     Set-FileAssociation .text txtfile "text/plain"
     Set-FileAssociation .mkd txtfile "text/plain"
 
-    # Python profile path shit
-    set-environmentvariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
-
-    # Python script execution
-    # Get the latest version installed (assuming the default Python install path)
-    $pythondir = (get-item c:\python* | sort)[-1]
-    $pythonexe = "$pythondir\python.exe"
-
-    Set-FileAssociation .py Python.File
-    Set-AssociationOpenCommand Python.File "$pythonexe `"%1`" %*"
+    # Python stuff
+    $pythondir = Get-PythonDir
+    if ($pythondir) {
+        $pythonexe = "$pythondir\python.exe"
+        Set-FileAssociation .py Python.File
+        Set-AssociationOpenCommand Python.File "$pythonexe `"%1`" %*"
+        set-environmentvariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
+    }
 }
 
 function Setup-AdminEnvironment {
-    if (-not (getenv pathext machine).tolower().contains('.py')) {
-        $pathext = getenv pathext machine
-        $pathext += ';.PY'
-        setenv pathext $pathext machine,process
+    if (Get-PythonDir) {
+        if (-not (getenv pathext machine).tolower().contains('.py')) {
+            $pathext = getenv pathext machine
+            $pathext += ';.PY'
+            setenv pathext $pathext machine,process
+        }
     }
 }
 
