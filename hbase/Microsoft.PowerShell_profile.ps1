@@ -72,8 +72,8 @@ function Enable-Readline {
     # A way to see possible handler methods is: 
     # [PSConsoleUtilities.PSConsoleReadline].GetMethods().Name
 
-    Set-PSReadlineKeyHandler -key Ctrl+R -function HistorySearchBackward
-    Set-PSReadlineKeyHandler -key Ctrl+S -function HistorySearchForward
+    #Set-PSReadlineKeyHandler -key Ctrl+R -function HistorySearchBackward
+    #Set-PSReadlineKeyHandler -key Ctrl+S -function HistorySearchForward
 
     # this doesn't work at all? 
     #$rlhandler = { [PSConsoleUtilities.PSConsoleReadLine]::RevertLine() }
@@ -123,8 +123,10 @@ $historyStartupEvent = {
     }
 }
 
-Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
-& $historyStartupEvent
+# These slow down the exit process considerably, and don't work with PSRealine's built-in backwards history stuff 
+# (at least for the moment), so not worth it. 
+#Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
+#& $historyStartupEvent
 set-alias hist get-history
 
 
