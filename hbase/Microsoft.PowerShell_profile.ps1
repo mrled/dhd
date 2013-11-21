@@ -7,7 +7,7 @@ $SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 # $profile is actually a PS object. $profile|get-member shows other NoteProperty entries that may be of interest
 # After this line you can do $profile.dhd to get the path to this file.
-$profile | Add-Member -MemberType NoteProperty -Name "dhd" -Value $myinvocation.mycommand.path
+$profile | Add-Member -MemberType NoteProperty -Name "dhd" -Value $myinvocation.mycommand.path -force
 
 # You have to set the EAP to "stop" if you want try/catch to do anything, so...
 # I want it to be stop anyway (I think?) but I'll save the default here just in case.
