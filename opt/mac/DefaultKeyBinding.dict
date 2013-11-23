@@ -1,4 +1,5 @@
 /* ~/Library/KeyBindings/DefaultKeyBinding.dict */
+/* THIS DOES NOT WORK AS A SYMLINK -- for at least some apps. Ugh. */
 
 {
 /*	"" = "complete:"; /* C-q Esc in Emacs */   
