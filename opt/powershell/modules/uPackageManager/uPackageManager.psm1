@@ -4,8 +4,11 @@
 
 # This just gets the latest version according to the default Python install scheme
 # which gets you C:\Python27, C:\Python33, etc
-$pythondir = (get-item c:\python* | sort)[-1]
-$pythonexe = "$pythondir\python.exe"
+$matchingPythonDirs = get-item C:\python* | sort 
+if ($matchingPythonDirs.count -gt 0) {
+    $pythondir = $matchingPythonDirs[-1]
+    $pythonexe = "$pythondir\python.exe"
+}
 
 function Install-Exe {
     param(
