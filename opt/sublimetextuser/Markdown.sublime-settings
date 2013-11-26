@@ -8,7 +8,9 @@
 	    "mdwn",
 	    "mmd",
 	    "markdown",
-	    "mkd"
+	    "mkd",
+	    "text",
+	    "txt"
 	],
 	"trim_trailing_whitespace_on_save": false,
 	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
