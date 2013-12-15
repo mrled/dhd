@@ -137,6 +137,9 @@ function tail {
 if (test-path "${env:ProgramFiles(x86)}\Git\bin\diff.exe") {
     set-alias unixdiff "${env:ProgramFiles(x86)}\Git\bin\diff.exe"
 }
+if (test-path "${env:ProgramFiles(x86)}\Git\bin\sed.exe") {
+    set-alias unixsed "${env:ProgramFiles(x86)}\Git\bin\sed.exe"
+}
 
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
 if (test-path alias:touch) {del alias:touch}

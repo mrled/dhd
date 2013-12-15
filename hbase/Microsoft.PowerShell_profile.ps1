@@ -46,8 +46,7 @@ import-module IPConfiguration,uPackageManager
 try {
     # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
     # so import the module before adding that format file so my format file overrides their bullshit
-    import-module PsGet,PSCX,TabExpansion++
-    Set-TabExpansionOption -option AppendBackslash
+    import-module PsGet,PSCX,posh-git 
 }
 catch {}
 

@@ -2,8 +2,10 @@
 
 $dlpumodule = $myinvocation.mycommand.path
 
+$edfiBasePath = "C:\Projects\DLP"
 $edfiCorePath = "C:\Projects\DLP\Ed-Fi-Core"
 $edfiAppsPath = "C:\Projects\DLP\Ed-Fi-Apps"
+$edfiToolsPath = "C:\Projects\DLP\Ed-Fi-Tools"
 
 function Get-DlpProjectFile {
     param(
@@ -49,3 +51,22 @@ function Generate-DlpCredentialCertificate {
     openssl req -x509 -nodes -days $daysValid -subj "/CN=$certName" -newkey rsa:$keysize -keyout "$certName.pem" -out "$certName.pem"
     Convert-OpenSSLPemToPfx -pemfile "$certName.pem"
 }
+
+function Add-DlpClientGitRemote {
+    <#
+    Assumes repos named standard names (Ed-Fi-Core), checked out to standard places (C:\Projects\DLP\Ed-Fi-Core)
+    #>
+    param(
+        [parameter(mandatory=$true)] [string] $orgName,
+        [string] $projectsPath = "$edfiBasePath",
+        [string[]] $repoNames = @("Ed-Fi-Core","Ed-Fi-Apps"),
+        [string] $branchName = "master"
+    )
+    foreach ($repoName in $repoNames) {
+        cd "$projectsPath\$repoName"
+        git remote add $orgName "git@github.com:$orgname/$repoName.git"
+        git fetch $orgName
+        git checkout -b "$orgName-$branchName" "$orgName/$branchName"
+    }
+}
+set-alias adlpclient Add-DlpClientGitRemote
