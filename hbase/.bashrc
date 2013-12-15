@@ -797,6 +797,7 @@ if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
 pip()          { sudo -H sh -c "umask 022; pip $*"; }
+pip3()         { sudo -H sh -c "umask 022; pip3 $*"; }
 easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
 
 
