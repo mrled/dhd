@@ -2,9 +2,11 @@
 	"installed_packages":
 	[
 		"FuzzyFileNav",
+		"Mako",
 		"Markdown Preview",
 		"MarkdownEditing",
 		"Package Control",
+		"PlainTasks",
 		"PowerShell",
 		"sublemacspro",
 		"Theme - Soda",

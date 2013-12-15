@@ -3,8 +3,8 @@
 	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
 	"ignored_packages":
 	[
-		"Markdown",
-		"Vintage"
+		"Vintage",
+		"Markdown"
 	],
 	"theme": "Soda Dark.sublime-theme",
 	"word_wrap": true
