@@ -161,6 +161,13 @@ function man {
         get-help $a -full | more
     }
 }
+if (test-path alias:help) { del alias:help }
+if (test-path function:help) { del function:help } # PSCX has one of these
+function help {
+    foreach ($a in $args) {
+        (get-help $a).syntax
+    }
+}
 
 if (test-path alias:cd) { del alias:cd }
 # You can pipe a path to this 

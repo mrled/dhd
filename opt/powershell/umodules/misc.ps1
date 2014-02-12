@@ -241,14 +241,47 @@ function lessall {
 }
 
 $sublpath = "C:\Program Files\Sublime Text 3\sublime_text.exe"
+
 if (test-path $sublpath) {
     #set-alias subl "$sublpath"
-    function subl {
+    function subl_OLDVERSION_FASTER_BROKEN {
+        [cmdletbinding()]
+
+        param(  
+            [Parameter(position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)] [string[]] $file
+        )
+
         $files = @()
-        foreach ($f in $input) { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
+        #foreach ($f in $input,$args) { 
+        foreach ($f in $file) {
+            if (-not [string]::IsNullOrEmpty($f)) { 
+                if ($f.fullname) {
+                    # This is probably a FileInfo object
+                    $ff = $f.fullName
+                    write-verbose "Using fileinfo object at full path $ff"
+                    $files += @("`"$ff`"")
+                }
+                else {
+                    # Assume it's just a string
+                    write-verbose "Using a string as $f"
+                    $files += @("`"$f`"") 
+                }
+            } 
+        }
         foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
         start-process $sublpath -argumentlist $files
-        #write-host $files
+        write-host $files
+    }
+    function subl {
+        [cmdletbinding()]
+        param(  
+            [Parameter(position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)] [string[]] $file
+        )
+        process {
+            foreach($f in $file) {
+                start-process $sublpath -argumentlist "$f"
+            }
+        }
     }
 }
 $env:GIT_EDITOR = $sublpath
