@@ -1,6 +1,7 @@
 {
 	"caret_style": "wide",
 	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
+	"font_size": 11,
 	"ignored_packages":
 	[
 		"Vintage",
