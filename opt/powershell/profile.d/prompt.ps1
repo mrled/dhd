@@ -1,3 +1,28 @@
+function displayPath {
+    param(
+        $path
+    )
+    switch ($path.gettype()) {
+        'PathInfo' {
+            $path = $path.providerpath
+        }
+        'DirectoryInfo' {
+            $path = $path.fullname
+        }
+    }
+    $path = $path -replace [regex]::Escape($home),"~"
+    $splitpath = $path -split '\\'
+    if ($splitpath.count -gt 2) {
+        $displaypath = $splitpath[0] # drive letter
+        $displaypath+= '\...\'
+        $displaypath+= $splitpath[$splitpath.count-1] #the last folder in the path
+    }
+    else {
+        $displaypath = $path
+    }
+    return $displaypath
+}
+
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
 function colorPrompt {
@@ -8,7 +33,7 @@ function colorPrompt {
     Write-Host (" ") -nonewline
     Write-Host ($hostname) -nonewline -foregroundcolor Blue
     
-    $mypwd = $pwd.providerpath -replace [regex]::Escape($home),"~"
+    $mypwd = displayPath $pwd
     Write-Host (" " + $mypwd + " ") -nonewline -foregroundcolor Green
     
     if ($SoyAdmin) {
@@ -31,9 +56,7 @@ function simplePrompt {
     
     # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
     # Make some other optimizations for space.
-    $mypwd = $pwd
-    $mypwd = $mypwd -replace [regex]::Escape("Microsoft.Powershell.Core\FileSystem::"),""
-    $mypwd = $mypwd -replace [regex]::Escape($home),"~"
+    $mypwd = displayPath $pwd
     
     if ($SoyAdmin) { $lcop = "#" }
     else { $lcop = ">" }
