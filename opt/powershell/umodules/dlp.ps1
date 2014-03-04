@@ -2,30 +2,25 @@
 
 $dlpumodule = $myinvocation.mycommand.path
 
-$projPaths = @("D:\Projects") #This can be an array
+$projPaths = @("D:\Projects","C:\Projects") #This can be an array. 
 
-$edfiBasePath = "D:\Projects\DLP"
-$edfiCorePath = "D:\Projects\DLP\Ed-Fi-Core"
-$edfiAppsPath = "D:\Projects\DLP\Ed-Fi-Apps"
-$edfiToolsPath = "D:\Projects\DLP\Ed-Fi-Tools"
+$edfiBasePath = "C:\Projects\DLP"
+$edfiCorePath = "C:\Projects\DLP\Ed-Fi-Core"
+$edfiAppsPath = "C:\Projects\DLP\Ed-Fi-Apps"
+$edfiToolsPath = "C:\Projects\DLP\Ed-Fi-Tools"
 
-function Get-DlpProjectFile {
-    [CmdletBinding(DefaultParametersetName="Query")] 
+function Get-DlpProjectBasePath {
     param(
-        [Parameter(ParameterSetName='Query',Position=0)] [alias("include")] [string[]] $query = @("*.ps1","*.psm1"),
-        [Parameter(ParameterSetName='Query')] [string[]] $exclude = $null,
-        [Parameter(ParameterSetName='Query')] [string[]] $subdir = "logistics",
-        [Parameter(ParameterSetName='Query')] [string] $containingPattern,
-        [Parameter(ParameterSetName='Query')] [switch] $caseSensitive,
-        [Parameter(ParameterSetName='GetBase')] [switch] $getBase,
-        [validateset("core","apps","all")] [string] $repo = "all",
+        [validateset("core","apps","all","current")] [string] $repo = "all",
         [string] $basePath = $null
     )
     if (-not $basePath) {
         $curpath = (get-item $pwd).fullname 
         foreach ($pp in @($projPaths)) {
             if ($curpath.startswith($pp)) {
-                $basePath = ($curpath -split '\\')[0..2] -join '\'
+                $splitPath = $curpath -split '\\'
+                $basePath = $splitpath[0..2] -join '\' #this will be something like C:\Projects\DLP
+                $currentRepo = $splitpath[3] # this will be something like Ed-Fi-Apps or whatever
                 break
             }
         }
@@ -35,33 +30,90 @@ function Get-DlpProjectFile {
     }
     $appsPath = "$basePath\Ed-Fi-Apps"
     $corePath = "$basePath\Ed-Fi-Core"
+    switch ($repo) {
+        "core" { $location = "$corePath" }
+        "apps" { $location = "$appsPath" }
+        "all" { $location = "$corePath","$appsPath" }
+        "current" { $location = "$basePath\$currentRepo"}
+    }
+    return get-item $location
+}
 
-    switch ($PsCmdlet.ParameterSetName) {
-        'Query' {
-            if     ($repo -eq "core") { $location = "$corePath\$subdir" }
-            elseif ($repo -eq "apps") { $location = "$appsPath\$subdir" }
-            elseif ($repo -eq "all")  { $location = "$corePath\$subdir","$appsPath\$subdir" }
-            $r = gci -recurse $location -include $query -exclude $exclude
-            if ($containingPattern) {
-                $slsParms = @{
-                    quiet = $true
-                    pattern = $containingPattern
-                    CaseSensitive = $caseSensitive.ispresent
-                }
-                $results = $r |? { $_ | sls @slsparms }
+function Get-DlpProjectFile {
+    [CmdletBinding(DefaultParametersetName="QueryType")] 
+    param(
+        [Parameter(ParameterSetName='Query',Position=0)] [alias("query")] [string[]] $include,
+        [Parameter(ParameterSetName='Query')] [string[]] $exclude,
+        [Parameter(ParameterSetName='Query')] [string[]] $subdir,
+
+        [Parameter(ParameterSetName='QueryType',Mandatory=$true)] 
+        [validateset('logistics','source','visualstudio','database','etl','alltypes','allfiles')] 
+        [string[]] $type = 'logistics',
+
+        [string] $containingPattern,
+        [switch] $caseSensitive,
+
+        [validateset("core","apps","all","current")] [string] $repo = "all",
+        [string] $basePath = $null
+    )
+    $searchBase = Get-DlpProjectBasePath -repo $repo -basePath $basePath
+
+    # A bunch of predefined query types, to match the -type parameter. Just maakes things convenient.
+    $qtypes = @{}
+    $qtypes.logistics = @{}
+    $qtypes.logistics.include = @('*.ps1','*.psm1','*.psd1','credentials-*.xml')
+    $qtypes.logistics.subdir = @('logistics')
+    $qtypes.source = @{}
+    $qtypes.source.include = @('*.cs')
+    $qtypes.source.subdir = @('Application','src')
+    $qtypes.visualstudio = @{}
+    $qtypes.visualstudio.include = @('*.sln','*.csproj','packages.config')
+    $qtypes.visualstudio.subdir = @('Application','src')
+    $qtypes.config = @{}
+    $qtypes.config.include = @('*.config')
+    $qtypes.config.subdir = @('Application','src')
+    $qtypes.database = @{}
+    $qtypes.database.include = @('*.sql')
+    $qtypes.database.subdir = @('Database')
+    $qtypes.etl = @{}
+    $qtypes.etl.include = @('*.dtsx')
+    $qtypes.etl.subdir = @('Etl')
+    $allinclude = foreach ($k in $qtypes.keys) { $qtypes[$k]['include'] }
+    $allsubdir = foreach ($k in $qtypes.keys) { $qtypes[$k]['subdir'] }
+    $qtypes.alltypes = @{}
+    $qtypes.alltypes.include = $allinclude
+    $qtypes.alltypes.subdir = $allsubdir
+    $qtypes.allfiles = @{}
+    $qtypes.allfiles.include = ''
+    $qtypes.allfiles.subdir = '.'
+
+    if ($PsCmdlet.ParameterSetName -eq 'QueryType') {
+        $include = $qtypes["$type"]['include']
+        $subdir = $qtypes["$type"]['subdir'] 
+    }
+
+    $expandedLocations = @()
+    foreach ($sd in @($subdir)) {
+        foreach ($sb in @($searchBase)) {
+            if (test-path "$sb\$sd") {
+                $expandedLocations += "$sb\$sd"
             }
-            else {
-                $results = $r
-            }
-        }
-        'GetBase' {
-            if     ($repo -eq "core") { $location = "$corePath" }
-            elseif ($repo -eq "apps") { $location = "$appsPath" }
-            elseif ($repo -eq "all")  { $location = "$corePath","$appsPath" }
-            $results = get-item $location
         }
     }
 
+    write-verbose "Looking in '$expandedLocations' for files like '$include' but not like '$exclude'"
+    $allMatches = gci -recurse $expandedLocations -include $include -exclude $exclude
+    if ($containingPattern) {
+        $slsParms = @{
+            quiet = $true
+            pattern = $containingPattern
+            CaseSensitive = $caseSensitive.ispresent
+        }
+        $results = $allMatches |? { $_ | sls @slsparms }
+    }
+    else {
+        $results = $allMatches
+    }
     return $results
 }
 set-alias gdlp Get-DlpProjectFile
