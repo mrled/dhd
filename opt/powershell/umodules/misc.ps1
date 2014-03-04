@@ -284,10 +284,14 @@ if (test-path $sublpath) {
         }
     }
 }
-$env:GIT_EDITOR = $sublpath
-$env:SVN_EDITOR = $sublpath
-$env:EDITOR = $sublpath
-$env:VISUAL = $sublpath
+#$env:GIT_EDITOR = $sublpath
+#$env:SVN_EDITOR = $sublpath
+#$env:EDITOR = $sublpath
+#$env:VISUAL = $sublpath
+
+# You want this to be separated with forward slashes so that it works
+# from the Git (bash) command line and cmd and Powershell etc.
+$env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
 
 
 function Get-FileEncoding {
