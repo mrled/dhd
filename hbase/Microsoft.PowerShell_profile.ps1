@@ -37,13 +37,17 @@ set-psdebug -strict # throw an exception for variable reference before assignmen
 #>
 
 
-# fuck this path
-$adkpath =  "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
-if (test-path $adkpath) { $env:PSModulePath = $env:PSModulePath + ";$adkpath" }
+$PossibleModulePaths = @(
+    "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
+    "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows Azure\PowerShell\Azure"
+    "${env:ProgramFiles(x86)}\Microsoft SQL Server\110\Tools\PowerShell\Modules"
+    "$home\.dhd\opt\powershell\modules"
+    "$home\Documents\WindowsPowerShell\Modules"
+)
+foreach ($pmp in $PossibleModulePaths) {
+    if (test-path $pmp) { $env:PSModulePath += ";$pmp" }
+}
 
-# TODO: function to only add these if they exist
-$env:PSModulePath = $env:PSModulePath + ";$home\.dhd\opt\powershell\modules"
-$env:PSModulePath = $env:PSModulePath + ";$home\Documents\WindowsPowerShell\Modules"
 import-module IPConfiguration,uPackageManager
 try {
     # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
