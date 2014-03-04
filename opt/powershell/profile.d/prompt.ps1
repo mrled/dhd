@@ -13,7 +13,7 @@ function displayPath {
     $path = $path -replace [regex]::Escape($home),"~"
     $splitpath = $path -split '\\'
     if ($splitpath.count -gt 2) {
-        $displaypath = $splitpath[0] # drive letter
+        $displaypath = $splitpath[0] # drive letter or ~
         $displaypath+= '\...\'
         $displaypath+= $splitpath[$splitpath.count-1] #the last folder in the path
     }
@@ -54,8 +54,6 @@ function simplePrompt {
     $dt = $(get-date).Tostring("HH:mm:ss")
     $hn = [System.Net.Dns]::GetHostName()
     
-    # if we're on an smb share or something $pwd contains loads of useless bullshit; strip it. 
-    # Make some other optimizations for space.
     $mypwd = displayPath $pwd
     
     if ($SoyAdmin) { $lcop = "#" }
