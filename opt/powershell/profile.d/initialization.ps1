@@ -53,7 +53,10 @@ function Setup-SystemPath {
 
     $existingPaths = @()
     foreach ($pp in $possiblePaths) {
-        if (test-path $pp) { $existingPaths += @($pp) }
+        if ($pp -and (test-path $pp)) { 
+            write-host "Adding value to system path: $pp"
+            $existingPaths += @($pp) 
+        }
     }
 
     # Set the path for *future processes*
@@ -69,7 +72,7 @@ function Setup-SystemPath {
 
 function Setup-Environment {
     # Term is important for things like less.exe, sometimes
-    set-environmentvariable -name "TERM" -value "msys" -targetlocation user,process
+    set-environmentvariable -name "TERM" -value "xterm" -targetlocation user,process
 
     Set-FileAssociation .el txtfile
     Set-FileAssociation .nfo txtfile "text/plain"
