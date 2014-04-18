@@ -200,7 +200,7 @@ set-alias setenv Set-EnvironmentVariable
 function Get-EnvironmentVariable {
     param(
         [parameter(mandatory=$true)] [string] $Name,
-        [validateset("Machine","User","Process")] [string[]] $TargetLocation = "Process"
+        [validateset("Machine","User","Process")] [string[]] $TargetLocation = @("Machine","User","Process")
     )
     $out = ""
     foreach ($target in $TargetLocation) {

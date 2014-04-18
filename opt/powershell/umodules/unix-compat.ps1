@@ -158,7 +158,7 @@ function touch {
 if (test-path alias:man) { del alias:man }
 function man {
     foreach ($a in $args) {
-        get-help $a -full | more
+        get-help $a -full | less
     }
 }
 if (test-path alias:help) { del alias:help }

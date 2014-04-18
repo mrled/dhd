@@ -30,6 +30,10 @@ foreach ($o in $possibleOpenSSL) {
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
 set-alias sz "$env:programfiles\7-Zip\7z.exe" 
 
+#if (test-path C:\Chocolatey) {
+#    set-alias nuget C:\Chocolatey\chocolateyinstall\nuget.exe
+#}
+
 # This works. Caveat: Emacs is iffy for some reason. 
 # You can 'elevate-process emacs \somefile.txt' just fine
 # You can 'elevate-process notepad "\somefile with spaces.txt"'
@@ -210,6 +214,9 @@ function .. { cd .. }
 if (test-path alias:more) { del alias:more }
 if (test-path function:more) { del function:more }
 if (test-path alias:l) { del alias:l }
+set-alias l less
+$env:LESS = "-iRC"
+<#
 $possibless = @(
     "$home\Documents\WindowsPowerShell\Modules\PSCX\Apps\less.exe"
     "C:\opt\MinGW\msys\1.0\bin\less.exe",
@@ -226,6 +233,7 @@ foreach ($pl in $possibless) {
     }
 }
 
+###### I think this is superseeded by PSCX's less function
 # this will only work with a decent less.exe as described above
 # it's intended so you can do something like 
 #     gci 'c:\program files' -include *.txt | lessall
@@ -239,6 +247,7 @@ function lessall {
     $allfiles = $files -join " "
     less.exe $allfiles
 }
+#>
 
 $sublpath = "C:\Program Files\Sublime Text 3\sublime_text.exe"
 
@@ -293,6 +302,29 @@ if (test-path $sublpath) {
 # from the Git (bash) command line and cmd and Powershell etc.
 $env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
 
+function Get-GitPrettyLog {
+    git log --oneline --all --graph --decorate $args
+}
+set-alias gpl Get-GitPrettyLog
+function Compare-GitObjectsOnGitHub {
+    param(
+        [parameter(mandatory=$true)] [string] $CommitA,
+        [parameter(mandatory=$true)] [string] $CommitB
+    )
+    $remotes = git remote -v
+    foreach ($r in $remotes) {
+        $name,$address,$direction = $r -split "\s+"
+        if (($name -eq "origin") -and ($direction -eq "(fetch)")) {
+            $remote = $address -replace "^git\@github\.com:","" -replace "\.git$",""
+            break
+        }
+    }
+    if (-not $remote) {
+        throw "Couldn't find remote, probably because this is a dumb hack???? Yah."
+    }
+    start "https://github.com/$remote/compare/$CommitA...$CommitB"
+}
+set-alias github-diff Compare-GitObjectsOnGitHub
 
 function Get-FileEncoding {
     ##############################################################################
@@ -401,3 +433,25 @@ function Get-MagicNumber {
     }
     return $MagicNumberContainer
 }
+
+function Get-Profiles {
+    [cmdletbinding()]
+    param(
+        [string] $containingPattern,
+        [switch] $caseSensitive
+    )
+    $profiles = gci -recurse $dhdbase\opt\powershell -include *.ps1,*.psm1
+    foreach ($p in $profile.AllUsersAllHosts,$profile.AllUsersCurrentHost,$profile.CurrentUserAllHosts,$profile.CurrentUserCurrentHost,$profile.dhd) {
+        if (test-path $p) { $profiles += @(get-item $p) }
+    }
+
+    if ($containingPattern) {
+        write-verbose "Searching through results files for strings matching '$containingPattern'..."
+        $results = $profiles |? { $_ | sls -quiet -pattern $containingPattern -caseSensitive:$caseSensitive }
+    }
+    else {
+        $results = $profiles
+    }
+    return $results
+}
+set-alias gpro Get-Profiles
