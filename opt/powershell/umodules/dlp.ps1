@@ -46,7 +46,7 @@ function Get-DlpProjectFile {
         [Parameter(ParameterSetName='Query')] [string[]] $exclude,
         [Parameter(ParameterSetName='Query')] [string[]] $subdir,
 
-        [Parameter(ParameterSetName='QueryType',Mandatory=$true)] 
+        [Parameter(ParameterSetName='QueryType')] 
         [validateset('logistics','source','visualstudio','database','etl','alltypes','allfiles')] 
         [string[]] $type = 'logistics',
 
@@ -62,12 +62,12 @@ function Get-DlpProjectFile {
     $qtypes = @{}
     $qtypes.logistics = @{}
     $qtypes.logistics.include = @('*.ps1','*.psm1','*.psd1','credentials-*.xml')
-    $qtypes.logistics.subdir = @('logistics')
+    $qtypes.logistics.subdir = @('logistics','src\SolutionScripts')
     $qtypes.source = @{}
     $qtypes.source.include = @('*.cs')
     $qtypes.source.subdir = @('Application','src')
     $qtypes.visualstudio = @{}
-    $qtypes.visualstudio.include = @('*.sln','*.csproj','packages.config')
+    $qtypes.visualstudio.include = @('*.sln','*.csproj','*.ccproj','packages.config','*.cscfg','*.cspkg','*.csdef')
     $qtypes.visualstudio.subdir = @('Application','src')
     $qtypes.config = @{}
     $qtypes.config.include = @('*.config')
@@ -78,11 +78,9 @@ function Get-DlpProjectFile {
     $qtypes.etl = @{}
     $qtypes.etl.include = @('*.dtsx')
     $qtypes.etl.subdir = @('Etl')
-    $allinclude = foreach ($k in $qtypes.keys) { $qtypes[$k]['include'] }
-    $allsubdir = foreach ($k in $qtypes.keys) { $qtypes[$k]['subdir'] }
     $qtypes.alltypes = @{}
-    $qtypes.alltypes.include = $allinclude
-    $qtypes.alltypes.subdir = $allsubdir
+    $qtypes.alltypes.include = foreach ($k in $qtypes.keys) { $qtypes[$k]['include'] } 
+    $qtypes.alltypes.subdir = foreach ($k in $qtypes.keys) { $qtypes[$k]['subdir'] }
     $qtypes.allfiles = @{}
     $qtypes.allfiles.include = ''
     $qtypes.allfiles.subdir = '.'
@@ -101,14 +99,23 @@ function Get-DlpProjectFile {
         }
     }
 
-    write-verbose "Looking in '$expandedLocations' for files like '$include' but not like '$exclude'"
+    $verbMessage = "Looking in '$expandedLocations' for files like '$include'"
+    if ($exclude) { $verbMessage += " but not like '$exclude'"}
+    write-verbose $verbMessage
     $allMatches = gci -recurse $expandedLocations -include $include -exclude $exclude
+    if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent) { 
+        write-verbose "Matches:"
+        foreach ($match in $allmatches) {
+            write-verbose $match.name
+        }
+    }
     if ($containingPattern) {
         $slsParms = @{
             quiet = $true
             pattern = $containingPattern
             CaseSensitive = $caseSensitive.ispresent
         }
+        write-verbose "Searching through results files for strings matching '$containingPattern'..."
         $results = $allMatches |? { $_ | sls @slsparms }
     }
     else {
@@ -118,16 +125,38 @@ function Get-DlpProjectFile {
 }
 set-alias gdlp Get-DlpProjectFile
 
+$possibleOpenSSLPaths = @(
+    'C:\Program Files (x86)\Git\bin\openssl.exe'
+
+)
+foreach ($possl in $possibleOpenSSLPaths) {
+    if (test-path $possl) {
+        set-alias openssl $possl
+        break
+    }
+}
+
 function Convert-OpenSSLPemToPfx {
     param(
         [parameter(mandatory=$true)] [string] $pemfile,
-        [string] $displayname
+        [string] $outfile = ((resolve-path $pemfile).path -replace ".pem$","") + ".pfx",
+        [string] $displayname = ((split-path -leaf $pemfile) -replace ".pem$","")
     )
-    $basename = split-path -leaf $pemfile
-    if (-not $displayname) {
-        $displayname = $basename
-    }
-    openssl pkcs12 -export -out "$basename.pfx" -in "$pemfile" -name "$displayname"
+    openssl pkcs12 -export -out "$outfile" -in "$pemfile" -name "$displayname"
+}
+function Convert-OpenSSLPfxToPem {
+    param(
+        [parameter(mandatory=$true)] [string] $pfxfile,
+        [string] $outfile = ((resolve-path $pfxfile).path -replace ".pfx$","") + ".pem"
+    )
+    #openssl x509 -inform pkcs12 -in "$pfxfile" -outform der -out "$outfile"
+    openssl pkcs12 -in "$pfxfile" -out "$outfile" -nodes
+}
+function Get-OpenSSLThumbprint {
+    param(
+        [parameter(mandatory=$true)] [string] $pemFile
+    )
+    (openssl x509 -in $pemFile -sha1 -noout -fingerprint).Split('=')[1].Replace(':','')
 }
 
 function Generate-DlpCredentialCertificate {
@@ -170,7 +199,7 @@ function Invoke-GitCommandOnDlpRepositories {
         [validateset("core","apps","all")] [string] $repo = "all"
     )
     $oldpath = get-location
-    foreach ($path in (Get-DlpProjectFile -getbase -repo $repo -basepath $basepath)) {
+    foreach ($path in (Get-DlpProjectBasePath -getbase -basepath $basepath)) {
         set-location $path | out-null
         write-host -foreground magenta $path.fullname
         invoke-expression "git $gitCommand"
