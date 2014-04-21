@@ -1,5 +1,9 @@
 # -*- mode: powershell -*-
 
+$profiled = "$home\.dhd\opt\powershell\profile.d"
+. $profiled\beerme.ps1
+beerme
+
 $hostname=[System.Net.Dns]::GetHostName()
 
 $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -68,8 +72,6 @@ foreach ($um in (gci ~/.dhd/opt/powershell/umodules)) {
 
 # override some default display values for objects, this feature ruelz
 update-formatdata -prependpath "$home\.dhd\opt\powershell\mrl.format.ps1xml"
-
-$profiled = "$home\.dhd\opt\powershell\profile.d"
 
 . $profiled\initialization.ps1
 . $profiled\prompt.ps1
