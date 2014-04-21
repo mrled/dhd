@@ -55,10 +55,9 @@ function colorPrompt {
 
 # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
 function simplePrompt {
-    $dt = $(get-date).Tostring("HH:mm:ss")
     if ($SoyAdmin) { $lcop = "#" }
     else { $lcop = ">" }
-    return "$dt $hostname (displayPath $pwd) PS$lcop "
+    return "$(get-date).Tostring("HH:mm:ss") $hostname $(displayPath $pwd) PS$lcop "
 }
 
 if ($env:term -eq "emacs") {
