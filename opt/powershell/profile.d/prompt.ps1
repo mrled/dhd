@@ -57,7 +57,7 @@ function colorPrompt {
 function simplePrompt {
     if ($SoyAdmin) { $lcop = "#" }
     else { $lcop = ">" }
-    return "$(get-date).Tostring("HH:mm:ss") $hostname $(displayPath $pwd) PS$lcop "
+    return "$(get-date).Tostring('HH:mm:ss') $hostname $(displayPath $pwd) PS$lcop "
 }
 
 if ($env:term -eq "emacs") {

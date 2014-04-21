@@ -57,8 +57,8 @@ try {
     # so import the module before adding that format file so my format file overrides their bullshit
     import-module PsGet
     import-module posh-git
-    import-module PSCX
     #import-module PSCX -args $home\.dhd\opt\powershell\Pscx.UserPreferences.ps1
+    import-module PSCX
 }
 catch {}
 
@@ -74,40 +74,32 @@ $profiled = "$home\.dhd\opt\powershell\profile.d"
 . $profiled\initialization.ps1
 . $profiled\prompt.ps1
 
-import-module PSReadline # you have to define the prompt before importing this
-set-psreadlineoption -editmode emacs
-Set-PSReadlineKeyHandler -key Ctrl+P -function PreviousHistory
-Set-PSReadlineKeyHandler -key Ctrl+N -function NextHistory
-
-# Note that this adds it to your Powershell history but not your command prompt history :(
-$historyfile = "$Home\Documents\WindowsPowerShell\history.csv"
+$profile | Add-Member -MemberType NoteProperty -Name HistoryFile -Value "$Home\Documents\WindowsPowerShell\history.csv" -force
 $historyExitEvent = {
-    if (test-path $historyfile) {
+    if (test-path $profile.HistoryFile) {
 
         $shellhist = get-history -count 1000
 
         # only get shell history that has occurred since we added history from the hist file
-        for ( $i = $shellhist.length; $i -ge 0; $i--) {
-            if ($shellhist[$i].id -eq $global:finalFileHistoryId) {
-                break;
+        foreach ($id in $shellhist.length..0) {
+            if ($shellhist[$id].id -eq $global:finalFileHistoryId) {
+                $earliestCommandThisSession = $id + 1
             }
         }
-        $newshellhist = $shellhist[$i..$shellhist.length]
+        $newshellhist = $shellhist[$earliestCommandThisSession..$shellhist.length]
 
 
-        # we get the file history again so that we don't clobber history added by another
-        # exiting shell. 
+        # we get the file history again so that we don't clobber history added by another exiting shell
         clear-history
-        import-csv $historyfile | add-history
+        import-csv $profile.HistoryFile | add-history
         $newshellhist | add-history 
     }
 
-    get-history | export-csv $historyfile
+    get-history | export-csv $profile.HistoryFile
 }
-
 $historyStartupEvent = {
-    if (test-path $historyfile) {
-        import-csv $historyfile | add-history
+    if (((get-history).count -eq 0) -and (test-path $profile.HistoryFile) ) {
+        import-csv $profile.HistoryFile | add-history
         $global:finalFileHistoryId = (get-history)[-1].id
     }
     else {
@@ -117,6 +109,12 @@ $historyStartupEvent = {
 
 # These slow down the exit process considerably, and don't work with PSRealine's built-in backwards history stuff 
 # (at least for the moment), so not worth it. 
-#Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
-#& $historyStartupEvent
+Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
+& $historyStartupEvent
 set-alias hist get-history
+
+import-module PSReadline # you have to define the prompt & do history stuff before importing this
+set-psreadlineoption -editmode emacs
+Set-PSReadlineKeyHandler -key Ctrl+P -function PreviousHistory
+Set-PSReadlineKeyHandler -key Ctrl+N -function NextHistory
+
