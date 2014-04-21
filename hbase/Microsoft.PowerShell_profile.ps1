@@ -1,7 +1,7 @@
 # -*- mode: powershell -*-
 
 $profiled = "$home\.dhd\opt\powershell\profile.d"
-. $profiled\beerme.ps1
+. $profiled\asciiart.ps1
 Display-Metroid
 
 $hostname=[System.Net.Dns]::GetHostName()
