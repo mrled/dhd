@@ -13,6 +13,7 @@ function Setup-SystemPath {
     $possiblePaths = @(
         "C:\Chocolatey\bin"
         "$home\.dhd\opt\win32bin"
+        "$home\.dhd\opt\powershell\bin"
         "$home\opt\win32bin"
         "$home\opt\Console2"
         "$home\opt\SysinternalsSuite"

@@ -14,7 +14,8 @@ $dhdbase = resolve-path "$(split-path $myinvocation.mycommand.path)\.."
 # I want it to be stop anyway (I think?) but I'll save the default here just in case.
 $default_eap = $ErrorActionPreference
 $ErrorActionPreference = "stop"
-set-psdebug -strict # throw an exception for variable reference before assignment 
+
+#set-psdebug -strict # throw an exception for variable reference before assignment 
 #set-psdebug -off # disable all debugging stuff / reset to "normal" 
 
 <# Modules explanation:
@@ -50,10 +51,14 @@ foreach ($pmp in $PossibleModulePaths) {
 }
 
 import-module IPConfiguration,uPackageManager
+
 try {
     # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
     # so import the module before adding that format file so my format file overrides their bullshit
-    import-module PsGet,PSCX,posh-git 
+    import-module PsGet
+    import-module posh-git
+    import-module PSCX
+    #import-module PSCX -args $home\.dhd\opt\powershell\Pscx.UserPreferences.ps1
 }
 catch {}
 
@@ -69,32 +74,13 @@ $profiled = "$home\.dhd\opt\powershell\profile.d"
 . $profiled\initialization.ps1
 . $profiled\prompt.ps1
 
-
-function Enable-Readline {
-    import-module PSReadline # you have to define the prompt before importing this
-
-    set-psreadlineoption -editmode emacs
-
-    # A way to see possible handler methods is: 
-    # [PSConsoleUtilities.PSConsoleReadline].GetMethods().Name
-
-    #Set-PSReadlineKeyHandler -key Ctrl+R -function HistorySearchBackward
-    #Set-PSReadlineKeyHandler -key Ctrl+S -function HistorySearchForward
-
-    # this doesn't work at all? 
-    #$rlhandler = { [PSConsoleUtilities.PSConsoleReadLine]::RevertLine() }
-    #Set-PSReadlineKeyHandler -Key Ctrl+C -BriefDescription RevertLine -Handler $rlhandler
-
-    Set-PSReadlineKeyHandler -key Ctrl+P -function PreviousHistory
-    Set-PSReadlineKeyHandler -key Ctrl+N -function NextHistory
-}
-
-# You must enable readline after setting your prompt for it to work correctly
-enable-readline
+import-module PSReadline # you have to define the prompt before importing this
+set-psreadlineoption -editmode emacs
+Set-PSReadlineKeyHandler -key Ctrl+P -function PreviousHistory
+Set-PSReadlineKeyHandler -key Ctrl+N -function NextHistory
 
 # Note that this adds it to your Powershell history but not your command prompt history :(
-$historyfile = "$profile" -replace "_profile.ps1","_history.csv"
-
+$historyfile = "$Home\Documents\WindowsPowerShell\history.csv"
 $historyExitEvent = {
     if (test-path $historyfile) {
 
@@ -112,7 +98,7 @@ $historyExitEvent = {
         # we get the file history again so that we don't clobber history added by another
         # exiting shell. 
         clear-history
-p        import-csv $historyfile | add-history
+        import-csv $historyfile | add-history
         $newshellhist | add-history 
     }
 
@@ -134,5 +120,3 @@ $historyStartupEvent = {
 #Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
 #& $historyStartupEvent
 set-alias hist get-history
-
-

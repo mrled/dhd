@@ -25,7 +25,6 @@
 
 # This lets you define a $promptSuffix scriptblock variable elsewhere.
 # I use this for my DLP SolutionScripts.profile.ps1 for example. 
-set-psdebug -off
 if (-not $promptSuffix) {
     if ($SoyAdmin) {
         #Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red
@@ -35,10 +34,10 @@ if (-not $promptSuffix) {
     else {
         #$promptSuffix = { Write-Host "PS>" -nonewline -foregroundcolor White } 
         #$promptSuffix = { Write-Host "♫" -nonewline -foreground White  } 
-        $promptSuffix = { Write-Host "PS»" -nonewline -foreground White }
+        #$promptSuffix = { Write-Host "PS»" -nonewline -foreground White }
+        $promptSuffix = { Write-Host "PS$([char]187)" -nonewline -foreground White }
     }
 }
-set-psdebug -strict
 
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
@@ -70,3 +69,4 @@ if ($env:term -eq "emacs") {
 else {
     function global:prompt { colorPrompt }
 }
+
