@@ -2,7 +2,7 @@
 
 $profiled = "$home\.dhd\opt\powershell\profile.d"
 . $profiled\beerme.ps1
-beerme
+Display-Metroid
 
 $hostname=[System.Net.Dns]::GetHostName()
 
