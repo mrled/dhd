@@ -23,21 +23,11 @@
     return $displaypath
 }
 
-# This lets you define a $promptSuffix scriptblock variable elsewhere.
-# I use this for my DLP SolutionScripts.profile.ps1 for example. 
-if (-not $promptSuffix) {
-    if ($SoyAdmin) {
-        #Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red
-        # [char]9773   ☭ (HAMMER AND SICKLE)
-        $promptSuffix = { write-host " $([char]9773) " -nonewline -foregroundcolor red -backgroundcolor yellow }
-    }
-    else {
-        #$promptSuffix = { Write-Host "PS>" -nonewline -foregroundcolor White } 
-        #$promptSuffix = { Write-Host "♫" -nonewline -foreground White  } 
-        #$promptSuffix = { Write-Host "PS»" -nonewline -foreground White }
-        $promptSuffix = { Write-Host "PS$([char]187)" -nonewline -foreground White }
-    }
-}
+#$AdminPromptSuffix = { Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red }
+# [char]9773   ☭ (HAMMER AND SICKLE)
+$AdminPromptSuffix = { write-host " $([char]9773) " -nonewline -foregroundcolor red -backgroundcolor yellow }
+#$DefaultPromptSuffix = { Write-Host "PS»" -nonewline -foreground White }
+$DefaultPromptSuffix = { Write-Host "λ" -nonewline -foreground White }
 
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
@@ -47,7 +37,17 @@ function colorPrompt {
     Write-Host " $hostname" -nonewline -foregroundcolor Blue
     Write-Host " $(displayPath $pwd) " -nonewline -foregroundcolor Green
     
-    invoke-command $promptSuffix
+    # This lets you define a $promptSuffix scriptblock variable elsewhere.
+    # I use this for my DLP SolutionScripts.profile.ps1 for example. 
+    if ($PromptSuffixOverride) {
+        invoke-command $PromptSuffixOverride
+    }
+    elseif ($SoyAdmin) {
+        invoke-command $AdminPromptSuffix
+    }
+    else {
+        invoke-command $DefaultPromptSuffix
+    }
 
     # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
     return " "
@@ -60,12 +60,17 @@ function simplePrompt {
     return "$(get-date).Tostring('HH:mm:ss') $hostname $(displayPath $pwd) PS$lcop "
 }
 
+function reset-prompt {
+    rm function:\prompt
+    function global:prompt { colorPrompt }
+}
+
 if ($env:term -eq "emacs") {
     # Emacs' "M-x powershell" seems to handle the prompt itself, and you get extra newlines if you 
     # define one 
     if (test-path function:\prompt) { del function:\prompt }
 }
 else {
-    function global:prompt { colorPrompt }
+    reset-prompt
 }
 

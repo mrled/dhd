@@ -1,4 +1,4 @@
-﻿$promptSuffix = {
+﻿$PromptSuffixOverride = {
     #Write-Host "SS" -nonewline -foregroundcolor White
     #Write-host "$([char]1003)" -nonewline -foregroundcolor Magenta
     # Find something that looks sort of like the visual studio symbol...

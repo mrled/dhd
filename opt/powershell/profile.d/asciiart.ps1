@@ -15,9 +15,12 @@ function Show-Metroid {
     # \ @ @ /
     #  {'^'}
     #     -- SQUEE!!
+    $EE = "$([char]926)$([char]926)"
     write-host "  .---."  -foreground green
     write-host " /  " -foreground green -nonewline; write-host "@" -foreground red -nonewline; write-host "  \" -foreground green
     write-host " \ " -foreground green -nonewline; write-host "@ @" -foreground red -nonewline; write-host " /" -foreground green
     write-host "  {'" -foreground yellow -nonewline; write-host "^" -foreground green -nonewline; write-host "'}" -foreground yellow
-    write-host "     -- SQUEE!!" -foreground white
+    #write-host "     -- SQUΞΞ!!" -foreground white
+    write-host "     -- SQU$EE!!" -foreground white
 }
+
