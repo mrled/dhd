@@ -1,4 +1,4 @@
-function Display-Hatchet {
+function Show-Hatchet {
     write-host ""
     write-host "  /'-./\_"  -foreground white
     write-host " :    " -foreground white -nonewline; write-host "||" -foreground darkred -nonewline; write-host ",>" -foreground white
@@ -9,7 +9,7 @@ function Display-Hatchet {
     write-host ""
 }
 
-function Display-Metroid {
+function Show-Metroid {
     #  .---.
     # /  @  \
     # \ @ @ /
