@@ -12,6 +12,7 @@ $SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 # $profile is actually a PS object. $profile|get-member shows other NoteProperty entries that may be of interest
 # After this line you can do $profile.dhd to get the path to this file.
 $profile | Add-Member -MemberType NoteProperty -Name "dhd" -Value $myinvocation.mycommand.path -force
+$profile | Add-Member -MemberType NoteProperty -Name "ConEmu" -Value "$env:AppData\ConEmu.xml" -force
 $dhdbase = resolve-path "$(split-path $myinvocation.mycommand.path)\.."
 
 # You have to set the EAP to "stop" if you want try/catch to do anything, so...
