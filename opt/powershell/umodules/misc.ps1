@@ -217,13 +217,32 @@ if (test-path alias:l) { del alias:l }
 set-alias l less
 $env:LESS = "-iRC"
 
-$possiblevim = @()
+$possibleVimDirs = @()
 if (test-path "${env:programfiles(x86)}\vim") {
-    $possiblevim += @((ls "${env:programfiles(x86)}\vim\vim??\vim.exe").fullname | sort-object -descending)[0]
+    $possibleVimDirs += @((ls "${env:programfiles(x86)}\vim\vim??").fullname | sort-object -descending)[0]
 }
-foreach ($vi in $possiblevim) {
-    if ($vi -and (test-path $vi)) {
-        set-alias vim $vi
+if (test-path "${env:programfiles}\vim") {
+    $possibleVimDirs += @((ls "${env:programfiles}\vim\vim??").fullname | sort-object -descending)[0]
+}
+foreach ($vd in $possibleVimDirs) {
+    if ($vd) {
+        $VimHome = $vd
+        set-alias vim $VimHome\vim.exe
+        function vless {
+            # Adapted from vim/macros/less.bat
+            [cmdletbinding()] 
+            param(
+                [Parameter(Mandatory=$True,ValueFromPipeline=$True)] [string] $filename
+            )
+            if ($input) {
+                $input | vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -
+            }
+            else {
+                vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" $filename
+            }
+            
+        }
+        set-alias vl vless
         break
     }
 }
@@ -997,3 +1016,10 @@ function uploadid {
     "",$keydata | plink $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
 
+function Set-WindowTitle {
+    param(
+        [parameter(mandatory=$true)] [string] $message
+    )
+    # Note: Can also do this in ConEmu with Apps+R
+    $Host.UI.RawUI.WindowTitle = $message
+}
