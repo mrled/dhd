@@ -8,9 +8,10 @@
 }
 
 $profile | Add-Member -MemberType NoteProperty -Name "SolutionScripts" -Value $myinvocation.mycommand.path -force
-$ssPath = get-item C:\Projects\DLP\TDOE-RestApiSpike\src\SolutionScripts
+$repoRoot = resolve-path C:\Projects\DLP\TDOE-RestApiSpike
+$ssPath = "$repoRoot\src\SolutionScripts"
 write-host "Solution Scripts Console" -foregroundcolor Magenta
-cd $ssPath |out-null
+cd $repoRoot |out-null
 foreach ($file in (gci $ssPath)) {
     if ($file.extension -eq '.ps1') {
         Write-Host "        Sourcing: $file" -foregroundcolor Magenta
