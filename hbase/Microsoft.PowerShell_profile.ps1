@@ -50,12 +50,15 @@ $PossibleModulePaths = @(
     "${env:ProgramFiles(x86)}\Microsoft SQL Server\110\Tools\PowerShell\Modules"
     "$home\.dhd\opt\powershell\modules"
     "$home\Documents\WindowsPowerShell\Modules"
+    "C:\Projects\DLP\DLPLogisticsModules"
 )
 foreach ($pmp in $PossibleModulePaths) {
     if (test-path $pmp) { $env:PSModulePath += ";$pmp" }
 }
 
 import-module IPConfiguration,uPackageManager
+
+try { import-module credential-management} catch {}
 
 try {
     # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
