@@ -16,15 +16,89 @@ function conkeror {
 }
 
 $possibleOpenSSL = @(
-    'C:\Program Files\OpenSSL-Win64\bin\openssl.exe',
+    "${env:programfiles}\OpenSSL-Win64\bin\openssl.exe"
+    "${env:programfiles(x86)}\Git\bin\openssl.exe"
     'C:\STRAWBERRY\C\BIN\openssl.exe'
 )
 foreach ($o in $possibleOpenSSL) {
     if (test-path $o) {
-        set-alias openssl $o
+        set-alias OpenSslExe $o
         break
     }
 }
+function Invoke-OpenSSL {
+    [cmdletbinding()]
+    param(
+        [string[]] $argumentList = @(),
+        [switch] $Passthru
+    )
+    $OpenSslPath = (gcm OpenSslExe |? {$_.commandtype -eq 'Alias'}).definition
+    $sslProc = Invoke-ProcessAndWait -RedirectStandardError -RedirectStandardOutput -command $OpenSslPath -argumentList $argumentList
+
+    $stdout = $sslProc.StandardOutput.ReadToEnd()
+    $stderr = $sslProc.StandardError.ReadToEnd()
+
+    write-verbose "===== Standard Output ====="
+    write-verbose $stdout
+    write-verbose "===== Standard  Error ====="
+    write-verbose $stderr
+
+    # In normal mode, always display output. 
+    # In Passthru mode, only display output if the ExitCode was not zero
+
+    if ($Passthru) {
+        if ($sslProc.ExitCode -ne 0) {
+            if ($stdout) { write-host $stdout }
+            if ($stderr) { write-host $stderr -foregroundcolor Red }
+            throw "OpenSSL exited with code '$($sslProc.ExitCode)'"
+        }
+        # Necessary because the .ReadToEnd() method can't get called more than once
+        $sslProc | Add-Member -MemberType NoteProperty -Name SerializedStandardOutput -Value $stdout
+        $sslProc | Add-Member -MemberType NoteProperty -Name SerializedStandardError -Value $stderr
+        return $sslProc
+    }
+    else {
+        if ($stdout) { write-host $stdout }
+        if ($stderr) { write-host $stderr -foregroundcolor Red }
+    }
+}
+
+<#
+    .synopsis
+    Start a process and wait for it to exit
+    .description
+    This is a workaround for a stupid idiot bug in start-process that only triggers sometimes.
+    http://social.technet.microsoft.com/Forums/scriptcenter/en-US/37c1066e-b67f-4709-b195-aa2790216bd0
+    https://connect.microsoft.com/PowerShell/feedback/details/520554/
+    The bug has it return instantly even when -wait is passed to start-process, at least on Eric's local box. 
+    When that happens, $process.ExitCode hasn't been populated, and won't be, even when the process does actually exit.
+    System.Diagnostics.Process doesn't have that behavior, so that's what we're going to use instead
+
+    This also lets me redirect stderr and stdout and get them in the $process object
+#>
+function Invoke-ProcessAndWait {
+    [cmdletbinding()]
+    param(
+        [parameter(mandatory=$true)] [string] $command,
+        [parameter(mandatory=$true)] [string[]] $argumentList,
+        [switch] $RedirectStandardError,
+        [switch] $RedirectStandardOutput
+    )
+    #write-verbose "Running '$command' with arguments '$argumentList'"
+    write-verbose "$command $($argumentList -join " ")"
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $process.StartInfo.FileName = $command
+    $process.StartInfo.RedirectStandardError = $RedirectStandardError
+    $process.StartInfo.RedirectStandardOutput = $RedirectStandardOutput
+    $process.StartInfo.UseShellExecute = $false # AKA don't run in a new window
+    $process.StartInfo.WorkingDirectory = $pwd
+    $process.StartInfo.Arguments = $argumentList
+    $process.Start() | Out-Null
+    $process.WaitForExit()
+    return $process
+}
+
 
 # note: 7-zip is in the same place on both 64 bit and 32 bit Windows
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
@@ -804,39 +878,6 @@ function Create-Link {
         }
     }
 }
-function ln {
-    param(
-        [Parameter(ParameterSetName='type',Mandatory=$true)] [switch]$s, 
-
-        [string]$trg,
-        [string]$src
-    )
-    if ($f.ispresent) {
-        create-shortcut -filename $src -target $trg -force
-    }
-    else {
-        create-shortcut -filename $src -target $trg
-    }
-}
-
-# note that PS automatically maps certificates to the drive 'cert:'. 
-# To import a cert to the local machine's trusted root certs: 
-# Import-X509Certificate -path C:\whatever.cer -rootstore LocalMachine -certstore AuthRoot
-function Import-X509Certificate {
-    param(
-        [parameter(required=$true)] [string] $Path,
-        [string] $RootStore = "CurrentUser",
-        [string] $CertStore = "My"
-    )
- 
-    $pfx = new-object System.Security.Cryptography.X509Certificates.X509Certificate2
-    $pfx.import($Path)
-
-    $store = new-object System.Security.Cryptography.X509Certificates.X509Store($CertStore, $RootStore)
-    $store.open('MaxAllowed')
-    $store.add($pfx)
-    $store.close()
-}
 
 function EfsEncrypt-File {
     param (
@@ -1022,4 +1063,8 @@ function Set-WindowTitle {
     )
     # Note: Can also do this in ConEmu with Apps+R
     $Host.UI.RawUI.WindowTitle = $message
+}
+
+foreach ($exe in (gci "$env:programfiles\ShrewSoft\VPN Client\*.exe")) {
+    set-alias $exe.basename $exe.fullname
 }

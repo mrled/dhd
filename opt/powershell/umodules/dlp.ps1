@@ -125,48 +125,43 @@ function Get-DlpProjectFile {
 }
 set-alias gdlp Get-DlpProjectFile
 
-$possibleOpenSSLPaths = @(
-    'C:\Program Files (x86)\Git\bin\openssl.exe'
-
-)
-foreach ($possl in $possibleOpenSSLPaths) {
-    if (test-path $possl) {
-        set-alias openssl $possl
-        break
-    }
-}
-
 function Convert-OpenSSLPemToPfx {
     param(
         [parameter(mandatory=$true)] [string] $pemfile,
+        [parameter(mandatory=$true)] [string] $pfxPassword,
         [string] $outfile = ((resolve-path $pemfile).path -replace ".pem$","") + ".pfx",
         [string] $displayname = ((split-path -leaf $pemfile) -replace ".pem$","")
     )
-    openssl pkcs12 -export -out "$outfile" -in "$pemfile" -name "$displayname"
+    Invoke-OpenSsl -argumentList @("pkcs12", "-export", "-out", "`"$outfile`"", "-in", "`"$pemfile`"", 
+        "-name", "`"$displayname`"", "-passout", "`"pass:$pfxPassword`"")
 }
 function Convert-OpenSSLPfxToPem {
     param(
         [parameter(mandatory=$true)] [string] $pfxfile,
         [string] $outfile = ((resolve-path $pfxfile).path -replace ".pfx$","") + ".pem"
     )
-    #openssl x509 -inform pkcs12 -in "$pfxfile" -outform der -out "$outfile"
-    openssl pkcs12 -in "$pfxfile" -out "$outfile" -nodes
+    Invoke-OpenSsl -argumentList @("pkcs12", "-in", "`"$pfxfile`"", "-out", "`"$outfile`"", "-nodes")
 }
 function Get-OpenSSLThumbprint {
     param(
         [parameter(mandatory=$true)] [string] $pemFile
     )
-    (openssl x509 -in $pemFile -sha1 -noout -fingerprint).Split('=')[1].Replace(':','')
+    $pemFile = resolve-path $pemFile
+    $sslProc = Invoke-OpenSsl -Passthru -argumentList @("x509", "-in", "$pemFile", "-sha1", "-noout", "-fingerprint")
+    $thumbprint = $sslProc.SerializedStandardOutput.Split('=')[1].Replace(':','')
+    return $thumbprint
 }
 
 function Generate-DlpCredentialCertificate {
     param(
         [parameter(mandatory=$true)] [string] $certName,
+        [parameter(mandatory=$true)] [string] $pfxPassword,
         [int] $keySize = 4096,
         [int] $daysValid = 7300
     )
-    openssl req -x509 -nodes -days $daysValid -subj "/CN=$certName" -newkey rsa:$keysize -keyout "$certName.pem" -out "$certName.pem"
-    Convert-OpenSSLPemToPfx -pemfile "$certName.pem"
+    Invoke-OpenSsl @( 'req', '-x509', '-nodes', '-days', "$daysValid", "-subj", "`"/CN=$certName`"", 
+        "-newkey", "rsa:$keysize", "-keyout", "`"$certName.pem`"", "-out", "`"$certName.pem`"")
+    Convert-OpenSSLPemToPfx -pemfile "$certName.pem" -pfxPassword $pfxPassword
 }
 
 function Add-DlpClientGitRemote {
