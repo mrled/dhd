@@ -203,3 +203,7 @@ function Invoke-GitCommandOnDlpRepositories {
 }
 set-alias dgit Invoke-GitCommandOnDlpRepositories
 
+function Connect-VPN {
+    $DomainCreds = Get-DLPProtectedCredential -credentialFile ~/credentials-MRLDLP.xml
+    ipsecc -a -r FlameLeafVPN.vpn -u $DomainCreds.Username -p "$($DomainCreds.DecryptPassword())"
+}
