@@ -64,6 +64,41 @@ function Invoke-OpenSSL {
 }
 
 <#
+.synopsis
+Import a PFX certificate
+.description 
+Sets the PersistKeySet flag, which means that you can actually use the fuckin cert later on
+(Unlike, say, I dunno, the first-party Import-PfxCertificate function.)
+#>
+function Import-X509Certificate {
+    param(
+        [parameter(mandatory=$true)] [string] $Path,
+        [parameter(mandatory=$true)] [string] $pfxPassword,
+        [string] $StoreLocation = "CurrentUser",
+        [string] $StoreName = "My",
+        [switch] $exportable,
+        [switch] $protected
+    )
+
+    $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+    if ($exportable) {
+        $flags = $flags -bxor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+    }
+    if ($protected) {
+        $flags = $flags -bxor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserProtected
+    }
+
+    $pfx = new-object System.Security.Cryptography.X509Certificates.X509Certificate2
+    $pfx.import($Path, $pfxPassword, $flags)
+
+    $store = new-object System.Security.Cryptography.X509Certificates.X509Store($StoreName, $StoreLocation)
+    $store.open('MaxAllowed')
+    $store.add($pfx)
+    $store.close()
+}
+
+
+<#
     .synopsis
     Start a process and wait for it to exit
     .description
