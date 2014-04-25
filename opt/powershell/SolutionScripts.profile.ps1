@@ -9,18 +9,6 @@
 
 $profile | Add-Member -MemberType NoteProperty -Name "SolutionScripts" -Value $myinvocation.mycommand.path -force
 $repoRoot = resolve-path C:\Projects\DLP\TDOE-RestApiSpike
-$ssPath = "$repoRoot\src\SolutionScripts"
-write-host "Solution Scripts Console" -foregroundcolor Magenta
-cd $repoRoot |out-null
-foreach ($file in (gci $ssPath)) {
-    if ($file.extension -eq '.ps1') {
-        Write-Host "        Sourcing: $file" -foregroundcolor Magenta
-        . $file.fullname
-    }
-    if ($file.extension -eq '.psm1')
-    {
-        Write-Host "Importing Module: $file" -foregroundcolor Magenta
-        Import-Module $file.fullname -Force
-    }
-}
-set-alias initdev Initialize-DevelopmentEnvironment
+. $repoRoot\Initialize-PowershellForDevelopment.ps1
+cd $repoRoot
+
