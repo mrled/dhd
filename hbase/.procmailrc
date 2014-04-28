@@ -64,9 +64,6 @@ SPR=2147483647
 * $ $SPR^0 .*vlack\+f\.retailreportcard
 * $ $SPR^0 .*retailreportcard.*
 * $ $SPR^0 ^X-Original-To:.*offers 
-* $ $SPR^0 ^To:.*vlack\@howe\.textdrive\.com
-* $ $SPR^0 ^To:.*vlack.*marin\.joyent\.us
-* $ $SPR^0 ^To:.*mledbetter\@marin\.joyent\.us
 * $ $SPR^0 ^From:.*Club.*VIP.*
 * $ $SPR^0 ^From:.*RuneScape.*
 /dev/null
@@ -84,10 +81,21 @@ SPR=2147483647
 .SXSW/
 
 
+# Alternative Identities
+:0
+* $ $SPR^0 ^X-Original-To: isabel@younix.us
+* $ $SPR^0 ^X-Original-To: httpcoed@younix.us
+* $ $SPR^0 ^X-Original-To: http_coed@younix.us
+* $ $SPR^0 ^X-Original-To: httpcoed404@younix.us
+* $ $SPR^0 ^X-Original-To: unicoed@younix.us
+.altident/
+
+
 # Facebook agh so many messages
 :0
 * $ $SPR^0 ^From: .*facebookmail\.com
-* $ $SPR^0 ^From: .*postmaster\.twitter\.com
+* $ $SPR^0 ^From: .*twitter\.com
+* $ $SPR^0 ^From: .*linkedin\.com
 * $ $SPR^0 ^Subject:.*FACEBOOKRULETESTOMGLOL.*
 {
   # this block marks all the messages read; see http://raamdev.com/2007/using-procmail-to-mark-as-read/
@@ -134,6 +142,12 @@ SPR=2147483647
 
 ## bring on the automatic list filtering. long time in coming.
 
+:0
+* $ $SPR^0 ^From:.*notifications\@github\.com
+* $ $SPR^0 ^From:.*noreply\@github\.com
+.GitHub/
+
+
 # generic ezmlm filter, comes before mailman otherwise mailman's filter
 # will put everything into .list.contact/
 :0
@@ -170,7 +184,7 @@ SPR=2147483647
 # Automagically handle nice standards conformant mailing lists - this
 # rule and the majordomo recipe appear courtesy of Jeff Waugh Records
 :0
-* ^(List-Id|(X-)?Mailing-List|X-List):\/.*
+* ^(List-Id|(X-)?Mailing-List|X-List): +\/.*
 {
     LISTID=$MATCH
     
