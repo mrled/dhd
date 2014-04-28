@@ -1102,6 +1102,15 @@ function uploadid {
     "",$keydata | plink $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
 
+$bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
+if (test-path $bvssh) {
+    function Invoke-Ssh {
+        $stermcArguments = $args + @("-keypairFile=$Home\.ssh\id_rsa")
+        start-process -wait -nonewwindow $bvssh\stermc.exe -argumentList $stermcArguments
+    }
+    set-alias ssh Invoke-Ssh
+}
+
 foreach ($exe in (gci "$env:programfiles\ShrewSoft\VPN Client\*.exe")) {
     set-alias $exe.basename $exe.fullname
 }
