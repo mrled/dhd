@@ -9,6 +9,16 @@ function Export-ConemuConfig {
         reg export "HKCU\Software\ConEmu\.Vanilla" "$filename" 
     }
 }
+if (test-path $env:ProgramFiles\ConEmu) {
+    set-alias ConEmu64 $env:ProgramFiles\ConEmu\ConEmu64.exe
+    set-alias Rename-ConEmuTab $env:ProgramFiles\ConEmu\ConEmu\RenameTab.cmd
+}
+function Set-WindowTitle {
+    param(
+        [parameter(mandatory=$true)] [string] $message
+    )
+    $Host.UI.RawUI.WindowTitle = $message
+}
 
 function conkeror {
     $xulrunnerbin = $home + "\opt\xulrunner\xulrunner.exe"
@@ -1090,14 +1100,6 @@ function uploadid {
 
     $akeys = "~/.ssh/authorized_keys"
     "",$keydata | plink $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
-}
-
-function Set-WindowTitle {
-    param(
-        [parameter(mandatory=$true)] [string] $message
-    )
-    # Note: Can also do this in ConEmu with Apps+R
-    $Host.UI.RawUI.WindowTitle = $message
 }
 
 foreach ($exe in (gci "$env:programfiles\ShrewSoft\VPN Client\*.exe")) {
