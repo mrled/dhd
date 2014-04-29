@@ -770,13 +770,40 @@ function man {
         get-help $a -full | less
     }
 }
+<#
+.synopsis
+Get the syntax for a command
+.description
+If you do (Get-Help Something).Syntax, it will return just the syntax for the command. Yay. 
+... Unless it's a function without a documentation block. Then it returns an ugly SyntaxItem object.
+It's mostly the same thing, but if a PSObject is of type `MamlCommandHelpInfo#syntax`, then it 
+displays is properly. All this does is check to see if the .Syntax object you get from Get-Help
+contains that type; if it doesn't, it adds it before returning it. 
+#>
+function Get-Syntax {
+    param(
+        [string[]] $command
+    )
+    foreach ($cmd in $command) {
+        $cmdSyntax = (get-help $cmd).Syntax
+        if (-not $cmdSyntax.PSObject.TypeNames.Contains("MamlCommandHelpInfo#syntax")) {
+            $cmdSyntax.PSObject.TypeNames.Insert(0,"MamlCommandHelpInfo#syntax")
+        }
+        $cmdSyntax
+    }
+}
+set-alias syntax get-syntax 
 if (test-path alias:help) { del alias:help }
+set-alias help get-help
 if (test-path function:help) { del function:help } # PSCX has one of these
+if (test-path function:get-help) { del function:get-help } # PSCX has one of these
+<#
 function help {
     foreach ($a in $args) {
         (get-help $a).syntax
     }
 }
+#>
 
 if (test-path alias:cd) { del alias:cd }
 # You can pipe a path to this 
