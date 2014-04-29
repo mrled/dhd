@@ -1,3 +1,13 @@
+
+# [char]9773    ☭ (HAMMER AND SICKLE)
+# [char]42479   ꗯ (VAI SYLLABLE GBE)
+# [char]1003    ϫ (COPTIC SMALL LETTER GANGIA)
+$LambdaChar = "λ"
+$HammerAndSickleChar = "$([char]9773)"
+$VisualStudioChar = "$([char]42479)"
+
+
+
 function Export-ConemuConfig {
     param(
         [parameter(mandatory=$true)] [string] $filename,
