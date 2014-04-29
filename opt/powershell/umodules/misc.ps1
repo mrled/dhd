@@ -1105,11 +1105,72 @@ function uploadid {
 
 $bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
 if (test-path $bvssh) {
-    function Invoke-Ssh {
+    function Invoke-BitviseSsh {
         $stermcArguments = $args + @("-keypairFile=$Home\.ssh\id_rsa")
+        $stermcArguments+= @("-keypairFile=$Home\.ssh\id_rsa")
+        $stermcArguments+= @("-hostKeyFile=$Home\.dhd\hbase\known_hosts")
         start-process -wait -nonewwindow $bvssh\stermc.exe -argumentList $stermcArguments
     }
-    set-alias ssh Invoke-Ssh
+    set-alias ssh Invoke-BitviseSsh
+    function Get-BitviseKnownHosts {
+        [cmdletbinding()]
+        param(
+            [string] $hostname
+        )
+        $HostKeysReg = get-item hkcu:\Software\Bitvise\HostKeys
+        $HostKeys = @{}
+        foreach ($entry in ($HostKeysReg.GetValueNames() |where {$_.StartsWith("HostKey2_")} )) {
+            write-debug $entry
+
+            #$newHost = @{}
+            #$newHost.Fingerprint = ($entry -split '_')[3][0..31] -join ""
+            #write-verbose "Fingerprint: $($newHost.Fingerprint)"
+            $fingerprint = ($entry -split '_')[3][0..31] -join ""
+            write-verbose "Fingerprint: $fingerprint"
+
+            $fullValue = $HostKeysReg.GetValue($entry)
+            $relevantValue = $fullValue[6..($fullValue.length -1)]
+
+            $postHostnamePattern = 0,0,0,22
+
+            $foundIt = $false
+            for ($i = 0; $i -lt $relevantValue.Length; $i += 1) {
+                for ($j = 0; $j -lt $postHostnamePattern.length; $j += 1) {
+                    if (-not ($relevantValue[$i + $j] -eq $postHostnamePattern[$j])) {
+                        $foundIt = $false
+                        break
+                    }
+                    $foundIt = $true
+                }
+                if ($foundIt) {
+                    $postHostnameIndex = $i
+                    break
+                }
+            }
+            if (-not $postHostnameIndex) {
+                throw "Failed to find the end of the hostname after searching through $i positions"
+            }
+            $binHostname = $relevantValue[0..($postHostnameIndex - 1)]
+            write-debug ($binHostname -join ",")
+            #$newHost.Hostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
+            #write-verbose "Hostname: $($newHost.Hostname)"
+            #$HostKeys += @($newHost)
+            $asciiHostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
+            write-verbose "Hostname: $asciiHostname"
+            $HostKeys.$asciiHostname = $fingerprint
+        }
+        if ($hostname) {
+            if ($hostKeys.$hostname) {
+                return @{ $hostname = $hostKeys.$hostname }
+            }
+            else {
+                throw "No host key for hostname $hostname"
+            }
+        }
+        else {
+            return $hostKeys
+        }
+    }
 }
 
 foreach ($exe in (gci "$env:programfiles\ShrewSoft\VPN Client\*.exe")) {
