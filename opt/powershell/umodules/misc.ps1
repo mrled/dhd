@@ -2,9 +2,12 @@
 # [char]9773    ☭ (HAMMER AND SICKLE)
 # [char]42479   ꗯ (VAI SYLLABLE GBE)
 # [char]1003    ϫ (COPTIC SMALL LETTER GANGIA)
+# [char]7       beeps @ u
 $LambdaChar = "$([char]955)"
 $HammerAndSickleChar = "$([char]9773)"
 $VisualStudioChar = "$([char]42479)"
+$BeepChar = @([char]7)
+
 
 function Export-ConemuConfig {
     param(
@@ -183,9 +186,6 @@ set-alias sudo elevate-process
 function gcollect {
     [GC]::Collect()
 }
-
-# char7 is the beep sound. you can just type $beep and it will beep at you.
-$beep = @([char]7)
 
 if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
     $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
