@@ -33,6 +33,7 @@ $possibleOpenSSL = @(
 foreach ($o in $possibleOpenSSL) {
     if (test-path $o) {
         set-alias OpenSslExe $o
+        $env:OPENSSL_CONF="$Home\.dhd\opt\win32\openssl.cnf"
         break
     }
 }
