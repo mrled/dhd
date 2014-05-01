@@ -59,10 +59,13 @@ function invoke-magic {
     $magicJobs += @(start-job -name InstallChocolatey -scriptblock {
         Register-EngineEvent -SourceIdentifier ChocolateyInstalled -Forward
         iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
-        [Environment]::SetEnvironmentVariable("path", $env:path+";${env:systemdrive}\chocolatey\bin", "User")
         if ($SoyAdmin) {
+            [Environment]::SetEnvironmentVariable("path", $env:path+";${env:systemdrive}\chocolatey\bin", "System")
+        }
+        else {
             [Environment]::SetEnvironmentVariable("path", $env:path+";${env:systemdrive}\chocolatey\bin", "User")
         }
+        [Environment]::SetEnvironmentVariable("path", $env:path+";${env:systemdrive}\chocolatey\bin", "Process")
         $null = New-Event -SourceIdentifier ChocolateyInstalled
     })
     $erroractionpreference = "stop"
