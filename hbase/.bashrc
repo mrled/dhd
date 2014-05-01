@@ -16,8 +16,6 @@ d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9
 d="${d} /usr/local/homebrew/bin /usr/local/homebrew/sbin"
 # homebrew + ruby bullshit
 d="${d} /usr/local/homebrew/Cellar/ruby/1.9.3-p0/bin"
-# for a homebrew-installed python3, pip will put new binaries here like say ipython and ipdb:
-d="${d} /usr/local/homebrew/share/python3" 
 
 d="${d} $h/opt/android-sdk/platform-tools $h/opt/android-sdk/tools"
 d="${d} $h/opt/arm-eabi-4.4.3/bin "

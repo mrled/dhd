@@ -1,3 +1,14 @@
+# [char]955     λ (GREEK LETTER LAMBDA)
+# [char]9773    ☭ (HAMMER AND SICKLE)
+# [char]42479   ꗯ (VAI SYLLABLE GBE)
+# [char]1003    ϫ (COPTIC SMALL LETTER GANGIA)
+# [char]7       beeps @ u
+$LambdaChar = "$([char]955)"
+$HammerAndSickleChar = "$([char]9773)"
+$VisualStudioChar = "$([char]42479)"
+$BeepChar = @([char]7)
+
+
 function Export-ConemuConfig {
     param(
         [parameter(mandatory=$true)] [string] $filename,
@@ -33,6 +44,7 @@ $possibleOpenSSL = @(
 foreach ($o in $possibleOpenSSL) {
     if (test-path $o) {
         set-alias OpenSslExe $o
+        $env:OPENSSL_CONF="$Home\.dhd\opt\win32\openssl.cnf"
         break
     }
 }
@@ -174,9 +186,6 @@ set-alias sudo elevate-process
 function gcollect {
     [GC]::Collect()
 }
-
-# char7 is the beep sound. you can just type $beep and it will beep at you.
-$beep = @([char]7)
 
 if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
     $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
@@ -769,13 +778,40 @@ function man {
         get-help $a -full | less
     }
 }
+<#
+.synopsis
+Get the syntax for a command
+.description
+If you do (Get-Help Something).Syntax, it will return just the syntax for the command. Yay. 
+... Unless it's a function without a documentation block. Then it returns an ugly SyntaxItem object.
+It's mostly the same thing, but if a PSObject is of type `MamlCommandHelpInfo#syntax`, then it 
+displays is properly. All this does is check to see if the .Syntax object you get from Get-Help
+contains that type; if it doesn't, it adds it before returning it. 
+#>
+function Get-Syntax {
+    param(
+        [string[]] $command
+    )
+    foreach ($cmd in $command) {
+        $cmdSyntax = (get-help $cmd).Syntax
+        if (-not $cmdSyntax.PSObject.TypeNames.Contains("MamlCommandHelpInfo#syntax")) {
+            $cmdSyntax.PSObject.TypeNames.Insert(0,"MamlCommandHelpInfo#syntax")
+        }
+        $cmdSyntax
+    }
+}
+set-alias syntax get-syntax 
 if (test-path alias:help) { del alias:help }
+set-alias help get-help
 if (test-path function:help) { del function:help } # PSCX has one of these
+if (test-path function:get-help) { del function:get-help } # PSCX has one of these
+<#
 function help {
     foreach ($a in $args) {
         (get-help $a).syntax
     }
 }
+#>
 
 if (test-path alias:cd) { del alias:cd }
 # You can pipe a path to this 
@@ -1104,11 +1140,72 @@ function uploadid {
 
 $bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
 if (test-path $bvssh) {
-    function Invoke-Ssh {
+    function Invoke-BitviseSsh {
         $stermcArguments = $args + @("-keypairFile=$Home\.ssh\id_rsa")
+        $stermcArguments+= @("-keypairFile=$Home\.ssh\id_rsa")
+        $stermcArguments+= @("-hostKeyFile=$Home\.dhd\hbase\known_hosts")
         start-process -wait -nonewwindow $bvssh\stermc.exe -argumentList $stermcArguments
     }
-    set-alias ssh Invoke-Ssh
+    set-alias ssh Invoke-BitviseSsh
+    function Get-BitviseKnownHosts {
+        [cmdletbinding()]
+        param(
+            [string] $hostname
+        )
+        $HostKeysReg = get-item hkcu:\Software\Bitvise\HostKeys
+        $HostKeys = @{}
+        foreach ($entry in ($HostKeysReg.GetValueNames() |where {$_.StartsWith("HostKey2_")} )) {
+            write-debug $entry
+
+            #$newHost = @{}
+            #$newHost.Fingerprint = ($entry -split '_')[3][0..31] -join ""
+            #write-verbose "Fingerprint: $($newHost.Fingerprint)"
+            $fingerprint = ($entry -split '_')[3][0..31] -join ""
+            write-verbose "Fingerprint: $fingerprint"
+
+            $fullValue = $HostKeysReg.GetValue($entry)
+            $relevantValue = $fullValue[6..($fullValue.length -1)]
+
+            $postHostnamePattern = 0,0,0,22
+
+            $foundIt = $false
+            for ($i = 0; $i -lt $relevantValue.Length; $i += 1) {
+                for ($j = 0; $j -lt $postHostnamePattern.length; $j += 1) {
+                    if (-not ($relevantValue[$i + $j] -eq $postHostnamePattern[$j])) {
+                        $foundIt = $false
+                        break
+                    }
+                    $foundIt = $true
+                }
+                if ($foundIt) {
+                    $postHostnameIndex = $i
+                    break
+                }
+            }
+            if (-not $postHostnameIndex) {
+                throw "Failed to find the end of the hostname after searching through $i positions"
+            }
+            $binHostname = $relevantValue[0..($postHostnameIndex - 1)]
+            write-debug ($binHostname -join ",")
+            #$newHost.Hostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
+            #write-verbose "Hostname: $($newHost.Hostname)"
+            #$HostKeys += @($newHost)
+            $asciiHostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
+            write-verbose "Hostname: $asciiHostname"
+            $HostKeys.$asciiHostname = $fingerprint
+        }
+        if ($hostname) {
+            if ($hostKeys.$hostname) {
+                return @{ $hostname = $hostKeys.$hostname }
+            }
+            else {
+                throw "No host key for hostname $hostname"
+            }
+        }
+        else {
+            return $hostKeys
+        }
+    }
 }
 
 foreach ($exe in (gci "$env:programfiles\ShrewSoft\VPN Client\*.exe")) {

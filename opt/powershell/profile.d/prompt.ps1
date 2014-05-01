@@ -24,10 +24,9 @@
 }
 
 #$AdminPromptSuffix = { Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red }
-# [char]9773   ☭ (HAMMER AND SICKLE)
-$AdminPromptSuffix = { write-host " $([char]9773) " -nonewline -foregroundcolor red -backgroundcolor yellow }
+$AdminPromptSuffix = { write-host " $HammerAndSickleChar " -nonewline -foregroundcolor red -backgroundcolor yellow }
 #$DefaultPromptSuffix = { Write-Host "PS»" -nonewline -foreground White }
-$DefaultPromptSuffix = { Write-Host "λ" -nonewline -foreground White }
+$DefaultPromptSuffix = { Write-Host "$LambdaChar" -nonewline -foreground White }
 
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
