@@ -62,13 +62,10 @@ unset d h
 
 # Ruby RVM bullshit
 # install with `curl -L https://get.rvm.io | bash -s stable --ruby`
-#[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-if [[ -s "/usr/local/rvm/scripts/rvm" ]]; then
-    source "/usr/local/rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-fi
-# this is actually not necessary for rvm WHOA WOW WHOA
-#rvm() { sudo -H sh -c "umask 022; rvm $*"; }
-
+# Load RVM into the shell session as a function
+# Jesus fucking christ I hate RVM
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+#[[ -s "/usr/local/rvm/scripts/rvm" ]] && source "/usr/local/rvm/scripts/rvm"
 
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
@@ -830,7 +827,3 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01
 
 unset lcop
 
-
-
-
-PATH=$PATH:/usr/local/rvm/bin # Add RVM to PATH for scripting
