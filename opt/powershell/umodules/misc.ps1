@@ -92,7 +92,7 @@ Import a PFX certificate
 Sets the PersistKeySet flag, which means that you can actually use the fuckin cert later on
 (Unlike, say, I dunno, the first-party Import-PfxCertificate function.)
 #>
-function Import-X509Certificate {
+function Import-MrlX509Certificate {
     param(
         [parameter(mandatory=$true)] [string] $Path,
         [parameter(mandatory=$true)] [string] $pfxPassword,
