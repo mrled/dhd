@@ -4,8 +4,8 @@
 	"font_size": 11,
 	"ignored_packages":
 	[
-		"Vintage",
-		"Markdown"
+		"Markdown",
+		"Vintage"
 	],
 	"theme": "Soda Dark.sublime-theme",
 	"word_wrap": true
