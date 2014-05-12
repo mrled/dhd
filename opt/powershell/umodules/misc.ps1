@@ -1211,3 +1211,21 @@ if (test-path $bvssh) {
 foreach ($exe in (gci "$env:programfiles\ShrewSoft\VPN Client\*.exe")) {
     set-alias $exe.basename $exe.fullname
 }
+
+# http://pastie.org/2867807
+function Generate-SparkLine {
+    #$ticks = @(' ', [char]9601, [char]9602, [char]9603, [char]9604, [char]9605, [char]9606, [char]9607, [char]9608)
+    $ticks = @([char]9601, [char]9602, [char]9603, [char]9604, [char]9605, [char]9606, [char]9607, [char]9608)
+
+    $minmax = $args | measure -min -max
+    $range = $minmax.Maximum - $minmax.Minimum
+    $scale = $ticks.length - 1
+    $output = @()
+
+    foreach ($x in $args) {
+       $output += $ticks[([Math]::round((($x - $minmax.Minimum) / $range) * $scale))]
+    }
+
+    return [String]::join('', $output)
+}
+set-alias spark Generate-SparkLine
