@@ -1141,12 +1141,21 @@ function uploadid {
 $bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
 if (test-path $bvssh) {
     function Invoke-BitviseSsh {
-        $stermcArguments = $args + @("-keypairFile=$Home\.ssh\id_rsa")
+        $stermcArguments = $args
+        $stermcArguments+= @("-keypairFile=$Home\.ssh\id_rsa")
         $stermcArguments+= @("-keypairFile=$Home\.ssh\id_rsa")
         $stermcArguments+= @("-hostKeyFile=$Home\.dhd\hbase\known_hosts")
         start-process -wait -nonewwindow $bvssh\stermc.exe -argumentList $stermcArguments
     }
     set-alias ssh Invoke-BitviseSsh
+    function Invoke-BitviseSshScreenSession {
+        param(
+            [parameter(mandatory=$true)] [string] $hostname,
+            [string] $screenSession = "camelot"
+        )
+        Invoke-BitviseSsh '-cmd=scr' $args
+    }
+    set-alias scr Invoke-BitviseSshScreenSession
     function Get-BitviseKnownHosts {
         [cmdletbinding()]
         param(
