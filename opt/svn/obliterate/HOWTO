@@ -1,8 +1,0 @@
-from here: http://svnbook.red-bean.com/en/1.0/ch05s03.html#svn-ch-5-sect-3.1.3
-
- - Loaded my original, unpristine svn repository into dhd.dump
- - ./remove.csh
- - ./restore.csh #if this doesn't work, try to copy the file it complains about into your list in remove.csh. If it's already there, try moving it to the beginning of the list. I had to do this once... it was confusing, becase I had added a different path to the same file in my list, so I thought I had already added it. Make sure you get ALL the paths to the files you want to delete. 
- - ./examine.csh #determine if you are happy with everything or not
-
-At that point, you have a directory called dhd/ in the PWD, and that is a full, working SVN repository. Simply copy it to the location of the original one, and presto! clean repo. 

@@ -1,0 +1,9 @@
+#
+# OpenSSL configuration file.
+# 
+# This only exists because OpenSSL is fucking dumb and will complain about not 
+# finding a compiled-in default config every fucking time you start it
+# 
+
+HOME			= .
+RANDFILE		= $ENV::HOME/.rnd

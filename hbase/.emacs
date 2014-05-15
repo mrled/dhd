@@ -51,9 +51,9 @@
 (add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.psd1\\'" . powershell-mode))
 (require 'tail)
-(load "~/.dhd/opt/emacs/taskpaper.el")
-(require 'taskpaper-mode)
-(add-to-list 'auto-mode-alist '("\\.taskpaper\\'" . taskpaper-mode))
+;(load "~/.dhd/opt/emacs/taskpaper.el")
+;(require 'taskpaper-mode)
+;(add-to-list 'auto-mode-alist '("\\.taskpaper\\'" . taskpaper-mode))
 
 (add-to-list 'auto-mode-alist '("\\.reg\\'" . conf-mode))
 
@@ -216,6 +216,14 @@ eta title=\"\"]]"
 (global-set-key "\C-ciy" 'iki/insert-directive-tag)
 (global-set-key "\C-cic" 'iki/insert-directive-toc)
 
+; private journal stuff
+(setq journal/directory "~/Documents/Journal")
+(defun journal/new-entry ()
+  "Creates a new journal entry with a temporary name."
+  (interactive)
+  (find-file (concat journal/directory "/" (format-time-string "%Y%m%d") "-tmp.markdown")))
+(global-set-key "\C-cij" 'journal/new-entry)
+
 
 ; from stevey:   
 (defun rename-file-and-buffer (new-name)
@@ -347,6 +355,7 @@ this method to convert it. Via: <http://sites.google.com/site/steveyegge2/saving
 ;; (global-set-key "\C-cm" 'markdown-preview-file)
 
 
+(blink-cursor-mode 0)
 (unless (eq window-system nil) ;if we are NOT running in the console
 
   (setq default-frame-alist ; this actually sets the font and colours

@@ -13,7 +13,10 @@ d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
 d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9.3-p0/bin"
-d="${d} /usr/local/homebrew/bin /usr/local/homebrew/sbin /usr/local/homebrew/Cellar/ruby/1.9.3-p0/bin"
+d="${d} /usr/local/homebrew/bin /usr/local/homebrew/sbin"
+# homebrew + ruby bullshit
+d="${d} /usr/local/homebrew/Cellar/ruby/1.9.3-p0/bin"
+
 d="${d} $h/opt/android-sdk/platform-tools $h/opt/android-sdk/tools"
 d="${d} $h/opt/arm-eabi-4.4.3/bin "
 d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
@@ -57,13 +60,10 @@ unset d h
 
 # Ruby RVM bullshit
 # install with `curl -L https://get.rvm.io | bash -s stable --ruby`
-#[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-if [[ -s "/usr/local/rvm/scripts/rvm" ]]; then
-    source "/usr/local/rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-fi
-# this is actually not necessary for rvm WHOA WOW WHOA
-#rvm() { sudo -H sh -c "umask 022; rvm $*"; }
-
+# Load RVM into the shell session as a function
+# Jesus fucking christ I hate RVM
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+#[[ -s "/usr/local/rvm/scripts/rvm" ]] && source "/usr/local/rvm/scripts/rvm"
 
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
@@ -792,6 +792,7 @@ if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
 pip()          { sudo -H sh -c "umask 022; pip $*"; }
+pip3()         { sudo -H sh -c "umask 022; pip3 $*"; }
 easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
 
 
@@ -824,7 +825,3 @@ export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01
 
 unset lcop
 
-
-
-
-PATH=$PATH:/usr/local/rvm/bin # Add RVM to PATH for scripting

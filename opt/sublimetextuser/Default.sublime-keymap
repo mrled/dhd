@@ -1,0 +1,32 @@
+[
+
+	{ "keys": ["ctrl+alt+r"], "command": "show_panel", "args": {"panel": "replace"} },
+
+	// useful in sublemacspro. does nothing by default. 
+	{ "keys": ["alt+x"], "command":"show_overlay", "args":{"overlay":"command_palette"} },
+
+	// by default in sublemacspro, opens command "goto_open_file" which is the open 
+	// buffer list
+	//{"keys": ["ctrl+x", "ctrl+f"], "command": "prompt_open_file"},
+
+	// sublemacspro has C-x 5 2 to open window but not this?
+	{"keys":["ctrl+x", "5", "0"], "command": "close_window"},
+
+    // by default in sublemacspro does "next_view" ie. switches to next tab
+    // This way is more like Emacs where you can type part of the buffer and it works.
+    {"keys": ["ctrl+x", "b"], "command": "goto_open_file"},
+
+	// the default is like Opera: completely incomprehensible and constantly reordering
+	{"keys":["ctrl+tab"],       "command":"next_view" },
+	{"keys":["ctrl+shift+tab"], "command":"prev_view" },
+
+	// requires FuzzyFileNav
+	{"keys": ["ctrl+x", "ctrl+f"], "command": "fuzzy_start_from_file"},
+    {"keys": ["ctrl+alt+n"], "command": "fuzzy_make_file", "context": [{"key": "fuzzy_make_file"}] },
+    {"keys": ["ctrl+alt+d"], "command": "fuzzy_delete", "context": [{"key": "fuzzy_delete"}] },
+    {"keys": ["ctrl+alt+p"], "command": "fuzzy_clipboard", "context": [{"key": "fuzzy_copy"}], "args": {"action": "copy"} },
+    {"keys": ["ctrl+alt+c"], "command": "fuzzy_clipboard", "context": [{"key": "fuzzy_copy"}], "args": {"action": "copy"} }, // copy the _p_ath
+
+    { "keys": ["ctrl+alt+c+s"], "command": "copy_scope" }
+
+]
