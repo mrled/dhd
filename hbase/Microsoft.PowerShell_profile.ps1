@@ -104,12 +104,15 @@ $historyExitEvent = {
     get-history | export-csv $profile.HistoryFile
 }
 $historyStartupEvent = {
-    if (((get-history).count -eq 0) -and (test-path $profile.HistoryFile) ) {
-        import-csv $profile.HistoryFile | add-history
-        $global:finalFileHistoryId = (get-history)[-1].id
+    $histCount = (get-history).count
+    $histExists = (test-path $profile.HistoryFile) -and [bool](get-content $profile.HistoryFile) 
+    if (($histCount -gt 0) -or (-not $histExists)) {
+        # Don't import old history if shell isn't new, or if there is no hist file
+        $global:finalFileHistoryId = 0 
     }
     else {
-        $global:finalFileHistoryId = 0
+        import-csv $profile.HistoryFile | add-history 
+        $global:finalFileHistoryId = (get-history)[-1].id
     }
 }
 
