@@ -17,6 +17,15 @@ DEFAULT=$MAILDIR
 # list of conditions. 
 SPR=2147483647
 
+# Marking messages as read: http://raamdev.com/2007/using-procmail-to-mark-as-read/
+
+# Mails with a score of 15 or higher are almost certainly spam (with 0.05%
+# false positives according to rules/STATISTICS.txt). Let's put them in a
+# different mbox. (This one is optional.)
+:0
+* ^X-Spam-Level: \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
+.SPAM/
+
 ### Random stupid things not to forget:
 # 1 close your freaking folders with a "/". it's ".lists.sunhelp-geeks/"
 # 2 start with a "*", don't just begin your rule. that is bad bad bad. 
@@ -29,9 +38,18 @@ SPR=2147483647
 :0
 * ^Delivered-To: api.*
 {
+    apifolder=api
     # For debugging, copy all email to my api folder first: 
     :0c
-    .api/
+    .$apifolder/
+    # And now mark it as read: 
+    :0
+    * LASTFOLDER ?? /\/[^/]+$
+    { tail=$MATCH }
+
+    TRAP="mv $LASTFOLDER .$apifolder/cur/$tail:2,S"
+    HOST
+
 
     # For now, I'm only going to accept mail to api@younix.us...
     # api@anything.else gets nuked
@@ -76,33 +94,53 @@ SPR=2147483647
 
 # SXSW shit
 :0
-* $ $SPR^0 ^X-Original-To: sxsw@micahrl.com
-* $ $SPR^0 ^X-Original-To: sxsw@younix.us
+* ^Delivered-To: sxsw\@.*
 .SXSW/
 
+:0
+* ^Delivered-To: realest\@
+.RealEstate/
 
 # Alternative Identities
 :0
-* $ $SPR^0 ^X-Original-To: isabel@younix.us
-* $ $SPR^0 ^X-Original-To: httpcoed@younix.us
-* $ $SPR^0 ^X-Original-To: http_coed@younix.us
-* $ $SPR^0 ^X-Original-To: httpcoed404@younix.us
-* $ $SPR^0 ^X-Original-To: unicoed@younix.us
-.altident/
-
+* $ $SPR^0 ^X-Original-To: isabel\@.*
+* $ $SPR^0 ^X-Original-To: httpcoed\@.*
+* $ $SPR^0 ^X-Original-To: http_coed\@.*
+* $ $SPR^0 ^X-Original-To: httpcoed404\@.*
+* $ $SPR^0 ^X-Original-To: unicoed\@.*
+* $ $SPR^0 ^X-Original-To: verticale\@gmail\.com
+{
+  # Put the mail in this folder and then mark it read:
+  #without leading . or training / and I dunno if this works on subfolders like .Facebook.Bullshit or anything
+  foldername=altident
+ 
+  # store the mail in the folder:
+  :0c
+  .$foldername/ 
+ 
+  # use 'mv' to take the mail from $foldername/new to $foldername/cur, marking the mail read
+  :0
+  * LASTFOLDER ?? /\/[^/]+$
+  { tail=$MATCH }
+ 
+  TRAP="mv $LASTFOLDER .$foldername/cur/$tail:2,S"
+  HOST
+}
 
 # Facebook agh so many messages
 :0
 * $ $SPR^0 ^From: .*facebookmail\.com
 * $ $SPR^0 ^From: .*twitter\.com
 * $ $SPR^0 ^From: .*linkedin\.com
-* $ $SPR^0 ^Subject:.*FACEBOOKRULETESTOMGLOL.*
+* $ $SPR^0 ^Return-Path: .*linkedin\.com
+* $ $SPR^0 ^Subject:.*mailing list memberships reminder
+* $ $SPR^0 ^From:.*notifications\@github\.com
+* $ $SPR^0 ^From:.*noreply\@github\.com
+* $ $SPR^0 ^From:.*bounces\@mail1\.oknotify2\.com
 {
-  # this block marks all the messages read; see http://raamdev.com/2007/using-procmail-to-mark-as-read/
-
-
+  # Put the mail in this folder and then mark it read:
   #without leading . or training / and I dunno if this works on subfolders like .Facebook.Bullshit or anything
-  foldername=Facebook 
+  foldername=Notifications
  
   # store the mail in the folder:
   :0c
@@ -115,93 +153,12 @@ SPR=2147483647
   { tail=$MATCH }
  
   TRAP="mv $LASTFOLDER .$foldername/cur/$tail:2,S"
- 
   HOST
 }
 
-### my lists stuff. based on 
-## Jamie Wilkinson's http://spacepants.org/dot.procmailrc
-## and more that I don't have mentioned here mmmk
-
-## announce lists can all go in the same place as far as I'm concerned
-:0 
-* $ $SPR^0 ^List-Id:.*announce.*
-* $ $SPR^0 ^List-Id:.*freeverse.*
-* $ $SPR^0 ^List-Id:.*ambrosia.*
-* $ $SPR^0 ^Sender:.*owner.*announce.*
-* $ $SPR^0 ^Sender:.*announce.*owner.*
-* $ $SPR^0 ^List-Id:.*gentoo-gwn\.gentoo\.org
-* $ $SPR^0 ^List-Id:.*fvpr\.fridge\.net 
-* $ $SPR^0 ^List-Id:.*security-announce\.lists\.apple\.com
-* $ $SPR^0 ^List-Id:.*spokengroove.*
-* $ $SPR^0 ^Subject:.*testingannouncerule.*
-* $ $SPR^0 ^To:.*lemswap\@googlegroups\.com
-* $ $SPR^0 ^List-Id:.*Improv\*Everywhere
-* $ $SPR^0 ^List-Id:.*yellowbike.*
-.lists.announce/
-
-## bring on the automatic list filtering. long time in coming.
-
 :0
-* $ $SPR^0 ^From:.*notifications\@github\.com
-* $ $SPR^0 ^From:.*noreply\@github\.com
-.GitHub/
+* ^List-Id:.*aha\.spool\.metasploit\.com
+.lists.aha/
 
-
-# generic ezmlm filter, comes before mailman otherwise mailman's filter
-# will put everything into .list.contact/
-:0
-* ^Mailing-list: contact .*; run by ezmlm
-* ^List-Post: [<]mailto:\/.*
-{
-    LISTID=$MATCH
-    
-    :0
-    * LISTID ?? ^ *\/[^@]*
-    {
-        LIST=$MATCH
-        
-        :0
-        * LISTID ?? ^.*@\/[^>\.]*
-        .lists.$MATCH-$LIST/
-    }
-}
-
-# onelist/egroups/yahoogroups/whatever_they're_called_today
-# lists with their non-standard header format, and ad nuker
-:0
-* ^Mailing-List: list \/[^@]+
-{
-    LISTID=$MATCH
-    
-    :0 fbw
-    | sed '/-\~-->$/,/--\~->$/d'    
-    
-    :0
-    .lists.$LISTID/
-}
-
-# Automagically handle nice standards conformant mailing lists - this
-# rule and the majordomo recipe appear courtesy of Jeff Waugh Records
-:0
-* ^(List-Id|(X-)?Mailing-List|X-List): +\/.*
-{
-    LISTID=$MATCH
-    
-    :0
-    * LISTID ?? ^.*[<]\/[^@>\.]*
-    .lists.$MATCH/
-    
-    :0
-    * LISTID ?? ^\/[^@\.]*
-    .lists.$MATCH/
-}
-
-# majordomo lists
-:0
-* ^Sender: owner-[^@]+@[^@]+
-* ^Sender: owner-\/[^@]+
-.lists.$MATCH/
-    
 ### The rest of the email will be delivered into my default mailbox,
 ### so no more rules are necessary
