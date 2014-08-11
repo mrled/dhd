@@ -65,6 +65,8 @@ unset d h
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 #[[ -s "/usr/local/rvm/scripts/rvm" ]] && source "/usr/local/rvm/scripts/rvm"
 
+
+
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
 
