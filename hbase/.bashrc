@@ -155,6 +155,8 @@ alias h=history
 alias m=more
 alias l=less
 alias zl=zless
+# the following tested initially on Mac OS X, less v 418
+LESS="-icdM"
 alias wh="type -a" # under ksh you want wh=whence
 
 alias sed='$cmd_sed'
