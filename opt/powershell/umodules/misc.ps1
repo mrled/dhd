@@ -345,35 +345,20 @@ if (test-path alias:l) { del alias:l }
 set-alias l less
 $env:LESS = "-iRC"
 
-$possibleVimDirs = @()
-if (test-path "${env:programfiles(x86)}\vim") {
-    $possibleVimDirs += @((ls "${env:programfiles(x86)}\vim\vim??").fullname | sort-object -descending)[0]
-}
-if (test-path "${env:programfiles}\vim") {
-    $possibleVimDirs += @((ls "${env:programfiles}\vim\vim??").fullname | sort-object -descending)[0]
-}
-foreach ($vd in $possibleVimDirs) {
-    if ($vd) {
-        $VimHome = $vd
-        set-alias vim $VimHome\vim.exe
-        function vless {
-            # Adapted from vim/macros/less.bat
-            [cmdletbinding()] 
-            param(
-                [Parameter(Mandatory=$True,ValueFromPipeline=$True)] [string] $filename
-            )
-            if ($input) {
-                $input | vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -
-            }
-            else {
-                vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" $filename
-            }
-            
-        }
-        set-alias vl vless
-        break
+function vless {
+    # Adapted from vim/macros/less.bat. Assumes vim is in path though.
+    [cmdletbinding()] 
+    param(
+        [Parameter(Mandatory=$True,ValueFromPipeline=$True)] [string] $filename
+    )
+    if ($input) {
+        $input | vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -
+    }
+    else {
+        vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" $filename
     }
 }
+set-alias vl vless
 
 <#
 $possibless = @(
@@ -460,6 +445,14 @@ if (test-path $sublpath) {
 # You want this to be separated with forward slashes so that it works
 # from the Git (bash) command line and cmd and Powershell etc.
 $env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
+
+
+# NOTES about doing this: 
+# 1) It would be better if I could use Get-VimDir, but I need an MSYS path, not a Windows path, so for now this is just hardcoded eww.
+# 2) You'll want to turn off colors for git diffs - `git config --global color.diff false` - b/c git colors are ANSI escapes and 
+#    Vim doesn't understand those (at least not out of the box)
+$env:GIT_PAGER = '"/c/Program Files (x86)/Vim/vim74/vim.exe" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -'
+
 
 function Get-GitPrettyLog {
     git log --oneline --all --graph --decorate $args
@@ -1242,4 +1235,81 @@ set-alias spark Generate-SparkLine
 $StartMenu = New-Object PSObject
 Add-Member -Force -InputObject $StartMenu -MemberType NoteProperty -Name CurrentUser -Value "${env:AppData}\Microsoft\Windows\Start Menu\"
 Add-Member -Force -InputObject $StartMenu -MemberType NoteProperty -Name AllUsers -Value "${env:ProgramData}\Microsoft\Windows\Start Menu\"
+
+set-alias getmo Get-Module
+set-alias rmmo Remove-Module
+
+function Get-Clipboard {
+    [cmdletbinding()]
+    param(
+        [switch] $AsArray
+    ) 
+    Add-Type -Assembly PresentationCore
+    $clipboardText = [Windows.Clipboard]::GetText()
+    if ($AsArray) {
+        $clipboardText = $clipboardText -replace "`r",'' -split "`n"
+    }
+    return $clipboardText
+}
+function Set-ClipboardFucked {
+    [cmdletbinding()]
+    param(
+        [string] $text,
+        [switch] $Append
+    )
+    throw "This is broken right now actualy"
+    Add-Type -AssemblyName 'System.Windows.Forms'
+    $str = $input | Out-String
+    if (-not $Append) {
+        [Windows.Forms.Clipboard]::Clear()
+    }
+    if ($str) {
+        [Windows.Forms.Clipboard]::SetText($str)
+    }
+}
+
+# from: http://andyarismendi.blogspot.com/2013/04/out-clipboard-cmdlet.html
+function Set-Clipboard {
+    [cmdletbinding()]
+    param (
+        [parameter(Position=0,Mandatory=$true,ValueFromPipeline=$true)]$InputObject,
+        [switch] $File
+    )
+    begin {
+        # STA is required to set the clipboard. (...whatever)
+        # Creating a new runspace is much faster than a whole new Powershell process
+        $ps = [PowerShell]::Create()
+        $rs = [RunSpaceFactory]::CreateRunspace()
+        $rs.ApartmentState = "STA"
+        $rs.ThreadOptions = "ReuseThread"
+        $rs.Open()
+        $data = @()
+    }
+    process {$data += $InputObject}
+    end {
+        $rs.SessionStateProxy.SetVariable("do_file_copy", $File)
+        $rs.SessionStateProxy.SetVariable("data", $data)
+        $ps.Runspace = $rs
+        $ps.AddScript({
+            Add-Type -AssemblyName 'System.Windows.Forms'
+            if ($do_file_copy) {
+                $file_list = New-Object -TypeName System.Collections.Specialized.StringCollection
+                $data | % {
+                    if ($_ -is [System.IO.FileInfo]) {[void]$file_list.Add($_.FullName)} 
+                    elseif ([IO.File]::Exists($_))    {[void]$file_list.Add($_)}
+                }
+                [System.Windows.Forms.Clipboard]::SetFileDropList($file_list)
+            } else {
+                $host_out = (($data | Out-String -Width 1000) -split "`n" | % {$_.TrimEnd()}) -join "`n"
+                [System.Windows.Forms.Clipboard]::SetText($host_out)
+            }
+        }).Invoke()
+    }
+}
+set-alias Out-Clipboard Set-Clipboard
+
+foreach ($exe in (gci "${env:windir}\Microsoft.NET\Framework\v4.0.30319" -filter *.exe)) {
+    #set-alias "$($exe.basename)_v40" $exe.fullname
+    set-alias "$($exe.basename)" $exe.fullname
+}
 
