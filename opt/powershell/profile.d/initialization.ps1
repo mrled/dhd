@@ -4,10 +4,24 @@ function Get-PythonDir {
     # Get the latest version installed (assuming the default Python install path)
     $matchingPythonDirs = get-item C:\python* | sort 
     if ($matchingPythonDirs.count -gt 0) {
-        $pythondir = $matchingPythonDirs[-1]
+        return $matchingPythonDirs[-1].fullname
     }
-    return $pythondir
 }
+$PythonDir = Get-PythonDir
+function Get-VimDir {
+    if (test-path "${env:programfiles(x86)}\vim") {
+        $possibleVimDirs += @((ls "${env:programfiles(x86)}\vim\vim??").fullname | sort-object -descending)[0]
+    }
+    if (test-path "${env:programfiles}\vim") {
+        $possibleVimDirs += @((ls "${env:programfiles}\vim\vim??").fullname | sort-object -descending)[0]
+    }
+    foreach ($vd in $possibleVimDirs) {
+        if ($vd) {
+            return $vd
+        }
+    }
+}
+$VimDir = Get-VimDir
 
 function Setup-SystemPath {
     $possiblePaths = @(
@@ -43,14 +57,22 @@ function Setup-SystemPath {
         "C:\Program Files (x86)\VMware\VMware Virtual Disk Development Kit\bin"
         "C:\Program Files\VMware\VMware Virtual Disk Development Kit\bin"
     )
-    $pythondir = Get-PythonDir
+
+    $azureSDKs = gci "$env:ProgramFiles\Microsoft SDKs\Windows Azure\.NET SDK"
+    if ($azureSDKs) {
+        $possiblePaths += "$($azureSDKs[-1].fullname)\bin"
+    }
+
     if ($pythondir) {
-        $possiblePaths += "$($pythondir.fullname)"                # contains python.exe 
-        $possiblePaths += "$($pythondir.fullname)\Scripts"        # contains stuff installed from Distribute packages
-        $possiblePaths += "$($pythondir.fullname)\Tools\Scripts"  # contains .py files 
+        # PythonDir contains python.exe; Scripts contains stuff installed from Distribute packages; Tools/Scripts contains.py files. 
+        $possiblePaths += @($pythondir,"$pythondir\Scripts","$pythondir\Tools\Scripts")
     }
     $possiblePaths += @((getenv path user) -split ';')
     $possiblePaths = $possiblePaths.tolower() | sort -unique
+
+    if ($VimDir) {
+        $possiblePaths += @($VimDir,"$VimDir\macros")
+    }
 
     $existingPaths = @()
     foreach ($pp in $possiblePaths) {
