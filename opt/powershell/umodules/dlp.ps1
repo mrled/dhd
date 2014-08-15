@@ -9,6 +9,93 @@ $edfiCorePath = "C:\Projects\DLP\Ed-Fi-Core"
 $edfiAppsPath = "C:\Projects\DLP\Ed-Fi-Apps"
 $edfiToolsPath = "C:\Projects\DLP\Ed-Fi-Tools"
 
+$DLPProjectBase = resolve-path ~/Documents/DLPClients
+
+$DLPOrganizations = @(
+    @{ 
+        LocalName = 'mrled'; GitHubOrg = 'mrled'; 
+        #Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools') 
+    },
+    @{ 
+        LocalName = 'alliance'; GitHubOrg = 'Ed-Fi-Alliance' 
+        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+    },
+    @{ 
+        LocalName = 'msdf'; GitHubOrg = 'DoubleLinePartners-MSDF' 
+        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
+    },
+    @{ 
+        LocalName = 'tdoe'; GitHubOrg = 'TennesseeDOE'; Checkout = $true 
+        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+    },
+    @{ 
+        LocalName = 'ndoe'; GitHubOrg = 'NebraskaDOE'; Checkout = $true 
+        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+    },
+    @{ 
+        LocalName = 'pde'; GitHubOrg = 'PennsylvaniaDOE'; Checkout = $true 
+        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
+    }
+)
+
+function Update-DlpGitProject {
+    [CmdletBinding()]
+    param(
+        [array] $clientList
+    )
+
+    $workingClientList = @()
+    foreach ($client in $clientList) {
+        $matchedClient = $DLPOrganizations |? { $_.LocalName -match $client}
+        if ($matchedClient) {
+            $workingClientList += @($matchedClient)
+        }
+        else {
+            throw "Passed client '$client', but no such client exists in `$DLPOrganizations"
+        }
+    }
+    if (-not $workingClientList) {
+        $workingClientList = $DLPOrganizations |? { $_.Checkout } 
+    }
+
+    foreach ($client in $workingClientList) {
+        write-verbose "Updating client '$($client.LocalName)'"
+        $projectDir = "$DLPProjectBase\$($client.LocalName)"
+        #$projectRepos = $client.Repositories
+        if (-not (test-path $projectDir)) {
+            mkdir $projectDir | out-null
+        }
+        foreach ($repoName in $client.Repositories) {
+            set-location $projectDir 
+            #$repoName = $repository.RepoName
+            # $repoClients is all the organizations that contain $repoName
+            $repoClients = ($DLPOrganizations |? { $_.Repositories -contains $repoName }).LocalName
+            if (-not (test-path "$projectDir\$repoName")) {
+                write-verbose "  Doing initial clone for '$repoName' for project '$($client.LocalName)'"
+                git clone --origin "$($client.LocalName)" "git@github.com:$($client.GitHubOrg)/$repoName"
+            }
+            else {
+                write-verbose "  Updating repository '$repoName' for project '$($client.LocalName)'"
+            }
+            set-location $projectDir\$repoName
+            #foreach ($gitRemoteName in $repository.Clients) {
+            foreach ($gitRemoteName in $repoClients) {
+                if ((git remote) -notcontains $gitRemoteName) {
+                    write-verbose "    Adding '$gitRemoteName' remote for '$repoName' repository"
+                    $ghoName = ($DLPOrganizations |? { $_.LocalName -match $gitRemoteName }).GitHubOrg
+                    git remote add $gitRemoteName "git@github.com:$ghoName/$repoName"
+                }
+                else {
+                    write-verbose "    Found '$gitRemoteName' remote for '$repoName' repository"
+                }
+            }
+            write-verbose "  Doing 'git fetch' in repository '$repoName' for project '$($client.LocalName)'"
+            git fetch --all
+        }
+    }
+}
+
 function Get-DlpProjectBasePath {
     param(
         [validateset("core","apps","all","current")] [string] $repo = "all",
@@ -67,7 +154,7 @@ function Get-DlpProjectFile {
     $qtypes.source.include = @('*.cs')
     $qtypes.source.subdir = @('Application','src')
     $qtypes.visualstudio = @{}
-    $qtypes.visualstudio.include = @('*.sln','*.csproj','*.ccproj','packages.config','*.cscfg','*.cspkg','*.csdef')
+    $qtypes.visualstudio.include = @('*.sln','*.csproj','*.ccproj','*.config','*.cscfg','*.cspkg','*.csdef')
     $qtypes.visualstudio.subdir = @('Application','src')
     $qtypes.config = @{}
     $qtypes.config.include = @('*.config')
@@ -125,15 +212,37 @@ function Get-DlpProjectFile {
 }
 set-alias gdlp Get-DlpProjectFile
 
+function Decrypt-SecureString {
+    param(
+        [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)] [System.Security.SecureString] $secureString
+    )
+    $marshal = [System.Runtime.InteropServices.Marshal]
+    $pointer = $marshal::SecureStringToBSTR($secureString)
+    $decryptedString = $marshal::PtrToStringBSTR($pointer)
+    $marshal::ZeroFreeBSTR($pointer)
+    return $decryptedString
+}
+
 function Convert-OpenSSLPemToPfx {
     param(
-        [parameter(mandatory=$true)] [string] $pemfile,
-        [parameter(mandatory=$true)] [string] $pfxPassword,
-        [string] $outfile = ((resolve-path $pemfile).path -replace ".pem$","") + ".pfx",
-        [string] $displayname = ((split-path -leaf $pemfile) -replace ".pem$","")
+        [parameter(mandatory=$true)] [string] $certFile,
+        [string] $keyFile = ((resolve-path $certFile).path -replace '(\.pem$)|(\.crt$)|(\.cert$)','.key'),
+        $pfxPassword,
+        [string] $outfile = ((resolve-path $certFile).path -replace '(\.pem$)|(\.crt$)|(\.cert$)','.pfx'),
+        [string] $displayname = ((split-path -leaf $certFile) -replace '(\.pem$)|(\.crt$)|(\.cert$)','')
     )
-    Invoke-OpenSsl -argumentList @("pkcs12", "-export", "-out", "`"$outfile`"", "-in", "`"$pemfile`"", 
+    if (-not $pfxPassword) {
+        $securePfxPassword = read-host "Enter a password for the PFX file" -AsSecureString
+        $pfxPassword = Decrypt-SecureString $securePfxPassword
+    }
+    $certFile = resolve-path $certFile
+    $arguments = @("pkcs12", "-export", "-out", "`"$outfile`"", "-in", "`"$certfile`"", 
         "-name", "`"$displayname`"", "-passout", "`"pass:$pfxPassword`"")
+    if ($keyFile) {
+        $keyFile = resolve-path $keyFile
+        $arguments += @("-inkey", "`"$keyFile`"")
+    }
+    Invoke-OpenSsl -argumentList $arguments
 }
 function Convert-OpenSSLPfxToPem {
     param(
@@ -187,23 +296,50 @@ function Add-DlpClientGitRemote {
 }
 set-alias adlpclient Add-DlpClientGitRemote
 
-function Invoke-GitCommandOnDlpRepositories {
+function Invoke-GitCommandOnMultipleRepositories {
     param(
         [Parameter(mandatory=$true)] [string] $gitCommand,
-        [string] $basePath,
-        [validateset("core","apps","all")] [string] $repo = "all"
+        [Parameter(mandatory=$true)] [array] $repositoryList
     )
+    $resolvedRepositoryList = @()
+    foreach ($repo in $repositoryList) {
+        $resolvedRepositoryList += @(resolve-path $repo)
+    }
+
     $oldpath = get-location
-    foreach ($path in (Get-DlpProjectBasePath -getbase -basepath $basepath)) {
-        set-location $path | out-null
-        write-host -foreground magenta $path.fullname
+    foreach ($repoLocation in $resolvedRepositoryList) {
+        set-location $repoLocation | out-null
+        write-host -foreground magenta $repoLocation
         invoke-expression "git $gitCommand"
     }
     set-location $oldpath
 }
-set-alias dgit Invoke-GitCommandOnDlpRepositories
+set-alias mgit Invoke-GitCommandOnMultipleRepositories
 
 function Connect-VPN {
     $DomainCreds = Get-DLPProtectedCredential -credentialFile ~/credentials-MRLDLP.xml
     ipsecc -a -r FlameLeafVPN.vpn -u $DomainCreds.Username -p "$($DomainCreds.DecryptPassword())"
 }
+
+function Set-DLPProjectContext {
+    param(
+        [parameter(mandatory=$true)] [ValidateSet("rest","dash","old")] $context
+    )
+    switch ($context) {
+        "rest" {
+            $env:PathResolverRepositoryOverride = "TDOE-RestApiSpike"
+        }
+        "dash" {
+            $env:PathResolverRepositoryOverride = "Ed-Fi-Common;Ed-Fi-Dashboards-Core;Ed-Fi-Apps"
+        }
+        "old" {
+            $env:PathResolverRepositoryOverride = "Ed-Fi-Core;Ed-Fi-Apps"
+        }
+    }
+    $LoadedPathResolver = get-module | where { $_.Name -eq "path-resolver" }
+    if ($LoadedPathResolver) {
+        remove-module path-resolver
+    }
+    ipmo "$edfiBasePath\TDOE-RestApiSpike\logistics\scripts\modules\path-resolver.psm1"
+}
+set-alias setdlp Set-DLPProjectContext
