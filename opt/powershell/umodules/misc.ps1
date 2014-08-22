@@ -1238,3 +1238,8 @@ function Generate-SparkLine {
     return [String]::join('', $output)
 }
 set-alias spark Generate-SparkLine
+
+$StartMenu = New-Object PSObject
+Add-Member -Force -InputObject $StartMenu -MemberType NoteProperty -Name CurrentUser -Value "${env:AppData}\Microsoft\Windows\Start Menu\"
+Add-Member -Force -InputObject $StartMenu -MemberType NoteProperty -Name AllUsers -Value "${env:ProgramData}\Microsoft\Windows\Start Menu\"
+
