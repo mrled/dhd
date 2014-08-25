@@ -980,7 +980,7 @@ function reimport-module {
 set-alias reimport reimport-module
 
 # todo : could mimic set-variable options as closely aspossible
-function Set-EnvironmentVariable {
+function Set-WinEnvironmentVariable {
     param(
         [parameter(mandatory=$true)] [string] $Name,
         [string] $Value = "",
@@ -990,11 +990,11 @@ function Set-EnvironmentVariable {
         [Environment]::SetEnvironmentVariable($Name, $Value, $target)
     }
 }
-set-alias setenv Set-EnvironmentVariable
+set-alias setenv Set-WinEnvironmentVariable
 # TODO: when getting multiple targets, it outputs an array of strings for the value
 #       honestly not sure what to do here. %PATH% is *concatenated*, but others are 
 #       *replaced* when there's a user and a machine one. ?????
-function Get-EnvironmentVariable {
+function Get-WinEnvironmentVariable {
     param(
         [parameter(mandatory=$true)] [string] $Name,
         [validateset("Machine","User","Process")] [string[]] $TargetLocation = @("Machine","User","Process")
@@ -1004,7 +1004,7 @@ function Get-EnvironmentVariable {
         ([Environment]::GetEnvironmentVariable($Name, $target))
     }
 }
-set-alias getenv Get-EnvironmentVariable
+set-alias getenv Get-WinEnvironmentVariable
 
 function Get-SystemPath {
     ($env:path).split(";")
