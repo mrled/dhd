@@ -1,5 +1,5 @@
-#set-alias choco C:\Chocolatey\chocolateyinstall\chocolatey.cmd
-set-alias nuget C:\Chocolatey\chocolateyinstall\nuget.exe
+set-alias nuget "${env:ChocolateyInstall}\chocolateyinstall\nuget.exe"
+$choco = $env:ChocolateyInstall
 
 function Get-NuGetSources {
     $nugetSources = @()
@@ -48,10 +48,91 @@ function Get-ChocolateySources {
     $allSources | ft
 }
 
+# Ugh you have to run this from an elevated prompt lmao
 function Get-WebPiPackages {
-    $webpiOutput = choco list -source WebPI |? { -not [string]::IsNullOrWhiteSpace($_) }
-    $indexOfDivider = $webpiOutput.indexof('----------------------------------------') 
-    $webpiPackages = $webpiOutput[($indexOfDivider+1)..($webpiOutput.count-2)]
+    [cmdletbinding(DefaultParameterSetName="DefaultCache")]
+    param(
+        $search,
+        $ignore,
+        [ValidateSet("Installed","Application","Available")] $type,
+        [parameter(ParameterSetName="DefaultCache")] [switch] $RefreshCache,
+        [parameter(ParameterSetName="SpecifyCache")] $CacheFile
+    )
+
+    # Allow myself to use this fucking thing without taking 10 minutes to call webpi cli every fucking time
+    # However, don't allow a specified cache to be updated
+    if ($PSCmdlet.ParameterSetName -eq "DefaultCache") {
+        $cacheFile = "${env:Temp}\mrledWebPiOutputPackageCache.txt"
+        $yesterday = (get-date).AddDays(-1)
+        if (($refreshCache) -or
+            (-not (test-path $cacheFile)) -or
+            (($yesterday -gt (get-item $cacheFile).LastWriteTime)))
+        {
+            choco list -source WebPI | out-file $cacheFile -encoding utf8
+        }
+    }
+    $cacheFile = resolve-path $cacheFile
+    $rawWpiOutput = get-content $cacheFile
+    $indexOfHeaderEnd = $rawWpiOutput.indexof('Current language of installers is English')
+
+    $allWpiPackages = @()
+    $packageType = $false
+    foreach ($packageLine in $rawWpiOutput[($indexOfHeaderEnd+1)..($rawWpiOutput.count-2)]) {
+        if ([string]::IsNullOrWhiteSpace($packageLine)) {}   # Ignore whitespace
+        elseif ($packageLine -match '^-+$') {}               # Ignore header lines of just dashss
+        elseif ($packageLine -match '^ID\s+Title$') {}       # Ignore header lines of column names
+        # Output from the webpi cli util organizes the package list into 3 sections:
+        elseif ($packageLine -match '--Previously Installed Products') {
+            $packageType = "Installed"
+        }
+        elseif ($packageLine -match '--Applications') {
+            $packageType = "Application"
+        }
+        elseif ($packageLine -match '--Available Products') {
+            $packageType = "Available"
+        }
+        elseif (-not $packageType) {
+            throw "Failed to process line '$packageLine' - what type of package is it?"
+        }
+        else {
+            $packageLine -match '(\S*)\s*(.*)' | out-null
+            $properties = [ordered]@{ Name=$matches[1]; Type=$packageType; Description=$matches[2]; }
+            $allWpiPackages += @( New-Object -type PSObject -property $properties )
+        }
+    }
+
+    if ($type) {
+        $typeMatches = $allWpiPackages |? { $_.type -match $type }
+    }
+    else {
+        $typeMatches = $allWpiPackages
+    }
+
+    if ($search) {
+        $searchMatches = @()
+        foreach ($package in $typeMatches) {
+            if (($package.name -match $search) -or ($package.Description -match $search)) {
+                $searchMatches += @($package)
+            }
+        }
+    }
+    else {
+        $searchMatches = $typeMatches
+    }
+
+    if ($ignore) {
+        $ignoreMatches = @()
+        foreach ($package in $searchMatches) {
+            if (($package.name -notmatch $ignore) -and ($packge.Description -notmatch $ignore)) {
+                $ignoreMatches += @($package)
+            }
+        }
+    }
+    else {
+        $ignoreMatches = $searchMatches
+    }
+
+    return $searchMatches
 }
 
 function Get-ChocolateyPackages {
@@ -93,4 +174,10 @@ function Get-ChocolateyPackages {
 #>
         }
     }
+}
+
+function Get-InstalledChocolateyPackages {
+    # This is actually just getting ones with a directory in $env:ChocolateyInstall\lib\
+    # So not, for instance, webpi stuff.
+    (gci $env:ChocolateyInstall\lib).name | %{ $_ -match "^(.+?)\.\d+\.\d.*$" | Out-Null; $matches[1]} | % { echo $_}
 }

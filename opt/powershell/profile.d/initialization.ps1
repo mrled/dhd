@@ -25,7 +25,9 @@ $VimDir = Get-VimDir
 
 function Setup-SystemPath {
     $possiblePaths = @(
+        "${env:ChocolateyInstall}\bin"
         "C:\Chocolatey\bin"
+        "C:\ProgramData\Chocolatey\bin"
         "$home\.dhd\opt\win32bin"
         "$home\.dhd\opt\powershell\bin"
         "$home\opt\win32bin"
