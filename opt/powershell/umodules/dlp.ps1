@@ -14,8 +14,7 @@ $DLPProjectBase = resolve-path ~/Documents/DLPClients
 $DLPOrganizations = @(
     @{ 
         LocalName = 'mrled'; GitHubOrg = 'mrled'; 
-        #Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
-        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools') 
+        Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
     },
     @{ 
         LocalName = 'alliance'; GitHubOrg = 'Ed-Fi-Alliance' 
