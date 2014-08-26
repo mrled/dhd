@@ -31,7 +31,10 @@ $DefaultPromptSuffix = { Write-Host "$LambdaChar" -nonewline -foreground White }
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
 function colorPrompt {
-    #$Host.UI.RawUI.WindowTitle = $pwd
+
+    # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
+    $Host.UI.RawUI.WindowTitle = $pwd
+
     Write-Host $(get-date -format HH:mm:ss) -nonewline -foregroundcolor White
     Write-Host " $hostname" -nonewline -foregroundcolor Blue
     Write-Host " $(displayPath $pwd) " -nonewline -foregroundcolor Green
