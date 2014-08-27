@@ -1128,7 +1128,9 @@ function uploadid {
     }
 
     $akeys = "~/.ssh/authorized_keys"
-    "",$keydata | plink $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
+    $secureSshPass = read-host -AsSecureString "Password for $hostname"
+    $sshPass = Decrypt-SecureString $secureSshPass
+    "",$keydata | plink -pw "$sshPass" $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
 
 $bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
