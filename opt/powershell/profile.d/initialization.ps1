@@ -60,9 +60,9 @@ function Setup-SystemPath {
         "C:\Program Files\VMware\VMware Virtual Disk Development Kit\bin"
     )
 
-    $azureSDKs = gci "$env:ProgramFiles\Microsoft SDKs\Windows Azure\.NET SDK"
-    if ($azureSDKs) {
-        $possiblePaths += "$($azureSDKs[-1].fullname)\bin"
+    $azureSDKs = "$env:ProgramFiles\Microsoft SDKs\Windows Azure\.NET SDK"
+    if (test-path $azureSDKs) {
+        $possiblePaths += "$((gci $azureSDKs[-1]).fullname)\bin"
     }
 
     if ($pythondir) {
