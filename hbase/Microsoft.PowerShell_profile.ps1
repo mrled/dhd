@@ -56,7 +56,7 @@ foreach ($pmp in $PossibleModulePaths) {
     if (test-path $pmp) { $env:PSModulePath += ";$pmp" }
 }
 
-import-module IPConfiguration,uPackageManager
+import-module IPConfiguration,uPackageManager,PSWindowsUpdate
 
 try { import-module credential-management} catch {}
 
