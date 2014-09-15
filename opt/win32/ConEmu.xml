@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <key name="Software">
 	<key name="ConEmu">
-		<key name=".Vanilla" modified="2014-08-26 13:46:17" build="140814">
+		<key name=".Vanilla" modified="2014-09-15 14:00:44" build="140814">
 			<value name="ColorTable00" type="dword" data="00000000"/>
 			<value name="ColorTable01" type="dword" data="00ee0000"/>
 			<value name="ColorTable02" type="dword" data="0000cd00"/>
@@ -124,7 +124,7 @@
 			<value name="ColorKeyTransparent" type="hex" data="00"/>
 			<value name="ColorKeyValue" type="dword" data="00010101"/>
 			<value name="UseCurrentSizePos" type="hex" data="01"/>
-			<value name="WindowMode" type="dword" data="0000051f"/>
+			<value name="WindowMode" type="dword" data="00000520"/>
 			<value name="ConWnd Width" type="dword" data="00000073"/>
 			<value name="ConWnd Height" type="dword" data="00000035"/>
 			<value name="Cascaded" type="hex" data="01"/>
@@ -497,9 +497,9 @@
 			<value name="DndLKey" type="hex" data="00"/>
 			<value name="DndRKey" type="hex" data="a2"/>
 			<value name="WndDragKey" type="dword" data="00121101"/>
-				<key name="Tasks" modified="2014-08-26 13:46:17" build="140814">
+				<key name="Tasks" modified="2014-09-15 14:00:44" build="140814">
 				<value name="Count" type="dword" data="00000008"/>
-						<key name="Task1" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task1" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{PS}"/>
 					<value name="GuiArgs" type="string" data=""/>
 					<value name="Cmd1" type="string" data="powershell.exe  -cur_console:d:C:\Users\mrled -cur_console:t:λ"/>
@@ -507,7 +507,7 @@
 					<value name="Count" type="dword" data="00000001"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 				</key>
-						<key name="Task2" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task2" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{PSADMIN}"/>
 					<value name="GuiArgs" type="string" data=""/>
 					<value name="Cmd1" type="string" data="*C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -cur_console:d:C:\Users\mrled -cur_console:t:☭"/>
@@ -515,7 +515,7 @@
 					<value name="Count" type="dword" data="00000001"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 				</key>
-						<key name="Task3" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task3" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{Putty}"/>
 					<value name="GuiArgs" type="string" data=""/>
 					<value name="Cmd1" type="string" data="C:\ProgramData\Chocolatey\lib\putty.portable.0.63\tools\PUTTY.EXE -cur_console:t:#"/>
@@ -523,7 +523,7 @@
 					<value name="Count" type="dword" data="00000001"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 				</key>
-						<key name="Task4" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task4" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{CMD}"/>
 					<value name="GuiArgs" type="string" data=""/>
 					<value name="Cmd1" type="string" data="cmd.exe -cur_console:t:&quot;C:\&gt;&quot;"/>
@@ -531,7 +531,7 @@
 					<value name="Count" type="dword" data="00000001"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 				</key>
-						<key name="Task5" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task5" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{PS: No Profile}"/>
 					<value name="GuiArgs" type="string" data=""/>
 					<value name="Cmd1" type="string" data="powershell.exe -noprofile -cur_console:d:C:\Users\mrled -cur_console:t:PS"/>
@@ -539,7 +539,7 @@
 					<value name="Count" type="dword" data="00000001"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 				</key>
-						<key name="Task6" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task6" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{PSADMIN: No Profile}"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 					<value name="GuiArgs" type="string" data=""/>
@@ -547,7 +547,7 @@
 					<value name="Active" type="dword" data="00000000"/>
 					<value name="Count" type="dword" data="00000001"/>
 				</key>
-						<key name="Task7" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task7" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{PS:SS}"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 					<value name="GuiArgs" type="string" data=""/>
@@ -555,7 +555,7 @@
 					<value name="Active" type="dword" data="00000000"/>
 					<value name="Count" type="dword" data="00000001"/>
 				</key>
-						<key name="Task8" modified="2014-08-26 13:46:17" build="140814">
+						<key name="Task8" modified="2014-09-15 14:00:44" build="140814">
 					<value name="Name" type="string" data="{PS:SS:No Profile}"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 					<value name="GuiArgs" type="string" data=""/>
@@ -572,10 +572,10 @@
 					<value name="Count" type="dword" data="00000001"/>
 				</key>
 			</key>
-				<key name="Apps" modified="2014-08-26 13:46:17" build="140814">
+				<key name="Apps" modified="2014-09-15 14:00:44" build="140814">
 				<value name="Count" type="dword" data="00000000"/>
 			</key>
-				<key name="Colors" modified="2014-08-26 13:46:17" build="140814">
+				<key name="Colors" modified="2014-09-15 14:00:44" build="140814">
 				<value name="Count" type="dword" data="00000000"/>
 			</key>
 			<value name="SaveCmdHistory" type="hex" data="00"/>
