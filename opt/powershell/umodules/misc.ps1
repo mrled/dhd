@@ -2,8 +2,10 @@
 # [char]9773    ☭ (HAMMER AND SICKLE)
 # [char]42479   ꗯ (VAI SYLLABLE GBE)
 # [char]1003    ϫ (COPTIC SMALL LETTER GANGIA)
+# [char]187     » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
 # [char]7       beeps @ u
 $LambdaChar = "$([char]955)"
+$DoublePromptChar = [char]187
 $HammerAndSickleChar = "$([char]9773)"
 $VisualStudioChar = "$([char]42479)"
 $BeepChar = @([char]7)
@@ -754,14 +756,15 @@ if (test-path "${env:ProgramFiles(x86)}\Git\bin\sed.exe") {
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
 if (test-path alias:touch) {del alias:touch}
 function touch {
-    param([parameter(mandatory=$true)] $file)
-    if (test-path $file) {
-        set-filetime $file
+    param([parameter(mandatory=$true)] [string[]] $file)
+    foreach ($f in $file) {
+        if (test-path $f) {
+            set-filetime $f
+        }
+        else {
+            new-item -ItemType file $f
+        }
     }
-    else {
-        new-item -ItemType file $file
-    }
-
 }
 
 
@@ -879,28 +882,34 @@ function Get-InstalledPrograms ($computer = 'localhost') {
     return $programs_installed;
 }
 
-function Create-Shortcut {
+function New-MRLShortcut {
     param(
-        [parameter(Mandatory=$true)] [string]$filename,
-        [parameter(Mandatory=$true)] [string]$target,
-        [string]$arguments = $null,
-        [alias("f")] [switch]$force
+        [parameter(Mandatory=$true)] [string] $linkPath,
+        [parameter(Mandatory=$true)] [string] $targetPath,
+        [string]$arguments,
+        [switch] $force,
+        [switch] $PassThru
     )
-    if (-not $filename.tolower().endswith(".lnk")) {
-        # required, or you'll get an error message and fail. 
-        $filename = "$filename.lnk"
+    if (-not [System.IO.Path]::IsPathRooted($linkPath)) {
+        $linkPath = "$pwd\$linkPath"
     }
-    if ((test-path $filename) -and (-not $force.ispresent)) {
+    if (-not $linkPath.tolower().endswith(".lnk")) {
+        # required, or you'll get an error message and fail. 
+        $linkPath = "$linkPath.lnk"
+    }
+    if ((test-path $linkPath) -and (-not $force.ispresent)) {
         # I don't think I care to check if there's a non-link file named .lnk that we're going to overwrite
-        write-error ("Filename $filename already exists; use the -f argument to overwrite.")
+        write-error ("linkPath $linkPath already exists; use -force to overwrite.")
         return $null
     }
     $wshshell = New-Object -ComObject WScript.Shell
-    $lnk = $wshshell.CreateShortcut($filename)
-    $lnk.TargetPath = "$target"
+    $lnk = $wshshell.CreateShortcut($linkPath)
+    $lnk.targetPath = "$targetPath"
     $lnk.Arguments = "$arguments" #it's ok if this is $null
     $lnk.save()
-    return $lnk
+    if ($PassThru) {
+        return $lnk
+    }
 }
 
 $startmenu="$env:appdata\Microsoft\Windows\Start Menu"
@@ -929,7 +938,7 @@ function Create-Link {
         write-error "Filename $source already exists." #cannot overwrite - what if it's not a link?
         return $null
     }
-    switch ($pscmdlet.parametersetname) {
+    switch ($pscmdlet.ParameterSetName) {
         "shortcut" { 
             $a = @{filename = $source
                    target = $target
@@ -1138,7 +1147,6 @@ if (test-path $bvssh) {
     function Invoke-BitviseSsh {
         $stermcArguments = $args
         $stermcArguments+= @("-keypairFile=$Home\.ssh\id_rsa")
-        $stermcArguments+= @("-keypairFile=$Home\.ssh\id_rsa")
         $stermcArguments+= @("-hostKeyFile=$Home\.dhd\hbase\known_hosts")
         start-process -wait -nonewwindow $bvssh\stermc.exe -argumentList $stermcArguments
     }
@@ -1148,7 +1156,7 @@ if (test-path $bvssh) {
             [parameter(mandatory=$true)] [string] $hostname,
             [string] $screenSession = "camelot"
         )
-        Invoke-BitviseSsh '-cmd=scr' $args
+        Invoke-BitviseSsh $hostname '-cmd=scr'
     }
     set-alias scr Invoke-BitviseSshScreenSession
     function Get-BitviseKnownHosts {
@@ -1315,3 +1323,33 @@ foreach ($exe in (gci "${env:windir}\Microsoft.NET\Framework\v4.0.30319" -filter
     set-alias "$($exe.basename)" $exe.fullname
 }
 
+function Test-PowershellSyntax {
+    [cmdletbinding(DefaultParameterSetName='FromText')]
+    param(
+        [parameter(mandatory=$true,ParameterSetName='FromText')] [string] $text,
+        [parameter(mandatory=$true,ParameterSetName='FromFile')] [string] $fileName
+    )
+    $tokens = @()
+    $parseErrors = @()
+    if ($pscmdlet.ParameterSetName -eq 'FromText') {
+        $parsed = [System.Management.Automation.Language.Parser]::ParseInput(
+            $text, [ref]$tokens, [ref]$parseErrors)
+    }
+    elseif ($pscmdlet.ParameterSetName -eq 'FromFile') {
+        $fileName = resolve-path $fileName
+        $parsed = [System.Management.Automation.Language.Parser]::ParseFile(
+            $fileName, [ref]$tokens, [ref]$parseErrors)
+    }
+    write-verbose "$($tokens.count) tokens found."
+
+    if ($parseErrors.count -gt 0) {
+        write-verbose "$($parseErrors.count) parse errors found."
+        foreach ($e in $parseErrors) {
+            write-verbose "    $e"
+        }
+        return $false
+    }
+    else {
+        return $true
+    }
+}

@@ -139,10 +139,10 @@ function Get-ChocolateyPackages {
     param(
         [string[]] $packageName 
     )
-    write-host "Searching Chocolatey repos..."
+    write-host -foreground cyan "Searching Chocolatey repos..."
     iex "choco list $($packageName -join " ")"
 
-    write-host "Searching WebPI repo..."
+    write-host -foreground cyan "Searching WebPI repo..."
     $webpiPackages = Get-WebPiPackages
     foreach ($wpp in $webpiPackages) {
         foreach ($pn in $packageName) {
@@ -154,8 +154,8 @@ function Get-ChocolateyPackages {
 
     foreach ($source in Get-NuGetSources) {
         if ($source.Enabled) {
-            write-host "Searching NuGet repo: $($source.Name)"
-            iex "choco list $($packageName -join " ") -source `"$($source.Name)`"" 
+            write-host -foreground cyan "Searching NuGet repo: $($source.Name)"
+            iex "choco list $($packageName -join ' ') -source `"$($source.Name)`"" 
 <#
             |? { 
                 (-not $_.contains('Reading environment variables from registry.')) -and

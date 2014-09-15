@@ -1,14 +1,12 @@
 # Stuff for work
+$dlpumodule = $myinvocation.mycommand.path
 
-$DLPProjectBase = "~/Documents/DLPClients"
-if (-not (test-path $DLPProjectBase)) {
-    # Do nothing
+$DLPProjectBase = (resolve-path "~/Documents/DLPClients").Path
+if (-not ($VisualStudioDirectories -contains $DLPProjectBase)) {
+    $VisualStudioDirectories += @($DLPProjectBase)
 }
-else {
-    $DLPProjectBase = resolve-path $DLPProjectBase
 
-    $dlpumodule = $myinvocation.mycommand.path
-    
+if (test-path $DLPProjectBase) {
     $projPaths = @("D:\Projects","C:\Projects") #This can be an array. 
     
     $edfiBasePath = "C:\Projects\DLP"
@@ -34,7 +32,7 @@ else {
             Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
         },
         @{ 
-            LocalName = 'ndoe'; GitHubOrg = 'NebraskaDOE'; Checkout = $true 
+            LocalName = 'nedoe'; GitHubOrg = 'NebraskaDOE'; Checkout = $true 
             Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
         },
         @{ 
