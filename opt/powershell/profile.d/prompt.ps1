@@ -23,14 +23,14 @@
     return $displaypath
 }
 
-#$AdminPromptSuffix = { Write-Host ("PS#") -nonewline -foregroundcolor White -backgroundcolor Red }
-$AdminPromptSuffix = { write-host " $HammerAndSickleChar " -nonewline -foregroundcolor red -backgroundcolor yellow }
-#$DefaultPromptSuffix = { Write-Host "PS»" -nonewline -foreground White }
-$DefaultPromptSuffix = { Write-Host "$LambdaChar" -nonewline -foreground White }
+if (-not $PromptSuffixes) { $PromptSuffixes = @{} }
+$PromptSuffixes['Admin'] = { write-host " $HammerAndSickleChar " -nonewline -foregroundcolor red -backgroundcolor yellow }
+$PromptSuffixes['Default'] = { Write-Host "$LambdaChar" -nonewline -foreground White }
+$PromptSuffixes['VisualStudio'] = { write-host " $VisualStudioChar " -nonewline -foregroundcolor White -backgroundcolor Magenta }
 
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
-function colorPrompt {
+$colorPrompt = {
 
     # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
     $Host.UI.RawUI.WindowTitle = $pwd
@@ -41,14 +41,17 @@ function colorPrompt {
     
     # This lets you define a $promptSuffix scriptblock variable elsewhere.
     # I use this for my DLP SolutionScripts.profile.ps1 for example. 
-    if ($PromptSuffixOverride) {
-        invoke-command $PromptSuffixOverride
+    if ($PromptSuffixes['Override']) {
+        invoke-command $PromptSuffixes['Override']
+    }
+    elseif ($VisualStudioDirectories |? {"$pwd".StartsWith($_)}) {
+        invoke-command $PromptSuffixes['VisualStudio']
     }
     elseif ($SoyAdmin) {
-        invoke-command $AdminPromptSuffix
+        invoke-command $PromptSuffixes['Admin']
     }
     else {
-        invoke-command $DefaultPromptSuffix
+        invoke-command $PromptSuffixes['Default']
     }
 
     # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
@@ -56,23 +59,23 @@ function colorPrompt {
 }
 
 # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
-function simplePrompt {
+$simplePrompt = {
     if ($SoyAdmin) { $lcop = "#" }
     else { $lcop = ">" }
     return "$(get-date).Tostring('HH:mm:ss') $hostname $(displayPath $pwd) PS$lcop "
 }
 
 function reset-prompt {
-    rm function:\prompt
-    function global:prompt { colorPrompt }
+    if (test-path function:prompt) { rm function:prompt }
+    new-item -path function:prompt -value $colorPrompt | out-null
 }
+
+. reset-prompt
 
 if ($env:term -eq "emacs") {
     # Emacs' "M-x powershell" seems to handle the prompt itself, and you get extra newlines if you 
     # define one 
-    if (test-path function:\prompt) { del function:\prompt }
+    if (test-path function:prompt) { rm function:prompt }
 }
-else {
-    reset-prompt
-}
+
 
