@@ -60,23 +60,36 @@ foreach ($pmp in $PossibleModulePaths) {
 
 import-module IPConfiguration,uPackageManager,PSWindowsUpdate
 
-try { import-module credential-management} catch {}
+function Invoke-AndIgnoreError {
+    param(
+        [parameter(mandatory=$true)] [ScriptBlock] $ScriptBlock
+    )
+    $errorActionPreferenceCache = $ErrorActionPreference
+    $errorActionPreference = "SilentlyContinue"
 
-try {
-    # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
-    # so import the module before adding that format file so my format file overrides their bullshit
+    $errorCache = @()
+    $errorCache += $error.ToArray()
+    invoke-command -scriptblock $scriptblock
+
+    $errorActionPreference = $errorActionPreferenceCache
+    $error.clear()
+    $error.AddRange($errorCache)
+}
+
+Invoke-AndIgnoreError -scriptblock {
     import-module PsGet
     import-module posh-git
     #import-module PSCX -args $home\.dhd\opt\powershell\Pscx.UserPreferences.ps1
     import-module PSCX
 }
-catch {}
 
 foreach ($um in (gci ~/.dhd/opt/powershell/umodules)) {
     . $um.fullname
 }
 
 # override some default display values for objects, this feature ruelz
+# Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
+# so import the module before adding that format file so my format file overrides their bullshit
 update-formatdata -prependpath "$home\.dhd\opt\powershell\mrl.format.ps1xml"
 
 . $profiled\initialization.ps1
