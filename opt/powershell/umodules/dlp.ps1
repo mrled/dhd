@@ -16,8 +16,12 @@ if (test-path $DLPProjectBase) {
     
     $DLPOrganizations = @(
         @{ 
-            LocalName = 'mrled'; GitHubOrg = 'mrled'; 
-            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+            LocalName = 'mrled'; GitHubOrg = 'mrled'; Checkout = $true
+            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common','minipki') 
+        },
+        @{ 
+            LocalName = 'dlp'; GitHubOrg = 'DoubleLinePartners'; Checkout = $true
+            Repositories = @('InternalTools')
         },
         @{ 
             LocalName = 'alliance'; GitHubOrg = 'Ed-Fi-Alliance' 
