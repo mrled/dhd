@@ -62,7 +62,7 @@ function Setup-SystemPath {
 
     $azureSDKs = "$env:ProgramFiles\Microsoft SDKs\Windows Azure\.NET SDK"
     if (test-path $azureSDKs) {
-        $possiblePaths += "$((gci $azureSDKs[-1]).fullname)\bin"
+        $possiblePaths += "$(((gci $azureSDKs)[-1]).fullname)\bin"
     }
 
     if ($pythondir) {
@@ -97,7 +97,7 @@ function Setup-SystemPath {
 
 function Setup-Environment {
     # Term is important for things like less.exe, sometimes
-    set-environmentvariable -name "TERM" -value "xterm" -targetlocation user,process
+    set-winenvironmentvariable -name "TERM" -value "xterm" -targetlocation user,process
 
     Set-FileAssociation .el txtfile
     Set-FileAssociation .nfo txtfile "text/plain"
@@ -113,7 +113,7 @@ function Setup-Environment {
         $pythonexe = "$pythondir\python.exe"
         Set-FileAssociation .py Python.File
         Set-AssociationOpenCommand Python.File "$pythonexe `"%1`" %*"
-        set-environmentvariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
+        set-winenvironmentvariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
     }
 }
 
