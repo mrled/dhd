@@ -6,6 +6,35 @@ if (-not ($VisualStudioDirectories -contains $DLPProjectBase)) {
     $VisualStudioDirectories += @($DLPProjectBase)
 }
 
+function New-DlpProject {
+    param(
+        [parameter(mandatory=$true)] [string] $LocalName,
+        [parameter(mandatory=$true)] [string] $GitHubOrg,
+        [switch] $Checkout,
+        [string[]] $Repositories
+    )
+    $project = New-Object PSObject
+    Add-Member -InputObject $project -NotePropertyMembers  @{
+        Repositories = $Repositories
+        Checkout = $Checkout
+        LocalName = $LocalName
+        GitHubOrg = $GitHubOrg
+    }
+    Add-Member -InputObject $project -MemberType ScriptProperty -Name Directory -Value {
+        $projDir = "$DLPProjectBase/$($this.Localname)"
+        if (-not $this.checkout) {
+            return ""
+        }
+        elseif (test-path $projDir) {
+            return get-item $projDir
+        }
+        else {
+            return "$projDir"
+        }
+    }
+    return $project
+}
+
 if (test-path $DLPProjectBase) {
     $projPaths = @("D:\Projects","C:\Projects") #This can be an array. 
     
@@ -15,36 +44,15 @@ if (test-path $DLPProjectBase) {
     $edfiToolsPath = "C:\Projects\DLP\Ed-Fi-Tools"
     
     $DLPOrganizations = @(
-        @{ 
-            LocalName = 'mrled'; GitHubOrg = 'mrled'; Checkout = $true
-            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common','minipki') 
-        },
-        @{ 
-            LocalName = 'dlp'; GitHubOrg = 'DoubleLinePartners'; Checkout = $true
-            Repositories = @('InternalTools')
-        },
-        @{ 
-            LocalName = 'alliance'; GitHubOrg = 'Ed-Fi-Alliance' 
-            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
-        },
-        @{ 
-            LocalName = 'msdf'; GitHubOrg = 'DoubleLinePartners-MSDF' 
-            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
-        },
-        @{ 
-            LocalName = 'tdoe'; GitHubOrg = 'TennesseeDOE'; Checkout = $true 
-            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
-        },
-        @{ 
-            LocalName = 'nedoe'; GitHubOrg = 'NebraskaDOE'; Checkout = $true 
-            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
-        },
-        @{ 
-            LocalName = 'pde'; GitHubOrg = 'PennsylvaniaDOE'; Checkout = $true 
-            Repositories = @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
-        }
+        New-DlpProject -LocalName mrled -GitHubOrg mrled -Checkout -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common','minipki') 
+        New-DlpProject -LocalName dlp -GitHubOrg DoubleLinePartners -Checkout -Repositories @('InternalTools')
+        New-DlpProject -LocalName alliance -GitHubOrg 'Ed-Fi-Alliance' -Checkout -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+        New-DlpProject -LocalName msdf -GitHubOrg 'DoubleLinePartners-MSDF' -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
+        New-DlpProject -LocalName tdoe -GitHubOrg TennesseeDOE -checkout -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+        New-DlpProject -LocalName nedoe -GitHubOrg NebraskaDOE -checkout -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
+        New-DlpProject -LocalName pde -GitHubOrg PennsylvaniaDOE -checkout -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
     )
-    
+
     function Update-DlpGitProject {
         [CmdletBinding()]
         param(
