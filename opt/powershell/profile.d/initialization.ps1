@@ -1,30 +1,43 @@
 # Initialization stuff doesn't need to happen very often, and it might be slow ish maybe
 
-function Get-PythonDir {
-    # Get the latest version installed (assuming the default Python install path)
-    $matchingPythonDirs = get-item C:\python* | sort 
-    if ($matchingPythonDirs.count -gt 0) {
-        return $matchingPythonDirs[-1].fullname
+$ExternalBinaryPathSearchPatterns = @{
+    Python = @(
+        "${env:SystemDrive}\Python*"
+        "${env:SystemDrive}\Tools\Python*"
+    )
+    Ruby = @(
+        "${env:SystemDrive}\Ruby*"
+        "${env:SystemDrive}\Tools\Ruby*"
+    )
+    Vim = @(
+        "${env:programfiles}\vim\vim??"
+        "${env:programfiles(x86)}\vim\vim??"
+    )
+}
+function Get-ExternalBinaryPath {
+    param(
+        [parameter(mandatory=$true)] [alias("name")] [string] [ValidateScript({
+            $ExternalBinaryPathSearchPatterns.keys -contains $_
+            })] $BinaryName
+        #[alias("version")] [int] $MajorVersion
+    )
+    $ExtantPathPatterns = $ExternalBinaryPathSearchPatterns.$BinaryName |? { test-path $_ }
+    if ($ExtantPathPatterns) {
+        return (get-item $ExtantPathPatterns | sort)[-1].fullname
+    }
+    else {
+        #throw "Could not find a path for $BinaryName"
     }
 }
-$PythonDir = Get-PythonDir
-function Get-VimDir {
-    if (test-path "${env:programfiles(x86)}\vim") {
-        $possibleVimDirs += @((ls "${env:programfiles(x86)}\vim\vim??").fullname | sort-object -descending)[0]
-    }
-    if (test-path "${env:programfiles}\vim") {
-        $possibleVimDirs += @((ls "${env:programfiles}\vim\vim??").fullname | sort-object -descending)[0]
-    }
-    foreach ($vd in $possibleVimDirs) {
-        if ($vd) {
-            return $vd
-        }
-    }
-}
-$VimDir = Get-VimDir
 
 function Setup-SystemPath {
+    <#
+    Some notes about this: 
+    - You want Git to be very high in the path list, because it can work around the stupid rebase.exe problem
+      (http://stackoverflow.com/questions/18502999/git-extensions-win32-error-487-couldnt-reserve-space-for-cygwins-heap-win32)
+    #>
     $possiblePaths = @(
+        "C:\Program Files (x86)\Git\cmd"
         "${env:ChocolateyInstall}\bin"
         "C:\Chocolatey\bin"
         "C:\ProgramData\Chocolatey\bin"
@@ -46,7 +59,6 @@ function Setup-SystemPath {
         "C:\opt\UnxUtils\bin"
         "C:\opt\UnxUtils\usr\local\wbin"
         "C:\opt\sqlite"
-        "C:\Program Files (x86)\Git\cmd"
         "C:\Program Files\PuTTY"
         "C:\Program Files\7-Zip"
         "C:\Program Files (x86)\7-Zip"
@@ -65,6 +77,7 @@ function Setup-SystemPath {
         $possiblePaths += "$(((gci $azureSDKs)[-1]).fullname)\bin"
     }
 
+    $pythonDir = Get-ExternalBinaryPath Python
     if ($pythondir) {
         # PythonDir contains python.exe; Scripts contains stuff installed from Distribute packages; Tools/Scripts contains.py files. 
         $possiblePaths += @($pythondir,"$pythondir\Scripts","$pythondir\Tools\Scripts")
@@ -72,6 +85,12 @@ function Setup-SystemPath {
     $possiblePaths += @((getenv path user) -split ';')
     $possiblePaths = $possiblePaths.tolower() | sort -unique
 
+    $rubyDir = Get-ExternalBinaryPath ruby
+    if ($rubyDir) {
+        $possiblePaths += @("$rubyDir\bin")
+    }
+
+    $VimDir = Get-ExternalBinaryPath Vim
     if ($VimDir) {
         $possiblePaths += @($VimDir,"$VimDir\macros")
     }
@@ -80,7 +99,7 @@ function Setup-SystemPath {
     foreach ($pp in $possiblePaths) {
         if ($pp -and (test-path $pp)) { 
             write-host "Adding value to system path: $pp"
-            $existingPaths += @($pp) 
+            $existingPaths += @(resolve-path $pp) 
         }
     }
 
@@ -108,7 +127,7 @@ function Setup-Environment {
     Set-FileAssociation .mkd txtfile "text/plain"
 
     # Python stuff
-    $pythondir = Get-PythonDir
+    $pythondir = Get-ExternalBinaryPath Python
     if ($pythondir) {
         $pythonexe = "$pythondir\python.exe"
         Set-FileAssociation .py Python.File
@@ -118,7 +137,7 @@ function Setup-Environment {
 }
 
 function Setup-AdminEnvironment {
-    if (Get-PythonDir) {
+    if (Get-ExternalBinaryPath Python) {
         if (-not (getenv pathext machine).tolower().contains('.py')) {
             $pathext = getenv pathext machine
             $pathext += ';.PY'
