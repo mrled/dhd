@@ -8,37 +8,6 @@ if (-not ($VisualStudioDirectories -contains $DLPProjectBase)) {
     $VisualStudioDirectories += @($DLPProjectBase)
 }
 
-<#
-function New-DlpProject {
-    param(
-        [parameter(mandatory=$true)] [string] $LocalName,
-        [parameter(mandatory=$true)] [string] $GitHubOrg,
-        [switch] $Checkout,
-        [string[]] $Repositories
-    )
-    $project = New-Object PSObject
-    Add-Member -InputObject $project -NotePropertyMembers  @{
-        Repositories = $Repositories
-        Checkout = $Checkout
-        LocalName = $LocalName
-        GitHubOrg = $GitHubOrg
-    }
-    Add-Member -InputObject $project -MemberType ScriptProperty -Name Directory -Value {
-        $projDir = "$DLPProjectBase/$($this.Localname)"
-        if (-not $this.checkout) {
-            return ""
-        }
-        elseif (test-path $projDir) {
-            return get-item $projDir
-        }
-        else {
-            return "$projDir"
-        }
-    }
-    return $project
-}
-#>
-
 function New-DlpProject {
     param(
         [parameter(mandatory=$true)] [string] $GitHubOrg,
@@ -71,7 +40,7 @@ function New-DlpProject {
         $repos | sort -uniq
     }
     Add-Member -InputObject $project -MemberType ScriptProperty -Name Directory -Value {
-        $projDir = "$DLPProjectBase/$($this.Localname)"
+        $projDir = "$DLPProjectBase\$($this.Localname)"
         if (-not $this.checkout) {
             return ""
         }
@@ -85,35 +54,28 @@ function New-DlpProject {
     return $project
 }
 
-ipmo "$DLPProjectBase\misc\DLPLogisticsModules\encrypted-credentials"
+ipmo "$DLPProjectBase\dlp\InternalTools\encrypted-credentials"
 
-<#
-$_DLPOrganizationList = @(
-    New-DlpProject -LocalName mrled -GitHubOrg mrled -Checkout -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-ODS-Implementation','Ed-Fi-Common','minipki') 
-    New-DlpProject -LocalName dlp -GitHubOrg DoubleLinePartners -Checkout -Repositories @('InternalTools')
-    New-DlpProject -LocalName alliance -GitHubOrg 'Ed-Fi-Alliance' -Checkout -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-ODS-Implementation','Ed-Fi-Common') 
-    New-DlpProject -LocalName msdf -GitHubOrg 'DoubleLinePartners-MSDF' -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
-    New-DlpProject -LocalName tdoe -GitHubOrg TennesseeDOE -checkout -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
-    New-DlpProject -LocalName nedoe -GitHubOrg NebraskaDOE -checkout -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-Common') 
-    New-DlpProject -LocalName pde -GitHubOrg PennsylvaniaDOE -checkout -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
-)
-#>
 $DLPOrganizations = @{}
 @(
     New-DlpProject -LocalName mrled -GitHubOrg mrled -Checkout `
         -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-ODS-Implementation','Ed-Fi-Common','minipki') 
     New-DlpProject -LocalName dlp -GitHubOrg DoubleLinePartners -Checkout -Repositories @('InternalTools')
     New-DlpProject -LocalName alliance -GitHubOrg 'Ed-Fi-Alliance' -Checkout `
-        -Contexts @{ rest = @('Ed-Fi-Common','Ed-Fi-ODS','Ed-Fi-ODS-Implementation') } `
+        -Contexts @{ rest = @('Ed-Fi-Common','Ed-Fi-Standard','Ed-Fi-ODS','Ed-Fi-ODS-Implementation') } `
         -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Dashboards-Core') 
     New-DlpProject -LocalName msdf -GitHubOrg 'DoubleLinePartners-MSDF' -repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Common') 
-    New-DlpProject -LocalName edfiteam -GitHubOrg 'DoubleLinePartners-MSDF' -Contexts @{
+    New-DlpProject -LocalName edfiteam -GitHubOrg 'DoubleLinePartners-Ed-FiTeam' -Contexts @{
         dash = @('Ed-Fi-Core','Ed-Fi-Apps') 
     }
-    New-DlpProject -LocalName tdoe -GitHubOrg TennesseeDOE `
+    New-DlpProject -LocalName tdoe -GitHubOrg 'TennesseeDOE' `
         -Contexts @{ 
-            rest = @('Ed-Fi-Common','Ed-Fi-ODS') 
+            rest = @('Ed-Fi-Common','Ed-Fi-ODS','Ed-Fi-ODS-Implementation') 
             dash = @('Ed-Fi-Common','Ed-Fi-Dashboards-Core','Ed-Fi-Apps')
+        }
+    New-DlpProject -LocalName tea -GitHubOrg 'TexasEA' `
+        -Contexts @{ 
+            dash = @('Ed-Fi-Core','Ed-Fi-Apps')
         }
     New-DlpProject -LocalName nedoe -GitHubOrg NebraskaDOE `
         -Contexts @{ 
@@ -126,16 +88,15 @@ $DLPOrganizations = @{}
 function Update-DlpGitProject {
     [CmdletBinding()]
     param(
-        [array] $clientList
+        [string[]] $clientList
     )
 
     $workingClientList = @()
     foreach ($client in $clientList) {
-        $clientObject = $DLPOrganizations.$client
-        if (-not $clientObject) {
-            throw "Passed client '$client', but no such client exists in `$DLPOrganizations"
+        if (-not $DLPOrganizations.$client) {
+            throw "Passed client name '$client', but no such client exists in `$DLPOrganizations"
         }
-        $workingClientList += @($clientObject)
+        $workingClientList += @($DLPOrganizations.$client)
     }
     if (-not $clientList) {
         $workingClientList = $DLPOrganizations.values
@@ -143,10 +104,10 @@ function Update-DlpGitProject {
 
     foreach ($client in $workingClientList) {
         if (-not $client.Checkout) {
-            write-verbose "Client '$($client.LocalName)' was not set to be checked out."
+            write-output "Client '$($client.LocalName)' was not set to be checked out."
         }
         else {
-            write-verbose "Updating client '$($client.LocalName)'"
+            write-output "Updating client '$($client.LocalName)'"
             $projectDir = "$DLPProjectBase\$($client.LocalName)"
             if (-not (test-path $projectDir)) {
                 mkdir $projectDir | out-null
@@ -156,24 +117,24 @@ function Update-DlpGitProject {
                 # $repoClients is all the organizations that contain $repoName
                 $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
                 if (-not (test-path "$projectDir\$repoName")) {
-                    write-verbose "  Doing initial clone for '$repoName' for project '$($client.LocalName)'"
+                    write-output "  Doing initial clone for '$repoName' for project '$($client.LocalName)'"
                     git clone --origin "$($client.LocalName)" "git@github.com:$($client.GitHubOrg)/$repoName"
                 }
                 else {
-                    write-verbose "  Updating repository '$repoName' for project '$($client.LocalName)'"
+                    write-output "  Updating repository '$repoName' for project '$($client.LocalName)'"
                 }
                 set-location $projectDir\$repoName
                 foreach ($gitRemoteName in $repoClients) {
                     if ((git remote) -notcontains $gitRemoteName) {
-                        write-verbose "    Adding '$gitRemoteName' remote for '$repoName' repository"
-                        $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match $gitRemoteName }).GitHubOrg
+                        write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
+                        $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
                         git remote add $gitRemoteName "git@github.com:$ghoName/$repoName"
                     }
                     else {
-                        write-verbose "    Found '$gitRemoteName' remote for '$repoName' repository"
+                        write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
                     }
                 }
-                write-verbose "  Doing 'git fetch' in repository '$repoName' for project '$($client.LocalName)'"
+                write-output "  Doing 'git fetch' in repository '$repoName' for project '$($client.LocalName)'"
                 git fetch --all
             }
         }
