@@ -52,7 +52,6 @@ $PossibleModulePaths = @(
     "${env:ProgramFiles(x86)}\Microsoft SQL Server\110\Tools\PowerShell\Modules"
     "$home\.dhd\opt\powershell\modules"
     "$home\Documents\WindowsPowerShell\Modules"
-    "C:\Projects\DLP\DLPLogisticsModules"
 )
 foreach ($pmp in $PossibleModulePaths) {
     if (test-path $pmp) { $env:PSModulePath += ";$pmp" }
@@ -62,14 +61,23 @@ import-module IPConfiguration,uPackageManager,PSWindowsUpdate
 
 function Invoke-AndIgnoreError {
     param(
-        [parameter(mandatory=$true)] [ScriptBlock] $ScriptBlock
+        [parameter(mandatory=$true)] [ScriptBlock] $ScriptBlock,
+        [switch] $DontIgnore #for debugging
     )
     $errorActionPreferenceCache = $ErrorActionPreference
-    $errorActionPreference = "SilentlyContinue"
+    if ($DontIgnore) { 
+        $errorActionPreference = "Stop"
+    }
+    else {
+        $errorActionPreference = "Continue"
+    }
 
     $errorCache = @()
     $errorCache += $error.ToArray()
     invoke-command -scriptblock $scriptblock
+    if ($DontIgnore) {
+        $error
+    }
 
     $errorActionPreference = $errorActionPreferenceCache
     $error.clear()
@@ -79,8 +87,8 @@ function Invoke-AndIgnoreError {
 Invoke-AndIgnoreError -scriptblock {
     import-module PsGet
     import-module posh-git
-    #import-module PSCX -args $home\.dhd\opt\powershell\Pscx.UserPreferences.ps1
-    import-module PSCX
+    import-module PSCX -args $home\.dhd\opt\powershell\Pscx.UserPreferences.ps1
+    #import-module PSCX
 }
 
 foreach ($um in (gci ~/.dhd/opt/powershell/umodules)) {
