@@ -38,55 +38,6 @@ function conkeror {
     & $xulrunnerbin  "$home\opt\src\conkeror\application.ini" $args
 }
 
-$possibleOpenSSL = @(
-    "${env:programfiles}\OpenSSL-Win64\bin\openssl.exe"
-    "${env:programfiles(x86)}\Git\bin\openssl.exe"
-    'C:\STRAWBERRY\C\BIN\openssl.exe'
-)
-foreach ($o in $possibleOpenSSL) {
-    if (test-path $o) {
-        set-alias OpenSslExe $o
-        $env:OPENSSL_CONF="$Home\.dhd\opt\win32\openssl.cnf"
-        break
-    }
-}
-function Invoke-OpenSSL {
-    [cmdletbinding()]
-    param(
-        [string[]] $argumentList = @(),
-        [switch] $Passthru
-    )
-    $OpenSslPath = (gcm OpenSslExe |? {$_.commandtype -eq 'Alias'}).definition
-    $sslProc = Invoke-ProcessAndWait -RedirectStandardError -RedirectStandardOutput -command $OpenSslPath -argumentList $argumentList
-
-    $stdout = $sslProc.StandardOutput.ReadToEnd()
-    $stderr = $sslProc.StandardError.ReadToEnd()
-
-    write-verbose "===== Standard Output ====="
-    write-verbose $stdout
-    write-verbose "===== Standard  Error ====="
-    write-verbose $stderr
-
-    # In normal mode, always display output. 
-    # In Passthru mode, only display output if the ExitCode was not zero
-
-    if ($Passthru) {
-        if ($sslProc.ExitCode -ne 0) {
-            if ($stdout) { write-host $stdout }
-            if ($stderr) { write-host $stderr -foregroundcolor Red }
-            throw "OpenSSL exited with code '$($sslProc.ExitCode)'"
-        }
-        # Necessary because the .ReadToEnd() method can't get called more than once
-        $sslProc | Add-Member -MemberType NoteProperty -Name SerializedStandardOutput -Value $stdout
-        $sslProc | Add-Member -MemberType NoteProperty -Name SerializedStandardError -Value $stderr
-        return $sslProc
-    }
-    else {
-        if ($stdout) { write-host $stdout }
-        if ($stderr) { write-host $stderr -foregroundcolor Red }
-    }
-}
-
 <#
 .synopsis
 Import a PFX certificate
@@ -162,6 +113,10 @@ function Invoke-ProcessAndWait {
 # note: 7-zip is in the same place on both 64 bit and 32 bit Windows
 # note: in some cases it won't complete commands starting with a digit, so we are reduced to this
 set-alias sz "$env:programfiles\7-Zip\7z.exe" 
+
+if (test-path $env:LocalAppData\Pandoc\pandoc.exe) {
+    set-alias pandoc $env:LocalAppData\Pandoc\pandoc.exe
+}
 
 #if (test-path C:\Chocolatey) {
 #    set-alias nuget C:\Chocolatey\chocolateyinstall\nuget.exe
@@ -1365,40 +1320,116 @@ function Decrypt-SecureString {
     return $decryptedString
 }
 
-function Convert-OpenSSLPemToPfx {
+function Wrap-Text {
+    [cmdletbinding()] 
     param(
-        [parameter(mandatory=$true)] [string] $certFile,
-        [string] $keyFile = ((resolve-path $certFile).path -replace '(\.pem$)|(\.crt$)|(\.cert$)','.key'),
-        $pfxPassword,
-        [string] $outfile = ((resolve-path $certFile).path -replace '(\.pem$)|(\.crt$)|(\.cert$)','.pfx'),
-        [string] $displayname = ((split-path -leaf $certFile) -replace '(\.pem$)|(\.crt$)|(\.cert$)','')
+        [parameter(mandatory=$true)] [string] $text,
+        [parameter(mandatory=$true)] [int] $width,
+        [int] $indentSpaces = 0
     )
-    if (-not $pfxPassword) {
-        $securePfxPassword = read-host "Enter a password for the PFX file" -AsSecureString
-        $pfxPassword = Decrypt-SecureString $securePfxPassword
+    $width = $width -1
+    if ($indentSpaces -ge $width) {
+        throw "`$indentSpaces must be smaller than `$width"
     }
-    $certFile = resolve-path $certFile
-    $arguments = @("pkcs12", "-export", "-out", "`"$outfile`"", "-in", "`"$certfile`"", 
-        "-name", "`"$displayname`"", "-passout", "`"pass:$pfxPassword`"")
-    if ($keyFile) {
-        $keyFile = resolve-path $keyFile
-        $arguments += @("-inkey", "`"$keyFile`"")
+    $indent = " " * $indentSpaces
+    $output = ""
+    $ctr=0
+    foreach ($line in ($text -split "`n")) {
+        $ctr+=1
+        #write-host -foreground cyan "${ctr}: $line"
+
+        $finished = $false
+        while (-not $finished) {
+            $line = "$indent$line"
+            if ($line.length -gt $width) {
+                $output += $line.substring(0,$width)
+                $output += "`n"
+                $line = $line.substring($width)
+            }
+            else {
+                $output += $line
+                $output += "`n"
+                $finished = $true
+            }
+        }
+
+        if ($output[-1] -ne "`n") {
+            $output += "`n"
+        }
     }
-    Invoke-OpenSsl -argumentList $arguments
+    return $output
 }
-function Convert-OpenSSLPfxToPem {
+
+function Show-ErrorReport {
+    [cmdletbinding()]
     param(
-        [parameter(mandatory=$true)] [string] $pfxfile,
-        [string] $outfile = ((resolve-path $pfxfile).path -replace ".pfx$","") + ".pem"
+        [switch] $ExitIfErrors
     )
-    Invoke-OpenSsl -argumentList @("pkcs12", "-in", "`"$pfxfile`"", "-out", "`"$outfile`"", "-nodes")
+    write-verbose "`$error.count = $($error.count)"
+    write-verbose "`$LASTEXITCODE = $LastExitCode"    
+
+    if ($Host -and $Host.UI -and $Host.UI.RawUI) {
+        $wrapWidth = $Host.UI.RawUI.Buffersize.Width
+    }
+    else {
+        $wrapWidth = 9999
+    }
+
+    if ($error -or $LASTEXITCODE) {
+        $errorSummary = "`$LASTEXITCODE=$LastExitCode, `$Error.count=$($Error.count)"
+        $errorString+= "ERROR Report: $errorSummary`n`n"
+
+        #for ($i=0; $i -lt $Error.count; $i += 1) { 
+        for ($i= $error.count -1; $i -ge 0; $i -= 1) {
+            $e = $error[$i]
+
+            $errorDetails  = "PS `$Error[$i]: `n"
+            #$indentCount = $errorDetails.length
+            #$indent = ' ' * $indentCount
+            $indentCount = 4
+
+            # Sometimes the objects in $error are wrappers for ErrorRecord objects; we only want to deal with ErrorRecord objects
+            if ($e.ErrorRecord) {
+                $e = $e.ErrorRecord
+            }
+
+            $errorDetails += Wrap-Text -text $e.ToString() -width $wrapWidth -indent $indentCount
+            if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
+
+            if ($e.ScriptStackTrace) {
+                $errorDetails += wrap-text -text $e.ScriptStackTrace -width $wrapWidth -indent $indentCount
+                #$errorDetails += ($e.ScriptStackTrace.split("`n") |% { "$indent$_" }) -join "`n"
+                if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
+            }
+
+            $errorString += $errorDetails
+        }
+
+        write-output "----`n$errorString----"
+        if ($ExitIfErrors) {
+            write-output "Exiting..."
+            exit
+        }
+        else {
+            write-output "Continuing..."
+        }
+    }
+    else {
+        write-output "ERROR Report: No errors"
+    }
 }
-function Get-OpenSSLThumbprint {
-    param(
-        [parameter(mandatory=$true)] [string] $pemFile
-    )
-    $pemFile = resolve-path $pemFile
-    $sslProc = Invoke-OpenSsl -Passthru -argumentList @("x509", "-in", "$pemFile", "-sha1", "-noout", "-fingerprint")
-    $thumbprint = $sslProc.SerializedStandardOutput.Split('=')[1].Replace(':','')
-    return $thumbprint
-}
+
+set-alias gj Get-Job
+set-alias jobs Get-Job
+set-alias recj Receive-Job
+set-alias rmj Remove-Job
+set-alias resj Resume-Job
+set-alias sj Start-Job
+set-alias stopj Stop-Job
+set-alias susj Suspend-Job
+set-alias wj Wait-Job
+# Job-related TODOs: 
+# - Show in prompt if I have un-received jobs
+# - Show im prompt complete/incomplete status of jobs 
+# - Function to get output from all completed jobs
+# - Maybe wrap receive-job to get all available output by default? 

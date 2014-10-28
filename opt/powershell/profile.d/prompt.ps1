@@ -1,4 +1,4 @@
-﻿function displayPath {
+﻿function Get-DisplayPath {
     param(
         $path
     )
@@ -23,6 +23,39 @@
     return $displaypath
 }
 
+function Get-JobStateColor {
+    param(
+        [string[]] $status
+    )
+    $jobStateTable = @{ 
+        NeedsAttention = @('Blocked','Disconnected','Failed','Stopped','Stopping','Suspended','Suspending')
+        InProgress = @('NotStarted','Running')
+        Completed = @('Completed')
+    }
+    $jobStateTable['All'] = $jobStateTable.Values | % {$_} 
+
+    if ($status.length -eq 0) { 
+        return 'White'
+    }
+    elseif ($status |? { $jobStateTable.All -notcontains $_ }) {
+        write-error 'Unknown job status'
+        return 'Yellow'
+    }
+    elseif ($status |? { $jobStateTable.NeedsAttention -contains $_ }) {
+        return 'Red'
+    }
+    elseif ($status |? { $jobStateTable.InProgress -contains $_ }) {
+        return 'Cyan'
+    }
+    elseif ($status |? { $jobStateTable.Completed -contains $_ }) {
+        return 'White'
+    }
+    else {
+        write-error 'Unknown job status'
+        return 'Yellow'
+    }
+}
+
 if (-not $PromptSuffixes) { $PromptSuffixes = @{} }
 $PromptSuffixes['Admin'] = { write-host " $HammerAndSickleChar " -nonewline -foregroundcolor red -backgroundcolor yellow }
 $PromptSuffixes['Default'] = { Write-Host "$LambdaChar" -nonewline -foreground White }
@@ -36,8 +69,19 @@ $colorPrompt = {
     $Host.UI.RawUI.WindowTitle = $pwd
 
     Write-Host $(get-date -format HH:mm:ss) -nonewline -foregroundcolor White
+
+    #if ($errorActionPreference -ne "Stop" -and $error.count -gt 0) {
+    write-host " E$($error.count)" -nonewline -foreground red
+    #}
+
     Write-Host " $hostname" -nonewline -foregroundcolor Blue
-    Write-Host " $(displayPath $pwd) " -nonewline -foregroundcolor Green
+
+    $jobs = get-job
+    #write-host ' {' -nonewline
+    write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
+    #write-host '}' -nonewline
+
+    Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
     
     # This lets you define a $promptSuffix scriptblock variable elsewhere.
     # I use this for my DLP SolutionScripts.profile.ps1 for example. 
@@ -62,7 +106,7 @@ $colorPrompt = {
 $simplePrompt = {
     if ($SoyAdmin) { $lcop = "#" }
     else { $lcop = ">" }
-    return "$(get-date).Tostring('HH:mm:ss') $hostname $(displayPath $pwd) PS$lcop "
+    return "$(get-date).Tostring('HH:mm:ss') $hostname $(Get-DisplayPath $pwd) PS$lcop "
 }
 
 function reset-prompt {
