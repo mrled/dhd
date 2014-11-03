@@ -124,49 +124,41 @@ $clientUpdateSb = {
         write-output "Client '$LocalName' was not set to be checked out."
     }
     else {
-        #try {
-            if (-not (test-path $projectDir)) {
-                mkdir $projectDir | out-null
+        if (-not (test-path $projectDir)) {
+            mkdir $projectDir | out-null
+        }
+        foreach ($repoName in $clientOrganization.Repositories) {
+            set-location $projectDir 
+            # $repoClients is all the organizations that contain $repoName
+            $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
+            if (-not (test-path "$projectDir\$repoName")) {
+                write-output "  Doing initial clone for '$repoName' for project '$localName'"
+                if (-not $WhatIf) {
+                    GitExe clone --origin "$localName" "git@github.com:$GitHubOrg/$repoName"
+                }
             }
-            foreach ($repoName in $clientOrganization.Repositories) {
-                set-location $projectDir 
-                # $repoClients is all the organizations that contain $repoName
-                $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
-                if (-not (test-path "$projectDir\$repoName")) {
-                    write-output "  Doing initial clone for '$repoName' for project '$localName'"
+            else {
+                write-output "  Updating repository '$repoName' for project '$localName'"
+            }
+            set-location $projectDir\$repoName
+            foreach ($gitRemoteName in $repoClients) {
+                if ((GitExe remote) -notcontains $gitRemoteName) {
+                    write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
+                    $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
                     if (-not $WhatIf) {
-                        GitExe clone --origin "$localName" "git@github.com:$GitHubOrg/$repoName"
+                        GitExe remote add $gitRemoteName "git@github.com:$ghoName/$repoName"
                     }
                 }
                 else {
-                    write-output "  Updating repository '$repoName' for project '$localName'"
-                }
-                set-location $projectDir\$repoName
-                foreach ($gitRemoteName in $repoClients) {
-                    if ((GitExe remote) -notcontains $gitRemoteName) {
-                        write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
-                        $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
-                        if (-not $WhatIf) {
-                            GitExe remote add $gitRemoteName "git@github.com:$ghoName/$repoName"
-                        }
-                    }
-                    else {
-                        write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
-                    }
-                }
-                write-output "  Doing 'git fetch' in repository '$repoName' for project '$localName'"
-                if (-not $Whatif) {
-                    GitExe fetch --all
+                    write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
                 }
             }
-        #}
-        #catch {
-            #write-output "ERROR"
-            #write-output "$error"
-        #}
-        #finally {
-            write-output "==== Finished with client '$clientName'... ===="
-        #}
+            write-output "  Doing 'git fetch' in repository '$repoName' for project '$localName'"
+            if (-not $Whatif) {
+                GitExe fetch --all
+            }
+        }
+        write-output "==== Finished with client '$clientName'... ===="
     }
 }
 
@@ -191,46 +183,6 @@ function Update-DlpGitProject {
     foreach ($client in $workingClientList) {
         start-job -name "git-$($client.LocalName)" -scriptBlock $clientUpdateSb -argumentList $client.LocalName,$serializedDlpOrganizations
     }
-
-    <#
-    foreach ($client in $workingClientList) {
-        if (-not $client.Checkout) {
-            write-output "Client '$($client.LocalName)' was not set to be checked out."
-        }
-        else {
-            write-output "Updating client '$($client.LocalName)'"
-            $projectDir = "$DLPProjectBase\$($client.LocalName)"
-            if (-not (test-path $projectDir)) {
-                mkdir $projectDir | out-null
-            }
-            foreach ($repoName in $client.Repositories) {
-                set-location $projectDir 
-                # $repoClients is all the organizations that contain $repoName
-                $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
-                if (-not (test-path "$projectDir\$repoName")) {
-                    write-output "  Doing initial clone for '$repoName' for project '$($client.LocalName)'"
-                    git clone --origin "$($client.LocalName)" "git@github.com:$($client.GitHubOrg)/$repoName"
-                }
-                else {
-                    write-output "  Updating repository '$repoName' for project '$($client.LocalName)'"
-                }
-                set-location $projectDir\$repoName
-                foreach ($gitRemoteName in $repoClients) {
-                    if ((git remote) -notcontains $gitRemoteName) {
-                        write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
-                        $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
-                        git remote add $gitRemoteName "git@github.com:$ghoName/$repoName"
-                    }
-                    else {
-                        write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
-                    }
-                }
-                write-output "  Doing 'git fetch' in repository '$repoName' for project '$($client.LocalName)'"
-                git fetch --all
-            }
-        }
-    }
-    #>
 }
 
 <#
