@@ -84,10 +84,13 @@ function Invoke-AndIgnoreError {
     $error.AddRange($errorCache)
 }
 
+Add-Member -force -inputObject $profile -MemberType NoteProperty -Name PSCXPreferences `
+    -Value (resolve-path $home\.dhd\opt\powershell\Pscx.UserPreferences.ps1) 
+
 Invoke-AndIgnoreError -scriptblock {
     import-module PsGet
     import-module posh-git
-    import-module PSCX -args $home\.dhd\opt\powershell\Pscx.UserPreferences.ps1
+    import-module PSCX -args $profile.PSCXPreferences
     #import-module PSCX
 }
 
@@ -98,7 +101,9 @@ foreach ($um in (gci ~/.dhd/opt/powershell/umodules)) {
 # override some default display values for objects, this feature ruelz
 # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
 # so import the module before adding that format file so my format file overrides their bullshit
-update-formatdata -prependpath "$home\.dhd\opt\powershell\mrl.format.ps1xml"
+Add-Member -force -inputObject $profile -MemberType NoteProperty -Name MrlFormat `
+    -Value (resolve-path "$home\.dhd\opt\powershell\mrl.format.ps1xml")
+update-formatdata -prependpath $profile.MrlFormat
 
 . $profiled\initialization.ps1
 . $profiled\prompt.ps1
