@@ -726,7 +726,12 @@ function touch {
 if (test-path alias:man) { del alias:man }
 function man {
     foreach ($a in $args) {
-        get-help $a -full | less
+        if (get-module PSCX) {
+            get-help $a -full | & "$Pscx:Home\Apps\less.exe"
+        }
+        else {
+            get-help $a -full | less
+        }
     }
 }
 <#
@@ -1418,10 +1423,17 @@ function Show-ErrorReport {
         write-output "ERROR Report: No errors"
     }
 }
+set-alias err Show-ErrorReport
+
+function Clear-Error {
+    $error.clear()
+}
+set-alias clerr Clear-Error
 
 set-alias gj Get-Job
 set-alias jobs Get-Job
 set-alias recj Receive-Job
+set-alias rj Receive-Job
 set-alias rmj Remove-Job
 set-alias resj Resume-Job
 set-alias sj Start-Job
@@ -1433,3 +1445,51 @@ set-alias wj Wait-Job
 # - Show im prompt complete/incomplete status of jobs 
 # - Function to get output from all completed jobs
 # - Maybe wrap receive-job to get all available output by default? 
+
+
+function Format-XML {
+    Param (
+        [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)] $xml
+    ) 
+    $StringWriter = New-Object system.io.stringwriter 
+    $XmlWriter = New-Object system.xml.xmltextwriter($StringWriter) 
+    $XmlWriter.Formatting = [System.xml.formatting]::Indented 
+    $xml.WriteContentTo($XmlWriter) 
+    $StringWriter.ToString() 
+}
+
+set-alias PrettyPrint-XML Format-XML
+
+<#
+.SYNOPSIS
+Creates an XML-based representation of an object or objects and outputs it as a string.
+
+.DESCRIPTION
+The Out-Clixml cmdlet creates an XML-based representation of an object or objects and outputs it as a string. This cmdlet is similar to Export-CliXml except it doesn't output to a file.
+From: http://poshcode.org/3770
+
+.PARAMETER Depth
+Specifies how many levels of contained objects are included in the XML representation. The default value is 2 because the default value of Export-CliXml is 2.
+
+.PARAMETER InputObject
+Specifies the object to be converted. Enter a variable that contains the objects, or type a command or expression that gets the objects. You can also pipe objects to Out-Clixml.
+
+.INPUTS
+System.Management.Automation.PSObject
+
+You can pipe any object to Out-CliXml.
+#>
+function Out-CliXml {
+    [CmdletBinding()] Param (
+        [Parameter(ValueFromPipeline = $True, Mandatory = $True)] [PSObject] $InputObject,
+        [ValidateRange(1, [Int32]::MaxValue)] [Int32] $Depth = 2
+    )
+    [System.Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
+}
+
+function In-CliXml {
+    [CmdletBinding()] Param (
+        [Parameter(ValueFromPipeline = $True, Mandatory = $True)] [String] $InputXml
+    )
+    [System.Management.Automation.PSSerializer]::Deserialize($InputXml)
+}
