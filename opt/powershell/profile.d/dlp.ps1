@@ -51,6 +51,17 @@ function New-DlpProject {
             return "$projDir"
         }
     }
+    <#
+    Add-Member -InputObject $project -MemberType ScriptMethod -Name SerializeConstructorParameters -Value {
+        return @{
+            GitHubOrg = $this.GitHubOrg
+            LocalName = $this.LocalName
+            Checkout = $this._ExplicitCheckout
+            Repositories = $this._ExplicitRepos
+            Contexts = $this.Contexts
+        }
+    }
+    #>
     return $project
 }
 
@@ -59,7 +70,8 @@ ipmo "$DLPProjectBase\dlp\InternalTools\encrypted-credentials"
 $DLPOrganizations = @{}
 @(
     New-DlpProject -LocalName mrled -GitHubOrg mrled -Checkout `
-        -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core','Ed-Fi-ODS','Ed-Fi-ODS-Implementation','Ed-Fi-Common','minipki') 
+        -Repositories @('Ed-Fi-Apps','Ed-Fi-Core','Ed-Fi-Tools','Ed-Fi-Dashboards-Core',
+            'Ed-Fi-ODS','Ed-Fi-ODS-Implementation','Ed-Fi-Common','minipki') 
     New-DlpProject -LocalName dlp -GitHubOrg DoubleLinePartners -Checkout -Repositories @('InternalTools')
     New-DlpProject -LocalName alliance -GitHubOrg 'Ed-Fi-Alliance' -Checkout `
         -Contexts @{ rest = @('Ed-Fi-Common','Ed-Fi-Standard','Ed-Fi-ODS','Ed-Fi-ODS-Implementation') } `
@@ -73,10 +85,10 @@ $DLPOrganizations = @{}
             rest = @('Ed-Fi-Common','Ed-Fi-ODS','Ed-Fi-ODS-Implementation') 
             dash = @('Ed-Fi-Common','Ed-Fi-Dashboards-Core','Ed-Fi-Apps')
         }
-    New-DlpProject -LocalName tea -GitHubOrg 'TexasEA' `
-        -Contexts @{ 
-            dash = @('Ed-Fi-Core','Ed-Fi-Apps')
-        }
+    #New-DlpProject -LocalName tea -GitHubOrg 'TexasEA' `
+    #    -Contexts @{ 
+    #        dash = @('Ed-Fi-Core','Ed-Fi-Apps')
+    #    }
     New-DlpProject -LocalName nedoe -GitHubOrg NebraskaDOE `
         -Contexts @{ 
             rest = @('Ed-Fi-Common','Ed-Fi-ODS') 
@@ -84,6 +96,79 @@ $DLPOrganizations = @{}
         }
     New-DlpProject -LocalName pde -GitHubOrg PennsylvaniaDOE -Contexts @{ dash = @('Ed-Fi-Common','Ed-Fi-Core','Ed-Fi-Apps') } `
 ) |% { $DLPOrganizations[$_.LocalName] = $_ }
+
+$clientUpdateSb = {
+    # Note: job script blocks don't work very well with custom objects
+    # I was having a problem where some members were present, but others, such as ScriptProperty members,
+    # were not present when the object was passed into the script block
+    # Job SBs also cannot use externally defined functions such as New-DlpProject or In-CliXml
+    param(
+        [parameter(mandatory=$true)] $clientName,
+        [parameter(mandatory=$true)] $serializedDlpOrganizations,
+        [string] $gitPath,
+        [bool] $WhatIf = $false
+    )
+    $DlpOrganizations = [System.Management.Automation.PSSerializer]::Deserialize($serializedDlpOrganizations)
+    $clientOrganization = $DLPOrganizations[$clientName]
+    $localName = $clientOrganization.localName
+    $GitHubOrg = $clientOrganization.GitHubOrg
+    $projectDir = $clientOrganization.Directory
+    if ($gitPath) {
+        set-alias GitExe $gitPath
+    }
+    else {
+        set-alias GitExe "${env:ProgramFiles(x86)}\Git\bin\git.exe"
+    }
+    write-output "==== Updating client '$clientName'... ===="
+    if (-not $clientOrganization.Checkout) {
+        write-output "Client '$LocalName' was not set to be checked out."
+    }
+    else {
+        #try {
+            if (-not (test-path $projectDir)) {
+                mkdir $projectDir | out-null
+            }
+            foreach ($repoName in $clientOrganization.Repositories) {
+                set-location $projectDir 
+                # $repoClients is all the organizations that contain $repoName
+                $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
+                if (-not (test-path "$projectDir\$repoName")) {
+                    write-output "  Doing initial clone for '$repoName' for project '$localName'"
+                    if (-not $WhatIf) {
+                        GitExe clone --origin "$localName" "git@github.com:$GitHubOrg/$repoName"
+                    }
+                }
+                else {
+                    write-output "  Updating repository '$repoName' for project '$localName'"
+                }
+                set-location $projectDir\$repoName
+                foreach ($gitRemoteName in $repoClients) {
+                    if ((GitExe remote) -notcontains $gitRemoteName) {
+                        write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
+                        $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
+                        if (-not $WhatIf) {
+                            GitExe remote add $gitRemoteName "git@github.com:$ghoName/$repoName"
+                        }
+                    }
+                    else {
+                        write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
+                    }
+                }
+                write-output "  Doing 'git fetch' in repository '$repoName' for project '$localName'"
+                if (-not $Whatif) {
+                    GitExe fetch --all
+                }
+            }
+        #}
+        #catch {
+            #write-output "ERROR"
+            #write-output "$error"
+        #}
+        #finally {
+            write-output "==== Finished with client '$clientName'... ===="
+        #}
+    }
+}
 
 function Update-DlpGitProject {
     [CmdletBinding()]
@@ -102,6 +187,12 @@ function Update-DlpGitProject {
         $workingClientList = $DLPOrganizations.values
     }
 
+    $serializedDlpOrganizations = Out-CliXml $DlpOrganizations -depth 4
+    foreach ($client in $workingClientList) {
+        start-job -name "git-$($client.LocalName)" -scriptBlock $clientUpdateSb -argumentList $client.LocalName,$serializedDlpOrganizations
+    }
+
+    <#
     foreach ($client in $workingClientList) {
         if (-not $client.Checkout) {
             write-output "Client '$($client.LocalName)' was not set to be checked out."
@@ -139,6 +230,7 @@ function Update-DlpGitProject {
             }
         }
     }
+    #>
 }
 
 <#
