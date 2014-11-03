@@ -35,7 +35,7 @@ function Get-JobStateColor {
     $jobStateTable['All'] = $jobStateTable.Values | % {$_} 
 
     if ($status.length -eq 0) { 
-        return 'White'
+        return 'DarkGray'
     }
     elseif ($status |? { $jobStateTable.All -notcontains $_ }) {
         write-error 'Unknown job status'
@@ -71,7 +71,9 @@ $colorPrompt = {
     Write-Host $(get-date -format HH:mm:ss) -nonewline -foregroundcolor White
 
     #if ($errorActionPreference -ne "Stop" -and $error.count -gt 0) {
-    write-host " E$($error.count)" -nonewline -foreground red
+    if ($error) { $ecolor = "Red" }
+    else { $ecolor = "DarkGray" }
+    write-host " E$($error.count)" -nonewline -foreground $ecolor
     #}
 
     Write-Host " $hostname" -nonewline -foregroundcolor Blue
