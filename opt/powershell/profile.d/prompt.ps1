@@ -56,10 +56,57 @@ function Get-JobStateColor {
     }
 }
 
-if (-not $PromptSuffixes) { $PromptSuffixes = @{} }
-$PromptSuffixes['Admin'] = { write-host " $HammerAndSickleChar " -nonewline -foregroundcolor red -backgroundcolor yellow }
-$PromptSuffixes['Default'] = { Write-Host "$LambdaChar" -nonewline -foreground White }
-$PromptSuffixes['VisualStudio'] = { write-host " $VisualStudioChar " -nonewline -foregroundcolor White -backgroundcolor Magenta }
+# Used to set things like prompt suffix and tab title prefix
+$CliContextClues = @{
+    Admin = @{
+        TitlePrefix = $HammerAndSickleChar
+        PromptSuffix = { write-host " $HammerAndSickleChar " -nonewline -foregroundcolor red -backgroundcolor yellow }
+    }
+    Default = @{
+        TitlePrefix = $LambdaChar
+        PromptSuffix = { Write-Host "$LambdaChar" -nonewline -foreground White }
+    }
+    VisualStudio = @{
+        TitlePrefix = $VisualStudioChar
+        PromptSuffix = { write-host " $VisualStudioChar " -nonewline -foregroundcolor White -backgroundcolor Magenta }
+    }
+}
+
+function Get-CliContextClue {
+    if ($CliContextClues['Override']) {
+        return $CliContextClues[$Override]
+    }
+    elseif ($VisualStudioDirectories |? {"$pwd".StartsWith($_)}) {
+        return $CliContextClues['VisualStudio']
+    }
+    elseif ($SoyAdmin) {
+        return $CliContextClues['Admin']
+    }
+    else {
+        return $CliContextClues['Default']
+    }
+}
+
+set-alias ConEmuC "${env:ConEmuBaseDir}\ConEmuC.exe"
+
+function Set-ConEmuTabTitleForCliContext {
+    param(
+        $title
+    )
+    $clue = Get-CliContextClue
+    if ($title) { $title = ":$title" }
+    $fullTitle = "$($clue.TitlePrefix)$title" -replace " ",'' 
+    #WORKING ON CLI: conemuc /guimacro 'Rename(0,@"'asdxf'")' > $null
+    #WORKING IN FUNCTION: conemuc /guimacro 
+    $macro = "Rename(0,$fullTitle"
+    write-verbose "Running macro: $macro"
+    $out = conemuc /guimacro $macro
+    if ($out -ne "OK") {
+        throw "Failed to change tab title with error: $out"
+    }
+}
+set-alias Rename-ConEmuTab Set-ConEmuTabTitleForCliContext
+set-alias Rename-Tab Set-ConEmuTabTitleForCliContext
 
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
 # doesn't play nice with other things. 
@@ -87,18 +134,8 @@ $colorPrompt = {
     
     # This lets you define a $promptSuffix scriptblock variable elsewhere.
     # I use this for my DLP SolutionScripts.profile.ps1 for example. 
-    if ($PromptSuffixes['Override']) {
-        invoke-command $PromptSuffixes['Override']
-    }
-    elseif ($VisualStudioDirectories |? {"$pwd".StartsWith($_)}) {
-        invoke-command $PromptSuffixes['VisualStudio']
-    }
-    elseif ($SoyAdmin) {
-        invoke-command $PromptSuffixes['Admin']
-    }
-    else {
-        invoke-command $PromptSuffixes['Default']
-    }
+    $clue = Get-CliContextClue
+    invoke-command $clue.PromptSuffix
 
     # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
     return " "
