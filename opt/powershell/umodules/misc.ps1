@@ -74,40 +74,58 @@ function Import-MrlX509Certificate {
 
 
 <#
-    .synopsis
-    Start a process and wait for it to exit
-    .description
-    This is a workaround for a stupid idiot bug in start-process that only triggers sometimes.
-    http://social.technet.microsoft.com/Forums/scriptcenter/en-US/37c1066e-b67f-4709-b195-aa2790216bd0
-    https://connect.microsoft.com/PowerShell/feedback/details/520554/
-    The bug has it return instantly even when -wait is passed to start-process, at least on Eric's local box. 
-    When that happens, $process.ExitCode hasn't been populated, and won't be, even when the process does actually exit.
-    System.Diagnostics.Process doesn't have that behavior, so that's what we're going to use instead
-
-    This also lets me redirect stderr and stdout and get them in the $process object
+.synopsis
+Start a process and wait for it to exit
+.notes
+This is a workaround for a stupid idiot bug in start-process that only triggers sometimes.
+http://social.technet.microsoft.com/Forums/scriptcenter/en-US/37c1066e-b67f-4709-b195-aa2790216bd0
+https://connect.microsoft.com/PowerShell/feedback/details/520554/
+The bug has it return instantly even when -wait is passed to start-process, at least on Eric's local box. 
+When that happens, $process.ExitCode hasn't been populated, and won't be, even when the process does actually exit.
+System.Diagnostics.Process doesn't have that behavior, so that's what we're going to use instead
 #>
 function Invoke-ProcessAndWait {
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName="CheckExitCode")]
     param(
         [parameter(mandatory=$true)] [string] $command,
-        [parameter(mandatory=$true)] [string[]] $argumentList,
-        [switch] $RedirectStandardError,
-        [switch] $RedirectStandardOutput
+        [string[]] $argumentList,
+        #[switch] $RedirectStandardError,
+        [switch] $ShowStandardOutput,
+        [parameter(ParameterSetName="Passthru")] [switch] $Passthru,
+        [parameter(ParameterSetName="CheckExitCode")] [switch] $CheckExitCode
     )
-    #write-verbose "Running '$command' with arguments '$argumentList'"
-    write-verbose "$command $($argumentList -join " ")"
+    write-verbose "Running Invoke-ProcessAndWait in verbose mode. WARNING: this may show sensitive commandline arguments (passwords, connection strings) and should only be used in development!"
+    write-verbose "Running '$command' with arguments '$argumentList'"
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
     $process.StartInfo.FileName = $command
-    $process.StartInfo.RedirectStandardError = $RedirectStandardError
-    $process.StartInfo.RedirectStandardOutput = $RedirectStandardOutput
+    #$process.StartInfo.RedirectStandardError = $RedirectStandardError
+    if ($ShowStandardOutput) {
+        $process.StartInfo.RedirectStandardOutput = $true
+    }
     $process.StartInfo.UseShellExecute = $false # AKA don't run in a new window
-    $process.StartInfo.WorkingDirectory = $pwd
     $process.StartInfo.Arguments = $argumentList
     $process.Start() | Out-Null
+    if ($ShowStandardOutput) {
+        $line = $process.StandardOutput.ReadLine()
+        while ($line -ne $null) {
+            Write-Host $line
+            $line = $process.StandardOutput.ReadLine()
+        }
+    }
     $process.WaitForExit()
-    return $process
+    write-verbose "Process exited with exit code $($process.ExitCode)"
+    if ($PSCmdlet.ParameterSetName -eq "CheckExitCode") {
+        if ($process.ExitCode -ne 0) {
+            write-verbose "Command $command with arguments '$argumentList' exited with code $($process.ExitCode)"
+            throw "Command '$command' with $($argumentList.count) arguments exited with code $($process.ExitCode)"
+        }
+    }
+    else {
+        return $process
+    }
 }
+
 
 
 # note: 7-zip is in the same place on both 64 bit and 32 bit Windows
