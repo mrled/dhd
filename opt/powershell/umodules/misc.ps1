@@ -138,13 +138,16 @@ if (test-path $env:LocalAppData\Pandoc\pandoc.exe) {
 
 #if (test-path C:\Chocolatey) {
 #    set-alias nuget C:\Chocolatey\chocolateyinstall\nuget.exe
-#}
+    #}
 
 # This works. Caveat: Emacs is iffy for some reason. 
 # You can 'elevate-process emacs \somefile.txt' just fine
 # You can 'elevate-process notepad "\somefile with spaces.txt"'
 # But if you 'elevate-process emacs "\somefile with spaces.txt"', Emacs will fail
 # I am not sure why. 
+
+# TODO: This should be rewritten based on http://poshcode.org/3158
+#       However, use In-CliXml and Out-CliXml instead of shitty temporary files
 function Elevate-Process {
     param(
         $process,
