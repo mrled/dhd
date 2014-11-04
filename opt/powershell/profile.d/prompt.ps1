@@ -71,9 +71,9 @@ $colorPrompt = {
     Write-Host $(get-date -format HH:mm:ss) -nonewline -foregroundcolor White
 
     #if ($errorActionPreference -ne "Stop" -and $error.count -gt 0) {
-    if ($error) { $ecolor = "Red" }
+    if ($error -or $LASTEXITCODE) { $ecolor = "Red" }
     else { $ecolor = "DarkGray" }
-    write-host " E$($error.count)" -nonewline -foreground $ecolor
+    write-host " E:$($error.count):$LASTEXITCODE" -nonewline -foreground $ecolor
     #}
 
     Write-Host " $hostname" -nonewline -foregroundcolor Blue

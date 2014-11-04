@@ -1427,6 +1427,7 @@ set-alias err Show-ErrorReport
 
 function Clear-Error {
     $error.clear()
+    $global:LASTEXITCODE = 0
 }
 set-alias clerr Clear-Error
 
