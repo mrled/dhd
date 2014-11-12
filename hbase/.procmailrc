@@ -19,12 +19,47 @@ SPR=2147483647
 
 # Marking messages as read: http://raamdev.com/2007/using-procmail-to-mark-as-read/
 
-# Mails with a score of 15 or higher are almost certainly spam (with 0.05%
-# false positives according to rules/STATISTICS.txt). Let's put them in a
-# different mbox. (This one is optional.)
+# Spam bullshit
+spaminbox="SPAM"
+learnedspam="SPAM.learned"
+unexaminedspam="SPAM.unexamined"
+
+# Mails with a score of 10 or higher are almost certainly spam (with 0.05%
+# false positives according to rules/STATISTICS.txt). 
+# We store them in an unprocessed spam directory, marked as read - basically, 
+# we never intend to see these spams again
+# Also, a bunch of other bullshit I am sick of
 :0
-* ^X-Spam-Level: \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
-.SPAM/
+* $ $SPR^0 ^X-Spam-Level: \*\*\*\*\*\*\*\*\*\*
+* $ $SPR^0 ^To:.*vlack\+spam
+* $ $SPR^0 ^To:.*vlack\+temp
+* $ $SPR^0 ^From:.*Vanessa.*Smith
+* $ $SPR^0 ^To:.*vlack\+f\.retailreportcard
+* $ $SPR^0 .*vlack\+f\.retailreportcard
+* $ $SPR^0 .*retailreportcard.*
+* $ $SPR^0 ^X-Original-To:.*offers 
+* $ $SPR^0 ^From:.*Club.*VIP.*
+* $ $SPR^0 ^From:.*RuneScape.*
+* $ $SPR^0 ^From:.*e-mail.microsoft.com.*
+{
+    # Move the message to the folder
+    :0c
+    .$unexaminedspam/
+
+    # And now mark it as read: 
+    :0
+    * LASTFOLDER ?? /\/[^/]+$
+    { tail=$MATCH }
+
+    TRAP="mv $LASTFOLDER .$unexaminedspam/cur/$tail:2,S"
+    HOST
+}
+
+# Mails with a score of 5 or higher are also very likely to be spam, but let's 
+# save them as unread just to be sure
+:0
+* ^X-Spam-Level: \*\*\*\*\*
+.$spaminbox/
 
 ### Random stupid things not to forget:
 # 1 close your freaking folders with a "/". it's ".lists.sunhelp-geeks/"
@@ -66,26 +101,6 @@ SPR=2147483647
     /dev/null
 }
 
-:0
-#* ^Delivered-To:.*mledbetter\@neuric\.com.*
-* ^X-Original-To:.*micah\+neuric\@micahrl\.com.*
-.Neuric/
-
-# Trash mail - I don't ever want to see this shit
-# Use this as my example of condition scoring... matching ANY of these
-# conditions is enough to dump the mail to /dev/null
-:0:
-* $ $SPR^0 ^To:.*vlack\+spam
-* $ $SPR^0 ^To:.*vlack\+temp
-* $ $SPR^0 ^From:.*Vanessa.*Smith
-* $ $SPR^0 ^To:.*vlack\+f\.retailreportcard
-* $ $SPR^0 .*vlack\+f\.retailreportcard
-* $ $SPR^0 .*retailreportcard.*
-* $ $SPR^0 ^X-Original-To:.*offers 
-* $ $SPR^0 ^From:.*Club.*VIP.*
-* $ $SPR^0 ^From:.*RuneScape.*
-/dev/null
-
 # Capstone
 :0
 * ^X-Original-To: .*vlack\+capstone\@vlack\.com
@@ -93,13 +108,19 @@ SPR=2147483647
 #.Capstone/
 
 # SXSW shit
+# Fuckings bands in town
 :0
-* ^Delivered-To: sxsw\@.*
+* $ $SPR^0 ^From:.*bandsintown\.com.*
+* $ $SPR^0 ^Delivered-To: sxsw\@.*
 .SXSW/
 
 :0
 * ^Delivered-To: realest\@
 .RealEstate/
+
+:0
+* ^Delivered-To: consume\@
+.Consume/
 
 # Alternative Identities
 :0
@@ -108,6 +129,7 @@ SPR=2147483647
 * $ $SPR^0 ^X-Original-To: http_coed\@.*
 * $ $SPR^0 ^X-Original-To: httpcoed404\@.*
 * $ $SPR^0 ^X-Original-To: unicoed\@.*
+* $ $SPR^0 ^X-Original-To: orsoncard\@.*
 * $ $SPR^0 ^X-Original-To: verticale\@gmail\.com
 {
   # Put the mail in this folder and then mark it read:
@@ -146,8 +168,7 @@ SPR=2147483647
   :0c
   .$foldername/ 
  
-  # use 'mv' to take the mail from $foldername/new to $foldername/cur
-  # ... in essence, marking the mail read
+  # Move the message from new/ to cur/ and set the message flags to mark it read
   :0
   * LASTFOLDER ?? /\/[^/]+$
   { tail=$MATCH }
