@@ -28,6 +28,16 @@
 (add-to-load-path-if-exists "/usr/local/share/emacs/site-lisp")
 (add-to-load-path-if-exists "~/opt/src/zenburn-el")
 
+(add-to-load-path-if-exists "~/.emacs.d/packages/tiny-tools/lisp/tiny")
+(add-to-load-path-if-exists "~/.emacs.d/packages/tiny-tools/lisp/other")
+
+(autoload 'tinyprocmail-mode "tinyprocmail" "" t)
+(autoload 'aput "assoc")
+;; Treat ~/.procmailrc and all pm-*.rc files as Procmail files
+(aput 'auto-mode-alist
+      "\\.procmailrc\\|pm-.*\\.rc$"
+      'turn-on-tinyprocmail-mode)
+
 ;(require 'apache-mode)
 ;(require 'apache)
 
