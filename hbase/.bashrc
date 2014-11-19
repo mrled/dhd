@@ -12,7 +12,7 @@ d="${d} $h/.rvm/bin"
 d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
 d="${d} $h/.dhd/opt/bin"
 # fuck you Homebrew, installing to /usr/local is bullshit
-d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin $h/opt/homebrew/Cellar/ruby/1.9.3-p0/bin"
+d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin"
 d="${d} /usr/local/homebrew/bin /usr/local/homebrew/sbin"
 # homebrew + ruby bullshit
 d="${d} /usr/local/homebrew/Cellar/ruby/1.9.3-p0/bin"
