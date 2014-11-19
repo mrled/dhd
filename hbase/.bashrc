@@ -789,12 +789,10 @@ export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
-
-cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
-pip()          { sudo -H sh -c "umask 022; pip $*"; }
-pip3()         { sudo -H sh -c "umask 022; pip3 $*"; }
-easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
-
+for fu in cpan pip pip3 easy_install; do
+    fupath=`type -p $fu`
+    if [ "$fupath" -a -x $fupath ]; then alias $fu="sudo -H sh -c \"umask 022; $fupath \$*\""; fi
+done
 
 # last character of prompt
 if   [ $UID = 0 ]; then #root user
