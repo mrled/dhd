@@ -44,8 +44,9 @@ bindkey -m ^[Oc stuff ]  #"}]^f"
 ### hardstatus stuffs
 hardstatus on
 hardstatus alwayslastline 
-hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
-hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw %<%{=  kB} %h %>%l "
+#hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
+#hardstatus string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw %<%{=  kB} %h %>%l "
+hardstatus string "%-Lw%{= bw}%50>%n%f* %t%{-}%+Lw %<%{=  kB} %h %>%l "
 
 # %h
 #  - 'man screen' says 'the window hardstatus'
