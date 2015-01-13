@@ -90,14 +90,12 @@ function Get-CliContextClue {
 set-alias ConEmuC "${env:ConEmuBaseDir}\ConEmuC.exe"
 
 function Set-ConEmuTabTitleForCliContext {
-    param(
+    [cmdletbinding()] param(
         $title
     )
     $clue = Get-CliContextClue
     if ($title) { $title = ":$title" }
     $fullTitle = "$($clue.TitlePrefix)$title" -replace " ",'' 
-    #WORKING ON CLI: conemuc /guimacro 'Rename(0,@"'asdxf'")' > $null
-    #WORKING IN FUNCTION: conemuc /guimacro 
     $macro = "Rename(0,$fullTitle"
     write-verbose "Running macro: $macro"
     $out = conemuc /guimacro $macro
@@ -105,7 +103,6 @@ function Set-ConEmuTabTitleForCliContext {
         throw "Failed to change tab title with error: $out"
     }
 }
-set-alias Rename-ConEmuTab Set-ConEmuTabTitleForCliContext
 set-alias Rename-Tab Set-ConEmuTabTitleForCliContext
 
 # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes

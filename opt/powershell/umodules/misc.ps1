@@ -926,7 +926,7 @@ function Create-Link {
                    arguments = $arguments
                    force = $force 
             }
-            create-shortcut @a 
+            New-MRLShortcut @a 
         }
         "fhardlink" {
             start-process "cmd.exe" -ArgumentList "/c mklink /h $source $target" -wait -NoNewWindow
@@ -1134,9 +1134,10 @@ if (test-path $bvssh) {
     set-alias ssh Invoke-BitviseSsh
     function Invoke-BitviseSshScreenSession {
         param(
-            [parameter(mandatory=$true)] [string] $hostname,
+            [parameter(mandatory=$true)] [alias('r')] [string] $hostname,
             [string] $screenSession = "camelot"
         )
+        Rename-Tab $hostname
         Invoke-BitviseSsh $hostname '-cmd=scr'
     }
     set-alias scr Invoke-BitviseSshScreenSession
@@ -1179,7 +1180,7 @@ if (test-path $bvssh) {
                 throw "Failed to find the end of the hostname after searching through $i positions"
             }
             $binHostname = $relevantValue[0..($postHostnameIndex - 1)]
-            write-debug ($binHostname -join ",")
+            write-verbose ($binHostname -join ",")
             #$newHost.Hostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
             #write-verbose "Hostname: $($newHost.Hostname)"
             #$HostKeys += @($newHost)
