@@ -52,6 +52,7 @@
       <context name="rest">
         <repositories>
           <repository name="Ed-Fi-Common" />
+          <repository name="EduId" />
           <repository name="Ed-Fi-ODS" />
           <repository name="Ed-Fi-ODS-Implementation" />
         </repositories>

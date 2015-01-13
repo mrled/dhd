@@ -1,7 +1,7 @@
 $DLPHelperDefaultProjectConfigFile = "$PSScriptRoot\DLPOrganizations.xml"
 $DLPHelperProjectBase = "$HOME\Documents\DLPClients"
 
-function New-Project {
+function New-DLPProject {
     param(
         [parameter(mandatory=$true)] [string] $GitHubOrg,
         [string] $LocalName,
@@ -62,7 +62,7 @@ $clientUpdateSb = {
     # Note: job script blocks don't work very well with custom objects
     # I was having a problem where some members were present, but others, such as ScriptProperty members,
     # were not present when the object was passed into the script block
-    # Job SBs also cannot use externally defined functions such as New-Project or In-CliXml
+    # Job SBs also cannot use externally defined functions such as New-DLPProject or In-CliXml
     param(
         [parameter(mandatory=$true)] $clientName,
         [bool] $WhatIf = $false
@@ -119,7 +119,7 @@ $clientUpdateSb = {
     }
 }
 
-function Update-GitRepositoryForProject {
+function Update-DLPProjectGitRepository {
     [CmdletBinding()]
     param(
         [string[]] $clientList,
@@ -127,14 +127,21 @@ function Update-GitRepositoryForProject {
     )
 
     $workingClientList = @()
-    foreach ($client in $clientList) {
-        if (-not $DLPOrganizations.$client) {
-            throw "Passed client name '$client', but no such client exists in `$DLPOrganizations"
+    $DlpOrganizations = Get-DLPProject
+    foreach ($clientName in $clientList) {
+        $client = $DLPOrganizations |? { $_.LocalName -eq $clientName }
+        if (-not $client) {
+            throw "Passed client name '$clientName', but no such client exists in `$DLPOrganizations"
         }
-        $workingClientList += @($DLPOrganizations.$client)
+        write-verbose "Found client $($client.LocalName)"
+        $workingClientList += @($client)
     }
     if (-not $clientList) {
-        $workingClientList = $DLPOrganizations.values
+        $workingClientList = $DLPOrganizations
+    }
+    write-verbose "Updating repositories for projects:"
+    foreach ($c in $workingClientList) {
+        write-verbose "    $($c.LocalName)"
     }
 
     $serializedDlpOrganizations = Out-CliXml $DlpOrganizations -depth 4
@@ -143,7 +150,7 @@ function Update-GitRepositoryForProject {
     }
 }
 
-function Get-Project {
+function Get-DLPProject {
     [CmdletBinding()]
     param(
         [string[]] $projectName,
@@ -177,7 +184,7 @@ function Get-Project {
             Repositories = $proj.repositories.repository.name
             Contexts = $ctx
         }
-        $returnProjects += @(New-Project @npparams)
+        $returnProjects += @(New-DLPProject @npparams)
     }
     return $returnProjects
 }
