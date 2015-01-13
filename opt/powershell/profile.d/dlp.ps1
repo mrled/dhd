@@ -221,3 +221,26 @@ function Delete-TeamCityBuild {
     $headers = @{"Authorization"="Basic $encodedcredentials"}
     Invoke-WebRequest -Uri $buildUri -Method Delete -Headers $headers
 }
+
+function Install-CloudcryptCertificate {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $PfxPath,
+        $password
+    )
+    $cloudCryptServer = "walnut.doubleline.us"
+    if (-not $password) {
+        $password = read-host -AsSecureString "The password for the encrypted PFX file"
+    }
+    elseif ($password -isnot [System.Security.SecureString]) {
+        $password = $password | ConvertTo-SecureString -force -AsPlainText
+    }
+    $LocalPfxFile = get-item $PfxPath
+    $UNCPfxPath = "\\$cloudCryptServer\C$\Users\micah\Downloads\$($LocalPfxFile.Name)"
+    $ServerPfxPath = "C:\Users\micah\Downloads\$($LocalPfxFile.Name)"
+    $me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+    copy-item $PfxPath $UNCPfxPath
+    invoke-command -computername $cloudCryptServer -argumentList $ServerPfxPath,$password -scriptblock { 
+        param($pfxPath, $pfxPass)
+        Import-PfxCertificate -filePath $pfxPath -CertStoreLocation Cert:\LocalMachine\My -Exportable -Password $pfxPass
+    }
+}
