@@ -13,6 +13,11 @@ $ExternalBinaryPathSearchPatterns = @{
         "${env:programfiles}\vim\vim??"
         "${env:programfiles(x86)}\vim\vim??"
     )
+    WindowsSDK = @(
+        "${env:programfiles(x86)}\Windows Kits\8.1\bin\x64"
+        "${env:programfiles(x86)}\Windows Kits\8.0\bin\x64"
+        "${env:programfiles(x86)}\Microsoft SDKs\Windows\v7.1A\Bin\x64"
+    )
 }
 function Get-ExternalBinaryPath {
     param(
@@ -75,6 +80,10 @@ function Setup-SystemPath {
     $azureSDKs = "$env:ProgramFiles\Microsoft SDKs\Windows Azure\.NET SDK"
     if (test-path $azureSDKs) {
         $possiblePaths += "$(((gci $azureSDKs)[-1]).fullname)\bin"
+    }
+    $winSDKDir = Get-ExternalBinaryPath WindowsSDK
+    if ($winSDKDir) {
+        $possiblePaths += $winSDKDir
     }
 
     $pythonDir = Get-ExternalBinaryPath Python
