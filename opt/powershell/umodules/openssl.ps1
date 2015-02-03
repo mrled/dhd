@@ -18,7 +18,7 @@ function Invoke-OpenSSL {
         [switch] $Passthru
     )
     $OpenSslPath = (gcm OpenSslExe |? {$_.commandtype -eq 'Alias'}).definition
-    $sslProc = Invoke-ProcessAndWait -RedirectStandardError -RedirectStandardOutput -command $OpenSslPath -argumentList $argumentList
+    $sslProc = Invoke-ProcessAndWait -Passthru -RedirectStandardError -RedirectStandardOutput -command $OpenSslPath -argumentList $argumentList
 
     $stdout = $sslProc.StandardOutput.ReadToEnd()
     $stderr = $sslProc.StandardError.ReadToEnd()

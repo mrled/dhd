@@ -18,6 +18,9 @@ $ExternalBinaryPathSearchPatterns = @{
         "${env:programfiles(x86)}\Windows Kits\8.0\bin\x64"
         "${env:programfiles(x86)}\Microsoft SDKs\Windows\v7.1A\Bin\x64"
     )
+    VisualStudio = @(
+        "${env:programfiles(x86)}\Microsoft Visual Studio*"
+    )
 }
 function Get-ExternalBinaryPath {
     param(
@@ -42,17 +45,19 @@ function Setup-SystemPath {
       (http://stackoverflow.com/questions/18502999/git-extensions-win32-error-487-couldnt-reserve-space-for-cygwins-heap-win32)
     #>
     $possiblePaths = @(
-        "C:\Program Files (x86)\Git\cmd"
+        "C:\Tools\mingw64\bin"
+        "C:\Tool\sysinternals"
+        "__ProgramFiles__\Git\cmd"
         "${env:ChocolateyInstall}\bin"
         "C:\Chocolatey\bin"
         "C:\ProgramData\Chocolatey\bin"
         "$home\.dhd\opt\win32bin"
         "$home\.dhd\opt\powershell\bin"
         "$home\opt\win32bin"
+        "$home\opt\bin"
         "$home\opt\Console2"
         "$home\opt\SysinternalsSuite"
         "$home\opt\mupdf"
-        "C:\opt\strawberry\perl\bin"
         "C:\opt\GnuWin32\bin"
         "C:\opt\GnuWin32\sbin"
         "C:\opt\local\bin"
@@ -64,17 +69,14 @@ function Setup-SystemPath {
         "C:\opt\UnxUtils\bin"
         "C:\opt\UnxUtils\usr\local\wbin"
         "C:\opt\sqlite"
-        "C:\Program Files\PuTTY"
-        "C:\Program Files\7-Zip"
-        "C:\Program Files (x86)\7-Zip"
-        "C:\Program Files (x86)\PuTTY"
-        "C:\Program Files\Windows SDKs\Windows\v7.0\Bin"
-        "C:\Program Files\NSIS"
-        "C:\Program Files (x86)\NSIS"
-        "C:\Program Files\Nmap"
-        "C:\Program Files (x86)\Nmap"
-        "C:\Program Files (x86)\VMware\VMware Virtual Disk Development Kit\bin"
-        "C:\Program Files\VMware\VMware Virtual Disk Development Kit\bin"
+        "__ProgramFiles__\PuTTY"
+        "__ProgramFiles__\7-Zip"
+        "__ProgramFiles__\Windows SDKs\Windows\v7.0\Bin"
+        "__ProgramFiles__\NSIS"
+        "__ProgramFiles__\Nmap"
+        "__ProgramFiles__\VMware\VMware Virtual Disk Development Kit\bin"
+        "__ProgramFiles__\LLVM\bin"
+        "C:\opt\strawberry\perl\bin"
     )
 
     $azureSDKs = "$env:ProgramFiles\Microsoft SDKs\Windows Azure\.NET SDK"
@@ -104,11 +106,22 @@ function Setup-SystemPath {
         $possiblePaths += @($VimDir,"$VimDir\macros")
     }
 
+    $VSDir = Get-ExternalBinaryPath VisualStudio
+    if ($VSDir) {
+        $possiblePaths += @("$VSDir\VC\bin")
+    }
+
     $existingPaths = @()
     foreach ($pp in $possiblePaths) {
-        if ($pp -and (test-path $pp)) { 
-            write-host "Adding value to system path: $pp"
-            $existingPaths += @(resolve-path $pp) 
+        $pp64 = $pp -replace "__ProgramFiles__","${env:ProgramFiles}"
+        $pp32 = $pp -replace "__ProgramFiles__","${env:ProgramFiles(x86)}"
+        if ($pp64 -and (test-path $pp64)) { 
+            write-host "Adding value to system path: $pp64"
+            $existingPaths += @(resolve-path $pp64) 
+        }
+        elseif ($pp32 -and (test-path $pp32)) { 
+            write-host "Adding value to system path: $pp32"
+            $existingPaths += @(resolve-path $pp32) 
         }
     }
 
@@ -171,4 +184,12 @@ function reinit {
         Setup-AdminEnvironment
     }
 }
+
+
+# This is a bunch of stuff to make it easier to set up a new machine
+
+function Setup-StartupTaskmgr {
+    New-MRLShortcut -linkpath "$($profile.Startup)\taskmgr.lnk" -targetpath "taskmgr.exe" -windowStyle Minimize -force
+}
+
 

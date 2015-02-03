@@ -55,7 +55,7 @@ function Get-WebPiPackages {
         $search,
         $ignore,
         [ValidateSet("Installed","Application","Available")] $type,
-        [parameter(ParameterSetName="DefaultCache")] [switch] $RefreshCache,
+        [parameter(ParameterSetName="DefaultCache")] [ValidateSet("Force","No")] $Refresh,
         [parameter(ParameterSetName="SpecifyCache")] $CacheFile
     )
 
@@ -64,11 +64,16 @@ function Get-WebPiPackages {
     if ($PSCmdlet.ParameterSetName -eq "DefaultCache") {
         $cacheFile = "${env:Temp}\mrledWebPiOutputPackageCache.txt"
         $yesterday = (get-date).AddDays(-1)
-        if (($refreshCache) -or
+        <# Refresh the cache if one of the following conditions is met:
+             - "-Refresh Force" is specified
+             - "-Refresh" is not specified at all, but the cache file is more than one day old
+             - The cache file doesn't exist
+        #>
+        if (($refresh -eq "Force") -or
             (-not (test-path $cacheFile)) -or
-            (($yesterday -gt (get-item $cacheFile).LastWriteTime)))
+            ((-not $refresh) -and ($yesterday -gt (get-item $cacheFile).LastWriteTime)))
         {
-            choco list -source WebPI | out-file $cacheFile -encoding utf8
+            WebPiCmd /list /listoption:all | out-file $cacheFile -encoding utf8
         }
     }
     $cacheFile = resolve-path $cacheFile
@@ -77,6 +82,7 @@ function Get-WebPiPackages {
 
     $allWpiPackages = @()
     $packageType = $false
+    $lineNum = 0
     foreach ($packageLine in $rawWpiOutput[($indexOfHeaderEnd+1)..($rawWpiOutput.count-2)]) {
         if ([string]::IsNullOrWhiteSpace($packageLine)) {}   # Ignore whitespace
         elseif ($packageLine -match '^-+$') {}               # Ignore header lines of just dashss
@@ -92,13 +98,15 @@ function Get-WebPiPackages {
             $packageType = "Available"
         }
         elseif (-not $packageType) {
-            throw "Failed to process line '$packageLine' - what type of package is it?"
+            throw "Failed to process line ${cacheFile}:${lineNum} `n" +
+                "    '$packageLine'"
         }
         else {
             $packageLine -match '(\S*)\s*(.*)' | out-null
             $properties = [ordered]@{ Name=$matches[1]; Type=$packageType; Description=$matches[2]; }
             $allWpiPackages += @( New-Object -type PSObject -property $properties )
         }
+        $lineNum += 1
     }
 
     if ($type) {

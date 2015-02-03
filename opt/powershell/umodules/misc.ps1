@@ -10,6 +10,11 @@ $HammerAndSickleChar = "$([char]9773)"
 $VisualStudioChar = "$([char]42479)"
 $BeepChar = @([char]7)
 
+# why does mingw do this. 
+# (Note: testing paths is more fragile but leads to faster shell startup.)
+if (test-path "C:\tools\mingw64\bin\mingw32-make.exe") {
+    set-alias gmake "mingw32-make.exe"
+}
 
 function Export-ConemuConfig {
     param(
@@ -89,8 +94,9 @@ function Invoke-ProcessAndWait {
     param(
         [parameter(mandatory=$true)] [string] $command,
         [string[]] $argumentList,
-        #[switch] $RedirectStandardError,
-        [switch] $ShowStandardOutput,
+        [switch] $RedirectStandardError,
+        [switch] $RedirectStandardOutput,
+        #[switch] $ShowStandardOutput,
         [parameter(ParameterSetName="Passthru")] [switch] $Passthru,
         [parameter(ParameterSetName="CheckExitCode")] [switch] $CheckExitCode
     )
@@ -99,20 +105,27 @@ function Invoke-ProcessAndWait {
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
     $process.StartInfo.FileName = $command
+
     #$process.StartInfo.RedirectStandardError = $RedirectStandardError
-    if ($ShowStandardOutput) {
+    #if ($ShowStandardOutput) {
+    if ($RedirectStandardOutput) {
         $process.StartInfo.RedirectStandardOutput = $true
+    }
+    if ($RedirectStandardError) {
+        $process.StartInfo.RedirectStandardError = $true
     }
     $process.StartInfo.UseShellExecute = $false # AKA don't run in a new window
     $process.StartInfo.Arguments = $argumentList
     $process.Start() | Out-Null
-    if ($ShowStandardOutput) {
+<#
+    if ($RedirectStandardOutput) {
         $line = $process.StandardOutput.ReadLine()
         while ($line -ne $null) {
             Write-Host $line
             $line = $process.StandardOutput.ReadLine()
         }
     }
+#>
     $process.WaitForExit()
     write-verbose "Process exited with exit code $($process.ExitCode)"
     if ($PSCmdlet.ParameterSetName -eq "CheckExitCode") {
@@ -410,7 +423,7 @@ if (test-path $sublpath) {
         )
         process {
             foreach($f in $file) {
-                start-process $sublpath -argumentlist "$f"
+                start-process $sublpath -argumentlist "`"$f`""
             }
         }
     }
@@ -867,7 +880,8 @@ function New-MRLShortcut {
     param(
         [parameter(Mandatory=$true)] [string] $linkPath,
         [parameter(Mandatory=$true)] [string] $targetPath,
-        [string]$arguments,
+        [string] [ValidateSet("Activate","Maximize","Minimize")] $windowStyle = "Activate",
+        [string] $arguments,
         [switch] $force,
         [switch] $PassThru
     )
@@ -885,6 +899,13 @@ function New-MRLShortcut {
     }
     $wshshell = New-Object -ComObject WScript.Shell
     $lnk = $wshshell.CreateShortcut($linkPath)
+
+    switch ($windowSylte) { 
+        "Activate" { $lnk.WindowStyle = 1 }
+        "Maximize" { $lnk.WindowStyle = 2 }
+        "Minimize" { $lnk.WindowStyle = 7 }
+    }
+
     $lnk.targetPath = "$targetPath"
     $lnk.Arguments = "$arguments" #it's ok if this is $null
     $lnk.save()
@@ -1516,3 +1537,173 @@ function In-CliXml {
     )
     [System.Management.Automation.PSSerializer]::Deserialize($InputXml)
 }
+
+<#
+.synopsis
+Start a batch file
+.description
+Start a batch file, and prevent a stupid "Terminate batch job? Y/N" prompt if 
+you Ctrl-C the process. 
+#>
+function Start-BatchFile {
+    [CmdletBinding()] Param(
+        [parameter(mandatory=$true)] [string] $batchFile,
+        [parameter(ValueFromRemainingArguments=$true)] $batchArgs
+    )
+    # we use "<NUL" to prevent that fucking "Terminate batch job? Y/N" prompt
+    cmd.exe "/c $batchFile $batchArgs <NUL"
+}
+
+set-alias bat Start-BatchFile 
+
+
+<#
+.synopsis
+Fucking extract an archive the right way.
+.description
+Fucking extract an archive the right way:
+- Create a new temporary directory inside $outDir
+- Use 7z.exe to extract the archive to that temp dir
+  - If the only item in the archive is a .tar file, unarchive that file as well
+- Make sure exactly one file ends up in $outDir:
+  - If there was only one item in the archive (after extracting the .tar file, 
+    if applicable), move it to $outDir
+  - If there was more than one item in the archive, rename the temp dir to 
+    something sensible based on the archive name. (For example, if the archive
+    name is SomeArchive.zip, rename the temp dir to SomeArchive)
+.parameter archive
+A list of archives to extract
+.parameter outDir
+The directory to extract the archives to. Defaults to the current working 
+directory.
+.parameter force
+If there is an existing file/directory with the same name as one that would be 
+extracted, delete the existing item first. 
+#>
+function Extract-FuckingArchive {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string[]] $archive,
+        [string] $outDir = "$pwd",
+        [switch] $force
+    )
+
+    <#
+    .synopsis
+    Fucking extract an archive to a temporary directory
+    .parameter archive
+    An archive file
+    .parameter outDir
+    The directory in which to create the temporary extraction dir 
+    .parameter noOutDir
+    Instead of creating a temporary extraction dir, just use the archive's parent directory
+    #>
+    function fuckingExtractOneLayer {
+        [cmdletbinding()] param(
+            [parameter(mandatory=$true)] [System.IO.FileInfo] $archive,
+            [parameter(mandatory=$true,parametersetname="outdir")] [System.IO.DirectoryInfo] $outDir,
+            [parameter(mandatory=$true,parametersetname="nooutdir")] [switch] $noOutDir
+        )
+
+        if ($noOutDir) { 
+            $outdir = $archive.directory.fullname
+            $feTempDir = $outdir
+        }
+        else {
+            $outdir = (get-item $outdir).fullname
+            $feTempDir = "$outDir\fuckingextract-$([System.IO.Path]::GetRandomFileName())"
+            if (test-path $feTempDir) {
+                throw "The temporary directory that already exists"
+            }
+            mkdir $feTempDir | out-null
+        }
+
+        $7zcmd = "7z x `"-o$feTempDir`" `"$($archive.fullname)`""
+
+        $7zout = iex $7zcmd
+
+        if ($LASTEXITCODE -ne 0) {
+            throw ("7z exited with code $LASTEXITCODE",
+                "`n`tcommand line: $7zcmd",
+                "`n`toutput: `n$7zout")
+        }
+
+        return $feTempDir
+    }
+
+    gcm 7z | out-null # Fail early if 7z isn't here
+
+    $secondLayerExtensions = @(".tar") # There aren't any more that I can think of?
+
+    if (-not (test-path $outDir)) {
+        mkdir -force $outDir
+    }
+    $outdirItem = get-item $outdir
+
+    $outFiles = @()
+    foreach ($arch in $archive) {
+        $archItem = get-item $arch
+
+        # this is the name of the archive w/o its extension
+        # this will be used as the eventual directory name to extract to 
+        $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($archItem.name)
+
+        $exDir = fuckingExtractOneLayer -archive $archItem -outdir $outdirItem
+        write-verbose "Using temporary extraction directory: $exDir"
+        $exItems = gci $exDir
+
+        # If there is only one item in the archive, AND that item has an 
+        # extension in $secondLayerExtensions, extract that item too.
+        if (((gci $exDir).count -eq 1) -and  
+            ($secondLayerExtensions |? { $exItems[0].name.endswith($_) }) )
+        {
+            $innerArchItem = $exItems[0]
+            write-verbose "Found inner archive: $($innerArchItem.fullname)"
+            fuckingExtractOneLayer -archive $innerArchItem.fullname -noOutDir | out-null
+            $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($innerArchItem.name)
+            rm $innerArchItem.fullname
+            $exItems = gci $exDir
+        }
+
+        # If there is only one item in the archive, we don't need the 
+        # extraction directory - just move the item into the output dir
+        # If there's more than one, then rename the dir to the bare name of the
+        # archive
+        # TODO: add a -force flag 
+        if ($exItems.count -eq 1) {
+            $outItem = $exItems[0]
+            $outItemName = "$($outDirItem.fullname)\$($outItem.name)"
+            write-verbose "Only one item in archive: '$($outItem.fullname)'; moving to '$($outdirItem.fullname)'"
+
+            if ((test-path $outItemName) -and $force) {
+                write-verbose "Found existing item at '$outItemName' but -force was specified; removing..."
+                rm -recurse -force $outItemName
+            }
+            elseif ((test-path $outItemName) -and -not $force) {
+                throw "Extracted archive to '$exDir' but could not move to '$outItemName' because '$outItemName' already exists"
+            }
+
+            $outFiles += @( mv $outItem.fullname $outItemName -passthru )
+            rm -recurse $exDir
+        }
+        else {
+            $outItemName = "$($outDirItem.fullName)\$archBareName"
+            write-verbose "Multiple items in archive; moving temporary extraction directory to '$outItemName'"
+
+            if ((test-path $outItemName) -and $force) {
+                write-verbose "Found existing item at '$outItemName' but -force was specified; removing..."
+                rm -recurse -force $outItemName
+            }
+            elseif ((test-path $outItemName) -and -not $force) {
+                throw "Extracted archive to '$exDir' but could not move to '$outItemName' because '$outItemName' already exists"
+            }
+
+            $outFiles += @( mv $exDir $outItemName -passthru )
+        }
+    }
+
+    return $outFiles
+}
+
+set-alias Fucking-Extract Extract-FuckingArchive
+set-alias fex Extract-FuckingArchive
+

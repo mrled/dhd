@@ -145,6 +145,13 @@ $simplePrompt = {
     return "$(get-date).Tostring('HH:mm:ss') $hostname $(Get-DisplayPath $pwd) PS$lcop "
 }
 
+$tinyPrompt = {
+    if ($SoyAdmin) { $lcop = "#" }
+    else { $lcop = ">" }
+    write-host "$($me.Identity.Name) PS$lcop" -foreground Blue -nonewline
+    return " "
+}
+
 function reset-prompt {
     if (test-path function:prompt) { rm function:prompt }
     new-item -path function:prompt -value $colorPrompt | out-null
