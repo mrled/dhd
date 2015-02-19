@@ -34,7 +34,7 @@ function Invoke-OpenSSL {
     if ($Passthru) {
         if ($sslProc.ExitCode -ne 0) {
             if ($stdout) { write-host $stdout }
-            if ($stderr) { write-host $stderr -foregroundcolor Red }
+            if ($stderr) { write-host $stderr -foregroundcolor DarkGray }
             throw "OpenSSL exited with code '$($sslProc.ExitCode)'"
         }
         # Necessary because the .ReadToEnd() method can't get called more than once
@@ -83,5 +83,5 @@ function Get-OpenSSLThumbprint {
     $pemFile = resolve-path $pemFile
     $sslProc = Invoke-OpenSsl -Passthru -argumentList @("x509", "-in", "$pemFile", "-sha1", "-noout", "-fingerprint")
     $thumbprint = $sslProc.SerializedStandardOutput.Split('=')[1].Replace(':','')
-    return $thumbprint
+    write-output $thumbprint
 }
