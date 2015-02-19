@@ -4,13 +4,20 @@ ASSUMPTIONS:
 - You must have micah's DLPLogisticsModules checked out to $DLPProjectBase/misc/DLPLogisticsModules
 #>
 
+# I'm setting this in my Startup folder also
+# However, drives mapped with subst are only valid for the context in which they were created
+# If they were created unelevated, they will only be available to unelevated process
+if (-not (get-psdrive |? { $_.name -eq "P" })) {
+    subst P: $DLPProjectBase
+    get-psdrive | out-null # if you don't do this, Powershell won't see the new drive
+}
+
 if (-not ($VisualStudioDirectories -contains $DLPProjectBase)) {
     $VisualStudioDirectories += @($DLPProjectBase)
 }
 
 ipmo DLPHelper
 ipmo "$DLPProjectBase\dlp\InternalTools\encrypted-credentials"
-
 
 <#
 Functionality I'd like to have: 
@@ -242,5 +249,52 @@ function Install-CloudcryptCertificate {
     invoke-command -computername $cloudCryptServer -argumentList $ServerPfxPath,$password -scriptblock { 
         param($pfxPath, $pfxPass)
         Import-PfxCertificate -filePath $pfxPath -CertStoreLocation Cert:\LocalMachine\My -Exportable -Password $pfxPass
+    }
+}
+
+function New-SelfSignedCert {
+    param(
+        [parameter(mandatory=$true)] [string[]] $certName,
+        [parameter(mandatory=$true)] [string[]] $pfxPassword
+    )
+    if ($certName.count -ne $pfxPassword.count) {
+        throw "Must pass the same number of -certName and -pfxPassword arguments"
+    }
+
+    $outLines = @()
+    for ($i=0; $i -lt $certName.count; $i+=1) {
+        $cn = $certName[$i]
+        $ppass = $pfxPassword[$i]
+        minipki selfsign $cn
+        $cf = resolve-path ".\certified-keys\${cn}.crt"
+        $kf = resolve-path ".\private\${cn}.key"
+        Convert-OpenSSLPemToPfx -certFile $cf -keyFile $kf -pfxPassword $ppass
+
+        $pf = resolve-path ".\certified-keys\${cn}.pfx"
+        $thumb = (Get-OpenSSLThumbprint -pemFile $cf) -replace "`n",""
+        $outLines += @("$thumb :: $($pf.path)")
+    }
+
+    write-host "--------"
+    $outLines |% { write-output $_ }
+}
+
+function Get-ODSConfigFiles {
+    param(
+        [parameter(mandatory=$true)] [string] $client
+    )
+
+    $clientPath = resolve-path "P:\$client"
+
+    $fuckingProjects = @(
+        "EdFi.Ods.Admin.Web"
+        "EdFi.Ods.BulkLoad.Console"
+        "EdFi.Ods.SwaggerUI"
+        "EdFi.Ods.WebApi"
+        "EdFi.Ods.BulkLoad.Services.Windows.BulkWorker"
+        "EdFi.Ods.BulkLoad.Services.Windows.UploadWorker"
+    )
+    foreach ($proj in $fuckingProjects) {
+        ls "${clientPath}\Ed-Fi-ODS-Implementation\Application\$proj\*" -include App.config,Web.config
     }
 }
