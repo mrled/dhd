@@ -58,6 +58,21 @@ function New-DLPProject {
     return $project
 }
 
+function Invoke-Git {
+    [CmdletBinding()]
+    param(
+        [switch] $WhatIf,
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args
+    )
+    $GitExePath = "${env:ProgramFiles(x86)}\Git\bin\git.exe"
+    set-alias git $GitExePath
+
+    write-verbose "$GitExePath $args"
+    if (-not $WhatIf) {
+        git @args
+    }
+}
+
 $clientUpdateSb = {
     # Note: job script blocks don't work very well with custom objects
     # I was having a problem where some members were present, but others, such as ScriptProperty members,
@@ -69,7 +84,6 @@ $clientUpdateSb = {
     )
 
     import-module DLPHelper
-    set-alias GitExe "${env:ProgramFiles(x86)}\Git\bin\git.exe"
     $DlpOrganizations = Get-DLPProject
     $clientOrganization = Get-DLPProject $clientName
     $localName = $clientOrganization.localName
@@ -85,34 +99,41 @@ $clientUpdateSb = {
             mkdir $projectDir | out-null
         }
         foreach ($repoName in $clientOrganization.Repositories) {
-            set-location $projectDir 
-            # $repoClients is all the organizations that contain $repoName
-            $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
-            if (-not (test-path "$projectDir\$repoName")) {
-                write-output "  Doing initial clone for '$repoName' for project '$localName'"
-                if (-not $WhatIf) {
-                    GitExe clone --origin "$localName" "git@github.com:$GitHubOrg/$repoName"
-                }
-            }
-            else {
-                write-output "  Updating repository '$repoName' for project '$localName'"
-            }
-            set-location $projectDir\$repoName
-            foreach ($gitRemoteName in $repoClients) {
-                if ((GitExe remote) -notcontains $gitRemoteName) {
-                    write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
-                    $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
-                    if (-not $WhatIf) {
-                        GitExe remote add $gitRemoteName "git@github.com:$ghoName/$repoName"
-                    }
+            push-location $projectDir 
+            try {
+                # $repoClients is all the organizations that contain $repoName
+                $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
+                if (-not (test-path "$projectDir\$repoName")) {
+                    write-output "  Doing initial clone for '$repoName' for project '$localName'"
+                    #if (-not $WhatIf) {
+                        Invoke-Git clone --origin "$localName" "git@github.com:$GitHubOrg/$repoName" -whatif:$whatif
+                    #}
                 }
                 else {
-                    write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
+                    write-output "  Updating repository '$repoName' for project '$localName'"
                 }
+
+                set-location $projectDir\$repoName
+                $gitRemotes = Invoke-Git remote
+                foreach ($gitRemoteName in $repoClients) {
+                    if ($gitRemotes -notcontains $gitRemoteName) {
+                        write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
+                        $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
+                        #if (-not $WhatIf) {
+                            Invoke-Git remote add $gitRemoteName "git@github.com:$ghoName/$repoName" -whatif:$whatif
+                        #}
+                    }
+                    else {
+                        write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
+                    }
+                }
+                write-output "  Doing 'git fetch' in repository '$repoName' for project '$localName'"
+                #if (-not $Whatif) {
+                    Invoke-Git fetch --all -whatif:$whatif
+                #}
             }
-            write-output "  Doing 'git fetch' in repository '$repoName' for project '$localName'"
-            if (-not $Whatif) {
-                GitExe fetch --all
+            finally {
+                pop-location
             }
         }
         write-output "==== Finished with client '$clientName'... ===="
@@ -123,6 +144,7 @@ function Update-DLPProjectGitRepository {
     [CmdletBinding()]
     param(
         [string[]] $clientList,
+        [switch] $useJobs,
         [switch] $WhatIf
     )
 
@@ -146,7 +168,12 @@ function Update-DLPProjectGitRepository {
 
     $serializedDlpOrganizations = Out-CliXml $DlpOrganizations -depth 4
     foreach ($client in $workingClientList) {
-        start-job -name "git-$($client.LocalName)" -scriptBlock $clientUpdateSb -argumentList $client.LocalName,$WhatIf
+        if ($useJobs) {
+            start-job -name "git-$($client.LocalName)" -scriptBlock $clientUpdateSb -argumentList $client.LocalName,$WhatIf.IsPresent
+        }
+        else {
+            invoke-command -scriptblock $clientUpdateSb -argumentList $client.LocalName,$WhatIf.IsPresent
+        }
     }
 }
 

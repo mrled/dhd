@@ -72,6 +72,7 @@
         <repositories>
           <repository name="Ed-Fi-Common" />
           <repository name="Ed-Fi-ODS" />
+          <repository name="Ed-Fi-ODS-Implementation" />
         </repositories>
       </context>
     </contexts>
