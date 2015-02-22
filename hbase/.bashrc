@@ -3,69 +3,56 @@
 ## Set the path to inclode only directories that exist on this system.
 #   - not workable if the directory has spaces (!!)
 #   - put commands that should come before system commands in {,~}/opt/alternatives/
+
 h="${HOME}"
 PATH=
 d=
-d="${d}/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
-d="${d} /usr/local/texlive/2008/bin/universal-darwin"
 d="${d} $h/.rvm/bin"
-d="${d} $h/opt/alternatives /opt/alternatives $h/opt/bin $h/opt/sbin"
-d="${d} $h/.dhd/opt/bin"
-# fuck you Homebrew, installing to /usr/local is bullshit
+d="${d} $h/opt/bin $h/opt/sbin $h/.dhd/opt/bin"
 d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin"
-d="${d} /usr/local/homebrew/bin /usr/local/homebrew/sbin"
-# homebrew + ruby bullshit
-d="${d} /usr/local/homebrew/Cellar/ruby/1.9.3-p0/bin"
-
-d="${d} $h/opt/android-sdk/platform-tools $h/opt/android-sdk/tools"
-d="${d} $h/opt/arm-eabi-4.4.3/bin "
-d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
+d="${d} /opt/homebrew/bin /opt/homebrew/sbin"
+#d="${d} /usr/local/homebrew/bin /usr/local/homebrew/sbin"
+#d="${d} /sw/bin /sw/sbin /opt/local/bin /opt/local/sbin /Developer/usr/bin /Developer/usr/sbin"
 d="${d} /usr/pkg/bin /usr/pkg/sbin"
-d="${d} /usr/nekoware/bin /usr/nekoware/sbin /usr/freeware/bin"
-d="${d} /opt/csw/bin /opt/csw/sbin /opt/csw/flex/bin /opt/csw/flex/sbin /opt/csw/gcc4/bin"
-d="${d} /opt/csw/gcc4/sbin /opt/SUNWspro/bin /opt/SUNWspro/sbin"
-
-# This is all for SFU/SUA, which means I'll probably never need it again.
-d="${d} /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin"
-d="${d} /opt/gcc.3.3/bin /opt/ast/bin"
-d="${d} /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin"
-
-#d="${d} /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
-#d="${d} /usr/mylocal/bin /usr/mylocal/sbin"
-
 d="${d} /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin"
-d="${d} /usr/games /usr/games/bin /usr/X11R6/bin /usr/X11R6/sbin /usr/bin/X11"
-
-# mingw/msys stuff
-#d="${d} /mingw/bin /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32 /c/opt/bin"
 d="${d} /c/WINDOWS /c/WINDOWS/system32/Wbem /c/WINDOWS/system32"
-#d="${d} /c/opt/bin /c/opt/sbin"
 d="${d} /c/MinGW/bin /c/MinGW/sbin /c/MinGW/msys/1.0/bin /c/MinGW/msys/1.0/sbin"
-# Remember: spaces in here won't work even if escaped w/ '\'! 
-# I had to make C:\ProgramFiles with Junction.exe from sysinternals.
-# d="${d} /c/ProgramFiles/Emacs/emacs/bin"
-d="${d} /c/opt/ntemacs24/bin"
-d="${d} /c/opt/svn/bin /c/opt/SysinternalsSuite /c/opt/nirsoft_package/NirSoft /c/opt/nirsoft64"
-# BE CAREFUL: if your C:\opt contains ls and friends from UnxUtils or GnuWin32, 
-# you might not want to add it here
-d="${d} /c/opt/bin /c/opt/sbin /c/opt/local/bin /c/opt/local/sbin"
-# this should go last becausae it has some things that won't work with MinTTY like vim and sh.exe
-d="${d} /c/opt/git/bin"
 
 for p in ${d}; do
     if [ -d ${p} ]; then PATH="${PATH}${p}:"; fi
 done
 export PATH
+
+# Homebrew library bullshit
+# This doesn't seem to work??
+# hbdir="${HOME}/opt/homebrew"
+# if ! echo $LIBRARY_PATH | grep "$hbdir/include" >/dev/null; then
+#     export LIBRARY_PATH="${LIBRARY_PATH}:${hbdir}/include"
+# fi
+# if ! echo $DYLD_LIBRARY_PATH | grep "$hbdir/lib" >/dev/null; then
+#     export DYLD_LIBRARY_PATH="${DYLD_LIBRARY_PATH}:${hbdir}/lib"
+# fi
+# export LDFLAGS='-L$hbdir/include'
+
+
+#if [ -d $HOME/opt/homebrew ]; then 
+    #export CFLAGS="-I$HOME/opt/homebrew/include -L$HOME/opt/homebrew/lib"
+    #export CPPFLAGS="-I$HOME/opt/homebrew/include -L$HOME/opt/homebrew/lib"
+    #export LDFLAGS='-L$HOME/opt/homebrew/lib -Wl,-rpath $HOME/opt/homebrew/lib'
+#    export LDFLAGS=-L$HOME/opt/homebrew/lib
+#    export CPPFLAGS=-I$HOME/opt/homebrew/include
+#fi
+
+
 unset d h
+
 
 # Ruby RVM bullshit
 # install with `curl -L https://get.rvm.io | bash -s stable --ruby`
-# Load RVM into the shell session as a function
-# Jesus fucking christ I hate RVM
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-#[[ -s "/usr/local/rvm/scripts/rvm" ]] && source "/usr/local/rvm/scripts/rvm"
-
-
+#if [[ -s "/usr/local/rvm/scripts/rvm" ]]; then
+#fi
+# this is actually not necessary for rvm WHOA WOW WHOA
+#rvm() { sudo -H sh -c "umask 022; rvm $*"; }
 
 # I think I can replace this with $OSTYPE but I'll need to test it on all the different OSes I have below
 uname=`uname`
@@ -142,7 +129,6 @@ fi
 #    export USE_CCACHE=1
 #fi
 # suggested ccache size is 50-100gb fuck
-
 
 ##################
 # Global Aliases #
@@ -231,7 +217,6 @@ findunreadable() {
         find "$path" -fprint /dev/null 2>&1
     done
 }
-
 
 alias ls="$cmd_ls $ls_args"
 alias lsa="$cmd_ls $ls_args -a"
@@ -482,7 +467,6 @@ fingerprint() {
     done
 }
 
-
 # wake-on-lan information so I don't have to always remember it
 magicp() { 
     target=${1:? "Usage: magicp <target>, where <target> is a host that I know about"}
@@ -575,7 +559,6 @@ extractaudio() {
     echo "(You can check yourself with 'ffmpeg -i "vidfile" 2>&1|grep Audio'"
 }
 
-
 manualman() {
 # this is basically the function that man uses to view its manpages
 # if you know the path to a manpage file (like /usr/share/man/man1/ls.1)
@@ -634,7 +617,6 @@ unquarantine() {
     done
 }
 
-
 # via: http://stackoverflow.com/questions/296536/urlencode-from-a-bash-script
 # THIS IS BROKEN if it encounters a space it just stops processing altogether ugh.
 rawurlencode() {
@@ -666,7 +648,6 @@ rawurldecode() {
 
   echo "${REPLY}"  #+or echo the result (EASIER)... or both... :p
 }
-
 
     
 
@@ -773,7 +754,6 @@ _complete_ssh_hosts() {
 }
 complete -F _complete_ssh_hosts ssh
 
-
 # glob filenames in a case-insensitive manner
 # NOT the same as tab-complete case insensitively - you must add
 #   set completion-ignore-case on
@@ -793,10 +773,11 @@ export PERL_MM_USE_DEFAULT=1
 if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
-for fu in cpan pip pip3 easy_install; do
-    fupath=`type -p $fu`
-    if [ "$fupath" -a -x $fupath ]; then alias $fu="sudo -H sh -c \"umask 022; $fupath \$*\""; fi
-done
+
+cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
+pip()          { sudo -H sh -c "umask 022; pip $*"; }
+pip3()         { sudo -H sh -c "umask 022; pip3 $*"; }
+easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
 
 # last character of prompt
 if   [ $UID = 0 ]; then #root user
