@@ -26,11 +26,14 @@ unexaminedspam="SPAM.unexamined"
 
 # Mails with a score of 10 or higher are almost certainly spam (with 0.05%
 # false positives according to rules/STATISTICS.txt). 
+# In my experience, I've never seen anything with a spam score of higher than 
+# like 2 that wasn't spam. 
+# I'm gonna say than anything with a score of 8 or higher is safe to kill.
 # We store them in an unprocessed spam directory, marked as read - basically, 
 # we never intend to see these spams again
 # Also, a bunch of other bullshit I am sick of
 :0
-* $ $SPR^0 ^X-Spam-Level: \*\*\*\*\*\*\*\*\*\*
+* $ $SPR^0 ^X-Spam-Level: \*\*\*\*\*\*\*\*
 * $ $SPR^0 ^To:.*vlack\+spam
 * $ $SPR^0 ^To:.*vlack\+temp
 * $ $SPR^0 ^From:.*Vanessa.*Smith
@@ -180,6 +183,10 @@ unexaminedspam="SPAM.unexamined"
 :0
 * ^List-Id:.*aha\.spool\.metasploit\.com
 .lists.aha/
+
+:0 
+* ^List-Id:.*infowarrior\.attrition\.org
+.lists.infowarrior/
 
 ### The rest of the email will be delivered into my default mailbox,
 ### so no more rules are necessary
