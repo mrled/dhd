@@ -84,7 +84,7 @@ $clientUpdateSb = {
     )
 
     import-module DLPHelper
-    $DlpOrganizations = Get-DLPProject
+    $DLPOrganizations = Get-DLPProject
     $clientOrganization = Get-DLPProject $clientName
     $localName = $clientOrganization.localName
     $GitHubOrg = $clientOrganization.GitHubOrg
@@ -102,12 +102,13 @@ $clientUpdateSb = {
             push-location $projectDir 
             try {
                 # $repoClients is all the organizations that contain $repoName
-                $repoClients = ($DLPOrganizations.values |? { $_.Repositories -contains $repoName }).LocalName
+                $repoClients = ($DLPOrganizations |? { $_.Repositories -contains $repoName }).LocalName
+                write-output "  All clients who fork this repo: $repoClients"
                 if (-not (test-path "$projectDir\$repoName")) {
                     write-output "  Doing initial clone for '$repoName' for project '$localName'"
-                    #if (-not $WhatIf) {
-                        Invoke-Git clone --origin "$localName" "git@github.com:$GitHubOrg/$repoName" -whatif:$whatif
-                    #}
+                    Invoke-Git clone --no-checkout --origin "$localName" "git@github.com:$GitHubOrg/$repoName" -whatif:$whatif
+                    $HEAD = (Invoke-Git branch -r | select-string "$localName/HEAD") -replace "  $localName/HEAD -> $localName/"
+                    Invoke-Git checkout -b "${localName}-${HEAD}" "${localName}/${HEAD}"
                 }
                 else {
                     write-output "  Updating repository '$repoName' for project '$localName'"
@@ -118,19 +119,15 @@ $clientUpdateSb = {
                 foreach ($gitRemoteName in $repoClients) {
                     if ($gitRemotes -notcontains $gitRemoteName) {
                         write-output "    Adding '$gitRemoteName' remote for '$repoName' repository"
-                        $ghoName = ($DLPOrganizations.values |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
-                        #if (-not $WhatIf) {
-                            Invoke-Git remote add $gitRemoteName "git@github.com:$ghoName/$repoName" -whatif:$whatif
-                        #}
+                        $ghoName = ($DLPOrganizations |? { $_.LocalName -match "^$gitRemoteName$" }).GitHubOrg
+                        Invoke-Git remote add $gitRemoteName "git@github.com:$ghoName/$repoName" -whatif:$whatif
                     }
                     else {
                         write-output "    Found '$gitRemoteName' remote for '$repoName' repository"
                     }
                 }
                 write-output "  Doing 'git fetch' in repository '$repoName' for project '$localName'"
-                #if (-not $Whatif) {
-                    Invoke-Git fetch --all -whatif:$whatif
-                #}
+                Invoke-Git fetch --all -whatif:$whatif
             }
             finally {
                 pop-location
@@ -148,8 +145,11 @@ function Update-DLPProjectGitRepository {
         [switch] $WhatIf
     )
 
+    write-host -foreground DarkYellow "NOTE: Needs testing for the following functionality"
+    write-host -foreground DarkYellow " - New checkouts checking out `$localName-`$HEAD"
+
     $workingClientList = @()
-    $DlpOrganizations = Get-DLPProject
+    $DLPOrganizations = Get-DLPProject
     foreach ($clientName in $clientList) {
         $client = $DLPOrganizations |? { $_.LocalName -eq $clientName }
         if (-not $client) {
@@ -166,7 +166,7 @@ function Update-DLPProjectGitRepository {
         write-verbose "    $($c.LocalName)"
     }
 
-    $serializedDlpOrganizations = Out-CliXml $DlpOrganizations -depth 4
+    $serializedDLPOrganizations = Out-CliXml $DLPOrganizations -depth 4
     foreach ($client in $workingClientList) {
         if ($useJobs) {
             start-job -name "git-$($client.LocalName)" -scriptBlock $clientUpdateSb -argumentList $client.LocalName,$WhatIf.IsPresent

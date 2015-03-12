@@ -4,7 +4,7 @@
       <repository name="Ed-Fi-Apps" />
       <repository name="Ed-Fi-Core" />
       <repository name="Ed-Fi-Tools" />
-      <repository name="Ed-Fi-Dashboards-Core" />b
+      <repository name="Ed-Fi-Dashboards-Core" />
       <repository name="Ed-Fi-ODS" />
       <repository name="Ed-Fi-ODS-Implementation" />
       <repository name="Ed-Fi-Common" />
@@ -14,6 +14,7 @@
   <project localname="dlp" githubname="DoubleLinePartners" checkout="true">
     <repositories>
       <repository name="InternalTools" />
+      <repository name="InternalTools.wiki" />
     </repositories>
   </project>
   <project localname="msdf" githubname="DoubleLinePartners-MSDF" checkout="true">
@@ -27,7 +28,7 @@
     <repositories>
       <repository name="Ed-Fi-Apps" />
       <repository name="Ed-Fi-Core" />
-      <repository name="Ed-Fi-Dashboards-Core" />b
+      <repository name="Ed-Fi-Dashboards-Core" />
     </repositories>
     <contexts>
       <context name="rest">
@@ -45,8 +46,8 @@
       <context name="dash">
         <repositories>
           <repository name="Ed-Fi-Common" />
-          <repository name="Ed-Fi-Dashboards-Core" />b
-          <repository name="Ed-Fi-Apps" />b
+          <repository name="Ed-Fi-Dashboards-Core" />
+          <repository name="Ed-Fi-Apps" />
         </repositories>
       </context>
       <context name="rest">
@@ -64,8 +65,8 @@
       <context name="dash">
         <repositories>
           <repository name="Ed-Fi-Common" />
-          <repository name="Ed-Fi-Core" />b
-          <repository name="Ed-Fi-Apps" />b
+          <repository name="Ed-Fi-Dashboards-Core" />
+          <repository name="Ed-Fi-Apps" />
         </repositories>
       </context>
       <context name="rest">
@@ -81,8 +82,8 @@
     <contexts>
       <context name="dash">
         <repositories>
-          <repository name="Ed-Fi-Core" />b
-          <repository name="Ed-Fi-Apps" />b
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Apps" />
         </repositories>
       </context>
     </contexts>
@@ -91,9 +92,20 @@
     <contexts>
       <context name="dash">
         <repositories>
-          <repository name="Ed-Fi-Common" />b
-          <repository name="Ed-Fi-Core" />b
-          <repository name="Ed-Fi-Apps" />b
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Apps" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="ade" githubname="ArkansasDOE" checkout="true">
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Apps" />
         </repositories>
       </context>
     </contexts>
@@ -102,8 +114,8 @@
     <contexts>
       <context name="dash">
         <repositories>
-          <repository name="Ed-Fi-Core" />b
-          <repository name="Ed-Fi-Apps" />b
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Apps" />
         </repositories>
       </context>
     </contexts>
