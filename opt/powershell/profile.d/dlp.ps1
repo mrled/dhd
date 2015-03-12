@@ -7,13 +7,26 @@ ASSUMPTIONS:
 # I'm setting this in my Startup folder also
 # However, drives mapped with subst are only valid for the context in which they were created
 # If they were created unelevated, they will only be available to unelevated process
+$dlpProjectDrive = "P:"
 if (-not (get-psdrive |? { $_.name -eq "P" })) {
-    subst P: $DLPProjectBase
+    subst $dlpProjectDrive $DLPProjectBase
     get-psdrive | out-null # if you don't do this, Powershell won't see the new drive
 }
 
 if (-not ($VisualStudioDirectories -contains $DLPProjectBase)) {
     $VisualStudioDirectories += @($DLPProjectBase)
+}
+if (-not ($VisualStudioDirectories -contains $dlpProjectDrive)) {
+    $VisualStudioDirectories += @($dlpProjectDrive)
+}
+
+$ipfd = @{}
+gci "$dlpProjectDrive\" |% { 
+    $client = $_.name
+    $ipfdPath = "$($_.fullname)\Ed-Fi-ODS-Implementation\Initialize-PowershellForDevelopment.ps1"
+    if (test-path $ipfdPath) {
+        $ipfd[$client] = $ipfdPath
+    }
 }
 
 ipmo DLPHelper
@@ -229,29 +242,6 @@ function Delete-TeamCityBuild {
     Invoke-WebRequest -Uri $buildUri -Method Delete -Headers $headers
 }
 
-function Install-CloudcryptCertificate {
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string] $PfxPath,
-        $password
-    )
-    $cloudCryptServer = "walnut.doubleline.us"
-    if (-not $password) {
-        $password = read-host -AsSecureString "The password for the encrypted PFX file"
-    }
-    elseif ($password -isnot [System.Security.SecureString]) {
-        $password = $password | ConvertTo-SecureString -force -AsPlainText
-    }
-    $LocalPfxFile = get-item $PfxPath
-    $UNCPfxPath = "\\$cloudCryptServer\C$\Users\micah\Downloads\$($LocalPfxFile.Name)"
-    $ServerPfxPath = "C:\Users\micah\Downloads\$($LocalPfxFile.Name)"
-    $me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-    copy-item $PfxPath $UNCPfxPath
-    invoke-command -computername $cloudCryptServer -argumentList $ServerPfxPath,$password -scriptblock { 
-        param($pfxPath, $pfxPass)
-        Import-PfxCertificate -filePath $pfxPath -CertStoreLocation Cert:\LocalMachine\My -Exportable -Password $pfxPass
-    }
-}
-
 function New-SelfSignedCert {
     param(
         [parameter(mandatory=$true)] [string[]] $certName,
@@ -279,12 +269,15 @@ function New-SelfSignedCert {
     $outLines |% { write-output $_ }
 }
 
-function Get-ODSConfigFiles {
-    param(
-        [parameter(mandatory=$true)] [string] $client
+function Get-ODSConfigTransforms {
+    [cmdletbinding(DefaultParametersetName="env")] param(
+        [parameter(mandatory=$true,position=0)] [string] $client,
+        [parameter(ParameterSetName="env")] [string] $environmentName,
+        [parameter(ParameterSetName="allenvs")] [switch] $all,
+        [parameter(ParameterSetName="proj")] [switch] $project
     )
 
-    $clientPath = resolve-path "P:\$client"
+    $clientPath = resolve-path "$dlpProjectDrive\$client"
 
     $fuckingProjects = @(
         "EdFi.Ods.Admin.Web"
@@ -294,7 +287,49 @@ function Get-ODSConfigFiles {
         "EdFi.Ods.BulkLoad.Services.Windows.BulkWorker"
         "EdFi.Ods.BulkLoad.Services.Windows.UploadWorker"
     )
-    foreach ($proj in $fuckingProjects) {
-        ls "${clientPath}\Ed-Fi-ODS-Implementation\Application\$proj\*" -include App.config,Web.config
+
+    $excludes = ""
+    switch ($pscmdlet.ParameterSetName) {
+        "env" { 
+            if ($environmentName) { $includes = "*.${environmentName}.config" }
+            else {                  $includes = "App.config","Web.config" }
+        }
+        "allenvs" { 
+            $includes = "*.config"
+            $excludes = "packages.config" 
+        }
+        "proj" { 
+            $includes = "*proj" 
+        }
     }
+
+    foreach ($proj in $fuckingProjects) {
+        $projPath = resolve-path "$clientPath\Ed-Fi-ODS-Implementation\Application\$proj"
+        $paths = @("$projPath\*")
+        if (test-path $projPath\AzureStartup) {
+            $paths += @("$projPath\AzureStartup\*")
+        }
+        gci -path $paths -include $includes -exclude $excludes
+    }
+}
+
+function New-ODSConfigFiles {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true,position=0)] [string] $client,
+        [parameter(mandatory=$true)] [string] $environmentName,
+        [string] $fromEnvironment = "Example",
+        [switch] $force
+    )
+    $newFiles = @()
+    foreach ($example in (Get-ODSConfigTransforms -client $client -environmentName "$fromEnvironment")) {
+        $newName = $example.Name -replace "$fromEnvironment","$environmentName"
+        $newPath = "$($example.Directory.Fullname)\$newName"
+        $newFiles += @(copy-item $example $newPath -passthru -force:$force)
+    }
+
+    $buildActivity = resolve-path "$dlpProjectDrive\$client\Ed-Fi-ODS-Implementation\logistics\scripts\activities\build"
+    $newFiles += @(new-item -ItemType file -Path "$buildActivity\$environmentName.vars.ps1" -force:$force)
+    $newFiles += @(new-item -ItemType file -Path "$buildActivity\credentials-$environmentName.xml" -force:$force)
+
+    return $newFiles
 }

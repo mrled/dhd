@@ -38,6 +38,26 @@ function Get-ExternalBinaryPath {
     }
 }
 
+<#
+.notes
+This function is necessary for "superpack" installers of Python modules
+They're fuckin dumb and they only look in HKCU not HKLM
+See also: http://stackoverflow.com/q/3008509/868206
+#>
+function Setup-PythonRegistryKeys {
+    param(
+        [switch] $force
+    )
+    $hkcuPath = "HKCU:\SOFTWARE\Python"
+    $hklmPath = "HKLM:\Software\Python"
+
+    if (test-path $hklmPath) {
+        if ($force -or -not (test-path $hkcuPath)) {
+            copy-item -recurse $hklmPath $hkcuPath -force:$force
+        }
+    }
+}
+
 function Setup-SystemPath {
     <#
     Some notes about this: 
@@ -92,6 +112,7 @@ function Setup-SystemPath {
     if ($pythondir) {
         # PythonDir contains python.exe; Scripts contains stuff installed from Distribute packages; Tools/Scripts contains.py files. 
         $possiblePaths += @($pythondir,"$pythondir\Scripts","$pythondir\Tools\Scripts")
+        Setup-PythonRegistryKeys
     }
     $possiblePaths += @((getenv path user) -split ';')
     $possiblePaths = $possiblePaths.tolower() | sort -unique

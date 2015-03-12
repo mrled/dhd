@@ -59,6 +59,7 @@ function Import-MrlX509Certificate {
         [switch] $exportable,
         [switch] $protected
     )
+    $path = resolve-path $path
 
     $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
     if ($exportable) {
@@ -96,7 +97,6 @@ function Invoke-ProcessAndWait {
         [string[]] $argumentList,
         [switch] $RedirectStandardError,
         [switch] $RedirectStandardOutput,
-        #[switch] $ShowStandardOutput,
         [parameter(ParameterSetName="Passthru")] [switch] $Passthru,
         [parameter(ParameterSetName="CheckExitCode")] [switch] $CheckExitCode
     )
@@ -795,34 +795,30 @@ if (test-path alias:help) { del alias:help }
 set-alias help get-help
 if (test-path function:help) { del function:help } # PSCX has one of these
 if (test-path function:get-help) { del function:get-help } # PSCX has one of these
-<#
-function help {
-    foreach ($a in $args) {
-        (get-help $a).syntax
-    }
-}
-#>
-
-if (test-path alias:cd) { del alias:cd }
-# You can pipe a path to this 
-# This is particularly useful for something like `mkdir asdf | cd` to mkdir/cd in the same command, nice
 
 # Set-LocationEx from PSCX let's you move back/forward in your location stack with these:
 #     Set-LocationEx -
 #     Set-LocationEx +
-# Calling just Set-Location displays the stack
-$setloc = "set-location"
+# Calling just Set-LocationEx displays the stack
+if (test-path alias:pwd) { del alias:pwd }
+if (test-path alias:cd) { del alias:cd }
 if (get-module pscx) {
-    $setloc = "Set-LocationEx"
-    if (test-path alias:pwd) { del alias:pwd }
-    set-alias pwd $setloc
+    function pwd { Set-LocationEx | select -last 5 }
+    function cd {
+        param(
+            [parameter(position=0, valuefrompipeline=$true)] $location = $home
+        )
+        Set-LocationEx $location
+    }
 }
-
-function cd {
-    param(
-        [parameter(position=0, valuefrompipeline=$true)] $location = $home
-    )
-    iex "$setloc `"$location`""
+else {
+    function pwd { Get-Location }
+    function cd {
+        param(
+            [parameter(position=0, valuefrompipeline=$true)] $location = $home
+        )
+        Set-Location $location
+    }
 }
 
 function Send-Notification {
@@ -1146,13 +1142,18 @@ function uploadid {
 
 $bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
 if (test-path $bvssh) {
+
     function Invoke-BitviseSsh {
-        $stermcArguments = $args
-        $stermcArguments+= @("-keypairFile=$Home\.ssh\id_rsa")
-        $stermcArguments+= @("-hostKeyFile=$Home\.dhd\hbase\known_hosts")
-        start-process -wait -nonewwindow $bvssh\stermc.exe -argumentList $stermcArguments
+        param(
+            $bvExe = "stermc.exe",
+            [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
+        )
+        $bvArgs = $args
+        $bvArgs+= @("-keypairFile=$Home\.ssh\id_rsa")
+        $bvArgs+= @("-hostKeyFile=$Home\.dhd\hbase\known_hosts")
+        start-process -wait -nonewwindow $bvssh\$bvExe -argumentList $bvArgs
     }
-    set-alias ssh Invoke-BitviseSsh
+
     function Invoke-BitviseSshScreenSession {
         param(
             [parameter(mandatory=$true)] [alias('r')] [string] $hostname,
@@ -1162,6 +1163,11 @@ if (test-path $bvssh) {
         Invoke-BitviseSsh $hostname '-cmd=scr'
     }
     set-alias scr Invoke-BitviseSshScreenSession
+
+    function Start-SSHTunnel {
+        Invoke-BitviseSsh -bvExe stnlc.exe -proxyFwding=y -proxyListPort=2001 mrled@willow.younix.us
+    }
+
     function Get-BitviseKnownHosts {
         [cmdletbinding()]
         param(
