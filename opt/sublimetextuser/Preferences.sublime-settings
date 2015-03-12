@@ -1,11 +1,11 @@
 {
 	"caret_style": "wide",
 	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
-	"font_size": 12,
+	"font_size": 11,
 	"ignored_packages":
 	[
-		"Vintage",
-		"Markdown"
+		"Markdown",
+		"Vintage"
 	],
 	"tab_size": 4,
 	"theme": "Soda Dark.sublime-theme",
