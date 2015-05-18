@@ -2,7 +2,7 @@
 
 $profiled = "$home\.dhd\opt\powershell\profile.d"
 . $profiled\asciiart.ps1
-Show-Metroid
+write-host ""; Show-SquareWindowsLogo; write-host ""
 
 $hostname=[System.Net.Dns]::GetHostName()
 
@@ -38,9 +38,6 @@ $ErrorActionPreference = "stop"
 4.  I have configuration stuff in .dhd/opt/powershell/profile.d.
     Stuff in that directory is loaded in a specific order, and
     may depend on other modules or profile.d files. 
-
-
-
 #>
 
 
