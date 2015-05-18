@@ -1,32 +1,30 @@
 <#
 .synopsis 
-Import a certificate and private key from a PFX file on the CloudCrypt server
+Import a certificate and private key from a PFX file on a remote server
 .description
-Import a certificate and private key from a PFX file on the CloudCrypt server
-It is still a bit fragile if you don't follow my assumptions, but I've tried to handle the normal case. 
-Assumptions in the code: 
-- You're logged on to your DLP domain account
-- You have logged on to the CloudCrypt server before, and you have a %USERPROFILE% under C:\Users\<username>
+Import a certificate and private key from a PFX file on a remote server (intended to be used with https://github.com/danludwig/CloudConfigCrypto)
 .parameter pfxFile
 An array of paths to PFX files
 .parameter pfxPassword
 An array of SecureString objects representing the PFX passwords
 .parameter pfxPasswordInsecure
 An array of String objects representing the PFX passwords. These get immediately converted to SecureString objects.
-.parameter cloudCryptServer
-The name of the CloudCrypt server. Defaults to "walnut.doubleline.us", but you can change it to e.g. "localhost" for testing. 
+.parameter computerName
+The name of the remote server. Defaults to "localhost".
+.parameter credential
+A credential object (from e.g. Get-Credential) for an account with administrator authorization on the remote server. If unspecified, attempt to use the currently logged-in account
 .example
 Add-CloudCryptEncryptionCert -pfxFile ./certificate.pfx -pfxPasswordInsecure "password1" 
-Import one certificate
+Import one certificate to your local machine
 .example
 $pfxPW = read-host -AsSecureString; Add-CloudCryptEncryptionCert -pfxFile ./certificate.pfx -pfxPassword $pfxPW
-Use a SecureString
+Use a SecureString when importing one certificate to your local machine
 .example
 Add-CloudCryptEncryptionCert -pfxFile ./cert1.pfx,./cert2.pfx -pfxPasswordInsecure "password1","password2"
-Import several certs at once
+Import several certs at once to your local machine
 .example
-Add-CloudCryptEncryptionCert -pfxFile ./certificate.pfx -pfxPasswordInsecure "password1" -cloudCryptServer localhost
-Import certs to your local machine for testing purposes
+Add-CloudCryptEncryptionCert -pfxFile ./certificate.pfx -pfxPasswordInsecure "password1" -computerName cloudcrypt.example.com
+Import certs to a remote server
 #>
 [cmdletbinding()] param(
     [parameter(mandatory=$true)] [string[]] 
@@ -40,33 +38,38 @@ Import certs to your local machine for testing purposes
     [string[]] [Alias("Insecure")]
     $pfxPasswordInsecure,
 
-    [string] 
-    $cloudCryptServer = "walnut.doubleline.us"
+    [string] [Alias("cloudCryptServer")]
+    $computerName = "localhost",
+
+    [System.Management.Automation.PSCredential]
+    $credential
 )
 
-# These parameters are fragile and might need to change for you. 
-# They assume that you are logged in to your local workstation with your domain account, 
-# and they assume that you have logged on to the cloudCryptServer in the past
-$userObj = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-$username = $userObj.Identity.Name -replace "DOUBLELINE\\",""
-$pfxDirUNC = "\\${cloudCryptServer}\C$\Users\${username}\Downloads"
-$pfxDir = "C:\Users\${username}\Downloads"
-$pfxFileName = $pfxFile |% { (get-item $_).Name }
-
 if ($pscmdlet.ParameterSetName -eq "InsecurePass") {
-    $pfxPassSec = $pfxPasswordInsecure |% { ConvertTo-SecureString -AsPlainText -Force $_ }
+    $pfxPassword = $pfxPasswordInsecure |% { ConvertTo-SecureString -AsPlainText -Force $_ }
 }
-else {
-    $pfxPassSec = $pfxPassword
-}
-
-if ($pfxFile.count -ne $pfxPassSec.count) {
+if ($pfxFile.count -ne $pfxPassword.count) {
     throw "Must use same number of -pfxFile and -pfxPassword/-pfxPasswordInsecure arguments"
 }
 
+if ($credential) {
+    $session = New-PSSession -computername $computerName -name "AddEncryptionCert" -credential $credential
+}
+else {
+    $session = New-PSSession -computername $computerName -name "AddEncryptionCert"
+}
+$pfxFileName = $pfxFile |% { (get-item $_).Name }
+$pfxDir = invoke-command -session $session -scriptBlock { 
+    (mkdir -force "${env:temp}\AddEncryptionCert").fullname 
+}
+$pfxDriveLetter = $pfxDir[0]
+$pfxDrivePath = $pfxDir.substring(2)
+$pfxDirUNC = "\\$computerName\${pfxDriveLetter}$\$pfxDrivePath"
+write-verbose "Using a UNC path of '$pfxDirUNC' to copy local file '$pfxFile' to remote server named '$computerName' at path '$pfxDir'"
+
 copy-item $pfxFile $pfxDirUNC
 
-invoke-command -computerName $cloudCryptServer -argumentList $pfxDir,$pfxFileName,$pfxPassSec -scriptblock {
+invoke-command -session $session -argumentList $pfxDir,$pfxFileName,$pfxPassword -scriptblock {
     param(
         [parameter(mandatory=$true)] [string] $pfxDir,
         [parameter(mandatory=$true)] [string[]] $pfxFile,
@@ -91,7 +94,8 @@ invoke-command -computerName $cloudCryptServer -argumentList $pfxDir,$pfxFileNam
 
         # Flags: https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509keystorageflags(v=vs.110).aspx
         # PersistKeySet: import the private key too (otherwise only the certificate is imported)
-        # :MachineKeySet place the key in the machine key store (otherwise it is placed in the user keystore)
+        # MachineKeySet place the key in the machine key store (otherwise it is placed in the user keystore)
+        #     See also: http://paulstovell.com/blog/x509certificate2
         #     *Different* from the "LocalMachine" store location! 
         #     Without this flag, certs imported to LM are stored in %USERPROFILE%\AppData\Microsoft\Crypto\RSA\MachineKeys
         #     When this flag is specified, certs imported to LM are stored in %PROGRAMDATA%\Microsoft\Crypto\RSA\MachineKeys
@@ -116,6 +120,8 @@ invoke-command -computerName $cloudCryptServer -argumentList $pfxDir,$pfxFileNam
         $newAR = new-object System.Security.AccessControl.FileSystemAccessRule "Everyone","Read","Allow"
         $acl.AddAccessRule($newAR)
         set-acl $keyPath $acl
+
+        rm $pfxPath
     }
 }
 
