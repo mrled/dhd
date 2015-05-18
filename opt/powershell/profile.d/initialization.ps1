@@ -78,6 +78,7 @@ function Setup-SystemPath {
         "$home\opt\Console2"
         "$home\opt\SysinternalsSuite"
         "$home\opt\mupdf"
+        "$home\AppData\Roaming\npm"
         "C:\opt\GnuWin32\bin"
         "C:\opt\GnuWin32\sbin"
         "C:\opt\local\bin"
@@ -96,6 +97,7 @@ function Setup-SystemPath {
         "__ProgramFiles__\Nmap"
         "__ProgramFiles__\VMware\VMware Virtual Disk Development Kit\bin"
         "__ProgramFiles__\LLVM\bin"
+        "__ProgramFiles__\GNU\GnuPG"
         "C:\opt\strawberry\perl\bin"
     )
 
