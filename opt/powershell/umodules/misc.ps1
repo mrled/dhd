@@ -16,6 +16,67 @@ if (test-path "C:\tools\mingw64\bin\mingw32-make.exe") {
     set-alias gmake "mingw32-make.exe"
 }
 
+<#
+.description
+Parse a command line
+Return an object that has the command line as an array of arguments, as a string representing the command line, and as a runnable scriptblock 
+Intended to be used as plumbing for other commands
+.parameter arguments
+The arguments (include $0) to parse
+.example
+Parse-CommandLine New-Item -ItemType File -Value "C:\test.txt"
+Returns ...
+#>
+function Parse-Commandline {
+    [cmdletbinding()] param(
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $arguments
+    )
+    # The point of this is to make sure that things which came in as one argument are represented that way
+    # It's not perfect but it gets the job done in 90% of cases
+    $argumentString = ($arguments |% { 
+        if ($_ -match ' ') { "`"$_`"" }
+        else { "$_" }
+    }) -join " "
+    $ooProps = @{
+        Arguments = $arguments
+        CommandLine = $argumentString
+        Scriptblock = [Scriptblock]::Create($argumentString)
+    }
+    $outObject = New-Object PSObject -property $ooProps
+    return $outObject
+}
+
+<#
+.synopsis 
+OH MY GOD
+.description
+Type a command, change your mind about it, move the cursor to the front of the line, type "omg ", and hit return. 
+Blammo, it returns "wtf <the command line you typed>"
+#>
+function omg {
+    [cmdletbinding()] param(
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $arguments
+    )
+    $cli = Parse-Commandline $arguments
+    write-host "wtf $($cli.arguments)"
+}
+
+<#
+.synopsis
+Echo and execute a single expression
+#>
+function Echoexec-Expression {
+    [cmdletbinding()] param(
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $arguments
+    )
+    $cli = Parse-Commandline $arguments
+    write-host "Echoexec-Expression: $($cli.commandline)"
+    $cli.scriptblock.invoke()
+}
+set-alias echoexec echoexec-expression
+
+
+
 function Export-ConemuConfig {
     param(
         [parameter(mandatory=$true)] [string] $filename,
@@ -178,14 +239,14 @@ function gcollect {
     [GC]::Collect()
 }
 
-if (test-path "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE") {
-    $vs2010path="C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE"
+if (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 10.0\Common7\IDE") {
+    $vs2010path="${env:ProgramFiles(x86)}\Microsoft Visual Studio 10.0\Common7\IDE"
     set-alias devenv "$vs2010path\devenv.exe"
 }
 
-if (test-path "C:\Program Files (x86)\Notepad++\notepad++.exe") {
-    set-alias npp "C:\Program Files (x86)\Notepad++\notepad++.exe"  
-    set-alias notepad++ "C:\Program Files (x86)\Notepad++\notepad++.exe"    
+if (test-path "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe") {
+    set-alias npp "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"  
+    set-alias notepad++ "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"    
 }
     
 $emacsbin = "$Home\opt\emacs-23.4\bin" # this is going to change every time I upgrade Emacs or whatever, ugh
@@ -247,43 +308,12 @@ function Generate-Password {
 }
 set-alias pwgen generate-password
 
-# Word wrap function, return word wrapped version of passed string
-# via: http://blog.wolfplusplus.com/?tag=powershell
-function WordWrapStr($str)
-{
-    # Holds the final version of $str with newlines
-    $strWithNewLines = ""
-    # current line, never contains more than screen width
-    $curLine = ""
-    # Loop over the words and write a line out just short of window size
-    foreach ($word in $str.Split(" "))
-    {
-        # Lets see if adding a word makes our string longer then window width
-        $checkLinePlusWord = $curLine + " " + $word
-        if ($checkLinePlusWord.length -gt (get-host).ui.rawui.windowsize.width)
-        {
-            # With the new word we've gone over width
-            # append newline before we append new word
-            $strWithNewLines += [Environment]::Newline
-            # Reset current line
-            $curLine = ""
-        }
-        # Append word to current line and final str
-        $curLine += $word + " "
-        $strWithNewLines += $word + " "
-    }
-    # return our word wrapped string
-    return $strWithNewLines
-}
-
-
 function ConvertTo-Base64($string) {
    $bytes  = [System.Text.Encoding]::UTF8.GetBytes($string);
    $encoded = [System.Convert]::ToBase64String($bytes); 
 
    return $encoded;
 }
-
 function ConvertFrom-Base64($string) {
    $bytes  = [System.Convert]::FromBase64String($string);
    $decoded = [System.Text.Encoding]::UTF8.GetString($bytes); 
@@ -302,27 +332,6 @@ function lse {
     $enc = $items | Where-Object {$_.Attributes -ge "Encrypted"} 
     $enc.FullName
 }
-
-function Echoexec-Expression {
-    $expression = ""
-    foreach ($a in $args) {
-        foreach ($char in " ;{}".tochararray()) {
-            if ($a -match "$char") {
-                $quoteme = $true
-            }
-        }
-        if ($quoteme) { 
-            $expression += "`"$a`" "
-        }
-        else {
-            $expression += "$a "
-        }
-    }
-    write-host ("Echoexec-Expression: #: " + $args.count + "; args: " + $expression)
-    invoke-expression "$expression"
-}
-set-alias echoexec echoexec-expression
-
 
 function .. { cd .. }
 
@@ -384,7 +393,7 @@ function lessall {
 }
 #>
 
-$sublpath = "C:\Program Files\Sublime Text 3\sublime_text.exe"
+$sublpath = "${env:ProgramFiles}\Sublime Text 3\sublime_text.exe"
 
 if (test-path $sublpath) {
     #set-alias subl "$sublpath"
@@ -1165,7 +1174,10 @@ if (test-path $bvssh) {
     set-alias scr Invoke-BitviseSshScreenSession
 
     function Start-SSHTunnel {
-        Invoke-BitviseSsh -bvExe stnlc.exe -proxyFwding=y -proxyListPort=2001 mrled@willow.younix.us
+        param(
+            [string] $serverName = "mrled@willow.younix.us"
+        )
+        Invoke-BitviseSsh -bvExe stnlc.exe -proxyFwding=y -proxyListPort=2001 $serverName
     }
 
     function Get-BitviseKnownHosts {
@@ -1178,9 +1190,6 @@ if (test-path $bvssh) {
         foreach ($entry in ($HostKeysReg.GetValueNames() |where {$_.StartsWith("HostKey2_")} )) {
             write-debug $entry
 
-            #$newHost = @{}
-            #$newHost.Fingerprint = ($entry -split '_')[3][0..31] -join ""
-            #write-verbose "Fingerprint: $($newHost.Fingerprint)"
             $fingerprint = ($entry -split '_')[3][0..31] -join ""
             write-verbose "Fingerprint: $fingerprint"
 
@@ -1208,29 +1217,21 @@ if (test-path $bvssh) {
             }
             $binHostname = $relevantValue[0..($postHostnameIndex - 1)]
             write-verbose ($binHostname -join ",")
-            #$newHost.Hostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
-            #write-verbose "Hostname: $($newHost.Hostname)"
-            #$HostKeys += @($newHost)
             $asciiHostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
             write-verbose "Hostname: $asciiHostname"
             $HostKeys.$asciiHostname = $fingerprint
         }
-        if ($hostname) {
-            if ($hostKeys.$hostname) {
-                return @{ $hostname = $hostKeys.$hostname }
-            }
-            else {
-                throw "No host key for hostname $hostname"
-            }
+
+        if ($hostname -and $hostKeys.$hostname) {
+            return @{ $hostname = $hostKeys.$hostname }
+        }
+        elseif ($hostname) {
+            throw "No host key for hostname $hostname"
         }
         else {
             return $hostKeys
         }
     }
-}
-
-foreach ($exe in (gci "$env:programfiles\ShrewSoft\VPN Client\*.exe")) {
-    set-alias $exe.basename $exe.fullname
 }
 
 # http://pastie.org/2867807
@@ -1433,13 +1434,10 @@ function Show-ErrorReport {
         $errorSummary = "`$LASTEXITCODE=$LastExitCode, `$Error.count=$($Error.count)"
         $errorString+= "ERROR Report: $errorSummary`n`n"
 
-        #for ($i=0; $i -lt $Error.count; $i += 1) { 
         for ($i= $error.count -1; $i -ge 0; $i -= 1) {
             $e = $error[$i]
 
             $errorDetails  = "PS `$Error[$i]: `n"
-            #$indentCount = $errorDetails.length
-            #$indent = ' ' * $indentCount
             $indentCount = 4
 
             # Sometimes the objects in $error are wrappers for ErrorRecord objects; we only want to deal with ErrorRecord objects
@@ -1452,7 +1450,6 @@ function Show-ErrorReport {
 
             if ($e.ScriptStackTrace) {
                 $errorDetails += wrap-text -text $e.ScriptStackTrace -width $wrapWidth -indent $indentCount
-                #$errorDetails += ($e.ScriptStackTrace.split("`n") |% { "$indent$_" }) -join "`n"
                 if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
             }
 
@@ -1636,14 +1633,19 @@ function Extract-FuckingArchive {
         return $feTempDir
     }
 
-    gcm 7z | out-null # Fail early if 7z isn't here
+    try {
+        gcm 7z | out-null
+    }
+    catch {
+        throw "7z.exe is not in your `$ENV:PATH; cannot continue"
+    }
 
     $secondLayerExtensions = @(".tar") # There aren't any more that I can think of?
 
     if (-not (test-path $outDir)) {
-        mkdir -force $outDir
+        mkdir -force $outDir | out-null
     }
-    $outdirItem = get-item $outdir
+    $outdir = get-item $outdir
 
     $outFiles = @()
     foreach ($arch in $archive) {
@@ -1653,7 +1655,7 @@ function Extract-FuckingArchive {
         # this will be used as the eventual directory name to extract to 
         $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($archItem.name)
 
-        $exDir = fuckingExtractOneLayer -archive $archItem -outdir $outdirItem
+        $exDir = fuckingExtractOneLayer -archive $archItem -outdir $outdir
         write-verbose "Using temporary extraction directory: $exDir"
         $exItems = gci $exDir
 
@@ -1677,8 +1679,8 @@ function Extract-FuckingArchive {
         # TODO: add a -force flag 
         if ($exItems.count -eq 1) {
             $outItem = $exItems[0]
-            $outItemName = "$($outDirItem.fullname)\$($outItem.name)"
-            write-verbose "Only one item in archive: '$($outItem.fullname)'; moving to '$($outdirItem.fullname)'"
+            $outItemName = "$($outdir.fullname)\$($outItem.name)"
+            write-verbose "Only one item in archive: '$($outItem.fullname)'; moving to '$($outdir.fullname)'"
 
             if ((test-path $outItemName) -and $force) {
                 write-verbose "Found existing item at '$outItemName' but -force was specified; removing..."
@@ -1692,7 +1694,7 @@ function Extract-FuckingArchive {
             rm -recurse $exDir
         }
         else {
-            $outItemName = "$($outDirItem.fullName)\$archBareName"
+            $outItemName = "$($outdir.fullName)\$archBareName"
             write-verbose "Multiple items in archive; moving temporary extraction directory to '$outItemName'"
 
             if ((test-path $outItemName) -and $force) {
@@ -1725,3 +1727,76 @@ foreach ($sf in [system.Enum]::GetValues([System.Environment+SpecialFolder])) {
     $sfpath = [Environment]::GetFolderPath($sf)
     add-member -inputobject $SpecialFolders -membertype NoteProperty -name $sf -value $sfpath -force
 }
+
+<#
+.synopsis 
+Send data over the network
+
+.description
+Send data over the network
+Sort of like you might wanna do with netcat/nc, but too different to be "nc for powershell"
+
+Source: https://gist.github.com/jstangroome/9adaa87a845e5be906c8
+
+.example 'GET / HTTP/1.0', '' | Send-NetworkData -Computer www.powershellmagazine.com -Port 80
+Pipe in a HTTP request
+
+.example Send-NetworkData -Data 'GET / HTTP/1.0', '' -Computer www.powershellmagazine.com -Port 80 -Timeout 0:00:02
+Use the Data parameter to do the same but only wait 2 seconds for a response:
+ 
+.example Send-NetworkData -Data "EHLO $Env:ComputerName", "QUIT" -Computer mail.example.com -Port 25 
+Say hello to an SMTP server
+#>
+function Send-NetworkData {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)] [string] $Computer,
+        [Parameter(Mandatory)] [ValidateRange(1, 65535)] [Int16] $Port,
+        [Parameter(ValueFromPipeline)] [string[]] $Data,
+        [System.Text.Encoding] $Encoding = [System.Text.Encoding]::ASCII,
+        [TimeSpan] $Timeout = [System.Threading.Timeout]::InfiniteTimeSpan
+    )
+    begin {
+        # establish the connection and a stream writer
+        $Client = New-Object -TypeName System.Net.Sockets.TcpClient
+        $Client.Connect($Computer, $Port)
+        $Stream = $Client.GetStream()
+        $Writer = New-Object -Type System.IO.StreamWriter -ArgumentList $Stream, $Encoding, $Client.SendBufferSize, $true
+    }
+    process {
+        # send all the input data
+        foreach ($Line in $Data) {
+            $Writer.WriteLine($Line)
+        }
+    }
+    end {
+        # flush and close the connection send
+        $Writer.Flush()
+        $Writer.Dispose()
+        $Client.Client.Shutdown('Send')
+
+        # read the response
+        $Stream.ReadTimeout = [System.Threading.Timeout]::Infinite
+        if ($Timeout -ne [System.Threading.Timeout]::InfiniteTimeSpan) {
+            $Stream.ReadTimeout = $Timeout.TotalMilliseconds
+        }
+
+        $Result = ''
+        $Buffer = New-Object -TypeName System.Byte[] -ArgumentList $Client.ReceiveBufferSize
+        do {
+            try {
+                $ByteCount = $Stream.Read($Buffer, 0, $Buffer.Length)
+            } 
+            catch [System.IO.IOException] {
+                $ByteCount = 0
+            }
+            if ($ByteCount -gt 0) {
+                $Result += $Encoding.GetString($Buffer, 0, $ByteCount)
+            }
+        } while ($Stream.DataAvailable -or $Client.Client.Connected)
+        Write-Output $Result
+        # cleanup
+        $Stream.Dispose()
+        $Client.Dispose()
+    }
+} 
