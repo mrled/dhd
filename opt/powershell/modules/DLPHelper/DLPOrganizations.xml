@@ -66,6 +66,7 @@
         <repositories>
           <repository name="Ed-Fi-Common" />
           <repository name="Ed-Fi-Dashboards-Core" />
+          <repository name="Ed-Fi-Plugins" />
           <repository name="Ed-Fi-Apps" />
         </repositories>
       </context>

@@ -1,5 +1,6 @@
 $DLPHelperDefaultProjectConfigFile = "$PSScriptRoot\DLPOrganizations.xml"
-$DLPHelperProjectBase = "$HOME\Documents\DLPClients"
+#$DLPHelperProjectBase = "$HOME\Documents\DLPClients"
+$DLPHelperProjectBase = "P:\"
 
 function New-DLPProject {
     param(
@@ -107,6 +108,7 @@ $clientUpdateSb = {
                 if (-not (test-path "$projectDir\$repoName")) {
                     write-output "  Doing initial clone for '$repoName' for project '$localName'"
                     Invoke-Git clone --no-checkout --origin "$localName" "git@github.com:$GitHubOrg/$repoName" -whatif:$whatif
+                    cd "$projectDir\$repoName"
                     $HEAD = (Invoke-Git branch -r | select-string "$localName/HEAD") -replace "  $localName/HEAD -> $localName/"
                     Invoke-Git checkout -b "${localName}-${HEAD}" "${localName}/${HEAD}"
                 }
@@ -145,9 +147,6 @@ function Update-DLPProjectGitRepository {
         [switch] $WhatIf
     )
 
-    write-host -foreground DarkYellow "NOTE: Needs testing for the following functionality"
-    write-host -foreground DarkYellow " - New checkouts checking out `$localName-`$HEAD"
-
     $workingClientList = @()
     $DLPOrganizations = Get-DLPProject
     foreach ($clientName in $clientList) {
@@ -177,6 +176,10 @@ function Update-DLPProjectGitRepository {
     }
 }
 
+<#
+.description
+Get the DLPProject object for a given project/client name
+#>
 function Get-DLPProject {
     [CmdletBinding()]
     param(
@@ -216,3 +219,222 @@ function Get-DLPProject {
     return $returnProjects
 }
 
+$DLPProjectFileTypes = @{}
+$DLPProjectFileTypes.logistics = @{}
+$DLPProjectFileTypes.logistics.include = @('*.ps1','*.psm1','*.psd1','credentials-*.xml')
+$DLPProjectFileTypes.logistics.subdir = @('logistics','Application\SolutionScripts')
+$DLPProjectFileTypes.source = @{}
+$DLPProjectFileTypes.source.include = @('*.cs')
+$DLPProjectFileTypes.source.subdir = @('Application')
+$DLPProjectFileTypes.visualstudio = @{}
+$DLPProjectFileTypes.visualstudio.include = @('*.sln','*.csproj','*.ccproj','*.config','*.cscfg','*.cspkg','*.csdef')
+$DLPProjectFileTypes.visualstudio.subdir = @('Application')
+$DLPProjectFileTypes.config = @{}
+$DLPProjectFileTypes.config.include = @('*.config')
+$DLPProjectFileTypes.config.subdir = @('Application')
+$DLPProjectFileTypes.database = @{}
+$DLPProjectFileTypes.database.include = @('*.sql')
+$DLPProjectFileTypes.database.subdir = @('Database')
+$DLPProjectFileTypes.etl = @{}
+$DLPProjectFileTypes.etl.include = @('*.dtsx')
+$DLPProjectFileTypes.etl.subdir = @('Etl')
+$DLPProjectFileTypes.alltypes = @{}
+$DLPProjectFileTypes.alltypes.include = foreach ($k in $DLPProjectFileTypes.keys) { $DLPProjectFileTypes[$k]['include'] } 
+$DLPProjectFileTypes.alltypes.subdir = foreach ($k in $DLPProjectFileTypes.keys) { $DLPProjectFileTypes[$k]['subdir'] }
+$DLPProjectFileTypes.allfiles = @{}
+$DLPProjectFileTypes.allfiles.include = ''
+$DLPProjectFileTypes.allfiles.subdir = '.'
+
+<#
+.synopsis
+Find a DLP project file
+.parameter Include
+An array of patterns that matches the filenames you want to include, for example @('*.xml','*.html')
+.parameter Exclude
+An array of patterns that matches the filenames you want to exclude, for example @('*-credentials.xml')
+.parameter Subdir
+An array of subdirectories to search, for example @('Application')
+.parameter Type
+Rather than specifying -Include, -Exclude, and -Subdir together, specify a type. 
+See the -ListTypes parameter for a listing of the available types, what they include, what they exclude, and where they search.
+You can override a Type's default include/exclude/subdir by specifying that option in addition:
+    -Type logistics -Include *.vars.ps1
+That invocation will search in the logistics subdirs, but will replace the default includes with a much smaller list
+.parameter ContainingPattern
+Only return files that contain the pattern
+.parameter CaseSensitive
+Force the pattern to be case sensitive. (Ignored if -ContainingPattern is not passed.)
+.parameter ProjectName
+Search only a particular project
+#>
+function Get-DLPProjectFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0)] [alias("query")] [string[]] $include,
+        [string[]] $exclude,
+        [string[]] $subdir,
+
+        [validateset('logistics','source','visualstudio','database','etl','alltypes','allfiles')] 
+        [string[]] $type = 'logistics',
+
+        [string]   $containingPattern,
+        [switch]   $caseSensitive,
+
+        [string[]] [alias('client')] $projectName
+    )
+
+    $projects = Get-DLPProject $projectName
+    write-verbose "Found project(s): $($projects.LocalName)"
+
+    if ($type -and -not $include) {
+        $include = $DLPProjectFileTypes["$type"]['include']
+    }
+    if ($type -and -not $subdir) {
+        $subdir = $DLPProjectFileTypes["$type"]['subdir'] 
+    }
+
+    $expandedLocations = @()
+    foreach ($sd in @($subdir)) {
+        foreach ($proj in @($projects)) {
+            if (-not $proj.checkout) { 
+                continue 
+            }
+            $projDir = $proj.Directory
+            foreach ($repo in @($proj.repositories)) {
+                $subdirFullPath = "$projDir\$repo\$sd"
+                if (test-path $subdirFullPath) {
+                    $expandedLocations += @($subdirFullPath)
+                }
+            }
+        }
+    }
+
+    write-verbose "Looking in '$expandedLocations'"
+    write-verbose "Trying to find files like '$include'"
+    if ($exclude) { write-verbose "but ignoring files like '$exclude'" }
+
+    $allMatches = gci -recurse $expandedLocations -include $include -exclude $exclude
+    write-verbose "Found $($allMatches.count) total files"
+
+    if ($containingPattern) {
+        $slsParms = @{
+            quiet = $true
+            pattern = $containingPattern
+            CaseSensitive = $caseSensitive.ispresent
+        }
+        write-verbose "Searching through results files for strings matching '$containingPattern'..."
+        $results = $allMatches |? { $_ | sls @slsparms }
+    }
+    else {
+        $results = $allMatches
+    }
+    return $results
+}
+set-alias gdlp Get-DlpProjectFile
+
+function Get-ClientConfigTransforms {
+    [cmdletbinding(DefaultParametersetName="env")] param(
+        [parameter(mandatory=$true,position=0)] [string] $client,
+        [string] [ValidateSet("ODS","Dash","All")] $product = "All",
+        [parameter(ParameterSetName="env")] [string] $environmentName,
+        [parameter(ParameterSetName="allenvs")] [switch] $all,
+        [parameter(ParameterSetName="proj")] [switch] $project
+    )
+
+    $clientPath = resolve-path "$dlpProjectDrive\$client"
+
+    $fuckingODSProjects = @(
+        "EdFi.Ods.Admin.Web"
+        "EdFi.Ods.BulkLoad.Console"
+        "EdFi.Ods.SwaggerUI"
+        "EdFi.Ods.WebApi"
+        "EdFi.Ods.BulkLoad.Services.Windows.BulkWorker"
+        "EdFi.Ods.BulkLoad.Services.Windows.UploadWorker"
+    )
+    $fuckingDashProjects = @(
+        "EdFi.Dashboards.Presentation.Web"
+        "EdFi.Dashboards.SecurityTokenService.Web"
+    )
+
+    $projFolders = @()
+    if (($product -eq "ODS") -or ($product -eq "All")) {
+        $fuckingODSProjects |% { $projFolders += @(resolve-path $clientPath\Ed-Fi-ODS-Implementation\Application\$_) }
+    }
+    if (($product -eq "Dash") -or ($product -eq "All")) {
+        $fuckingDashProjects |% { $projFolders += @(resolve-path $clientPath\Ed-Fi-Apps\Application\$_) }
+    }
+
+    $excludes = ""
+    switch ($pscmdlet.ParameterSetName) {
+        "env" { 
+            if ($environmentName) { $includes = "*.${environmentName}.config" }
+            else {                  $includes = "App.config","Web.config" }
+        }
+        "allenvs" { 
+            $includes = "*.config"
+            $excludes = "packages.config" 
+        }
+        "proj" { 
+            $includes = "*proj" 
+        }
+    }
+
+    foreach ($proj in $projFolders) {
+        $paths = @("$proj\*")
+        if (test-path $proj\AzureStartup) {
+            $paths += @("$proj\AzureStartup\*")
+        }
+        gci -path $paths -include $includes -exclude $excludes
+    }
+}
+
+function New-ODSConfigFiles {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true,position=0)] [string] $client,
+        [parameter(mandatory=$true)] [string] $environmentName,
+        [string] $fromEnvironment = "Example",
+        [switch] $force
+    )
+    $newFiles = @()
+    foreach ($example in (Get-ODSConfigTransforms -client $client -environmentName "$fromEnvironment")) {
+        $newName = $example.Name -replace "$fromEnvironment","$environmentName"
+        $newPath = "$($example.Directory.Fullname)\$newName"
+        $newFiles += @(copy-item $example $newPath -passthru -force:$force)
+    }
+
+    $buildActivity = resolve-path "$dlpProjectDrive\$client\Ed-Fi-ODS-Implementation\logistics\scripts\activities\build"
+
+    $oldVars = ls $buildActivity -filter "$fromEnvironment.vars.ps1"
+    $newVars = $oldVars.fullname -replace "$fromEnvironment","$environmentName"
+    $newFiles += @(copy-item $oldVars.fullname $newVars -passthru)
+
+    $newFiles += @(new-item -ItemType file -Path "$buildActivity\credentials-$environmentName.xml" -force:$force)
+
+    return $newFiles
+}
+
+function Get-OctopusVariables { 
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true,position=0)] [string] $client,
+        [string] [ValidateSet("ODS","Dash","All")] $product = "All",
+        [string] $variableName
+    )
+    $retval = @()
+
+    $configFiles = Get-ClientConfigTransforms -all -client $client -product:$product
+
+    foreach ($configFile in $configFiles) {
+        if ($variableName) {
+            if (sls -inputObject $configFile -pattern $variableName) { 
+                $retval += @($configFile)
+            }
+        }
+        else {
+            $matches = sls -inputObject $configFile -pattern "\#\{(\w*)\}" -AllMatches
+            foreach ($match in $matches.matches) {
+                $retval += @($match.groups[1].value)
+            }
+        }
+    }
+    $retval | sort -Unique
+}
