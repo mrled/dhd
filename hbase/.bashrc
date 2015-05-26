@@ -771,7 +771,6 @@ export FSEDIT="$myeditor"
 
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
-if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
 
