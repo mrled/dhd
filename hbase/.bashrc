@@ -732,6 +732,7 @@ if type -P ipython3  >/dev/null; then
     alias ipy=ipython3
     alias ipython=ipython3
 fi
+export PYTHONPATH=${HOME}/.dhd/opt/python
 
 ###################
 # Global Settings #
