@@ -38,6 +38,7 @@ unexaminedspam="SPAM.unexamined"
 * $ $SPR^0 ^To:.*vlack\+temp
 * $ $SPR^0 ^From:.*Vanessa.*Smith
 * $ $SPR^0 ^To:.*vlack\+f\.retailreportcard
+* $ $SPR^0 ^To:.*vlack\+f\.campaignforliberty
 * $ $SPR^0 .*vlack\+f\.retailreportcard
 * $ $SPR^0 .*retailreportcard.*
 * $ $SPR^0 ^X-Original-To:.*offers 
