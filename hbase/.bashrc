@@ -774,10 +774,10 @@ if [ -x `type -p ikiwiki` ]; then alias iw=`type -p ikiwiki`; fi
 
 # fucking umask issues on all these fucking tools, fuck you guys, fyuckfuyckakiguyh
 
-cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
-pip()          { sudo -H sh -c "umask 022; pip $*"; }
-pip3()         { sudo -H sh -c "umask 022; pip3 $*"; }
-easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
+#cpan()         { sudo -H sh -c "umask 022; cpan $*";  }
+#pip()          { sudo -H sh -c "umask 022; pip $*"; }
+#pip3()         { sudo -H sh -c "umask 022; pip3 $*"; }
+#easy_install() { sudo -H sh -c "umask 022; easy_install $*"; }
 
 # last character of prompt
 if   [ $UID = 0 ]; then #root user
