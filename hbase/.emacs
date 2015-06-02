@@ -76,8 +76,8 @@
 (add-to-list 'auto-mode-alist '("\\.nsh\\'" . nsis-mode))
 
 
-(require 'nxml-mode)
-(add-to-list 'auto-mode-alist '("\\.mako\\'" . nxml-mode))
+;(require 'nxml-mode)
+;(add-to-list 'auto-mode-alist '("\\.mako\\'" . nxml-mode))
 
 ;; (require 'package)
 ;; (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
