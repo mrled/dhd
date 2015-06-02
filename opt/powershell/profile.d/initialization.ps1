@@ -180,6 +180,7 @@ function Setup-Environment {
         Set-AssociationOpenCommand Python.File "$pythonexe `"%1`" %*"
         set-winenvironmentvariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
     }
+    set-winenvironmentvariable -name PythonPath -value "$Home\.dhd\opt\python" -targetlocation user,process
 }
 
 function Setup-AdminEnvironment {
