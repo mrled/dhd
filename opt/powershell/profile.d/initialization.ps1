@@ -98,6 +98,7 @@ function Setup-SystemPath {
         "__ProgramFiles__\VMware\VMware Virtual Disk Development Kit\bin"
         "__ProgramFiles__\LLVM\bin"
         "__ProgramFiles__\GNU\GnuPG"
+        "__ProgramFiles__\Xpra"
         "C:\opt\strawberry\perl\bin"
     )
 

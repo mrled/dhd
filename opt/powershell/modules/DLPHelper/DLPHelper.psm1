@@ -107,7 +107,7 @@ $clientUpdateSb = {
                 write-output "  All clients who fork this repo: $repoClients"
                 if (-not (test-path "$projectDir\$repoName")) {
                     write-output "  Doing initial clone for '$repoName' for project '$localName'"
-                    Invoke-Git clone --no-checkout --origin "$localName" "git@github.com:$GitHubOrg/$repoName" -whatif:$whatif
+                    Invoke-Git clone --no-checkout --recursive --origin "$localName" "git@github.com:$GitHubOrg/$repoName" -whatif:$whatif
                     cd "$projectDir\$repoName"
                     $HEAD = (Invoke-Git branch -r | select-string "$localName/HEAD") -replace "  $localName/HEAD -> $localName/"
                     Invoke-Git checkout -b "${localName}-${HEAD}" "${localName}/${HEAD}"
@@ -268,21 +268,35 @@ Force the pattern to be case sensitive. (Ignored if -ContainingPattern is not pa
 Search only a particular project
 #>
 function Get-DLPProjectFile {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParametersetName='CurrentProject')]
     param(
         [Parameter(Position=0)] [alias("query")] [string[]] $include,
         [string[]] $exclude,
         [string[]] $subdir,
 
-        [validateset('logistics','source','visualstudio','database','etl','alltypes','allfiles')] 
+        [ValidateScript({  $DLPProjectFileTypes.Keys -contains "$_"  })]
         [string[]] $type = 'logistics',
 
         [string]   $containingPattern,
         [switch]   $caseSensitive,
 
-        [string[]] [alias('client')] $projectName
+        [Parameter(ParameterSetName='ByProject')] [string[]] [alias('client')] $projectName,
+
+        [Parameter(ParameterSetName='CurrentProject')] [switch] $inCurrentProject
     )
 
+    if ($pscmdlet.ParameterSetName -eq "CurrentProject") {
+        if (-not $pwd.path.startswith($DLPHelperProjectBase)) {
+            throw "CWD is not a DLP project"
+        }
+        $splitSubPwd = $pwd.path.substring($DLPHelperProjectBase.length) -split '\\'
+        if ($splitSubPwd[0]) {
+            $projectName = $splitSubPwd[0]
+        }
+        else {
+            $projectName = $splitSubPwd[1]
+        }
+    }   
     $projects = Get-DLPProject $projectName
     write-verbose "Found project(s): $($projects.LocalName)"
 

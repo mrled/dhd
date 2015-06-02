@@ -106,6 +106,8 @@
         <repositories>
           <repository name="Ed-Fi-Common" />
           <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Dashboards-plugins" />
+          <repository name="DLPSelectiveETLRunner" />
           <repository name="Ed-Fi-Apps" />
         </repositories>
       </context>
