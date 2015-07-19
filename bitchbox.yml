@@ -1,0 +1,12 @@
+---
+- hosts: bitchboxen
+  tasks: 
+  - name: "@xxx|::::::::::::::::::>  Install Git"
+    apt: pkg=git 
+  - name: "@xxx|::::::::::::::::::>  Install Emacs"
+    apt: pkg=emacs-nox
+  - name: "@xxx|::::::::::::::::::>  Clone DHD"
+    git: repo=https://github.com/mrled/dhd dest=~/.dhd
+  - name: "@xxx|::::::::::::::::::>  Link dotfiles"
+    command: bash -c "cd $HOME && ln -sf .dhd/hbase/.{bashrc,dircolors,emacs,inputrc,profile,screenrc,tmux.conf,vimrc} ."
+

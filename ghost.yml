@@ -1,0 +1,29 @@
+---
+# Install Ghost
+- hosts: blog-servers
+  vars:
+    container_name: younix-ghost
+    content_dir: /srv/docker/ghostcontent
+    hostname: nullyork.younix.us
+  tasks: 
+  - name: Ghost | Make content_dir
+    file: path="{{ content_dir }}" state=directory owner=root group=root mode=0755
+  - name: Ghost | Upload config.js
+    copy: src=ghost.config.js dest={{ content_dir }}/config.js owner=root group=root mode=0644
+  - name: Ghost | Run Docker container
+    docker:
+      name: "{{ container_name }}"
+      image: ghost
+      pull: always
+      state: reloaded
+      ports: 
+      - "127.0.0.1:2368:2368"
+      volumes:
+      - "{{ content_dir }}:/var/lib/ghost"
+      env: 
+        #VIRTUAL_HOST: "{{ hostname }}"
+        NODE_ENV: production
+  - name: Ghost | Test that container is up
+    command: bash -c "docker ps | grep -e '\W{{ container_name }}\W*$'"
+  - name: Ghost | Test that the web service is responding
+    command: curl localhost:2368
