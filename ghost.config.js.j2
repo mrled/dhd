@@ -3,7 +3,17 @@ var path = require('path'),
     config;
 config = {
     production: {
-        url: 'http://nullyork.younix.us/ghost',
+        url: 'http://{{ ghost_hostname }}/',
+        mail: {
+            transport: 'SMTP',
+            options: {
+                host: 'smtp.sendgrid.com',
+                auth: {
+                    user: '{{ sendgrid_smtp_username }}',
+                    pass: '{{ sendgrid_smtp_password }}'
+                }
+            }
+        },
         database: {
             client: 'sqlite3',
             connection: {

@@ -1,0 +1,11 @@
+<VirtualHost {{ discourse_hostname }}:80>
+    <Location />
+        Order allow,deny
+        allow from all
+        ProxyPreserveHost On
+        ProxyPass http://localhost:3472/
+        ProxyPassReverse http://localhost:3472/
+    </Location>
+    #RewriteEngine  on
+    #RewriteRule ^discourse$ discourse/ [R]
+</VirtualHost>

@@ -5,6 +5,7 @@
     container_name: younix-ghost
     content_dir: /srv/docker/ghostcontent
     hostname: nullyork.younix.us
+    ghost_url: "http://{{ hostname }}/"
   tasks: 
   - name: Ghost | Make content_dir
     file: path="{{ content_dir }}" state=directory owner=root group=root mode=0755
@@ -25,5 +26,7 @@
         NODE_ENV: production
   - name: Ghost | Test that container is up
     command: bash -c "docker ps | grep -e '\W{{ container_name }}\W*$'"
-  - name: Ghost | Test that the web service is responding
+  - name: Ghost | Test that the web service is responding locally
     command: curl localhost:2368
+  - name: Ghost | Test that the web service is responding to its proper URL
+    command: curl "{{ ghost_url }}"

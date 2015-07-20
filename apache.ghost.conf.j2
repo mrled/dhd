@@ -1,0 +1,11 @@
+<VirtualHost {{ ghost_hostname }}:80>
+    <Location />
+        Order allow,deny
+        allow from all
+        ProxyPreserveHost On
+        ProxyPass http://localhost:2368/
+        ProxyPassReverse http://localhost:2368/
+    </Location>
+    #RewriteEngine  on
+    #RewriteRule ^blog$ blog/ [R]
+</VirtualHost>
