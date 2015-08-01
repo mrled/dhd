@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+
+# NOTE: Older instructions will tell you to "modprobe tun" before running the 
+# openvpn --mktun command. For newer kernels, tun support appears to be built 
+# in, meaning modprobe won't work but this will:
+[ -d /dev/net ]     || mkdir -p /dev/net
+[ -c /dev/net/tun ] || mknod /dev/net/tun c 10 200
+openvpn --mktun --dev tun1194 --dev-type tun --user openvpn --group openvpn
+
+cd /etc/openvpn
+for file in server.ovpn dh.pem vpnserver.crt vpnserver.key ca.crt ta.key; do
+    [ -f "$file" ] || {
+        echo "The \"$file\" file is missing from your /etc/openvpn volume"
+        exit 1
+    }
+done
+chown -R openvpn:openvpn .
+
+#sysctl -w net.ipv4.ip_forward=1
+iptables -t nat -A POSTROUTING -s 192.168.255.0/24 -o eth0 -j MASQUERADE
+
+touch openvpn-server.log
+#while true ; do openvpn server.ovpn ; done >> openvpn-server.log &
+#su -c "openvpn server.ovpn" - openvpn | tee --append openvpn-server.log 
+openvpn server.ovpn | tee --append openvpn-server.log 
+

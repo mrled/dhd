@@ -1,0 +1,129 @@
+---
+# TODO: better way to do my docker upload than the docker_upload_commands variable?
+# TODO: better way to trigger the Docker build & upload? Right now if the upload fails, it cannot detect that the next time
+- hosts: vpn-server
+  vars:
+    openvpn_image_name: younix_openvpn # MUST match what's below
+    openvpn_image_build_dir: /srv/docker/younix-openvpn-image
+    openvpn_image_build_name: "{{ openvpn_image_name }}_tmp"
+    openvpn_image_build_tag_components: 
+    - "{{ ansible_date_time.date }}"
+    - "{{ ansible_date_time.hour }}"
+    - "{{ ansible_date_time.minute }}"
+    - "{{ ansible_date_time.second }}"
+    openvpn_image_build_tag: "{{ openvpn_image_build_tag_components | join('-') }}"
+    #openvpn_image_build_tag: "{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}" # server's local time
+    docker_upload_commands: 
+    - "docker tag {{ openvpn_image_build_name }}:{{ openvpn_image_build_tag }} localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_build_tag }}"
+    - "docker tag -f {{ openvpn_image_build_name }}:{{ openvpn_image_build_tag }} localhost:5000/{{ openvpn_image_name }}:latest"
+    - "docker push localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_build_tag }}"
+    - "docker push localhost:5000/{{ openvpn_image_name }}:latest"
+
+  tasks: 
+
+  - name: Docker Registry | Install
+    docker: 
+      name: local-registry
+      image: registry:2
+      pull: always
+      state: reloaded
+      ports: 
+      - "127.0.0.1:5000:5000"
+
+  - name: OpenVPN | Make openvpn_image_build_dir
+    file: path="{{ openvpn_image_build_dir }}" state=directory owner=root group=root mode=0755
+  - name: OpenVPN | Upload Docker image build files
+    copy: src=docker/openvpn/ dest="{{ openvpn_image_build_dir }}" directory_mode=0755
+    notify: 
+    - OpenVPN | Build Docker image
+    - Docker Registry | Upload OpenVPN
+  - name: OpenVPN | Fix permissions
+    file: path="{{ openvpn_image_build_dir }}/bin/run" mode=755
+
+  handlers:
+
+  - name: OpenVPN | Build Docker image
+    docker_image: path="{{ openvpn_image_build_dir }}" name="{{ openvpn_image_build_name }}" state=present tag="{{ openvpn_image_build_tag }}"
+
+  - name: Docker Registry | Upload OpenVPN
+    #command: bash -c "docker tag {{ openvpn_image_build_name }}:{{ openvpn_image_tag }} localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_tag }} && docker push localhost:5000/{{ openvpn_image_name }}"
+    command: bash -c "{{ docker_upload_commands | join(' && ')}}"
+
+- hosts: vpn-server
+
+  vars:
+    # openvpn_image_name: younix/openvpn  
+    openvpn_image_name: younix_openvpn                         # deployed to the registry with this name
+    openvpn_container_name: younix-openvpn
+    openvpn_config_dir: /srv/docker/younix-openvpn-config
+    openvpn_private_subnet: 192.168.252.0    #this will be a /24
+    openvpn_private_addr: 192.168.252.1      #should be the first addr in the /24
+    openvpn_dns_a: 208.67.222.222            #OpenDNS
+    openvpn_dns_b: 208.67.220.220            #OpenDNS
+
+  tasks:
+
+  ## INSTALL DOCKER
+  # Backports is required for Docker
+
+#   - name: Docker | Enable backports
+#     apt_repository: repo='deb http://http.debian.net/debian jessie-backports main' state=present update_cache=yes
+#   - name: Docker | Install docker
+#     apt: pkg=docker.io default_release=jessie-backports 
+#     notify: 
+#     - start-docker
+#   - name: Docker | Install pip
+#     easy_install: name=pip 
+#   - name: Docker | Install docker-py
+#     pip: name=docker-py version=1.1.0
+
+
+  - name: OpenVPN | Make openvpn_config_dir
+    file: >
+      path="{{ openvpn_config_dir }}" 
+      state=directory owner=root group=root mode=0755
+  - name: OpenVPN | Add server config file
+    template: >
+      src=openvpn/conf/server.ovpn.j2 
+      dest="{{ openvpn_config_dir }}/server.ovpn" 
+      owner=root group=root mode=0644
+  - name: OpenVPN | Add server private key
+    copy: >
+      src=openvpn/pki/private/vpnserver.key 
+      dest="{{ openvpn_config_dir }}/vpnserver.key" 
+      owner=root group=root mode=0600
+  - name: OpenVPN | Add server cert
+    copy: >
+      src=openvpn/pki/issued/vpnserver.crt 
+      dest="{{ openvpn_config_dir }}/vpnserver.crt" 
+      owner=root group=root mode=0644
+  - name: OpenVPN | Add CA cert
+    copy: >
+      src=openvpn/pki/ca.crt
+      dest="{{ openvpn_config_dir }}/ca.crt" 
+      owner=root group=root mode=0644
+  - name: OpenVPN | Add DH parameters
+    copy: >
+      src=openvpn/pki/private/dh.pem 
+      dest="{{ openvpn_config_dir }}/dh.pem" 
+      owner=root group=root mode=0644
+  - name: OpenVPN | Add TLS auth key
+    copy: >
+      src=openvpn/pki/private/ta.key 
+      dest="{{ openvpn_config_dir }}/ta.key" 
+      owner=root group=root mode=0644
+
+
+  - name: run openvpn docker
+    docker:
+      name: "{{ openvpn_container_name }}"
+      image: "localhost:5000/{{ openvpn_image_name }}"
+      pull: always
+      state: reloaded
+      privileged: yes          # required because we deal with iptables and NAT in this container
+      insecure_registry: yes   # who cares, this is all on localhost
+      ports: 
+      - "1194:1194/udp"
+      - "1194:1194/tcp"
+      volumes:
+      - "{{ openvpn_config_dir }}:/etc/openvpn"
