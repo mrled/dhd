@@ -1,6 +1,7 @@
 ---
 # TODO: better way to do my docker upload than the docker_upload_commands variable?
 # TODO: better way to trigger the Docker build & upload? Right now if the upload fails, it cannot detect that the next time
+# TODO: seems like the openvpn server process isn't noticing when its config changes. Fixme
 - hosts: vpn-server
   vars:
     openvpn_image_name: younix_openvpn # MUST match what's below
