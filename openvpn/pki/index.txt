@@ -1,0 +1,2 @@
+V	350726162051Z		01	unknown	/CN=vpnserver
+V	350726162100Z		02	unknown	/CN=genericclient

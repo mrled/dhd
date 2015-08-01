@@ -1,6 +1,7 @@
 #!/bin/bash
 # {En,De}crypt the private/ directory
 # The private/ directory should not be stored in version control
+set -e
 
 get_abs_path() {
     # Q: Why does this work? A: http://stackoverflow.com/a/21188136/868206
