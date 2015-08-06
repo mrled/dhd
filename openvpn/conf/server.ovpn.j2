@@ -8,7 +8,7 @@ keepalive 10 60
 persist-key
 persist-tun
 duplicate-cn
-# comp-lzo
+comp-lzo
 ifconfig-pool-persist ipp.txt
 
 key vpnserver.key
@@ -19,8 +19,8 @@ tls-auth ta.key 0
 
 server {{ openvpn_private_subnet }} 255.255.255.0
 
-# push "redirect-gateway def1"
-# push "remote-gateway {{ openvpn_private_addr }}"
-# push "dhcp-option DNS {{ openvpn_dns_a }}"
-# push "dhcp-option DNS {{ openvpn_dns_b }}"
+push "redirect-gateway def1"
+push "remote-gateway {{ openvpn_private_addr }}"
+push "dhcp-option DNS {{ openvpn_dns_a }}"
+push "dhcp-option DNS {{ openvpn_dns_b }}"
 

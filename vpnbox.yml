@@ -4,7 +4,8 @@
 # TODO: seems like the openvpn server process isn't noticing when its config changes. Fixme
 - hosts: vpn-server
   vars:
-    openvpn_image_name: younix_openvpn # MUST match what's below
+    openvpn_image_name: younix_openvpn       # MUST match what's below
+    openvpn_private_subnet: 192.168.252.0    # MUST match what's below
     openvpn_image_build_dir: /srv/docker/younix-openvpn-image
     openvpn_image_build_name: "{{ openvpn_image_name }}_tmp"
     openvpn_image_build_tag_components: 
@@ -32,14 +33,19 @@
       - "127.0.0.1:5000:5000"
 
   - name: OpenVPN | Make openvpn_image_build_dir
-    file: path="{{ openvpn_image_build_dir }}" state=directory owner=root group=root mode=0755
-  - name: OpenVPN | Upload Docker image build files
-    copy: src=docker/openvpn/ dest="{{ openvpn_image_build_dir }}" directory_mode=0755
+    file: path="{{ openvpn_image_build_dir }}/bin" state=directory owner=root group=root mode=0755
+  - name: OpenVPN | Upload Dockerfile
+    template: src=docker/openvpn/Dockerfile dest="{{ openvpn_image_build_dir }}/" owner=root mode=0644
     notify: 
     - OpenVPN | Build Docker image
     - Docker Registry | Upload OpenVPN
-  - name: OpenVPN | Fix permissions
-    file: path="{{ openvpn_image_build_dir }}/bin/run" mode=755
+  - name: OpenVPN | Upload Docker run file
+    template: src=docker/openvpn/bin/run dest="{{ openvpn_image_build_dir }}/bin/" owner=root mode=0755
+    notify: 
+    - OpenVPN | Build Docker image
+    - Docker Registry | Upload OpenVPN
+  #- name: OpenVPN | Fix permissions
+  #  file: path="{{ openvpn_image_build_dir }}/bin/run" mode=755
 
   handlers:
 
@@ -121,6 +127,7 @@
       image: "localhost:5000/{{ openvpn_image_name }}"
       pull: always
       state: reloaded
+      cap_add: NET_ADMIN
       privileged: yes          # required because we deal with iptables and NAT in this container
       insecure_registry: yes   # who cares, this is all on localhost
       ports: 
