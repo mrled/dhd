@@ -1,2 +1,2 @@
-vpn-client-config
-vpn-client-config.tar
+# The client vpn config file is called this:
+vpn.ovpn
