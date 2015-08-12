@@ -1,0 +1,8 @@
+- name: bootstrap-discourse
+  shell: "bash -c '{{ discourse_dir }}/launcher bootstrap {{ discourse_container_name }}'"
+- name: start-discourse
+  shell: "bash -c '{{ discourse_dir }}/launcher start {{ discourse_container_name }}'"
+- name: rebuild-discourse
+  shell: "bash -c '{{ discourse_dir }}/launcher rebuild {{ discourse_container_name }}'"
+
+

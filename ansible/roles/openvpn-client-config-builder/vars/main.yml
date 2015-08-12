@@ -1,0 +1,2 @@
+openvpn_hardened_route_table: 94
+openvpn_hardened_route_script_path: /etc/openvpn/route-up.sh

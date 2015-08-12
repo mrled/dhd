@@ -1,0 +1,6 @@
+---
+openvpn_private_subnet: 127.0.0.0   # (override in your environment) a /24 subnet
+openvpn_private_addr: 127.0.0.1     # (override in your environment) first address in the subnet
+
+openvpn_hardened_route_table: 94
+openvpn_hardened_route_script_path: /etc/openvpn/route-up.sh

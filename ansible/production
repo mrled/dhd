@@ -1,0 +1,9 @@
+[blogserver]
+example.com
+
+[ovpnserver]
+example.com
+
+[all:vars]
+ansible_ssh_user = root
+

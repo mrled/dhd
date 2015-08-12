@@ -1,0 +1,30 @@
+# Swap is required for Discourse lololol
+  - name: mkswap | Create swap file
+    command: dd if=/dev/zero of={{ swap_file_path }} bs=1M count={{ swap_file_size_mb }} creates="{{ swap_file_path }}"
+  - name: mkswap | Change swap file permissions
+    file: path="{{ swap_file_path }}" owner=root group=root mode=0600
+  - name: mkswap | Check swap file type
+    command: file {{ swap_file_path }}
+    register: swapfile
+    changed_when: False
+  - name: mkswap | Make swap file
+    command: "mkswap {{ swap_file_path }}"
+    when: swapfile.stdout.find('swap file') == -1
+  - name: mkswap | Write swap entry in fstab
+    mount: name=none src={{ swap_file_path }} fstype=swap opts=sw passno=0 dump=0 state=present
+  - name: mkswap | Mount swap
+    command: "swapon {{ swap_file_path }}"
+    when: ansible_swaptotal_mb < 1
+
+
+# Install Discourse
+  - name: Discourse | Clone Discourse repository
+    git: repo=https://github.com/discourse/discourse_docker.git dest={{ discourse_dir }}
+    notify: 
+    - rebuild-discourse
+  - name: Discourse | Add app yml
+    template: src=discourse.app.yml dest={{ discourse_dir }}/containers/{{ discourse_container_name }}.yml owner=root group=root mode=0644
+    notify: 
+    - rebuild-discourse
+  - name: Discourse | Test that container is up
+    command: bash -c "docker ps | grep -e '\W{{ discourse_container_name }}\W*$'"

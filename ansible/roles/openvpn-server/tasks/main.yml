@@ -1,0 +1,70 @@
+---
+
+# TODO: better way to trigger the Docker build & upload? Right now if the upload fails, it cannot detect that the next time
+# TODO: seems like the openvpn server process isn't noticing when its config changes. Fixme
+
+- name: OpenVPN | Make openvpn_image_build_dir
+  file: path="{{ openvpn_image_build_dir }}/bin" state=directory owner=root group=root mode=0755
+- name: OpenVPN | Upload Dockerfile
+  template: src=docker/openvpn/Dockerfile dest="{{ openvpn_image_build_dir }}/" owner=root mode=0644
+  notify: 
+  - OpenVPN | Build Docker image
+  - Docker Registry | Upload OpenVPN
+- name: OpenVPN | Upload Docker run file
+  template: src=docker/openvpn/bin/run dest="{{ openvpn_image_build_dir }}/bin/" owner=root mode=0755
+  notify: 
+  - OpenVPN | Build Docker image
+  - Docker Registry | Upload OpenVPN
+#- name: OpenVPN | Fix permissions
+#  file: path="{{ openvpn_image_build_dir }}/bin/run" mode=755
+
+- name: OpenVPN | Make openvpn_config_dir
+  file: >
+    path="{{ openvpn_config_dir }}" 
+    state=directory owner=root group=root mode=0755
+- name: OpenVPN | Add server config file
+  template: >
+    src=openvpn/conf/server.ovpn.j2 
+    dest="{{ openvpn_config_dir }}/server.ovpn" 
+    owner=root group=root mode=0644
+- name: OpenVPN | Add server private key
+  copy: >
+    src=openvpn/pki/private/vpnserver.key 
+    dest="{{ openvpn_config_dir }}/vpnserver.key" 
+    owner=root group=root mode=0600
+- name: OpenVPN | Add server cert
+  copy: >
+    src=openvpn/pki/issued/vpnserver.crt 
+    dest="{{ openvpn_config_dir }}/vpnserver.crt" 
+    owner=root group=root mode=0644
+- name: OpenVPN | Add CA cert
+  copy: >
+    src=openvpn/pki/ca.crt
+    dest="{{ openvpn_config_dir }}/ca.crt" 
+    owner=root group=root mode=0644
+- name: OpenVPN | Add DH parameters
+  copy: >
+    src=openvpn/pki/private/dh.pem 
+    dest="{{ openvpn_config_dir }}/dh.pem" 
+    owner=root group=root mode=0644
+- name: OpenVPN | Add TLS auth key
+  copy: >
+    src=openvpn/pki/private/ta.key 
+    dest="{{ openvpn_config_dir }}/ta.key" 
+    owner=root group=root mode=0644
+- name: run openvpn docker
+  docker:
+    name: "{{ openvpn_container_name }}"
+    image: "localhost:5000/{{ openvpn_image_name }}"
+    pull: always
+    state: reloaded
+    cap_add: NET_ADMIN
+    privileged: yes          # required because we deal with iptables and NAT in this container
+    insecure_registry: yes   # who cares, this is all on localhost
+    ports: 
+    - "1194:1194/udp"
+    - "1194:1194/tcp"
+    volumes:
+    - "{{ openvpn_config_dir }}:/etc/openvpn"
+
+

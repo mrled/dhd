@@ -1,0 +1,4 @@
+---
+- name: OpenVPN Client | Create normal config
+
+- name: OpenVPN Client | Create hardened Linux config

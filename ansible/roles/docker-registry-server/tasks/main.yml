@@ -1,0 +1,8 @@
+- name: Docker Registry | Install
+  docker: 
+    name: local-registry
+    image: registry:2
+    pull: always
+    state: reloaded
+    ports: 
+    - "127.0.0.1:5000:5000"

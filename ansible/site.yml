@@ -1,0 +1,25 @@
+---
+
+- hosts: dockreg
+  roles: 
+  - docker-server
+  - docker-registry-server
+
+- hosts: blogserver
+  roles: 
+  - docker-server
+  - ghost-server
+  - discourse-server
+
+- hosts: ovpnserver
+  roles:
+  - docker-server
+  - openvpn-server
+
+- hosts: ovpnclientbuilder
+  roles:
+  - openvpn-client-config-builder
+
+- hosts: bitchboxen
+  roles: 
+  - bitchbox

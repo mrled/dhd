@@ -1,0 +1,26 @@
+[blogserver]
+nullyork.younix.us
+
+[ovpnserver]
+nullyork.younix.us
+
+[ovpnclientbuilder]
+nullyork.younix.us
+
+[dockreg]
+nullyork.younix.us
+
+[docker]
+nullyork.younix.us
+
+[bitchboxen]
+nullyork.younix.us
+
+
+
+[all:vars]
+
+ansible_ssh_user = root
+
+openvpn_private_subnet = 192.168.252.0
+openvpn_private_addr   = 192.168.252.1   #should be the first addr in the /24
