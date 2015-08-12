@@ -135,3 +135,15 @@
       - "1194:1194/tcp"
       volumes:
       - "{{ openvpn_config_dir }}:/etc/openvpn"
+
+- hosts: 127.0.0.1
+  connection: local
+
+  vars: 
+    openvpn_hardened_route_table: 94
+    openvpn_hardened_route_script_path: /etc/openvpn/route-up.sh
+
+  tasks: 
+    - name: OpenVPN Client | Create normal config
+
+    - name: OpenVPN Client | Create hardened Linux config
