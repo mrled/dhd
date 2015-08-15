@@ -1,0 +1,32 @@
+[blogserver]
+nullyork.younix.us
+
+[ovpnserver]
+nullyork.younix.us
+
+[ovpnclientbuilder]
+nullyork.younix.us
+
+[dockreg]
+nullyork.younix.us
+
+[docker]
+nullyork.younix.us
+
+[bitchboxen]
+nullyork.younix.us
+
+
+
+[all:vars]
+
+ansible_ssh_user = root
+
+openvpn_image_name      = younix_openvpn
+openvpn_image_build_dir = /srv/docker-younix-openvpn-image
+
+# A /24 network: 
+openvpn_private_subnet  = 192.168.252.0
+
+#should be the first addr in the /24: 
+openvpn_private_addr    = 192.168.252.1

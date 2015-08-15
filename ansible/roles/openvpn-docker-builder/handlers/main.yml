@@ -4,4 +4,4 @@
 
 - name: Docker Registry | Upload OpenVPN
   #command: bash -c "docker tag {{ openvpn_image_build_name }}:{{ openvpn_image_tag }} localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_tag }} && docker push localhost:5000/{{ openvpn_image_name }}"
-  command: bash -c "{{ docker_upload_commands | join(' && ')}}"
+  command: bash -c "{{ openvpn_docker_upload_commands | join(' && ')}}"

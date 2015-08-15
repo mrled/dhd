@@ -1,0 +1,4 @@
+---
+- hosts: ovpnclientbuilder
+  roles:
+  - openvpn-client-config-builder

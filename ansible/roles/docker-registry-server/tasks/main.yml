@@ -4,5 +4,7 @@
     image: registry:2
     pull: always
     state: reloaded
+    volumes:
+    - "{{ docker_registry_data_dir }}:/var/lib/registry"
     ports: 
     - "127.0.0.1:5000:5000"

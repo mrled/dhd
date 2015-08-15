@@ -1,0 +1,22 @@
+---
+- name: Make openvpn_image_build_dir
+  file: path="{{ openvpn_image_build_dir }}/bin" state=directory owner=root group=root mode=0755
+
+- name: Upload Dockerfile
+  copy: src=Dockerfile dest="{{ openvpn_image_build_dir }}" owner=root mode=0644
+  notify: 
+  - OpenVPN | Build Docker image
+  - Docker Registry | Upload OpenVPN
+
+- name: Upload Docker run file
+  copy: src=run dest="{{ openvpn_image_build_dir }}/bin" owner=root mode=0755
+  notify: 
+  - OpenVPN | Build Docker image
+  - Docker Registry | Upload OpenVPN
+
+- name: Upload Docker unpriv-ip.sh file
+  copy: src=unpriv-ip.sh dest="{{ openvpn_image_build_dir }}/bin" owner=root mode=0755
+  notify: 
+  - OpenVPN | Build Docker image
+  - Docker Registry | Upload OpenVPN
+

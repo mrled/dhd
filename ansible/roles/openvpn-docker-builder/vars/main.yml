@@ -1,0 +1,20 @@
+---
+# openvpn_image_name - must be set per-environment
+openvpn_image_build_name: "{{ openvpn_image_name }}_tmp"
+
+openvpn_docker_upload_commands: 
+- "docker tag {{ openvpn_image_build_name }}:{{ openvpn_image_build_tag }} localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_build_tag }}"
+- "docker tag -f {{ openvpn_image_build_name }}:{{ openvpn_image_build_tag }} localhost:5000/{{ openvpn_image_name }}:latest"
+- "docker push localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_build_tag }}"
+- "docker push localhost:5000/{{ openvpn_image_name }}:latest"
+
+openvpn_image_build_tag_components: 
+- "{{ ansible_date_time.date }}"
+- "{{ ansible_date_time.hour }}"
+- "{{ ansible_date_time.minute }}"
+- "{{ ansible_date_time.second }}"
+# Final result is a tag like 1999-12-31-23-59-59
+openvpn_image_build_tag: "{{ openvpn_image_build_tag_components | join('-') }}"
+
+
+

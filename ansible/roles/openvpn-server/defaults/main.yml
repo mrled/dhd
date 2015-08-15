@@ -1,24 +1,17 @@
-openvpn_image_name: younix_openvpn
-openvpn_image_build_dir: /srv/docker/younix-openvpn-image
-openvpn_image_build_name: "{{ openvpn_image_name }}_tmp"
+### ALL OF THESE MUST BE OVERRIDDEN PER ENVIRONMENT:  
 
-openvpn_image_build_tag_components: 
-- "{{ ansible_date_time.date }}"
-- "{{ ansible_date_time.hour }}"
-- "{{ ansible_date_time.minute }}"
-- "{{ ansible_date_time.second }}"
-openvpn_image_build_tag: "{{ openvpn_image_build_tag_components | join('-') }}"
+openvpn_private_subnet: 127.0.0.0       # a /24 subnet like 192.168.0.0 or 10.11.12.0
+openvpn_private_addr: 127.0.0.1         # first address in the subnet
 
-openvpn_docker_upload_commands: 
-- "docker tag {{ openvpn_image_build_name }}:{{ openvpn_image_build_tag }} localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_build_tag }}"
-- "docker tag -f {{ openvpn_image_build_name }}:{{ openvpn_image_build_tag }} localhost:5000/{{ openvpn_image_name }}:latest"
-- "docker push localhost:5000/{{ openvpn_image_name }}:{{ openvpn_image_build_tag }}"
-- "docker push localhost:5000/{{ openvpn_image_name }}:latest"
+### These could be defined in here, but are needed elsewhere so must be defined environment-wide
+
+# openvpn_image_build_dir: /srv/younix-docker-openvpn-image
+# openvpn_image_name: younix_openvpn
+
+### These have sensible default values, at least for me, but can still be overridden
 
 openvpn_container_name: younix-openvpn
-openvpn_config_dir: /srv/docker/younix-openvpn-config
+openvpn_config_dir: /srv/younix-openvpn-config
 
-openvpn_private_subnet: 127.0.0.0   # (override in your environment) a /24 subnet
-openvpn_private_addr: 127.0.0.1     # (override in your environment) first address in the subnet
 openvpn_dns_a: 208.67.222.222       # OpenDNS
 openvpn_dns_b: 208.67.220.220       # OpenDNS

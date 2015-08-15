@@ -1,0 +1,6 @@
+---
+- hosts: blogserver
+  roles: 
+  - docker-server
+  - ghost-server
+  - discourse-server

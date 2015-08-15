@@ -1,0 +1,9 @@
+---
+# UGH. j2 variables are NOT expanded before lookup() is run, so you cannot use a common {{ openvpn_pki_dir }} variable here
+#openvpn_pki_dir:    "roles/openvpn-certificate-authority/files/pki"
+openvpn_server_key:  "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/private/vpnserver.key') }}"
+openvpn_server_cert: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/issued/vpnserver.crt') }}"
+openvpn_ca_cert:     "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/ca.crt') }}"
+openvpn_dh_param:    "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/private/dh.pem') }}"
+openvpn_tlsauth_key: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/private/ta.key') }}"
+

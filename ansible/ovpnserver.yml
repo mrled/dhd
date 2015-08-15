@@ -1,0 +1,5 @@
+---
+- hosts: ovpnserver
+  roles:
+  - docker-server
+  - openvpn-server
