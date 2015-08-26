@@ -1,0 +1,14 @@
+---
+# Set up for a Lamobo-R1 board running Debian Jessie
+- name: install dnsmasq
+  apt: pkg=dnsmasq
+  notify:
+  - reload dnsmasq
+- name: enable IP forwarding
+  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+- name: upload config file
+  copy: src=dnsmasq.conf dest=/etc/dnsmasq.conf owner=root mode=0644
+  notify:
+  - reload dnsmasq
+- name: start dnsmasq
+  service: name=dnsmasq state=started
