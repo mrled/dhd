@@ -4,9 +4,6 @@ nullyork.younix.us
 [ovpnserver]
 nullyork.younix.us
 
-[ovpnclientbuilder]
-nullyork.younix.us
-
 [dockreg]
 nullyork.younix.us
 
@@ -24,6 +21,8 @@ ansible_ssh_user = root
 
 openvpn_image_name      = younix_openvpn
 openvpn_image_build_dir = /srv/docker-younix-openvpn-image
+
+openvpn_server_name     = nullyork.younix.us
 
 # A /24 network: 
 openvpn_private_subnet  = 192.168.252.0

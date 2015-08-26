@@ -1,0 +1,5 @@
+# Younix OpenVPN hardening system. See {{ openvpn_hardened_readme_path }}
+
+make_resolv_conf() {
+    true
+}

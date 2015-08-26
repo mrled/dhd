@@ -6,10 +6,10 @@ persist-key
 persist-tun
 comp-lzo
 remote-cert-tls server
-redirect-gateway def1
 key-direction 1
 
-<key>{{ openvpn_client_key }}
+<key>
+{{ openvpn_client_key }}
 </key>
 <cert>
 {{ openvpn_client_cert }}
@@ -24,9 +24,3 @@ key-direction 1
 {{ openvpn_tlsauth_key }}
 </tls-auth>
 
-{% if openvpn_harden_client %}
-setenv OPENVPN_ROUTE_TABLE {{ openvpn_hardened_route_table }}
-route-noexec
-route-up {{ openvpn_hardened_route_script_path }}
-route 0.0.0.0 0.0.0.0
-{% endif %}

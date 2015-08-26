@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+#from __future__ import print_function
+import socket
+import shlex
+import sys
+import json
+import os
+
+def main(): 
+
+    module = AnsibleModule(
+        argument_spec = dict( 
+            hostname = dict(required=True, type='str') 
+        ),
+    )    
+    hostname = module.params['hostname']
+
+    address = socket.gethostbyname(hostname)
+    module.exit_json(
+        changed=True, 
+        ipaddress=address,
+        hostname=hostname)
+
+#if __name__ == '__main__':
+#    sys.exit(main(*sys.argv))
+
+from ansible.module_utils.basic import *
+main()
+

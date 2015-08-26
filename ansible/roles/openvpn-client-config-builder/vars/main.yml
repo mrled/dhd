@@ -1,2 +1,32 @@
+openvpn_client_config_dir: "~/openvpn-client-config"
+
+openvpn_hardened_route_script_name: route-up.sh
+openvpn_hardened_route_script_path: "/etc/openvpn/{{ openvpn_hardened_route_script_name }}"
+openvpn_hardened_ip_rules_script_name: ip-rules.sh
+openvpn_hardened_ip_rules_script_path: "/etc/openvpn/{{ openvpn_hardened_ip_rules_script_name }}"
+openvpn_hardened_sysctl_conf_name: sysctl-disable-ipv6.conf
+openvpn_hardened_sysctl_conf_path: "/etc/sysctl.d/disable-ipv6.conf"
+openvpn_hardened_resolv_conf_name: dhclient-preserve-resolvconf
+openvpn_hardened_resolv_conf_path: "/etc/dhcp/dhclient-enter-hooks.d/zzz-preserve-resolvconf"
+openvpn_hardened_readme_name: README.HARDENED
+openvpn_hardened_readme_path: "/etc/openvpn/{{ openvpn_hardened_readme_name }}"
+
+openvpn_hardened_installer_script_name: install-hardened-client.sh
+openvpn_client_conf_name: younix.ovpn
+openvpn_hardened_client_conf_name: younix-hardened.ovpn
+
+# this will be the path for BOTH hardened and not:
+openvpn_client_conf_path: "/etc/openvpn/{{ openvpn_client_conf_name }}"
+
 openvpn_hardened_route_table: 94
-openvpn_hardened_route_script_path: /etc/openvpn/route-up.sh
+
+openvpn_base_config:     "{{ lookup('file', 'roles/openvpn-client-config-builder/templates/client.ovpn.base') }}"
+
+openvpn_client_key: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/private/genericclient.key') }}"
+openvpn_client_cert: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/issued/genericclient.crt') }}"
+openvpn_ca_cert: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/ca.crt') }}"
+openvpn_dh_param: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/private/dh.pem') }}"
+openvpn_tlsauth_key: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/private/ta.key') }}"
+
+
+

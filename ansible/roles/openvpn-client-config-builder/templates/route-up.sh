@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Younix OpenVPN hardening system. See {{ openvpn_hardened_readme_path }}
+
 #
 # Copyright (C) 2013-2015 Andrew Ayer
 #
