@@ -1,10 +1,33 @@
-# Younix OpenVPN hardening system. See {{ openvpn_hardened_readme_path }}
+client
+dev tun
+remote vpn.younix.us 1194 udp
+nobind
+persist-key
+persist-tun
+comp-lzo
+remote-cert-tls server
+key-direction 1
 
+### Younix OpenVPN hardening system. See {{ openvpn_hardened_readme_path }}
 # We do not redirect-gateway in the hardened config because the hardened scripts handle it for us
-
-{{ openvpn_base_config }}
-
 setenv OPENVPN_ROUTE_TABLE {{ openvpn_hardened_route_table }}
 route-noexec
 route-up {{ openvpn_hardened_route_script_path }}
 route 0.0.0.0 0.0.0.0
+### 
+
+<key>
+{{ openvpn_client_key }}
+</key>
+<cert>
+{{ openvpn_client_cert }}
+</cert>
+<ca>
+{{ openvpn_ca_cert }}
+</ca>
+<dh>
+{{ openvpn_dh_param }}
+</dh>
+<tls-auth>
+{{ openvpn_tlsauth_key }}
+</tls-auth>

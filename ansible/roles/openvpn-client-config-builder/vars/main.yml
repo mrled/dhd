@@ -20,8 +20,6 @@ openvpn_client_conf_path: "/etc/openvpn/{{ openvpn_client_conf_name }}"
 
 openvpn_hardened_route_table: 94
 
-openvpn_base_config:     "{{ lookup('file', 'roles/openvpn-client-config-builder/templates/client.ovpn.base') }}"
-
 openvpn_client_key: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/private/genericclient.key') }}"
 openvpn_client_cert: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/issued/genericclient.crt') }}"
 openvpn_ca_cert: "{{ lookup('file', 'roles/openvpn-certificate-authority/files/pki/ca.crt') }}"
