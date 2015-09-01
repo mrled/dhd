@@ -71,6 +71,9 @@ function Invoke-Git {
     write-verbose "$GitExePath $args"
     if (-not $WhatIf) {
         git @args
+        if ($LASTEXITCODE) {
+            write-error "Git error while trying to run '$GitExePath $args'"
+        }
     }
 }
 
@@ -207,6 +210,12 @@ function Get-DLPProject {
         if ($proj.contexts.context.repositories.repository.name) {
             $ctx = $proj.contexts.context |% -begin {$c=@{}} -process {$c[$_.name]=$_.repositories.repository.name} -end {$c}
         }
+        $repositoryNames = @()
+        foreach ($repo in $proj.repositories.repository) {
+            if ($repo.forkof) {
+                $repositoryNames
+            }
+        }
         $npparams = @{
             GitHubOrg = $proj.githubname
             LocalName = $proj.localname
@@ -215,6 +224,7 @@ function Get-DLPProject {
             Contexts = $ctx
         }
         $returnProjects += @(New-DLPProject @npparams)
+
     }
     return $returnProjects
 }
@@ -231,6 +241,7 @@ $DLPProjectFileTypes.visualstudio.include = @('*.sln','*.csproj','*.ccproj','*.c
 $DLPProjectFileTypes.visualstudio.subdir = @('Application')
 $DLPProjectFileTypes.config = @{}
 $DLPProjectFileTypes.config.include = @('*.config')
+$DLPProjectFileTypes.config.exclude = @('packages.config','nuget.config','repositories.config')
 $DLPProjectFileTypes.config.subdir = @('Application')
 $DLPProjectFileTypes.database = @{}
 $DLPProjectFileTypes.database.include = @('*.sql')
@@ -240,10 +251,15 @@ $DLPProjectFileTypes.etl.include = @('*.dtsx')
 $DLPProjectFileTypes.etl.subdir = @('Etl')
 $DLPProjectFileTypes.alltypes = @{}
 $DLPProjectFileTypes.alltypes.include = foreach ($k in $DLPProjectFileTypes.keys) { $DLPProjectFileTypes[$k]['include'] } 
+$DLPProjectFileTypes.alltypes.exclude = foreach ($k in $DLPProjectFileTypes.keys) { $DLPProjectFileTypes[$k]['exclude'] } 
 $DLPProjectFileTypes.alltypes.subdir = foreach ($k in $DLPProjectFileTypes.keys) { $DLPProjectFileTypes[$k]['subdir'] }
 $DLPProjectFileTypes.allfiles = @{}
 $DLPProjectFileTypes.allfiles.include = ''
 $DLPProjectFileTypes.allfiles.subdir = '.'
+
+function Get-DLPProjectFileTypes {
+    return $DLPProjectFileTypes.Keys
+}
 
 <#
 .synopsis
@@ -256,7 +272,7 @@ An array of patterns that matches the filenames you want to exclude, for example
 An array of subdirectories to search, for example @('Application')
 .parameter Type
 Rather than specifying -Include, -Exclude, and -Subdir together, specify a type. 
-See the -ListTypes parameter for a listing of the available types, what they include, what they exclude, and where they search.
+See Get-DLPProjectFileTypes to for a listing of available types
 You can override a Type's default include/exclude/subdir by specifying that option in addition:
     -Type logistics -Include *.vars.ps1
 That invocation will search in the logistics subdirs, but will replace the default includes with a much smaller list
@@ -274,7 +290,7 @@ function Get-DLPProjectFile {
         [string[]] $exclude,
         [string[]] $subdir,
 
-        [ValidateScript({  $DLPProjectFileTypes.Keys -contains "$_"  })]
+        [ValidateScript({  (Get-DLPProjectFileTypes) -contains "$_"  })]
         [string[]] $type = 'logistics',
 
         [string]   $containingPattern,
@@ -306,6 +322,9 @@ function Get-DLPProjectFile {
     if ($type -and -not $subdir) {
         $subdir = $DLPProjectFileTypes["$type"]['subdir'] 
     }
+    if ($type -and -not $exclude) {
+        $exclude = $DLPProjectFileTypes["$type"]['exclude'] 
+    }
 
     $expandedLocations = @()
     foreach ($sd in @($subdir)) {
@@ -330,6 +349,8 @@ function Get-DLPProjectFile {
     $allMatches = gci -recurse $expandedLocations -include $include -exclude $exclude
     write-verbose "Found $($allMatches.count) total files"
 
+    $noBins = $allMatches |? { $_.fullname -notmatch "\\bin\\" }
+
     if ($containingPattern) {
         $slsParms = @{
             quiet = $true
@@ -337,10 +358,10 @@ function Get-DLPProjectFile {
             CaseSensitive = $caseSensitive.ispresent
         }
         write-verbose "Searching through results files for strings matching '$containingPattern'..."
-        $results = $allMatches |? { $_ | sls @slsparms }
+        $results = $noBins |? { $_ | sls @slsparms }
     }
     else {
-        $results = $allMatches
+        $results = $noBins
     }
     return $results
 }
