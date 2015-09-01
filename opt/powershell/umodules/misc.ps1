@@ -478,93 +478,6 @@ function Compare-GitObjectsOnGitHub {
 }
 set-alias github-diff Compare-GitObjectsOnGitHub
 
-function Get-FileEncoding {
-    ##############################################################################
-    ##
-    ## Get-FileEncoding
-    ##
-    ## From Windows PowerShell Cookbook (O'Reilly)
-    ## by Lee Holmes (http://www.leeholmes.com/guide)
-    ##
-    ##############################################################################
-
-    <#
-
-    .SYNOPSIS
-
-    Gets the encoding of a file
-
-    .EXAMPLE
-
-    Get-FileEncoding.ps1 .\UnicodeScript.ps1
-
-    BodyName          : unicodeFFFE
-    EncodingName      : Unicode (Big-Endian)
-    HeaderName        : unicodeFFFE
-    WebName           : unicodeFFFE
-    WindowsCodePage   : 1200
-    IsBrowserDisplay  : False
-    IsBrowserSave     : False
-    IsMailNewsDisplay : False
-    IsMailNewsSave    : False
-    IsSingleByte      : False
-    EncoderFallback   : System.Text.EncoderReplacementFallback
-    DecoderFallback   : System.Text.DecoderReplacementFallback
-    IsReadOnly        : True
-    CodePage          : 1201
-
-    #>
-
-    param(
-        ## The path of the file to get the encoding of.
-        $Path
-    )
-
-    Set-StrictMode -Version Latest
-
-    ## The hashtable used to store our mapping of encoding bytes to their
-    ## name. For example, "255-254 = Unicode"
-    $encodings = @{}
-
-    ## Find all of the encodings understood by the .NET Framework. For each,
-    ## determine the bytes at the start of the file (the preamble) that the .NET
-    ## Framework uses to identify that encoding.
-    $encodingMembers = [System.Text.Encoding] |
-        Get-Member -Static -MemberType Property
-
-    $encodingMembers | Foreach-Object {
-        $encodingBytes = [System.Text.Encoding]::($_.Name).GetPreamble() -join '-'
-        $encodings[$encodingBytes] = $_.Name
-    }
-
-    ## Find out the lengths of all of the preambles.
-    $encodingLengths = $encodings.Keys | Where-Object { $_ } |
-        Foreach-Object { ($_ -split "-").Count }
-
-    ## Assume the encoding is UTF7 by default
-    $result = "UTF7"
-
-    ## Go through each of the possible preamble lengths, read that many
-    ## bytes from the file, and then see if it matches one of the encodings
-    ## we know about.
-    foreach($encodingLength in $encodingLengths | Sort -Descending)
-    {
-        $bytes = (Get-Content -encoding byte -readcount $encodingLength $path)[0]
-        $encoding = $encodings[$bytes -join '-']
-
-        ## If we found an encoding that had the same preamble bytes,
-        ## save that output and break.
-        if($encoding)
-        {
-            $result = $encoding
-            break
-        }
-    }
-
-    ## Finally, output the encoding.
-    [System.Text.Encoding]::$result
-}
-
 function Get-MagicNumber {
     param(
         [parameter(mandatory=$true)] [string[]] $filePath,
@@ -1430,17 +1343,39 @@ function Show-ErrorReport {
         $wrapWidth = 9999
     }
 
-    if ($error -or $LASTEXITCODE) {
+    $doExit = $false
+    $reportString = "ERROR Report: No errors`n"
+
+    #$allErrors = $global:error.ToArray() + $script:error.ToArray() + $local.error.ToArray()
+
+    <#
+    foreach ($schope in "global","script","local") {
+        $scopedErrorVar = get-variable -scope $scope -name error
+        $scopedErrorArray = @()
+        if ($scopedErrorVar.count) { 
+            $scopedErrorArray = $scopedErrorVar.ToArray()
+        }
+        foreach ($e in $scopedErrorArray) {
+            if ($e.Scope -match $scope) { 
+                write-verbose "Scope of '$scope' already exists for "
+            }
+        }
+    }
+    #>
+
+    if ($error.count -or $LASTEXITCODE) {
         $errorSummary = "`$LASTEXITCODE=$LastExitCode, `$Error.count=$($Error.count)"
-        $errorString+= "ERROR Report: $errorSummary`n`n"
+        $reportString = "ERROR Report: $errorSummary`n`n"
 
         for ($i= $error.count -1; $i -ge 0; $i -= 1) {
+            write-verbose "Processing error $i"
             $e = $error[$i]
 
             $errorDetails  = "PS `$Error[$i]: `n"
             $indentCount = 4
 
-            # Sometimes the objects in $error are wrappers for ErrorRecord objects; we only want to deal with ErrorRecord objects
+            # $error can contain at least 2 kinda of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
+            # The information we need is found in the ErrorRecord objects, so unwrap them here if necessary
             if ($e.ErrorRecord) {
                 $e = $e.ErrorRecord
             }
@@ -1453,20 +1388,18 @@ function Show-ErrorReport {
                 if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
             }
 
-            $errorString += $errorDetails
+            $reportString += $errorDetails
         }
 
-        write-output "----`n$errorString----"
-        if ($ExitIfErrors) {
-            write-output "Exiting..."
-            exit
-        }
-        else {
-            write-output "Continuing..."
+        if ($ExitIfErrors) { 
+            $doExit = $true
+            $reportString += "Exiting with returncode 1...`n" 
         }
     }
-    else {
-        write-output "ERROR Report: No errors"
+
+    write-output "----`n$reportString----"
+    if ($doExit) { 
+        exit 1
     }
 }
 set-alias err Show-ErrorReport
