@@ -89,9 +89,7 @@ Invoke-AndIgnoreError -scriptblock {
     #import-module PSCX
 }
 
-foreach ($um in (gci ~/.dhd/opt/powershell/umodules)) {
-    . $um.fullname
-}
+gci ~/.dhd/opt/powershell/umodules |% { . $_.fullname }
 
 # override some default display values for objects, this feature ruelz
 # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
@@ -103,50 +101,14 @@ update-formatdata -prependpath $profile.MrlFormat
 . $profiled\initialization.ps1
 . $profiled\prompt.ps1
 
-$profile | Add-Member -MemberType NoteProperty -Name HistoryFile -Value "$Home\Documents\WindowsPowerShell\history.csv" -force
-$historyExitEvent = {
-    if (test-path $profile.HistoryFile) {
-
-        $shellhist = get-history -count 1000
-
-        # only get shell history that has occurred since we added history from the hist file
-        foreach ($id in $shellhist.length..0) {
-            if ($shellhist[$id].id -eq $global:finalFileHistoryId) {
-                $earliestCommandThisSession = $id + 1
-            }
-        }
-        $newshellhist = $shellhist[$earliestCommandThisSession..$shellhist.length]
-
-
-        # we get the file history again so that we don't clobber history added by another exiting shell
-        clear-history
-        import-csv $profile.HistoryFile | add-history
-        $newshellhist | add-history 
-    }
-
-    get-history | export-csv $profile.HistoryFile
-}
-$historyStartupEvent = {
-    $histCount = (get-history).count
-    $histExists = (test-path $profile.HistoryFile) -and [bool](get-content $profile.HistoryFile) 
-    if (($histCount -gt 0) -or (-not $histExists)) {
-        # Don't import old history if shell isn't new, or if there is no hist file
-        $global:finalFileHistoryId = 0 
-    }
-    else {
-        import-csv $profile.HistoryFile | add-history 
-        $global:finalFileHistoryId = (get-history)[-1].id
-    }
-}
-
-# These slow down the exit process considerably, and don't work with PSRealine's built-in backwards history stuff 
-# (at least for the moment), so not worth it. 
-Register-EngineEvent Powershell.Exiting $historyExitEvent -SupportEvent
-& $historyStartupEvent
 set-alias hist get-history
 
 import-module PSReadline # you have to define the prompt & do history stuff before importing this
-set-psreadlineoption -editmode emacs
-Set-PSReadlineKeyHandler -key Ctrl+P -function PreviousHistory
-Set-PSReadlineKeyHandler -key Ctrl+N -function NextHistory
-
+Set-PSReadlineOption -EditMode Emacs
+# SaveAtExit is currently broken :(
+# https://github.com/lzybkr/PSReadLine/issues/262
+# I'd like to move to this behavior when it's fixed though
+#Set-PSReadlineOption -HistorySaveStyle SaveAtExit 
+Set-PSReadlineOption -HistorySaveStyle SaveIncrementally
+Set-PSReadlineKeyHandler -key 'Ctrl+N' -function 'NextHistory'
+Set-PSReadlineKeyHandler -key 'Ctrl+P' -function 'PreviousHistory'
