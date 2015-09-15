@@ -11,6 +11,7 @@ key-direction 1
 ### Younix OpenVPN hardening system. See {{ openvpn_hardened_readme_path }}
 # We do not redirect-gateway in the hardened config because the hardened scripts handle it for us
 setenv OPENVPN_ROUTE_TABLE {{ openvpn_hardened_route_table }}
+script-security 2
 route-noexec
 route-up {{ openvpn_hardened_route_script_path }}
 route 0.0.0.0 0.0.0.0
