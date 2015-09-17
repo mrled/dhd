@@ -1,0 +1,8 @@
+- what the FUCK is going on in vagrant-ssh.bat
+- better windows update mechanism imo
+- would like to use the -tag in the name for the vagrant box too, but that requires parameterizing both the packerfile and the vagrantfile template :/ not sure what to do about this 
+- store passwords securely for shit and/or generate them on the fly
+- test `lab2 -action VagrantUp -baseConfigName windows_81_x86 -tag PreLunchTest` tomorrow afternoon - will it have 89 days remaining? or 90? basically, was it activated at boot or nah? 
+- need to audit **all** of the scripts ../scripts actually
+- it seems like the vbox tools aren't getting installed? why not?
+- enable clipboard and drag&drop in my Vagrantfile - though NOT for throwaway VMs that might be insecure! 
