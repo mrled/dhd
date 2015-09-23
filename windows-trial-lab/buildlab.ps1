@@ -83,10 +83,13 @@ function Add-BoxToVagrant {
     param(
         [parameter(mandatory=$true)] $vagrantBoxName,
         [parameter(mandatory=$true)] $packedBoxPath,
+        [switch] $force,
         [switch] $whatIf
     )
     if (-not $whatIf) {
-        vagrant box add --name $vagrantBoxName $packedBoxPath    
+        $forceOption = ""
+        if ($force) { $forceOption = "--force" }
+        vagrant box add $forceOption --name $vagrantBoxName $packedBoxPath    
         if ($LASTEXITCODE -ne 0) { throw "External command failed with code '$LASTEXITCODE'" }
     }
 }
@@ -155,8 +158,8 @@ if ($action -contains "BuildPacker") {
     Build-PackerFile @bpfParam
 }
 if ($action -contains "AddToVagrant") {
-    Add-BoxToVagrant -vagrantBoxName $fullConfigName -packedBoxPath $packedBoxPath
+    Add-BoxToVagrant -vagrantBoxName $fullConfigName -packedBoxPath $packedBoxPath -force:$force -whatif:$whatif
 }
 if ($action -contains "VagrantUp") {
-    Run-VagrantBox -vagrantBoxName $fullConfigName -workingDirectory $outDir
+    Run-VagrantBox -vagrantBoxName $fullConfigName -workingDirectory $outDir -whatif:$whatif
 }

@@ -10,55 +10,52 @@
       "iso_checksum": "4ddd0881779e89d197cb12c684adf47fd5d9e540",
       "headless": true,
       "boot_wait": "2m",
-      "ssh_username": "vagrant",
-      "ssh_password": "vagrant",
-      "ssh_wait_timeout": "4h",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "2h",
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "guest_os_type": "Windows81",
       "disk_size": 61440,
+      "guest_additions_mode": "attach",
       "floppy_files": [
         "./Autounattend.xml",
         "../scripts/microsoft-updates.bat",
-        "../scripts/win-updates.ps1",
-        "../scripts/openssh.ps1",
-        "../scripts/oracle-cert.cer"
+        "../scripts/win-updates.ps1"
       ],
       "vboxmanage": [
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--memory",
-          "2048"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--cpus",
-          "2"
-        ]
+        [ "modifyvm", "{{.Name}}", "--memory", "2048" ], 
+        [ "modifyvm", "{{.Name}}", "--cpus",   "2" ]
       ]
     }
   ],
   "provisioners": [
     {
-      "type": "shell",
-      "remote_path": "/tmp/script.bat",
-      "execute_command": "{{.Vars}} cmd /c C:/Windows/Temp/script.bat",
-      "scripts": [
-        "../scripts/install-7zip.bat",
-        "../scripts/vm-guest-tools.bat",
-        "../scripts/vagrant-ssh.bat",
-        "../scripts/disable-auto-logon.bat",
-        "../scripts/enable-rdp.bat",
-        "../scripts/compile-dotnet-assemblies.bat",
-        "../scripts/compact.bat"
+      "type": "windows-shell",
+      "inline": [
+        "cmd /c md C:\\PackerTemp\\PostInstall"
       ]
     },
+    { 
+      "type": "file",
+      "source": "../scripts/postinstall/wintriallab-postinstall.psm1",
+      "destination": "C:\\PackerTemp\\PostInstall\\wintriallab-postinstall.psm1",
+      "direction": "upload"
+    },
+    { 
+      "type": "file",
+      "source": "../scripts/postinstall/postinstall.ps1",
+      "destination": "C:\\PackerTemp\\PostInstall\\postinstall.ps1",
+      "direction": "upload"
+    },
     {
-      "type": "shell",
-      "inline": [
-        "rm -rf /tmp/*"
-      ]
+      "type": "powershell",
+      "inline": ["C:\\PackerTemp\\PostInstall\\postinstall.ps1 -Verbose"]
+    },
+
+    {
+      "type": "windows-shell",
+      "inline": ["rmdir /S /Q C:\\PackerTemp"]
     }
   ],
   "post-processors": [
