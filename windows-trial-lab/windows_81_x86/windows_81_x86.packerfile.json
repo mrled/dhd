@@ -21,7 +21,10 @@
       "floppy_files": [
         "./Autounattend.xml",
         "../scripts/microsoft-updates.bat",
-        "../scripts/win-updates.ps1"
+        "../scripts/win-updates.ps1",
+        "../scripts/enable-winrm.bat",
+        "../scripts/postinstall/wintriallab-postinstall.psm1",
+        "../scripts/postinstall/autounattend-postinstall.ps1"
       ],
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "2048" ], 
@@ -44,13 +47,13 @@
     },
     { 
       "type": "file",
-      "source": "../scripts/postinstall/postinstall.ps1",
-      "destination": "C:\\PackerTemp\\PostInstall\\postinstall.ps1",
+      "source": "../scripts/postinstall/provisioner-postinstall.ps1",
+      "destination": "C:\\PackerTemp\\PostInstall\\provisioner-postinstall.ps1",
       "direction": "upload"
     },
     {
       "type": "powershell",
-      "inline": ["C:\\PackerTemp\\PostInstall\\postinstall.ps1 -Verbose"]
+      "inline": ["C:\\PackerTemp\\PostInstall\\provisioner-postinstall.ps1 -Verbose"]
     },
 
     {

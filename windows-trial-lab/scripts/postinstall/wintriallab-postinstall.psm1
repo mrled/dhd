@@ -26,6 +26,17 @@ function Get-LabTempDir {
     return $script:WinTrialLabTemp
 }
 
+function Invoke-ExpressionAndCheck {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $command
+    )
+    $global:LASTEXITCODE = 0
+    invoke-expression -command $command
+    if ($global:LASTEXITCODE -ne 0) {
+        throw "LASTEXITCODE: ${global:LASTEXITCODE} for command: '${command}'"
+    }
+}
+
 function Get-WebUrl {
     param(
         [parameter(mandatory=$true)] [string] $url,
@@ -344,6 +355,8 @@ function Disable-WindowsUpdates {
 }
 
 function Enable-MicrosoftUpdate {
+    [cmdletbinding()] param()
+    write-verbose "Enabling Microsoft Update..."
     stop-service wuauserv
     $auKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" 
     Set-ItemProperty -path $auKey -name EnableFeaturedSoftware -value 1 
@@ -405,12 +418,81 @@ function Set-UserOptions {
     if ($EnableQuickEdit) { Set-ItemProperty -path $consoleKey -name QuickEdit -value 1 }
 }
 
-# TODO: wtfwtfwtfwtfwtfwtfwtfwtfwtf no
-function Install-VagrantSshKey {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
-    $keyUrl = "https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub"
-    $authkeys = 'C:\Users\vagrant\.ssh\authorized_keys'
-    Get-WebUrl -url $keyUrl -downloadPath $authKeys
+function Disable-HibernationFile {
+    [cmdletbinding()] param()
+    write-verbose "Removing Hibernation file..."
+    $powerKey = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power'
+    Set-ItemProperty -path $powerKey -name HibernateFileSizePercent -value 0  # hiberfil is zero bytes
+    Set-ItemProperty -path $powerKey -name HibernateEnabled -value 0          # disable hibernation altogether
+}
+
+function Enable-WinRM {
+    [cmdletbinding()] param()
+    write-verbose "Enabling WinRM..."
+
+    cmd /c winrm quickconfig -q
+    cmd /c winrm quickconfig -transport:http
+    cmd /c winrm set winrm/config @{MaxTimeoutms="1800000"}
+    cmd /c winrm set winrm/config/winrs @{MaxMemoryPerShellMB="1800"}
+    cmd /c winrm set winrm/config/service @{AllowUnencrypted="true"}
+    cmd /c winrm set winrm/config/service/auth @{Basic="true"}
+    cmd /c winrm set winrm/config/client/auth @{Basic="true"}
+    cmd /c winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"} 
+    cmd /c netsh advfirewall firewall set rule group="remote administration" new enable=yes 
+    cmd /c netsh firewall add portopening TCP 5985 "Port 5985" 
+    cmd /c net stop winrm 
+    cmd /c sc config winrm start= auto
+    cmd /c net start winrm
+
+<#
+    # cmd /c winrm quickconfig -q
+    # cmd /c winrm quickconfig -transport:http
+    Enable-PSRemoting –force -SkipNetworkProfileCheck
+
+    set-item wsman:\localhost\MaxTimeoutms -value 1800000 -force
+    set-item wsman:\localhost\Shell\MaxMemoryPerShellMB -value 1800 -force
+    set-item wsman:\localhost\Service\AllowUnencrypted -value $true -force
+    set-item wsman:\localhost\Service\Auth\Basic -value $true -force
+    set-item wsman:\localhost\Client\Auth\Basic -value $true -force
+
+    # cmd /c winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"} 
+    $httpListener = $null
+    foreach ($listener in (ls WSMan:\localhost\Listener)) {
+        foreach ($key in $listener.keys) {
+            $subKey = $key.split("=")[0]
+            $subVal = $key.split("=")[1]
+            if (($subKey -match "Transport") -and ($subVal = "HTTP")) {
+                $httpListener = $listener
+                break
+            }
+        }
+        if ($httpListener) { break }
+    }
+    set-item $httpListener -value 5894
+
+    Set-Item wsman:\localhost\client\auth\CredSSP -value true -force 
+    Enable-WSManCredSSP -force -role server -force
+    #set-item wsman:localhost\client\trustedhosts -value * -force
+    #set-item wsman:localhost\client\trustedhosts -value 1.1.2.242 
+    set-item wsman:\localhost\listener\listener*\port -value 81 -force
+
+    stop-service winrm 
+    set-service -StartupType "automatic"
+    start-service winrm
+
+    winrm get winrm/config 
+    winrm enumerate winrm/config/listener 
+    #>
+}
+
+function Set-PasswordExpiry {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $accountName,
+        [parameter(mandatory=$true)] [bool] $expirePassword
+    )
+    $pe = "TRUE"
+    if (-not $expirePassword) { $pe = "FALSE" }
+    cmd.exe /c wmic useraccount where "name='$accountName'" set "PasswordExpires=$pe"
 }
 
 $exAlias = @("sevenzip")
