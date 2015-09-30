@@ -8,6 +8,7 @@ Which build actions do you want to perform?
 .parameter tag
 A tag for the temporary directory, the output directory, and the resulting Vagrant box
 #>
+function buildlab {
 [cmdletbinding()]
 param(
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")] 
@@ -30,8 +31,20 @@ param(
     [switch] $whatIf
 )
 
+import-module dism -verbose:$false
+
 # Module useful for Download-URL at least. TODO: this mixes concerns and may not be ideal?
-ipmo $PSScriptRoot\scripts\postinstall\wintriallab-postinstall.psm1 
+get-module wintriallab-postinstall | remove-module 
+import-module $PSScriptRoot\scripts\postinstall\wintriallab-postinstall.psm1 -verbose:$false
+
+Set-StrictMode -Version 2.0
+
+# This seems to be required with strict mode? 
+$verbose = $false
+# This correctly covers -verbose -verbose:$false and -verbose:$true
+if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
+    $verbose = $true
+}
 
 $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
 $packerOutDir = "$baseOutDir\PackerOut"
@@ -42,12 +55,15 @@ $labTempDir = "$baseOutDir\temp-$dateStamp"
 if ($tempDirOverride) { $labTempDir = $tempDirOverride }
 
 $wimMountDir = "${labTempDir}\MountInstallWim"
+$installMediaTemp = "${labTempDir}\InstallMedia"
+$newMediaIsoPath = "${labTempDir}\windows.iso"
 
 $errorActionPreference = "Stop"
-#$fullConfigName = "wintriallab-${baseConfigName}-${dateStamp}" 
 $fullConfigName = "wintriallab-${baseConfigName}" 
+
 set-alias packer (gcm packer | select -expand path)
 set-alias vagrant (gcm vagrant | select -expand path)
+
 
 $outDir = "${packerOutDir}\${fullConfigName}"
 if ($tag) { $outDir += "-${tag}"}
@@ -65,7 +81,7 @@ function Download-WSUSOfflineUpdater {
     $url = "http://download.wsusoffline.net/$filename"
     $dlPath = "$labTempDir\$filename" 
     Get-WebUrl -url $url -downloadPath $dlPath
-    $exDir = resolve-path "$wsusOfflineDir\.." # why the .. ? because the zipfile puts everything in a 'wsusoffline' folder
+    $exDir = resolve-path "$wsusOfflineDir\.." # why the ".." ? because the zipfile puts everything in a 'wsusoffline' folder
     sevenzip x "$dlPath" "-o$exDir"
 }
 function Download-WindowsUpdates {
@@ -75,122 +91,81 @@ function Download-WindowsUpdates {
     }
 }
 
-function Test-AdminPrivileges {
-    $me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-    return $me.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-}
-
-function Get-DismWimInfo {
-    [cmdletbinding()] param (
-        [parameter(mandatory=$true)] [string] $wimfile
+<#
+.notes
+The install.wim file doesn't (ever? sometimes?) denote architecture in its image names, but boot.wim (always? usually?) does
+#>
+function Get-BootWimArchitecture {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] $wimFile
     )
-    if (-not (Test-AdminPrivileges)) { throw "Admin privileges are required" }
-    write-verbose "Getting WIM information for file '$wimFile'"
+    $bootWimInfo = Get-WindowsImage -imagePath $wimFile -verbose:$verbose
 
-    $wimFile = resolve-path $wimFile | select -expand Path
-    $wimInfoText = Invoke-ExpressionAndCheck "dism /Get-WimInfo /WimFile:`"$wimfile`""
-
-    $wimIndexes = @()
-    $currentIndex = $false
-    foreach ($line in $wimInfoText) {
-        write-verbose $line
-        if ($line.startsWith("Index : ")) {
-            $currentIndex = New-Object PSObject
-            [int]$index = $line -replace "Index : ",""
-            Add-Member -inputObject $currentIndex -NotePropertyName "Index" -NotePropertyValue $index
-            Add-Member -inputObject $currentIndex -NotePropertyName "WimFile" -NotePropertyValue $wimFile
-            Add-Member -inputObject $currentIndex -MemberType ScriptProperty -Name DebugDesc -Value { 
-                "$($this.WimFile) / $($this.Index) / $($this.Name)" 
-            }
-        }
-        elseif ([String]::IsNullOrEmpty($line)) {
-            if ($currentIndex) { $wimIndexes += @($currentIndex) }
-            $currentIndex = $null
-        }
-        elseif ($currentIndex) {
-            $splitLine = [Regex]::Split($line, " : ")
-            Add-Member -inputObject $currentIndex -NotePropertyName $splitLine[0] -NotePropertyValue $splitLine[1]
-        }
-    }
-    return $wimIndexes
-}
-
-function Apply-WindowsUpdatesToWim {
-    [cmdletbinding()] param (
-        [parameter(mandatory=$true)] [string] $wimFile,
-        [parameter(mandatory=$true)] [string] $wimMountDir,
-        [parameter(mandatory=$true)] [string] $winUpdateDir
-    )
-    write-verbose "Applying Windows Updates to '$wimFile' from '$winUpdateDir'"
-    #Unblock-File $installWim
-    Set-ItemProperty -path $wimFile -name IsReadOnly -value $false -force 
-    foreach ($wimInfo in (Get-DismWimInfo -wimFile $wimFile)) {
-        write-verbose "Attempging to apply WSUS Offline Updates to $($wimInfo.DebugDesc)"
-
-        $wimMountSubdir = mkdir "${wimMountDir}\$($wimInfo.Index)" -force | select -expand fullname
-
-        Invoke-ExpressionAndCheck "dism /mount-wim /wimfile:`"$installWim`" /mountdir:`"$wimMountSubdir`" /index:`"$($wimInfo.index)`""
-
-        if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw "External command failed with exit code '$LASTEXITCODE'" }
-
-        ls $updatePath\* -include *.cab |% {
-            write-verbose "Applying update at $_ to directory at $wimMountSubdir"
-            Invoke-ExpressionAndCheck "dism /image:`"$wimMountSubdir`" /add-package /packagepath:`"$_`""
-        }
-
-        Invoke-ExpressionAndCheck "dism /unmount-wim /mountdir:`"$wimMountSubdir`""
-    }
-}
-
-function Get-BootWimBitness($wimFile) {
-    $bootWimInfo = Get-DismWimInfo -wimFile $wimFile
+    $arch = $null
     if (-not $bootWimInfo) { throw "Got no information for wimfile at '$wimFile'"}
-    elseif ($bootWimInfo[0].Name -match "x86") { return "i386" }
-    elseif ($bootWimInfo[0].Name -match "x64") { return "amd64" }
-    else { throw "Could not determine WimBitness"}
+    elseif ($bootWimInfo[0].ImageName -match "x86") { $arch = $ArchitectureId.i386 }
+    elseif ($bootWimInfo[0].ImageName -match "x64") { $arch = $ArchitectureId.amd64 }
+    else { throw "Could not determine architecture for '$wimFile'"}
+
+    write-verbose "Found an architecture of '$arch' for '$wimFile'"
+    return $arch
 }
 
-function Get-WOShortCode($OSName, $OSBitness) {
-
-    $shortCodeTable = @{
-        "8.1" = "w63"
-    }
-
-    $shortCodeTable.keys |% { if ($OSName -match $_) { $shortCode = $shortCodeTable[$_] } }
-    if (-not $shortCode) { throw "Could not determine shortcode for an OS named '$OSName'" }
-    write-verbose "Found shortcode '$shortcode' for OS named '$OSName' of bitness '$bitness'"
-
-    if ($OSBitness -match "i386") { $shortCode += "" }
-    elseif ($OSBitness -match "amd64") { $shortCode += "-x64" }
-    else { throw "Could not determine shortcode for an OS of bitness '$OSBitness'" }
-
-    return $shortCode
-}
 
 function Apply-WindowsUpdatesToIso {
     [cmdletbinding()] param (
-        [parameter(mandatory=$true)] [string] $iso,
+        [parameter(mandatory=$true)] [string] $inputIso,
+        [parameter(mandatory=$true)] [string] $outputIso,
         [parameter(mandatory=$true)] [string] $wsusOfflineDir,
         [parameter(mandatory=$true)] [string] $wimMountDir
     )
 
     $myWimMounts = @()
 
-    mount-diskimage -imagepath $iso
-    $mountedDrive = get-diskimage -imagepath $iso | get-volume | select -expand DriveLetter
-    $mountedDrive = get-diskimage -imagepath $iso | get-volume | select -expand DriveLetter
+    mount-diskimage -imagepath $inputIso
+    $mountedDrive = get-diskimage -imagepath $inputIso | get-volume | select -expand DriveLetter
 
-    $installWim = cp "${mountedDrive}:\Sources\install.wim" $labTempDir -passthru | select -expand fullname
-    $bitness = Get-BootWimBitness -wimFile "${mountedDrive}:\sources\boot.wim"
-    dismount-diskimage -imagepath $iso
+    $installWim = "$labTempDir\install.wim"
+    if (-not (test-path $installWim)) { 
+        cp "${mountedDrive}:\Sources\install.wim" $labTempDir -verbose:$verbose
+    }
+    else {
+        write-verbose "Using EXISTING install.wim at '$installWim'"
+    }
+    Set-ItemProperty -path $wimFile -name IsReadOnly -value $false -force 
 
-    $wimInfo = Get-DismWimInfo -wimFile $installWim
-    $shortCode = Get-WOShortCode -OSName $wimInfo[0].Name -bitness $bitness
+    $arch = Get-BootWimArchitecture -wimFile "${mountedDrive}:\sources\boot.wim" -verbose:$verbose
+    dismount-diskimage -imagepath $inputIso
+
+    $wimInfo = Get-WindowsImage -imagePath $installWim
+    $shortCode = Get-WOShortCode -OSName $wimInfo[0].ImageName -OSArchitecture $arch
     $updatePath = resolve-path "${wsusOfflineDir}\client\$shortCode\glb" | select -expand Path
 
-    Apply-WindowsUpdatesToWim -wimFile $installWim -wimMountDir $wimMountDir -winUpdateDir $updatePath
+    foreach ($wimInfo in (Get-WindowsImage -imagePath $installWim)) {
+        write-verbose "Attempging to apply WSUS Offline Updates to $wimInfo)"
+        $wimMountSubdir = mkdir "${wimMountDir}\$($wimInfo.ImageIndex)" -force | select -expand fullname
+        Mount-WindowsImage -imagePath $installWim -index $wimInfo.ImageIndex -path $wimMountSubdir
 
-    dismount-diskimage -imagepath $iso
+        try {
+            Add-WindowsPackage -PackagePath $updatePath -path $wimMountSubdir
+        }
+        catch {
+            write-verbose "Caught error(s) when installing packages:`n`n$_`n"
+        }
+        # foreach ($update in (ls $updatePath\* -include *.cab,*.msu)) {
+        #     write-verbose "Applying update at $update to directory at $wimMountSubdir"
+        #     try {
+        #         Add-WindowsPackage -PackagePath $update -path $wimMountSubdir | out-null
+        #     }
+        #     catch {
+        #         write-verbose "Failed to add package '$update' to mounted WIM at '$wimMountSubdir' with error '$_'; continuing..."
+        #     }
+        # }
+        
+        Dismount-WindowsImage -Path $wimMountSubdir -Save 
+    }
+
+    New-WindowsInstallMedia -sourceIsoPath $inputIso -installMediaTemp $installMediaTemp -installWimPath $installWim -outputIsoPath $outputIso
 }
 
 function Build-PackerFile {
@@ -314,18 +289,7 @@ if ($DownloadWSUS) {
     Download-WindowsUpdates
 }
 if ($ApplyWSUS) {
-    # Doing this different while in development
-    Apply-WindowsUpdatesToIso -iso $isoPath -wsusOfflineDir $wsusOfflineDir -wimMountDir $wimMountDir
-    <#
-    $installWim = resolve-path $labTempDir\install_81_x86.wim | select -expand path
-    $wimInfo = Get-DismWimInfo -wimFile $installWim
-    $bitness = "i386"
-    $shortCode = Get-WOShortCode -OSName $wimInfo[0].Name -OSBitness $bitness
-    $updatePath = resolve-path "${wsusOfflineDir}\client\$shortCode\glb" | select -expand Path
-    Apply-WindowsUpdatesToWim -Verbose -wimFile $installWim -wimMountDir $wimMountDir -winUpdateDir $updatePath
-    #>
-    throw "TODO: what about the cmdlets in 'gcm -module dism' ??"
-    throw "TODO: to convert this back to an iso, I have to have the WAIK and oscdimg.exe it looks like. Ugh."
+    Apply-WindowsUpdatesToIso -inputIso $isoPath -outputIso $newMediaIsoPath -wsusOfflineDir $wsusOfflineDir -wimMountDir $wimMountDir -verbose:$verbose
 }
 if ($BuildPacker) {
     $bpfParam = @{

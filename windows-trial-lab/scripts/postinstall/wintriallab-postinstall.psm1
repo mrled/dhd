@@ -4,11 +4,14 @@ fucking Packer
 #>
 
 <#
+.notes
+This is intended for use in the postinstall phase. 
+Only functions that were intended to run in that phase should have the concept of a "LabTempDir".
 TODO: make sure this is always a 100% normalized path
 #>
 function Get-LabTempDir {
     write-verbose "Function: $($MyInvocation.MyCommand)..."
-    if ("${script:WinTrialLabTemp}") {}
+    if ("${script:WinTrialLabTemp}") {} # noop
     elseif ("${env:WinTrialLabTemp}") {
         $script:WinTrialLabTemp = $env:WinTrialLabTemp
     }
@@ -31,11 +34,34 @@ function Invoke-ExpressionAndCheck {
         [parameter(mandatory=$true)] [string] $command
     )
     $global:LASTEXITCODE = 0
+    write-verbose "Invoking expression '$command'"
     invoke-expression -command $command
+    write-verbose "Expression '$command' had a last exit code of '$LastExitCode'"
     if ($global:LASTEXITCODE -ne 0) {
         throw "LASTEXITCODE: ${global:LASTEXITCODE} for command: '${command}'"
     }
 }
+
+# function Copy-ItemAndExclude {
+#     [cmdletbinding()] param(
+#         [parameter(mandatory=$true)] [string] $path,
+#         [parameter(mandatory=$true)] [string] $destination,
+#         [parameter(mandatory=$true)] [string[]] $exclude,
+#         [switch] $force
+#     )
+#     $path = resolve-path $path | select -expand path
+#     $sourceItems = Get-ChildItem -Path $path -Recurse -Exclude $exclude 
+#     write-verbose "Found $($sourceItems.count) items to copy from '$path'"
+#     #$sourceItems | copy-item -force:$force -destination {Join-Path $destination $_.FullName.Substring($path.length)}
+#     $sourceItems | copy-item -force:$force -destination {
+#         if ($_.GetType() -eq [System.IO.FileInfo]) {
+#             Join-Path $destination $_.FullName.Substring($path.length)
+#         } 
+#         else {
+#             Join-Path $destination $_.Parent.FullName.Substring($path.length)
+#         }
+#     }
+# }
 
 function Get-WebUrl {
     param(
@@ -68,6 +94,11 @@ function Get-WebUrl {
     (New-Object System.Net.WebClient).DownloadFile($url, $downloadPath)
 }
 
+$ArchitectureId = @{
+    i386 = "i386"
+    amd64 = "amd64"
+}
+
 <#
 .description
 Return the OS Architecture, as determined by WMI
@@ -81,15 +112,10 @@ function Get-OSArchitecture {
     write-verbose "Function: $($MyInvocation.MyCommand)..."
     #reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OSARCHITECTURE=32BIT || set OSARCHITECTURE=64BIT
     $OSArch = Get-WmiObject -class win32_operatingsystem -property osarchitecture | select -expand OSArchitecture
-    if ($OSArch -match "64") { 
-        return "amd64" 
-    }
-    elseif ($OSArch -match "32") { 
-        return "i386" 
-    }
-    else { 
-        throw "Could not determine OS Architecture from string '$OSArch'"
-    }
+
+    if ($OSArch -match "64") { return $ArchitectureId.amd64 } 
+    elseif ($OSArch -match "32") { return $ArchitectureId.i386 }
+    else { throw "Could not determine OS Architecture from string '$OSArch'" }
 }
 
 function Test-AdminPrivileges {
@@ -194,8 +220,6 @@ function Show-ErrorReport {
         exit 1
     }
 }
-set-alias err Show-ErrorReport
-
 
 $script:szInstallDir = "$env:ProgramFiles\7-Zip"
 set-alias sevenzip "${script:szInstallDir}\7z.exe"
@@ -218,13 +242,6 @@ function Install-SevenZip {
 
     write-verbose "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
 
-    #msiexec /qn /i "$szDlPath"
-    #[Diagnostics.Process]::Start("msiexec",@("/quiet","/qn","/i",$szDlPath)).WaitForExit()
-    #[Diagnostics.Process]::Start("msiexec", "/i","`"$szDlPath`","/q","/INSTALLDIR=`"$szInstallDir`"")).WaitForExit()
-    #msiexec /i "`"$sqlDlPath`"" /q "/INSTALLDIR=`"$script:szInstallDir`""
-    #$msiArgs = '/i "${0}" /q /INSTALLDIR="{1}"' -f $szDlPath, $szInstallDir
-    #$msiArgs = '/i "${0}" /qn /INSTALLDIR="{1}"' -f $szDlPath, $szInstallDir
-    #([Diagnostics.Process]::Start("msiexec", $msiArgs)).WaitForExit()
     msiexec /qn /i "$szDlPath"
     sleep 30 # Windows is bad, written by bad people who write bad software. More like softWHEREdidyougetthisideaitSUCKS amirite??
     if ($LASTEXITCODE -and ($LASTEXITCODE -ne 0)) { throw "External command failed with code '$LASTEXITCODE'" }
@@ -495,11 +512,156 @@ function Set-PasswordExpiry {
     cmd.exe /c wmic useraccount where "name='$accountName'" set "PasswordExpires=$pe"
 }
 
-$exAlias = @("sevenzip")
-$exFunction = @(
-    "Get-OSArchitecture"
-    "Get-LabTempDir"
-    "Install-SevenZip"
-    "Install-VBoxAdditions"
-)
-export-modulemember -alias * -function *
+<#
+.description
+Get the path of the Windows ADK or AIK or whatever the fuck they're calling it from a format string
+- {0} is always the WAIK directory 
+    - e.g. "C:\Program Files (x86)\Windows Kits\8.1\" 
+    - e.g. "X:\Program Files\Windows Kits\8.0"
+- {1} is always the host architecture (x86 or amd64)
+    - i THINK this is right, but I don't understand WHY. why do you need an amd64 version of oscdimg.exe? 
+    - however, there are arm executables lying around, and i definitely can't execute those. wtf? 
+
+So we expect a string like "{0}\bin\{1}\wsutil.exe"
+#>
+function Get-AdkPath {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $pathFormatString
+    )
+
+    $adkPath = ""
+    $possibleAdkPaths = @("${env:ProgramFiles(x86)}\Windows Kits\8.1","${env:ProgramFiles}\Windows Kits\8.1")
+    $possibleAdkPaths |% { if (test-path $_) { $adkPath = $_ } }
+    if (-not $adkPath) { throw "Could not find the Windows Automated Installation Kit" }
+    write-verbose "Found the WAIK at '$adkPath'"
+
+    $arch = Get-OSArchitecture
+    switch ($arch) {
+        $ArchitectureId.i386 { 
+            $formatted = $pathFormatString -f $adkPath,$waikArch
+            if (test-path $formatted) { return $formatted }
+        }
+        $ArchitectureId.amd64 { 
+            foreach ($waikArch in @("amd64","x64")) {
+                $formatted = $pathFormatString -f $adkPath,$waikArch
+                if (test-path $formatted) { return $formatted }
+            }
+        }
+        default { 
+            throw "Could not determine architecture of '$arch'" 
+        }
+    }
+    throw "Could not resolve format string '$pathFormatString' to an existing path"
+}
+
+function New-WindowsInstallMedia {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $sourceIsoPath,
+        [parameter(mandatory=$true)] [string] $installMediaTemp,  # WILL BE DELETED
+        [parameter(mandatory=$true)] [string] $installWimPath,    # your new install.wim file
+        [parameter(mandatory=$true)] [string] $outputIsoPath
+    )
+    $oscdImgPath = Get-AdkPath "{0}\Assessment and Deployment Kit\Deployment Tools\{1}\Oscdimg\oscdimg.exe"
+    $installWimPath = resolve-path $installWimPath | select -expand path
+    $installMediaTemp = mkdir -force $installMediaTemp | select -expand fullname
+
+    $outputIsoParentPath = split-path $outputIsoPath -parent
+    $outputIsoFilename = split-path $outputIsoPath -leaf
+    $outputIsoParentPath = mkdir -force $outputIsoParentPath | select -expand fullname
+
+    if (test-path $installMediaTemp) { rm -recurse -force $installMediaTemp }
+    mkdir -force $installMediaTemp | out-null
+
+    $diskVol = get-diskimage -imagepath $sourceIsoPath | get-volume
+    if (-not $diskVol) {
+        mount-diskimage -imagepath $sourceIsoPath
+        $diskVol = get-diskimage -imagepath $sourceIsoPath | get-volume
+    }
+    $driveLetter = $diskVol | select -expand DriveLetter
+    $existingInstallMediaDir = "${driveLetter}:"
+
+    # TODO: the first copy here copies the original install.wim, and the second copies the new one over it
+    # this is really fucking dumb right? but then, THIS is way fucking dumber: 
+    # http://stackoverflow.com/questions/731752/exclude-list-in-powershell-copy-item-does-not-appear-to-be-working
+    # PS none of those solutions are generic enough to get included so fuck it
+    copy-item -recurse -path "$existingInstallMediaDir\*" -destination "$installMediaTemp" -verbose:$verbose
+    remove-item -force -path "$installMediaTemp\sources\install.wim"
+    copy-item -path $installWimPath -destination "$installMediaTemp\sources\install.wim" -force -verbose:$verbose
+
+    $etfsBoot = resolve-path "$existingInstallMediaDir\boot\etfsboot.com" | select -expand Path
+    $oscdimgCall = '& "{0}" -m -n -b"{1}" "{2}" "{3}"' -f @($oscdImgPath, $etfsBoot, $installMediaTemp, $outputIsoPath)
+    write-verbose "Calling OSCDIMG: '$oscdimgCall"
+    Invoke-ExpressionAndCheck $oscdimgCall -verbose:$verbose
+
+    dismount-diskimage -imagepath $sourceIsoPath
+}
+
+<#
+.notes 
+For use with WSUS Offline Updater
+#>
+function Get-WOShortCode {
+    param(
+        [parameter(mandatory=$true)] [string] $OSName,
+        [parameter(mandatory=$true)] [string] $OSArchitecture
+    )
+
+    # I'm adding to this list slowly, only as I encounter the actual names from install.wim 
+    # on the trial CDs when I actually try to install them
+    $shortCodeTable = @{
+        "8.1" = "w63"
+    }
+
+    $shortCodeTable.keys |% { if ($OSName -match $_) { $shortCode = $shortCodeTable[$_] } }
+    if (-not $shortCode) { throw "Could not determine shortcode for an OS named '$OSName'" }
+
+    if ($OSArchitecture -match $ArchitectureId.i386) { $shortCode += "" }
+    elseif ($OSArchitecture -match $ArchitectureId.amd64) { $shortCode += "-x64" }
+    else { throw "Could not determine shortcode for an OS of architecture '$OSArchitecture'" }
+
+    write-verbose "Found shortcode '$shortcode' for OS named '$OSName' of architecture '$OSArchitecture'"
+    return $shortCode
+}
+
+
+### TEMP SECTION
+# This section contains stuff that's probably only useful in development
+
+function Get-DownloadedUpdates {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $wsusOfflineClientDir
+    )
+    $updateFiles = ls $wsusOfflineClientDir\w*\*\*kb*
+    #$updateFiles = ls $wsusOfflineClientDir\w63\glb\*kb* | select -first 20
+    $updates = @()
+    foreach ($u in $updateFiles) {
+        $update = New-Object PSObject -Property @{ Item = $u }
+        if ($u.name -match ".*(kb[0-9]+(\-v[0-9]+)?).*") {
+            $kb = $matches[1]
+            Add-Member -inputObject $update -NotePropertyMembers @{KB=$kb}
+        }
+        $updates += @($update)
+    }
+    return $updates
+}
+function SearchUpdatesList {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] $updateList,
+        [parameter(mandatory=$true)] [string] $kbFragment
+    )
+    return $updateList |? { $_.kb -match $kbFragment }
+}
+
+# Exports:
+$emmParams = @{
+    Alias = @("sevenzip")
+    Variable = @("ArchitectureId")
+    Function = "*"
+    # Function =  @(
+    #     "Get-OSArchitecture"
+    #     "Get-LabTempDir"
+    #     "Install-SevenZip"
+    #     "Install-VBoxAdditions"
+    # )
+}
+export-modulemember @emmParams
