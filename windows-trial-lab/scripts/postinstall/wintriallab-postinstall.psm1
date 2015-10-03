@@ -1,37 +1,92 @@
 <# 
 jesus fucking christ
 fucking Packer
+TODO: 
+- make every function 100% reliant on itself only. 
+- get rid of calls to Get-LabTempDir
+- decided whether I'm using $URLs or not lol
 #>
 
-<#
-.notes
-This is intended for use in the postinstall phase. 
-Only functions that were intended to run in that phase should have the concept of a "LabTempDir".
-TODO: make sure this is always a 100% normalized path
-#>
-function Get-LabTempDir {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
-    if ("${script:WinTrialLabTemp}") {} # noop
-    elseif ("${env:WinTrialLabTemp}") {
-        $script:WinTrialLabTemp = $env:WinTrialLabTemp
-    }
-    else {
-        $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
-        $script:WinTrialLabTemp = "${env:Temp}\WinTrialLab-$dateStamp" 
-    }
 
-    if (-not (test-path $script:WinTrialLabTemp)) {
-        write-verbose "Temporary directory does not exist, creating it..."
-        mkdir -force $script:WinTrialLabTemp | out-null
+### Global Constants that I use elsewhere
+
+$ArchitectureId = @{
+    amd64 = "amd64"
+    i386 = "i386"
+}
+$WindowsVersionId = @{
+    w63 = "w63" # TODO: rename to w81 probably
+    w10 = "w10"
+    w10ltsb = "w10ltsb"
+    server2012r2 = "server2012r2"
+}
+$OfficeVersionId = @{
+    o2013 = "o2013"
+}
+$IsoUrls = @{
+    $WindowsVersionId.w63 = @{
+        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X86FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X86FREE_EN-US_DV9.ISO"
+        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X64FREE_EN-US_DV9.ISO" 
     }
-    $script:WinTrialLabTemp = resolve-path $script:WinTrialLabTemp | select -expand Path
-    write-verbose "Using WinTrialLabTemp directory at '${script:WinTrialLabTemp}'"
-    return $script:WinTrialLabTemp
+    $WindowsVersionId.w10 = @{
+        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X86FRE_EN-US.ISO"
+        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X64FRE_EN-US.ISO"
+    }
+    $WindowsVersionId.w10ltsb = @{
+        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/6/2/4/624ECF83-38A6-4D64-8758-FABC099503DC/10240.16384.150709-1700.TH1_CLIENTENTERPRISE_S_EVAL_X86FRE_EN-US.ISO"
+        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/6/2/4/624ECF83-38A6-4D64-8758-FABC099503DC/10240.16384.150709-1700.TH1_CLIENTENTERPRISE_S_EVAL_X64FRE_EN-US.ISO"
+    }
+    $WindowsVersionId.server2012r2 = @{
+        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/6/2/A/62A76ABB-9990-4EFC-A4FE-C7D698DAEB96/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO"
+    }
+    $OfficeVersionId.o2013 = @{
+        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/2/9/C/29CC45EF-4CDA-4710-9FB3-1489786570A1/OfficeProfessionalPlus_x86_en-us.img"
+        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/2/9/C/29CC45EF-4CDA-4710-9FB3-1489786570A1/OfficeProfessionalPlus_x64_en-us.img"
+    }
+}
+$WSUSCatalogUrl = "http://download.windowsupdate.com/microsoftupdate/v6/wsusscan/wsusscn2.cab"
+$WSUSOfflineRepoBaseUrl = "https://svn.wsusoffline.net/svn/wsusoffline/trunk"
+$szUrl = "http://7-zip.org/a/$szFilename"
+$URLs = @{
+    ISOs = @{
+        $WindowsVersionId.w63 = @{
+            $ArchitectureId.i386 = "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X86FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X86FREE_EN-US_DV9.ISO" 
+        } 
+    }
+    WindowsUpdateCatalog = "http://download.windowsupdate.com/microsoftupdate/v6/wsusscan/wsusscn2.cab"
+    WSUSOfflineRepoBase = "https://svn.wsusoffline.net/svn/wsusoffline/trunk"
+    SevenZipDownload = @{
+        $ArchitectureId.i386 = "http://7-zip.org/a/7z920.msi"
+        $ArchitectureId.amd64 = "http://7-zip.org/a/7z920-x64.msi"
+    }
+    UltraDefragDownload = @{
+        $ArchitectureId.i386 =  "http://downloads.sourceforge.net/project/ultradefrag/stable-release/6.1.0/ultradefrag-portable-6.1.0.bin.i386.zip"
+        $ArchitectureId.amd64 = "http://downloads.sourceforge.net/project/ultradefrag/stable-release/6.1.0/ultradefrag-portable-6.1.0.bin.amd64.zip"
+    }
+    SdeleteDownload = "http://download.sysinternals.com/files/SDelete.zip"
+}
+
+### Private support functions I use behind the scenes
+
+function Get-WebUrl {
+    [cmdletbinding(DefaultParameterSetName="outDir")] param(
+        [parameter(mandatory=$true)] [string] $url,
+        [parameter(mandatory=$true,ParameterSetName="outDir")] [string] $outDir,
+        [parameter(mandatory=$true,ParameterSetName="outFile")] [string] $outFile
+    )
+    if ($PScmdlet.ParameterSetName -match "outDir") {
+        $filename = [System.IO.Path]::GetFileName($url)
+        $outFile = "$outDir\$filename"
+    }
+    $outFile = [IO.Path]::GetFullPath($outFile)
+    (New-Object System.Net.WebClient).DownloadFile($url, $outFile)
+    return (get-item $outFile)
 }
 
 function Invoke-ExpressionAndCheck {
     [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string] $command
+        [parameter(mandatory=$true)] [string] $command,
+        [int] $sleepSeconds
     )
     $global:LASTEXITCODE = 0
     write-verbose "Invoking expression '$command'"
@@ -40,8 +95,10 @@ function Invoke-ExpressionAndCheck {
     if ($global:LASTEXITCODE -ne 0) {
         throw "LASTEXITCODE: ${global:LASTEXITCODE} for command: '${command}'"
     }
+    if ($sleepSeconds) { start-sleep $sleepSeconds }
 }
 
+# TODO: Copy-ItemAndExclude
 # function Copy-ItemAndExclude {
 #     [cmdletbinding()] param(
 #         [parameter(mandatory=$true)] [string] $path,
@@ -63,238 +120,192 @@ function Invoke-ExpressionAndCheck {
 #     }
 # }
 
-function Get-WebUrl {
-    param(
-        [parameter(mandatory=$true)] [string] $url,
-        [parameter(mandatory=$true)] [string] $downloadPath
+function Apply-XmlTransform {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $xmlFile,
+        [parameter(mandatory=$true)] [string] $xsltFile,
+        [parameter(mandatory=$true)] [string] $outFile
     )
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
+    $xmlFile = resolve-path $xmlFile | select -expand path
+    $xsltFile = resolve-path $xsltFile | select -expand path
 
-    if (test-path $downloadPath) {
-        if ((get-item $downloadPath).gettype().name -match "DirectoryInfo") {
-            throw "Must provide a full path, including filename"
-        }
-        else {
-            $downloadPath = resolve-path $downloadPath | select -expand path
-        }
-    }
-    else {
-        $downloadParent = split-path $downloadPath -parent
-        $downloadFilename = split-path $downloadPath -leaf
-        if (-not "$downloadParent") { 
-            $downloadParent = $pwd | select -expand Path
-        }
-        elseif (-not (test-path $downloadParent)) {
-            mkdir -force $downloadParent | out-null
-        }
-        $downloadParent = resolve-path $downloadParent 
-        $downloadPath = "$downloadParent\$downloadFilename" -replace ""
-    }
-    write-verbose "Downloading url '$url' to path '$downloadPath'"
-    (New-Object System.Net.WebClient).DownloadFile($url, $downloadPath)
-}
+    if (test-path $outFile) { throw "outFile exists at '$outFile'" }
+    $outParent = split-path -parent $outFile | resolve-path | select -expand Path
+    $outName = split-path -leaf $outFile
+    $outFile = "$outParent\$outName"
 
-$ArchitectureId = @{
-    i386 = "i386"
-    amd64 = "amd64"
+    $xslt = New-Object System.Xml.Xsl.XslCompiledTransform
+    $xslt.Load($xsltFile)
+    $xslt.Transform($xmlFile, $outFile)
+    return (get-item $outFile)
 }
 
 <#
 .description
-Return the OS Architecture, as determined by WMI
+Get the path of the Windows ADK or AIK or whatever the fuck they're calling it from a format string
+- {0} is always the WAIK directory 
+    - e.g. "C:\Program Files (x86)\Windows Kits\8.1\" 
+    - e.g. "X:\Program Files\Windows Kits\8.0"
+- {1} is always the host architecture (x86 or amd64)
+    - i THINK this is right, but I don't understand WHY. why do you need an amd64 version of oscdimg.exe? 
+    - however, there are arm executables lying around, and i definitely can't execute those. wtf? 
+
+So we expect a string like "{0}\bin\{1}\wsutil.exe"
+#>
+function Get-AdkPath {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $pathFormatString
+    )
+
+    $adkPath = ""
+    $possibleAdkPaths = @("${env:ProgramFiles(x86)}\Windows Kits\8.1","${env:ProgramFiles}\Windows Kits\8.1")
+    $possibleAdkPaths |% { if (test-path $_) { $adkPath = $_ } }
+    if (-not $adkPath) { throw "Could not find the Windows Automated Installation Kit" }
+    write-verbose "Found the WAIK at '$adkPath'"
+
+    $arch = Get-OSArchitecture
+    switch ($arch) {
+        $ArchitectureId.i386 { 
+            $formatted = $pathFormatString -f $adkPath,$waikArch
+            if (test-path $formatted) { return $formatted }
+        }
+        $ArchitectureId.amd64 { 
+            foreach ($waikArch in @("amd64","x64")) {
+                $formatted = $pathFormatString -f $adkPath,$waikArch
+                if (test-path $formatted) { return $formatted }
+            }
+        }
+        default { 
+            throw "Could not determine architecture of '$arch'" 
+        }
+    }
+    throw "Could not resolve format string '$pathFormatString' to an existing path"
+}
+
+<#
+.notes 
+For use with WSUS Offline Updater
+#>
+function Get-WOShortCode { # TODO fixme I think I don't need this anymore because I'm not using WSUS Offline anymore
+    param(
+        [parameter(mandatory=$true)] [string] $OSName,
+        [parameter(mandatory=$true)] [string] $OSArchitecture
+    )
+
+    # I'm adding to this list slowly, only as I encounter the actual names from install.wim 
+    # on the trial CDs when I actually try to install them
+    $shortCodeTable = @{
+        "8.1" = "w63"
+    }
+
+    $shortCodeTable.keys |% { if ($OSName -match $_) { $shortCode = $shortCodeTable[$_] } }
+    if (-not $shortCode) { throw "Could not determine shortcode for an OS named '$OSName'" }
+
+    if ($OSArchitecture -match $ArchitectureId.i386) { $shortCode += "" }
+    elseif ($OSArchitecture -match $ArchitectureId.amd64) { $shortCode += "-x64" }
+    else { throw "Could not determine shortcode for an OS of architecture '$OSArchitecture'" }
+
+    write-verbose "Found shortcode '$shortcode' for OS named '$OSName' of architecture '$OSArchitecture'"
+    return $shortCode
+}
+
+
+### Publicly exported functions called directly from slipstreaming scripts
+
+<#
+.notes
+This is intended for use in the postinstall phase, on the target machine
+We expect calling scripts to get a lab temp dir with this function, but we do NOT permit functions in the module to call it
+TODO: does that even make sense to do??
+Only functions that were intended to run in that phase should have the concept of a "LabTempDir".
+NOTE: this will return the same directory every time it's called until the module is reimported
+#>
+function Get-LabTempDir {
+    if ("${script:WinTrialLabTemp}") {} # noop
+    elseif ("${env:WinTrialLabTemp}") {
+        $script:WinTrialLabTemp = $env:WinTrialLabTemp
+    }
+    else {
+        $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
+        $script:WinTrialLabTemp = "${env:Temp}\WinTrialLab-$dateStamp" 
+    }
+    $script:WinTrialLabTemp = [System.IO.Path]::GetFullPath($script:WinTrialLabTemp)
+    write-verbose "Using WinTrialLabTemp directory at '${script:WinTrialLabTemp}'"
+    if (-not (test-path $script:WinTrialLabTemp)) {
+        write-verbose "Temporary directory does not exist, creating it..."
+        mkdir -force $script:WinTrialLabTemp | out-null
+    }
+    return $script:WinTrialLabTemp
+}
+
+<#
+.description
+Return the OS Architecture of the current system, as determined by WMI
 Will return either "i386" or "amd64"
 TODO: this isn't a great method but I'm tired of trying to find the totally correct one. This one isn't ideal because OSArchitecture can be localized. 
-Supposedly the canonical way is calling into the registry: 
+I've seen some advice that you should call into the registry  
+- reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OSARCHITECTURE=32BIT || set OSARCHITECTURE=64BIT
 - http://stackoverflow.com/a/24590583/868206
 - https://support.microsoft.com/en-us/kb/556009
+... however, this lets you know about the HARDWARE, not the OPERATING SYSTEM - we care about the latter
 #>
 function Get-OSArchitecture {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
-    #reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OSARCHITECTURE=32BIT || set OSARCHITECTURE=64BIT
     $OSArch = Get-WmiObject -class win32_operatingsystem -property osarchitecture | select -expand OSArchitecture
-
     if ($OSArch -match "64") { return $ArchitectureId.amd64 } 
     elseif ($OSArch -match "32") { return $ArchitectureId.i386 }
     else { throw "Could not determine OS Architecture from string '$OSArch'" }
 }
 
 function Test-AdminPrivileges {
+    [cmdletbinding()] param(
+        [switch] $ThrowIfNotElevated
+    )
     $me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-    return $me.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    $elevated = $me.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    if ($ThrowIfNotElevated -and (! $elevated)) { throw "Administrative privileges are required" }
+    return $elevated
 }
 
-function Limit-TextWidth {
-    [cmdletbinding()] 
-    param(
-        [parameter(mandatory=$true)] [string] $text,
-        [parameter(mandatory=$true)] [int] $width,
-        [int] $indentSpaces = 0
-    )
-    $width = $width -1
-    if ($indentSpaces -ge $width) {
-        throw "`$indentSpaces must be smaller than `$width"
-    }
-    $indent = " " * $indentSpaces
-    $output = ""
-    $ctr=0
-    foreach ($line in ($text -split "`n")) {
-        $ctr+=1
-        #write-host -foreground cyan "${ctr}: $line"
-
-        $finished = $false
-        while (-not $finished) {
-            $line = "$indent$line"
-            if ($line.length -gt $width) {
-                $output += $line.substring(0,$width)
-                $output += "`n"
-                $line = $line.substring($width)
-            }
-            else {
-                $output += $line
-                $output += "`n"
-                $finished = $true
-            }
-        }
-
-        if ($output[-1] -ne "`n") {
-            $output += "`n"
-        }
-    }
-    return $output
-}
-
-function Show-ErrorReport {
-    [cmdletbinding()]
-    param(
-        [switch] $ExitIfErrors
-    )
-    write-verbose "`$error.count = $($error.count)"
-    write-verbose "`$LASTEXITCODE = $LastExitCode"    
-
-    if ($Host -and $Host.UI -and $Host.UI.RawUI) {
-        $wrapWidth = $Host.UI.RawUI.Buffersize.Width
-    }
-    else {
-        $wrapWidth = 9999
-    }
-
-    $doExit = $false
-    $reportString = "ERROR Report: No errors`n"
-
-    if ($error.count -or $LASTEXITCODE) {
-        $errorSummary = "`$LASTEXITCODE=$LastExitCode, `$Error.count=$($Error.count)"
-        $reportString = "ERROR Report: $errorSummary`n`n"
-
-        for ($i= $error.count -1; $i -ge 0; $i -= 1) {
-            write-verbose "Processing error $i"
-            $e = $error[$i]
-
-            $errorDetails  = "PS `$Error[$i]: `n"
-            $indentCount = 4
-
-            # $error can contain at least 2 kinda of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
-            # The information we need is found in the ErrorRecord objects, so unwrap them here if necessary
-            if ($e.ErrorRecord) {
-                $e = $e.ErrorRecord
-            }
-
-            $errorDetails += Limit-TextWidth -text $e.ToString() -width $wrapWidth -indent $indentCount
-            if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
-
-            if ($e.ScriptStackTrace) {
-                $errorDetails += Limit-TextWidth -text $e.ScriptStackTrace -width $wrapWidth -indent $indentCount
-                if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
-            }
-
-            $reportString += $errorDetails
-        }
-
-        if ($ExitIfErrors) { 
-            $doExit = $true
-            $reportString += "Exiting with returncode 1...`n" 
-        }
-    }
-
-    write-output "----`n$reportString----"
-    if ($doExit) { 
-        exit 1
-    }
-}
-
-$script:szInstallDir = "$env:ProgramFiles\7-Zip"
-set-alias sevenzip "${script:szInstallDir}\7z.exe"
-function Install-SevenZip {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
+function Install-SevenZip { 
     $OSArch = Get-OSArchitecture
-    if ($OSArch -match "i386") { 
-        $szFilename = "7z920.msi" 
+    $szDlPath = Get-WebUrl -url $URLs.SevenZipDownload.$OSArch -outDir $env:temp
+    try {
+        write-verbose "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
+        $msiCall = 'msiexec /qn /i "{0}"' -format $szDlPath
+        # Windows suxxx so msiexec sometimes returns right away? or something idk. fuck
+        Invoke-ExpressionAndCheck -command $msiCall -sleepSeconds 30
     }
-    elseif ($OSArch -match "amd64") { 
-        $szFilename = "7z920-x64.msi" 
+    finally {
+        rm -force $szDlPath
     }
-    else { 
-        throw "Cannot install 7-zip for an architecture of '$OSArch'" 
-    }
-
-    $szUrl = "http://7-zip.org/a/$szFilename"
-    $szDlPath = "$(Get-LabTempDir)\$szFilename"
-    Get-WebUrl -url $szUrl -downloadPath $szDlPath
-
-    write-verbose "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
-
-    msiexec /qn /i "$szDlPath"
-    sleep 30 # Windows is bad, written by bad people who write bad software. More like softWHEREdidyougetthisideaitSUCKS amirite??
-    if ($LASTEXITCODE -and ($LASTEXITCODE -ne 0)) { throw "External command failed with code '$LASTEXITCODE'" }
-
-    $szExePath = get-item (gcm sevenzip | select -expand definition)
-    write-verbose "Installed 7-zip to: $szExePath"
 }
+set-alias sevenzip "${env:ProgramFiles}\7-Zip\7z.exe"
 
 function Install-VBoxAdditions {
     [cmdletbinding()]
     param(
-        [parameter(ParameterSetName="FromIso",mandatory=$true)] [string] $isoPath,
-        [parameter(ParameterSetName="FromDisc",mandatory=$true)] [switch] $fromDisc
+        [parameter(mandatory=$true)] [string] $isoPath
     )
-
-    if ($PsCmdlet.ParameterSetName -match "FromIso") {
-        write-verbose "Function: $($MyInvocation.MyCommand)..."
-        $isoPath = resolve-path $isoPath | select -expand Path
-        $vbgaPath = "$(Get-LabTempDir)\InstallVbox"
+    $isoPath = resolve-path $isoPath | select -expand Path
+    $vbgaPath = "${env:Temp}\InstallVbox"
+    try {
         mkdir -force $vbgaPath
-
+    
         write-verbose "Extracting iso at '$isoPath' to directory at '$vbgaPath'..."
-        sevenzip x "$isoPath" "-o$vbgaPath"
-        if ($LASTEXITCODE -and ($LASTEXITCODE -ne 0)) { throw "External command failed with code '$LASTEXITCODE'" }
-    }
-    elseif ($PsCmdlet.ParameterSetName -match "FromDisc") {
-        foreach ($drive in (Get-PSDrive -PSProvider FileSystem)) {
-            if (test-path "$($drive.Name):\VboxWindowsAdditions.exe") {
-                $vbgaPath = "$($drive.Name):"
-                break
-            }
-        }
-    }
-    else {
-        throw "No such parameter set '$($psCmdlet.ParameterSetName)'"
-    }
-    if (-not "$vbgaPath") { throw "Could not find VBox Guest Additions" }
+        Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" -o"{1}"' -f $isoPath, $vbgaPath)
+        
+        write-verbose "Installing the Oracle certificate..."
+        $oracleCert = resolve-path "$vbgaPath\cert\oracle-vbox.cer" | select -expand path
+        # NOTE: Checking for exit code, but this command will fail with an error if the cert is already installed
+        Invoke-ExpressionAndCheck -command ('"{0}" add-trusted-publisher "{1}" --root "{1}"' -f "$vbgaPath\cert\VBoxCertUtil.exe",$oracleCert)
 
-    write-verbose "Installing the Oracle certificate..."
-    set-alias VboxCertUtil "$vbgaPath\cert\VBoxCertUtil.exe"
-    $oracleCert = resolve-path "$vbgaPath\cert\oracle-vbox.cer" | select -expand path
-    VboxCertUtil add-trusted-publisher $oracleCert --root $oracleCert
-    # NOTE: Checking for exit code, but this command will fail with an error if the cert is already installed
-    # TODO: what is the error code in that case? get it and ignore it here 
-    if ($LASTEXITCODE -and ($LASTEXITCODE -ne 0)) { throw "External command failed with code '$LASTEXITCODE'" }
-
-    write-verbose "Installing the virtualbox additions"
-    set-alias VBoxWindowsAdditions "$vbgaPath\VBoxWindowsAdditions.exe"
-    $startTime = get-date
-    VBoxWindowsAdditions /with_wddm /S # returns IMMEDIATELY
-    while (get-process -Name VBoxWindowsAdditions*) { write-verbose 'Waiting for VBox install to finish...'; sleep 1; }
-    $endTime = get-date
-    write-verbose "Running the VboxWindowsAdditions installer took $($endTime - $startTime | select -expand seconds) seconds"
+        write-verbose "Installing the virtualbox additions"
+        Invoke-ExpressionAndCheck -command ('"{0}" /with_wddm /S' -f "$vbgaPath\VBoxWindowsAdditions.exe") # returns IMMEDIATELY, goddamn fuckers
+        while (get-process -Name VBoxWindowsAdditions*) { write-verbose 'Waiting for VBox install to finish...'; sleep 1; }
+    }
+    finally {
+        rm -recurse -force $vbgaPath
+    }
 }
 
 function Disable-AutoAdminLogon {
@@ -302,71 +313,62 @@ function Disable-AutoAdminLogon {
     set-itemproperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 0    
 }
 
-function Enable-RDP {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
+function Enable-RDP { # TODO fixme
     netsh advfirewall firewall add rule name="Open Port 3389" dir=in action=allow protocol=TCP localport=3389
     reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
 }
 
-# TODO: only works on x86
 function Install-CompiledDotNetAssemblies {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
     # http://support.microsoft.com/kb/2570538
     # http://robrelyea.wordpress.com/2007/07/13/may-be-helpful-ngen-exe-executequeueditems/
 
-    set-alias ngen32 "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
-    ngen32 update /force /queue
-    ngen32 executequeueditems
-
-    if ((Get-OSArchitecture) -match "amd64") { 
-        set-alias ngen64 "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
-        ngen64 update /force /queue
-        ngen64 executequeueditems
+    $ngen = "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
+    Invoke-ExpressionAndCheck -command "$ngen update /force /queue"
+    Invoke-ExpressionAndCheck -command "$ngen executequeueditems"
+        
+    if ((Get-OSArchitecture) -match $ArchitectureId.amd64) { 
+        $ngen64 = "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
+        Invoke-ExpressionAndCheck -command "$ngen64 update /force /queue"
+        Invoke-ExpressionAndCheck -command "$ngen64 executequeueditems"
     }
 }
 
 function Compress-WindowsInstall {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
-    $temp = Get-LabTempDir
-
     $OSArch = Get-OSArchitecture
-    if ($OSArch -match "i386") { $udfArch = "i386" }
-    elseif ($OSArch -match "amd64") { $udfArch = "amd64" }
-    else {throw "Cannot compact for architecture '$OSArch'"}
+    try {
+        $udfZipPath = Get-WebUrl -url $URLs.UltraDefragDownload.$OSArch -outDir $env:temp
+        $udfExPath = "${env:temp}\ultradefrag-portable-6.1.0.$udfArch"
+        # This archive contains a folder - extract it directly to the temp dir
+        Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
 
-    $udfFilename = "ultradefrag-portable-6.1.0.bin.$udfArch.zip"
-    $udfUrl = "http://downloads.sourceforge.net/project/ultradefrag/stable-release/6.1.0/$udfFilename"
-    $udfZipPath = "$temp\$udfFilename"
-    Get-WebUrl -url $udfUrl -downloadPath $udfZipPath
-    sevenzip x "$udfZipPath" "-o$temp"
-    set-alias udefrag "$temp\ultradefrag-portable-6.1.0.$udfArch\udefrag.exe"
+        $sdZipPath = Get-WebUrl -url $URLs.SdeleteDownload -outDir $env:temp
+        $sdExPath = "${env:temp}\SDelete"
+        # This archive does NOT contain a folder - extract it to a subfolder (will create if necessary)
+        Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" "-o{1}"' -f $sdZipPath,$sdExPath)
 
-    $sdZipPath = "$temp\SDelete.zip"
-    Get-WebUrl -url http://download.sysinternals.com/files/SDelete.zip -downloadPath $sdZipPath
-    sevenzip x "$sdZipPath" "-o$temp"
-    set-alias sdelete "$temp\SDelete.exe"
+        stop-service wuauserv
+        rm -recurse -force ${env:WinDir}\SoftwareDistribution\Download
+        start-service wuauserv
 
-    stop-service wuauserv
-    rm -recurse -force ${env:WinDir}\SoftwareDistribution\Download
-    start-service wuauserv
-
-    udefrag --optimize --repeat "$env:SystemDrive"
-
-    reg.exe ADD HKCU\Software\Sysinternals\SDelete /v EulaAccepted /t REG_DWORD /d 1 /f
-    sdelete -q -z "$env:SystemDrive"
+        Invoke-ExpressionAndCheck -command ('{0} --optimize --repeat "{1}"' -f $udfExPath\udefrag.exe,"$env:SystemDrive")
+        
+        Set-ItemProperty -path HKCU\Software\Sysinternals\SDelete -name EulaAccepted -value 1 }
+        Invoke-ExpressionAndCheck -command ('{0} -q -z "{1}"' -f $sdExPath,$env:SystemDrive)
+    }
+    finally {
+        rm -recurse -force $udfZipPath,$udfExPath,$sdZipPath,$sdExPath -ErrorAction Continue
+    }
 }
 
 function Disable-WindowsUpdates {
-    if (-not (Test-AdminPrivileges)) {
-        throw "Cannot run without administrator privileges"
-    }
+    Test-AdminPrivileges -ThrowIfNotElevated
 
     $Updates = (New-Object -ComObject "Microsoft.Update.AutoUpdate").Settings
     if ($Updates.ReadOnly) { 
         throw "Cannot update Windows Update settings due to GPO restrictions." 
     }
 
-    $Updates.NotificationLevel = 1 #Disabled
+    $Updates.NotificationLevel = 1 # 1 = Disabled lol
     $Updates.Save()
     $Updates.Refresh()
 }
@@ -386,33 +388,25 @@ function Enable-MicrosoftUpdate {
 }
 
 function Install-Chocolatey {
+    [cmdleetbinding()] param()
+    
     $chocoExePath = "${env:ProgramData}\Chocolatey\bin"
-
     if ($($env:Path).ToLower().Contains($($chocoExePath).ToLower())) {
         write-verbose "Chocolatey already in path, exiting..."
         return
     }
 
-    # Add to system PATH
     $systemPath = [Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)
     $systemPath += ";$chocoExePath"
     [Environment]::SetEnvironmentVariable("PATH", $systemPath, [System.EnvironmentVariableTarget]::Machine)
 
-    # Update local process' path
     $env:Path = $systemPath
     $userPath = [Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::User)
     if ($userPath) { $env:Path += ";$userPath" }
 
-    # Run the installer
     iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
 }
 
-<#
-.description
-Formerly: 
-- reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v HideFileExt /t REG_DWORD /d 0 /f
-- reg.exe ADD HKCU\Console /v QuickEdit /t REG_DWORD /d 1 /f
-#>
 function Set-UserOptions {
     [cmdletbinding()] param(
         [switch] $ShowHiddenFiles,
@@ -443,7 +437,7 @@ function Disable-HibernationFile {
     Set-ItemProperty -path $powerKey -name HibernateEnabled -value 0          # disable hibernation altogether
 }
 
-function Enable-WinRM {
+function Enable-WinRM { # TODO fixme, would prefer this to be in Powershell if possible. also it's totally insecure
     [cmdletbinding()] param()
     write-verbose "Enabling WinRM..."
 
@@ -502,7 +496,7 @@ function Enable-WinRM {
     #>
 }
 
-function Set-PasswordExpiry {
+function Set-PasswordExpiry { # TODO fixme use pure Powershell
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] [string] $accountName,
         [parameter(mandatory=$true)] [bool] $expirePassword
@@ -512,49 +506,7 @@ function Set-PasswordExpiry {
     cmd.exe /c wmic useraccount where "name='$accountName'" set "PasswordExpires=$pe"
 }
 
-<#
-.description
-Get the path of the Windows ADK or AIK or whatever the fuck they're calling it from a format string
-- {0} is always the WAIK directory 
-    - e.g. "C:\Program Files (x86)\Windows Kits\8.1\" 
-    - e.g. "X:\Program Files\Windows Kits\8.0"
-- {1} is always the host architecture (x86 or amd64)
-    - i THINK this is right, but I don't understand WHY. why do you need an amd64 version of oscdimg.exe? 
-    - however, there are arm executables lying around, and i definitely can't execute those. wtf? 
-
-So we expect a string like "{0}\bin\{1}\wsutil.exe"
-#>
-function Get-AdkPath {
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string] $pathFormatString
-    )
-
-    $adkPath = ""
-    $possibleAdkPaths = @("${env:ProgramFiles(x86)}\Windows Kits\8.1","${env:ProgramFiles}\Windows Kits\8.1")
-    $possibleAdkPaths |% { if (test-path $_) { $adkPath = $_ } }
-    if (-not $adkPath) { throw "Could not find the Windows Automated Installation Kit" }
-    write-verbose "Found the WAIK at '$adkPath'"
-
-    $arch = Get-OSArchitecture
-    switch ($arch) {
-        $ArchitectureId.i386 { 
-            $formatted = $pathFormatString -f $adkPath,$waikArch
-            if (test-path $formatted) { return $formatted }
-        }
-        $ArchitectureId.amd64 { 
-            foreach ($waikArch in @("amd64","x64")) {
-                $formatted = $pathFormatString -f $adkPath,$waikArch
-                if (test-path $formatted) { return $formatted }
-            }
-        }
-        default { 
-            throw "Could not determine architecture of '$arch'" 
-        }
-    }
-    throw "Could not resolve format string '$pathFormatString' to an existing path"
-}
-
-function New-WindowsInstallMedia {
+function New-WindowsInstallMedia { # TODO fixme not sure I wanna handle temp dirs this way??
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] [string] $sourceIsoPath,
         [parameter(mandatory=$true)] [string] $installMediaTemp,  # WILL BE DELETED
@@ -596,63 +548,32 @@ function New-WindowsInstallMedia {
     dismount-diskimage -imagepath $sourceIsoPath
 }
 
-<#
-.notes 
-For use with WSUS Offline Updater
-#>
-function Get-WOShortCode {
-    param(
-        [parameter(mandatory=$true)] [string] $OSName,
-        [parameter(mandatory=$true)] [string] $OSArchitecture
-    )
-
-    # I'm adding to this list slowly, only as I encounter the actual names from install.wim 
-    # on the trial CDs when I actually try to install them
-    $shortCodeTable = @{
-        "8.1" = "w63"
-    }
-
-    $shortCodeTable.keys |% { if ($OSName -match $_) { $shortCode = $shortCodeTable[$_] } }
-    if (-not $shortCode) { throw "Could not determine shortcode for an OS named '$OSName'" }
-
-    if ($OSArchitecture -match $ArchitectureId.i386) { $shortCode += "" }
-    elseif ($OSArchitecture -match $ArchitectureId.amd64) { $shortCode += "-x64" }
-    else { throw "Could not determine shortcode for an OS of architecture '$OSArchitecture'" }
-
-    write-verbose "Found shortcode '$shortcode' for OS named '$OSName' of architecture '$OSArchitecture'"
-    return $shortCode
-}
-
-
-### TEMP SECTION
-# This section contains stuff that's probably only useful in development
-
-function Get-DownloadedUpdates {
+function Get-WindowsUpdateUrls { # TODO: is this how we wanna do temps tho?
     [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string] $wsusOfflineClientDir
+        [parameter(mandatory=$true)] $windowsVersion,
+        [parameter(mandatory=$true)] $osArchitecture,
+        [parameter(mandatory=$true)] $packageXml,
+        [parameter(mandatory=$true)] $outFile,
+        [switch] $debugSaveXslt
     )
-    $updateFiles = ls $wsusOfflineClientDir\w*\*\*kb*
-    #$updateFiles = ls $wsusOfflineClientDir\w63\glb\*kb* | select -first 20
-    $updates = @()
-    foreach ($u in $updateFiles) {
-        $update = New-Object PSObject -Property @{ Item = $u }
-        if ($u.name -match ".*(kb[0-9]+(\-v[0-9]+)?).*") {
-            $kb = $matches[1]
-            Add-Member -inputObject $update -NotePropertyMembers @{KB=$kb}
-        }
-        $updates += @($update)
-    }
-    return $updates
-}
-function SearchUpdatesList {
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] $updateList,
-        [parameter(mandatory=$true)] [string] $kbFragment
-    )
-    return $updateList |? { $_.kb -match $kbFragment }
+    $xsltPath = [IO.Path]::GetTempFileName()
+    write-verbose "Downloading XSLT to '$xsltPath'"
+        
+    if ($osArchitecture -match $ArchitectureId.i386) { $arch = "x86" }
+    elseif ($osArchitecture -match $ArchitectureId.amd64) { $arch = "x64" }
+    else { throw "Dunno bout architecture '$osArchitecture'" }
+    
+    $xsltUrl = "$WSUSOfflineRepoBaseUrl/xslt/ExtractDownloadLinks-$windowsVersion-$arch-glb.xsl"
+    Get-WebFile -url $xsltUrl -outFile $xsltPath
+    
+    Apply-XmlTransform -xmlFile $packageXml -xsltFile $xsltPath -outFile $outFile
+    if (-not $debugSaveXslt) { rm -force $xsltPath }
+    
+    return $outFile
 }
 
-# Exports:
+
+# Exports: #TODO
 $emmParams = @{
     Alias = @("sevenzip")
     Variable = @("ArchitectureId")

@@ -8,7 +8,7 @@ Which build actions do you want to perform?
 .parameter tag
 A tag for the temporary directory, the output directory, and the resulting Vagrant box
 #>
-function buildlab {
+#function buildlab {
 [cmdletbinding()]
 param(
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")] 
@@ -132,35 +132,27 @@ function Apply-WindowsUpdatesToIso {
     else {
         write-verbose "Using EXISTING install.wim at '$installWim'"
     }
-    Set-ItemProperty -path $wimFile -name IsReadOnly -value $false -force 
+    Set-ItemProperty -path $installWim -name IsReadOnly -value $false -force 
 
     $arch = Get-BootWimArchitecture -wimFile "${mountedDrive}:\sources\boot.wim" -verbose:$verbose
     dismount-diskimage -imagepath $inputIso
 
     $wimInfo = Get-WindowsImage -imagePath $installWim
     $shortCode = Get-WOShortCode -OSName $wimInfo[0].ImageName -OSArchitecture $arch
-    $updatePath = resolve-path "${wsusOfflineDir}\client\$shortCode\glb" | select -expand Path
+    #$updatePath = resolve-path "${wsusOfflineDir}\client\$shortCode\glb" | select -expand Path
+	$updatePath = "D:\iso\wintriallab\temp-slipstream\WSUSCache\w63-i386-glb"
 
     foreach ($wimInfo in (Get-WindowsImage -imagePath $installWim)) {
-        write-verbose "Attempging to apply WSUS Offline Updates to $wimInfo)"
         $wimMountSubdir = mkdir "${wimMountDir}\$($wimInfo.ImageIndex)" -force | select -expand fullname
         Mount-WindowsImage -imagePath $installWim -index $wimInfo.ImageIndex -path $wimMountSubdir
 
+		write-verbose "Applying '$((ls $updatePath).count)' updates to '$wimInfo'''"
         try {
             Add-WindowsPackage -PackagePath $updatePath -path $wimMountSubdir
         }
         catch {
             write-verbose "Caught error(s) when installing packages:`n`n$_`n"
         }
-        # foreach ($update in (ls $updatePath\* -include *.cab,*.msu)) {
-        #     write-verbose "Applying update at $update to directory at $wimMountSubdir"
-        #     try {
-        #         Add-WindowsPackage -PackagePath $update -path $wimMountSubdir | out-null
-        #     }
-        #     catch {
-        #         write-verbose "Failed to add package '$update' to mounted WIM at '$wimMountSubdir' with error '$_'; continuing..."
-        #     }
-        # }
         
         Dismount-WindowsImage -Path $wimMountSubdir -Save 
     }

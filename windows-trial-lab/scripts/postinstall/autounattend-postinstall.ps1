@@ -15,7 +15,10 @@ catch {
     write-host "======== CALL STACK ========"
     Get-PSCallStack | format-list
     write-host "======== ERROR STACK ========"
-    Show-ErrorReport
+	for ($i=0; $i<$error.count; $i+=1) {
+		write-host "`$error[$i]"
+		write-host $error[$i]
+	}
     write-host "======== ========"
     exit 666
 }
