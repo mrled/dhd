@@ -1,233 +1,207 @@
-param($global:RestartRequired=0,
-        $global:MoreUpdates=0,
-        $global:MaxCycles=5,
-        $MaxUpdatesPerCycle=500)
+<#
+#>
+param(
+	[int] $MaxCycles = 5,
+	[int] $global:MaxUpdatesPerCycle = 500,
+	[string] $global:PostUpdateExpression
+)
 
-$Logfile = "C:\Windows\Temp\win-updates.log"
+# TODO: Make sure every path of my program is writing unique log messages. Make sure all those paths are working.
+# TODO: Give pass event IDs for every event. ??
 
-function LogWrite {
-   Param ([string]$logstring)
-   $now = Get-Date -format s
-   Add-Content $Logfile -value "$now $logstring"
-   Write-Host $logstring
+function Run-PostUpdate {
+	if ($global:PostUpdateExpression) {
+		Write-WinUpEventLog -message "Running PostUpdate script at: ${global:PostUpdateExpression}"
+		Invoke-Expression $global:PostUpdateExpression
+	}
 }
-
-function Check-ContinueRestartOrEnd() {
+function Write-WinUpEventLog {
+	param(
+		[parameter(mandatory=$true)] [String] $message
+        [int] $eventId = 0,
+        [ValidateSet("Error",'Warning','Information','SuccessAudit','FailureAudit')] $entryType = "Information"
+	)
+	$eventLogName = "Marionettist"
+	if (-not (get-eventlog -logname * |? { $_.Log -eq $eventLogName }))
+    	New-EventLog -Source $MyInvocation.MyCommand.Path -LogName $eventLogName
+	}
+	$messagePlus = "$message`r`n`r`nScript: $($MyInvocation.MyCommand.Path)`r`nUser: ${env:USERDOMAIN}\${env:USERNAME}"
+    Write-EventLog -LogName $eventLogName -Source $MyInvocation.MyCommand.Path -EventID $eventId -EntryType $entryType -Message $MessagePlus	
+}
+# TODO: redundancy in these 2 functions
+function Remove-RestartRegistryKey {
     $RegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
-    $RegistryEntry = "InstallWindowsUpdates"
-    switch ($global:RestartRequired) {
-        0 {
-            $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
-            if ($prop) {
-                LogWrite "Restart Registry Entry Exists - Removing It"
-                Remove-ItemProperty -Path $RegistryKey -Name $RegistryEntry -ErrorAction SilentlyContinue
-            }
-
-            LogWrite "No Restart Required"
-            Check-WindowsUpdates
-
-            if (($global:MoreUpdates -eq 1) -and ($script:Cycles -le $global:MaxCycles)) {
-                Install-WindowsUpdates
-            } elseif ($script:Cycles -gt $global:MaxCycles) {
-                LogWrite "Exceeded Cycle Count - Stopping"
-                Invoke-Expression "a:\openssh.ps1 -AutoStart"
-            } else {
-                LogWrite "Done Installing Windows Updates"
-                Invoke-Expression "a:\openssh.ps1 -AutoStart"
-            }
-        }
-        1 {
-            $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
-            if (-not $prop) {
-                LogWrite "Restart Registry Entry Does Not Exist - Creating It"
-                Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File $($script:ScriptPath) -MaxUpdatesPerCycle $($MaxUpdatesPerCycle)"
-            } else {
-                LogWrite "Restart Registry Entry Exists Already"
-            }
-
-            LogWrite "Restart Required - Restarting..."
-            Restart-Computer
-        }
-        default {
-            LogWrite "Unsure If A Restart Is Required"
-            break
-        }
-    }
+    $RegistryEntry = "MarionettistInstallWindowsUpdates"
+	$psCall = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File $($MyInvocation.MyCommand.Path) -MaxUpdatesPerCycle ${global:MaxUpdatesPerCycle}"
+	if ($global:PostUpdateExpression) { $psCall += " -PostUpdateExpression '$global:PostUpdateExpression'"}
+	Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value $psCall
+}
+function Restart-ComputerAndUpdater {
+    $RegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+    $RegistryEntry = "MarionettistInstallWindowsUpdates"
+	$prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
+	if ($prop) { Remove-ItemProperty -Path $RegistryKey -Name $RegistryEntry -ErrorAction SilentlyContinue }
+	Restart-Computer
 }
 
-function Install-WindowsUpdates() {
-    $script:Cycles++
-    LogWrite "Evaluating Available Updates with limit of $($MaxUpdatesPerCycle):"
+<#
+.notes
+Returns a boolean representing whether a reboot is required
+#>
+function Install-WindowsUpdates {
+	[cmdletbinding()] param(
+		[parameter(mandatory=$true)] [Microsoft.Update.Session] $UpdateSession,
+		[parameter(mandatory=$true)] [Microsoft.Update.UpdateColl] $SearchResult,
+	)
+    Write-WinUpEventLog -message "Evaluating Available Updates with limit of $($MaxUpdatesPerCycle):"
     $UpdatesToDownload = New-Object -ComObject 'Microsoft.Update.UpdateColl'
-    $script:i = 0;
-    $CurrentUpdates = $SearchResult.Updates
-    while($script:i -lt $CurrentUpdates.Count -and $script:CycleUpdateCount -lt $MaxUpdatesPerCycle) {
-        $Update = $CurrentUpdates.Item($script:i)
-        if (($Update -ne $null) -and (!$Update.IsDownloaded)) {
-            [bool]$addThisUpdate = $false
+    $updateCtr = 0
+	$cycleUpdateCount = 0
+	
+    while (($updateCtr -lt $SearchResult.Updates.Count) -and ($cycleUpdateCount -lt $MaxUpdatesPerCycle)) {
+        $Update = $SearchResult.Updates.Item($updateCtr)
+        if ($Update -and (!$Update.IsDownloaded)) {
             if ($Update.InstallationBehavior.CanRequestUserInput) {
-                LogWrite "> Skipping: $($Update.Title) because it requires user input"
+                Write-WinUpEventLog -message "Skipping: $($Update.Title) because it requires user input"
             } else {
-                if (!($Update.EulaAccepted)) {
-                    LogWrite "> Note: $($Update.Title) has a license agreement that must be accepted. Accepting the license."
-                    $Update.AcceptEula()
-                    [bool]$addThisUpdate = $true
-                    $script:CycleUpdateCount++
-                } else {
-                    [bool]$addThisUpdate = $true
-                    $script:CycleUpdateCount++
-                }
-            }
-
-            if ([bool]$addThisUpdate) {
-                LogWrite "Adding: $($Update.Title)"
+                if (! $Update.EulaAccepted) { $Update.AcceptEula() }
+				$cycleUpdateCount++
+                Write-WinUpEventLog -message "Adding: $($Update.Title)"
                 $UpdatesToDownload.Add($Update) |Out-Null
             }
         }
-        $script:i++
+        $updateCtr++
     }
 
     if ($UpdatesToDownload.Count -eq 0) {
-        LogWrite "No Updates To Download..."
+        Write-WinUpEventLog -message "No Updates To Download..."
     } else {
-        LogWrite 'Downloading Updates...'
-        $ok = 0;
-        while (! $ok) {
+        Write-WinUpEventLog -message 'Downloading Updates...'
+        $ok = $false
+		$attempts = 0
+		$maxAttempts = 12 # TODO: does this really need to be 12?
+        while ((! $ok) -and ($attempts -lt $maxAttempts)) {
             try {
                 $Downloader = $UpdateSession.CreateUpdateDownloader()
                 $Downloader.Updates = $UpdatesToDownload
                 $Downloader.Download()
-                $ok = 1;
+                $ok = $true
             } catch {
-                LogWrite $_.Exception | Format-List -force
-                LogWrite "Error downloading updates. Retrying in 30s."
-                $script:attempts = $script:attempts + 1
+				$message = "Error downloading updates. Retrying in 30s.`r`n`r`n$($_.Exception | Format-List -force)"
+                Write-WinUpEventLog -message $message
+                $attempts = $attempts + 1
                 Start-Sleep -s 30
             }
         }
     }
 
     $UpdatesToInstall = New-Object -ComObject 'Microsoft.Update.UpdateColl'
-    [bool]$rebootMayBeRequired = $false
-    LogWrite 'The following updates are downloaded and ready to be installed:'
+    $message = 'The following updates are downloaded and ready to be installed:'
     foreach ($Update in $SearchResult.Updates) {
-        if (($Update.IsDownloaded)) {
-            LogWrite "> $($Update.Title)"
+        if ($Update.IsDownloaded) {
+            $message += "`r`n> $($Update.Title)"
             $UpdatesToInstall.Add($Update) |Out-Null
-
-            if ($Update.InstallationBehavior.RebootBehavior -gt 0){
-                [bool]$rebootMayBeRequired = $true
-            }
         }
     }
+	Write-WinUpEventLog -message $message
 
-    if ($UpdatesToInstall.Count -eq 0) {
-        LogWrite 'No updates available to install...'
-        $global:MoreUpdates=0
-        $global:RestartRequired=0
-        Invoke-Expression "a:\openssh.ps1 -AutoStart"
-        break
-    }
+	$RebootRequired = $false
 
-    if ($rebootMayBeRequired) {
-        LogWrite 'These updates may require a reboot'
-        $global:RestartRequired=1
-    }
+    if ($UpdatesToInstall.Count -gt 0) {
+		$Installer = $UpdateSession.CreateUpdateInstaller()
+		$Installer.Updates = $UpdatesToInstall
+		$InstallationResult = $Installer.Install()
+		$RebootRequired = [bool]$InstallationResult.RebootRequired
 
-    LogWrite 'Installing updates...'
+		$message =  "Windows Update complete. Installation Result: $($InstallationResult.ResultCode)."
+		$message += "`r`nReboot Required: $RebootRequired"
 
-    $Installer = $script:UpdateSession.CreateUpdateInstaller()
-    $Installer.Updates = $UpdatesToInstall
-    $InstallationResult = $Installer.Install()
-
-    LogWrite "Installation Result: $($InstallationResult.ResultCode)"
-    LogWrite "Reboot Required: $($InstallationResult.RebootRequired)"
-    LogWrite 'Listing of updates installed and individual installation results:'
-    if ($InstallationResult.RebootRequired) {
-        $global:RestartRequired=1
-    } else {
-        $global:RestartRequired=0
-    }
-
-    for($i=0; $i -lt $UpdatesToInstall.Count; $i++) {
-        New-Object -TypeName PSObject -Property @{
-            Title = $UpdatesToInstall.Item($i).Title
-            Result = $InstallationResult.GetUpdateResult($i).ResultCode
-        }
-        LogWrite "Item: " $UpdatesToInstall.Item($i).Title
-        LogWrite "Result: " $InstallationResult.GetUpdateResult($i).ResultCode;
-    }
-
-    Check-ContinueRestartOrEnd
+		for($i=0; $i -lt $UpdatesToInstall.Count; $i++) {
+			New-Object -TypeName PSObject -Property @{
+				Title = $UpdatesToInstall.Item($i).Title
+				Result = $InstallationResult.GetUpdateResult($i).ResultCode
+			}
+			$message += "`r`n`r`nItem: $($UpdatesToInstall.Item($i).Title)"
+			$message += "`r`nResult: $($InstallationResult.GetUpdateResult($i).ResultCode)"
+		}
+		Write-WinUpEventLog -message $message
+	}
+	else {
+        Write-WinUpEventLog -message 'No updates available to install...'
+	}
+	return $RebootRequired
 }
 
+# TODO: Create the UpdateSession object outside of this function and pass it in 
+# TODO: Do not return the UpdateSession object 
+# TODO: Return the SearchResult object only 
+# TODO: throw if a reboot is required - ??
+# TODO: once rebooting is taken out of Check-WindowsUpdate, delete Restart-ComputerAndUpdater function and handle reboots in the caller
 function Check-WindowsUpdates() {
-    LogWrite "Checking For Windows Updates"
-    $Username = $env:USERDOMAIN + "\" + $env:USERNAME
+	Write-WinUpEventLog -message "Checking for Windows Updates at $(Get-Date)" -eventId 104
 
-    New-EventLog -Source $ScriptName -LogName 'Windows Powershell' -ErrorAction SilentlyContinue
-
-    $Message = "Script: " + $ScriptPath + "`nScript User: " + $Username + "`nStarted: " + (Get-Date).toString()
-
-    Write-EventLog -LogName 'Windows Powershell' -Source $ScriptName -EventID "104" -EntryType "Information" -Message $Message
-    LogWrite $Message
-
-    $script:UpdateSearcher = $script:UpdateSession.CreateUpdateSearcher()
-    $script:successful = $FALSE
-    $script:attempts = 0
-    $script:maxAttempts = 12
-    while(-not $script:successful -and $script:attempts -lt $script:maxAttempts) {
+	$RetVal = New-Object PSObject -Property {
+		UpdateSession = $null
+		SearchResult = $null
+	}
+	
+	$RetVal.UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
+	$RetVal.UpdateSession.ClientApplicationID = 'Marionettist Windows Update Installer'
+    $UpdateSearcher = $RetVal.UpdateSession.CreateUpdateSearcher()
+    $successful = $FALSE
+    $attempts = 0
+    $maxAttempts = 12
+    while(-not $successful -and $attempts -lt $maxAttempts) {
         try {
-            $script:SearchResult = $script:UpdateSearcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
-            $script:successful = $TRUE
+            $RetVal.SearchResult = $UpdateSearcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
+            $successful = $TRUE
         } catch {
-            LogWrite $_.Exception | Format-List -force
-            LogWrite "Search call to UpdateSearcher was unsuccessful. Retrying in 10s."
-            $script:attempts = $script:attempts + 1
+			$message = "Search call to UpdateSearcher was unsuccessful. Retrying in 10s.`r`n`r`n$($_.Exception | Format-List -force)"
+			Write-WinUpEventLog -message $message
+            $attempts += 1
             Start-Sleep -s 10
         }
     }
-
-    if ($SearchResult.Updates.Count -ne 0) {
-        $Message = "There are " + $SearchResult.Updates.Count + " more updates."
-        LogWrite $Message
+	
+    if ($RetVal.SearchResult.Updates.Count -ne 0) {
+        Write-WinUpEventLog -message "There are $($RetVal.SearchResult.Updates.Count) remaining updates"
         try {
-            for($i=0; $i -lt $script:SearchResult.Updates.Count; $i++) {
-              LogWrite $script:SearchResult.Updates.Item($i).Title
-              LogWrite $script:SearchResult.Updates.Item($i).Description
-              LogWrite $script:SearchResult.Updates.Item($i).RebootRequired
-              LogWrite $script:SearchResult.Updates.Item($i).EulaAccepted
-          }
-            $global:MoreUpdates=1
+            for($i=0; $i -lt $RetVal.SearchResult.Updates.Count; $i++) {
+              	$message  = "Remaining Update: $($RetVal.SearchResult.Updates.Item($i).Title)"
+              	$message += "`r`n$($RetVal.SearchResult.Updates.Description($i).Title)"
+              	$message += "`r`n$($RetVal.SearchResult.Updates.RebootRequired($i).Title)"
+              	$message += "`r`n$($RetVal.SearchResult.Updates.EulaAccepted($i).Title)"
+				Write-WinUpEventLog -message $message
+          	}
         } catch {
-            LogWrite $_.Exception | Format-List -force
-            LogWrite "Showing SearchResult was unsuccessful. Rebooting."
-            $global:RestartRequired=1
-            $global:MoreUpdates=0
-            Check-ContinueRestartOrEnd
-            LogWrite "Show never happen to see this text!"
-            Restart-Computer
+			$message = "Showing SearchResult was unsuccessful. Rebooting`r`n`r`n$($_.Exception | Format-List -force)"
+			Write-WinUpEventLog -message $message
+			# TODO: should return message that an error indicating restart was required
+			Restart-ComputerAndUpdater
         }
     } else {
-        LogWrite 'There are no applicable updates'
-        $global:RestartRequired=0
-        $global:MoreUpdates=0
+        Write-WinUpEventLog -message 'There are no applicable updates'
     }
+	return $RetVal
 }
 
-$script:ScriptName = $MyInvocation.MyCommand.ToString()
-$script:ScriptPath = $MyInvocation.MyCommand.Path
-$script:UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
-$script:UpdateSession.ClientApplicationID = 'Packer Windows Update Installer'
-$script:UpdateSearcher = $script:UpdateSession.CreateUpdateSearcher()
-$script:SearchResult = New-Object -ComObject 'Microsoft.Update.UpdateColl'
-$script:Cycles = 0
-$script:CycleUpdateCount = 0
-
-Check-WindowsUpdates
-if ($global:MoreUpdates -eq 1) {
-    Install-WindowsUpdates
-} else {
-    Check-ContinueRestartOrEnd
+Remove-RestartRegistryKey
+for ($cycleCtr in 0..$maxCycles) {
+	Write-WinUpEventLog -message "Starting to check for updates. Cycle $cycleCtr of maximum $maxCycles"
+	$CheckedUpdates = Check-WindowsUpdates
+	$RebootRequired = $false
+	$DidUpdate = $false
+	if ($CheckedUpdates.SearchResult.Updates.Count > 0) {
+    	$RebootRequired = Install-WindowsUpdates -session $CheckedUpdates.UpdateSession
+		$DidUpdate = $true
+	}
+	if ($RebootRequired) {
+		Write-WinUpEventLog -message "Restart Required - Restarting..."
+		Restart-ComputerAndUpdater
+	}
+	if (-not $didUpdate) { break }
 }
 
+Run-PostUpdate
+
+# Original version was 234 lines
