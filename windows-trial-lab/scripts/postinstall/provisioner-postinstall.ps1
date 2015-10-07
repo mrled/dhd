@@ -6,7 +6,7 @@ Don't require parameters - it won't run with parameters during post install. Thi
 param(
     $packerBuildName = ${env:PACKER_BUILD_NAME},
     $packerBuilderType = ${env:PACKER_BUILDER_TYPE},
-    $tempDir = ${env:WinTrialLabTemp} # calculated later on if this is empty
+    $tempDir # calculated later on if this is empty
 )
 
 $errorActionPreference = "stop"
@@ -20,8 +20,6 @@ if ($packerBuilderType -notmatch "virtualbox") {
 
 $LASTEXITCODE = 0 # just in case 
 
-# Wrap all my function calls in try/finally to remove the temp dir
-if ($tempDir) { $env:WinTrialLabTemp = $tempDir }
 import-module $PSScriptRoot\wintriallab-postinstall.psm1
 try {
     Install-SevenZip
@@ -29,7 +27,6 @@ try {
     Install-VBoxAdditions -fromDisc
     Disable-AutoAdminLogon
     Enable-RDP
-    #Install-VagrantSshKey 
     Install-Chocolatey
 
     $suoParams = @{ 
@@ -59,8 +56,3 @@ catch {
     write-host "======== ========"
     exit 666
 }
-finally {
-    write-host "THE END"
-    #rm -recurse -force (Get-LabTempDir)
-}
-

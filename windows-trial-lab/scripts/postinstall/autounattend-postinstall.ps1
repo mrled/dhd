@@ -4,10 +4,10 @@ param()
 import-module $PSScriptRoot\wintriallab-postinstall.psm1
 
 try {
-    #Enable-WinRM
     Set-PasswordExpiry -accountName "vagrant" -expirePassword $false
     Disable-HibernationFile
     Enable-MicrosoftUpdate
+    #Enable-WinRM
 }
 catch {
     write-host "======== CAUGHT EXCEPTION ========"
