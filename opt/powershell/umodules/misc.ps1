@@ -210,6 +210,12 @@ if (test-path $env:LocalAppData\Pandoc\pandoc.exe) {
     set-alias pandoc $env:LocalAppData\Pandoc\pandoc.exe
 }
 
+if (test-path "${env:ProgramFiles}\Oracle\VirtualBox") { 
+    foreach ($exe in ls "${env:ProgramFiles}\Oracle\VirtualBox\*" -include *.exe) {
+        set-alias $exe.baseName $exe.fullname
+    }
+}
+
 #if (test-path C:\Chocolatey) {
 #    set-alias nuget C:\Chocolatey\chocolateyinstall\nuget.exe
     #}
@@ -1429,13 +1435,15 @@ set-alias wj Wait-Job
 
 function Format-XML {
     Param (
-        [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)] $xml
+        [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)] [System.Array] $xml
     ) 
-    $StringWriter = New-Object system.io.stringwriter 
-    $XmlWriter = New-Object system.xml.xmltextwriter($StringWriter) 
-    $XmlWriter.Formatting = [System.xml.formatting]::Indented 
-    $xml.WriteContentTo($XmlWriter) 
-    $StringWriter.ToString() 
+    foreach ($xmlItem in $xml) {
+        $StringWriter = New-Object system.io.stringwriter 
+        $XmlWriter = New-Object system.xml.xmltextwriter($StringWriter) 
+        $XmlWriter.Formatting = [System.xml.formatting]::Indented 
+        $xmlItem.WriteContentTo($XmlWriter) 
+        $StringWriter.ToString() 
+    }
 }
 
 set-alias PrettyPrint-XML Format-XML
