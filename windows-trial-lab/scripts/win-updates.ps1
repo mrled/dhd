@@ -1,8 +1,6 @@
 <#
 .synopsis
 Run Windows Update, installing all available updates and rebooting as necessary
-.description
-This script can be run directly, but it can also be dot-sourced to get access to internal functions without automatically checking for updates, applying them, or rebooting
 .parameter MaxCycles
 The number of times to check for updates before forcing a reboot, even if Windows Update has not indicated that one is required 
 .parameter ScriptProductName
@@ -13,24 +11,30 @@ TODO: the parenthetical is nonobvious behavior and should be eliminated. In fact
 .parameter NoRestart
 Print a message to the screen instead of actually restarting the computer; useful for debugging
 .notes
-TODO: Make sure every path of my program is writing unique log messages. Make sure all those paths are working.
-TODO: Give pass event IDs for every event. ??
+This script can be run directly, but it can also be dot-sourced to get access to internal functions without automatically checking for updates, applying them, or rebooting
+This script is intended to be 100% standalone because it needs to be able to tell Windows to call it again upon reboot. There are intentionally no dependencies, and features related to Windows Update that don't fit here (such as enable Microsoft Update) should live elsewhere
 #>
 param(
     [int] $MaxCycles = 5,
-    [string] $ScriptProductName = "Marionettist",
+    [string] $ScriptProductName = "MarionettistWindowsUpdate",
     [string] $PostUpdateExpression,
-    [switch] $NoRestart
+    [switch] $NoRestart,
+    [switch] $RunFromRegistry
 )
+
+<# Notes on the code: 
+
+I'm trying to use StrictMode. That ends up making some code more complex than it would have to be otherwise. For instance, sometimes I have to check that a property exists (like $SomeVar.PSObject.Properties['PropertyName']) before I can use it. 
+
+TODO: Make sure every path of my program is writing unique log messages. Make sure all those paths are working.
+TODO: Pass unique event IDs for every event to Write-WinUpEventLog. ??
+#>
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -version 2.0
 
 # I need to get the path to this script from inside functions, which mess with the $MyInvocation variable
 $script:ScriptPath = $MyInvocation.MyCommand.Path  
-
-$script:RestartRegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
-$script:RestartRegistryProperty = "${ScriptProductName}InstallWindowsUpdates"
 
 <#
 .synopsis
@@ -48,8 +52,9 @@ function Write-WinUpEventLog {
         New-EventLog -Source $ScriptProductName -LogName $eventLogName
     }
     $messagePlus = "$message`r`n`r`nScript: $($script:ScriptPath)`r`nUser: ${env:USERDOMAIN}\${env:USERNAME}"
-    Write-Host "====Writing to $ScriptProductName event log====`r`n$messagePlus`r`n"
-    Write-EventLog -LogName $eventLogName -Source $ScriptProductName -EventID $eventId -EntryType $entryType -Message $MessagePlus    
+    Write-Host -foreground magenta "====Writing to $ScriptProductName event log===="
+    write-host -foreground darkgray "$messagePlus`r`n"
+    Write-EventLog -LogName $eventLogName -Source $ScriptProductName -EventID $eventId -EntryType $entryType -Message $MessagePlus
 }
 
 <#
@@ -61,41 +66,20 @@ function Set-RestartRegistryEntry {
         [parameter(mandatory=$true)] [int] $CyclesRemaining,
         [string] $scriptPath = $script:ScriptPath
     )
+    $RestartRegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+    $RestartRegistryProperty = "$ScriptProductName"
     $psCall = @(
         "$PSHOME\powershell.exe"
         ('-File "{0}"' -f $scriptPath)
         "-MaxCycles $CyclesRemaining"
         "-ScriptProductName $ScriptProductName"
+        "-RunFromRegistry"
         ('-PostUpdateExpression "{0}"' -f "$PostUpdateExpression")
     )
-    $message = "Setting registry key: {0}\{1}`r`n{2}" -f $script:RestartRegistryKey, $script:RestartRegistryProperty, ($psCall -join " ")
+    $message = "Setting the Restart Registry Key at: {0}\{1}`r`n{2}" -f $script:RestartRegistryKey, $script:RestartRegistryProperty, ($psCall -join " ")
     Write-WinUpEventLog -message $message
+    New-Item $script:RestartRegistryKey -force | out-null
     Set-ItemProperty -Path $script:RestartRegistryKey -Name $script:RestartRegistryProperty -Value ($psCall -join " ")
-}
-
-<#
-.synopsis
-If set, unset the registry property which would run this script on reboot 
-#>
-function Unset-RestartRegistryEntry {
-    try {
-        Get-ItemProperty $script:RestartRegistryKey | select $script:RestartRegistryProperty | out-null 
-        Remove-ItemProperty -Path $script:RestartRegistryKey -Name $script:RestartRegistryProperty -ErrorAction SilentlyContinue 
-    }
-    catch {} # The key or entry did not exist
-}
-
-<#
-.synopsis
-Return the registry entry which runs this script on reboot, if present
-#>
-function Get-RestartRegistryEntry {
-    try {
-        return Get-ItemProperty $script:RestartRegistryKey | select $script:RestartRegistryProperty
-    }
-    catch {
-        return $false # The key or entry did not exist
-    } 
 }
 
 <#
@@ -105,7 +89,7 @@ Return a new Microsoft Update Session for use with Check-WindowsUpdates and Inst
 function New-UpdateSession {
     [cmdletbinding()] param()
     $UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
-    $UpdateSession.ClientApplicationID = "$ScriptProductName Windows Update Installer"
+    $UpdateSession.ClientApplicationID = "$ScriptProductName"
     return $UpdateSession
 }
 
@@ -124,19 +108,49 @@ function Run-PostUpdate {
 }
 
 <#
+.synopsis
+Determine whether the machine needs a Windows Update -related reboot
+.notes 
+Originally from <https://gallery.technet.microsoft.com/scriptcenter/Get-PendingReboot-Query-bdb79542>, but note that this doesn't check all those things. We don't care here whether the machine needs a reboot from joining a domain, for example; we only care about Windows Update.
+TODO: apparently this can NOT currently detect reboots that are necessary because someone ran Windows Update manually without rebooting. Fix this.
+#>
+function Get-RestartPendingStatus {
+    [cmdletbinding()] param()
+    
+    # Component Based Servicing (aka Windows components) (Vista+ only)
+    $CsbProp = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing"
+    if ($CsbProp.PSObject.Properties['RebootPending']) {
+        Write-WinUpEventLog "(Un)installation of a Windows component requires a restart" 
+        return $true 
+    }
+
+    $WuauProp = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update"
+    if ($WuauProp.PSObject.Properties['RebootRequired']) {
+        Write-WinUpEventLog "Updates have been installed recently, but the machine must be restarted before installation is complete" 
+        return $true 
+    }
+    
+    Write-WinUpEventLog "There are no Windows Update -related reboots pending"
+    return $false
+}
+
+<#
 .Description
 Install Windows Updates. 
 .parameter UpdateSession 
 Must be a session created with New-UpdateSession - that is, a COM object of type Microsoft.Update.Session
 .parameter UpdateList
 A list of updates. Might be in a Microsoft.Update.UpdateColl COM object (possibly from Check-WindowsUpdates), or might be just a normal array of them
+.parameter MaxDownloadAttempts
+The maximum number of times to attempt to download updates
 .outputs
 Returns a boolean representing whether a reboot is required
 #>
 function Install-WindowsUpdates {
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] $UpdateSession,
-        [parameter(mandatory=$true)] $UpdateList
+        [parameter(mandatory=$true)] $UpdateList,
+        [int] $MaxDownloadAttempts = 12
     )
     
     if ((-not $UpdateList) -or ($UpdateList.Count -lt 1)) {
@@ -154,7 +168,7 @@ function Install-WindowsUpdates {
     Write-WinUpEventLog -message 'Downloading Updates...'
     $ok = $false
     $attempts = 0
-    while ((! $ok) -and ($attempts -lt 12)) {  # TODO: retry 12 times?? does this really need to be 12??
+    while ((! $ok) -and ($attempts -lt $MaxDownloadAttempts)) {
         try {
             $Downloader = $UpdateSession.CreateUpdateDownloader()
             $Downloader.Updates = $UpdateComObject
@@ -173,30 +187,30 @@ function Install-WindowsUpdates {
     $message = 'The following updates are downloaded and ready to be installed:'
     foreach ($Update in $UpdateComObject) {
         if ($Update.IsDownloaded) {
-            $message += "`r`n> $($Update.Title)"
+            $message += "`r`n -  $($Update.Title)"
             $UpdatesToInstall.Add($Update) |Out-Null
         }
     }
     Write-WinUpEventLog -message $message
 
     $RebootRequired = $false
-
     if ($UpdatesToInstall.Count -gt 0) {
         $Installer = $UpdateSession.CreateUpdateInstaller()
         $Installer.Updates = $UpdatesToInstall
+        
+        if ($Installer.PSObject.Properties['RebootRequiredBeforeInstallation'] -and $Installer.RebootRequiredBeforeInstallation) {
+            Write-WinUpEventLog "Reboot required before installation. (This can happen when updates are installed but the machine is not rebooted before trying to install again.)"
+            return $true
+        }
+
         $InstallationResult = $Installer.Install()
         $RebootRequired = [bool]$InstallationResult.RebootRequired
-
-        $message =  "Windows Update complete. Installation Result: $($InstallationResult.ResultCode)."
-        $message += "`r`nReboot Required: $RebootRequired"
-
-        for($i=0; $i -lt $UpdatesToInstall.Count; $i++) {
-            New-Object -TypeName PSObject -Property @{
-                Title = $UpdatesToInstall.Item($i).Title
-                Result = $InstallationResult.GetUpdateResult($i).ResultCode
-            }
-            $message += "`r`n`r`nItem: $($UpdatesToInstall.Item($i).Title)"
-            $message += "`r`nResult: $($InstallationResult.GetUpdateResult($i).ResultCode)"
+        $ResultCode = if ($InstallationResult.PSObject.Properties['ResultCode']) { $InstallationResult.ResultCode } else { $null }
+        
+        $message =  "Windows Update complete. Installation Result: $ResultCode.`r`nReboot Required: $RebootRequired"
+        foreach ($update in $UpdatesToInstall) {
+            $message += "`r`n`r`nItem: $($update.Title)"
+            $message += "`r`nResult: $ResultCode"
         }
         Write-WinUpEventLog -message $message
     }
@@ -211,6 +225,8 @@ function Install-WindowsUpdates {
 Check for Windows Updates and return a list of any updates that need to be applied. 
 .parameter UpdateSession 
 Must be a session created with New-UpdateSession - that is, a COM object of type Microsoft.Update.Session
+.parameter MaxSearchAttempts
+The maximum number of times to attempt to search for outstanding updates
 .outputs
 If there applicable updates, return a Microsoft.Update.UpdateColl COM object; if not, return $null
 .notes
@@ -219,15 +235,16 @@ After the updates are applied, this should run again because it may detect new u
 function Check-WindowsUpdates {
     param(
         [parameter(mandatory=$true)] $UpdateSession,
-        [switch] $FilterInteractiveUpdates
+        [switch] $FilterInteractiveUpdates,
+        [int] $MaxSearchAttempts = 12
     )
     Write-WinUpEventLog -message "Checking for Windows Updates at $(Get-Date)" -eventId 104
     $SearchResult = $null
     
     $UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
-    $successful = $FALSE
+    $successful = $false
     $attempts = 0
-    while(-not $successful -and $attempts -lt 12) { # TODO: retry 12 times?? does this really need to be 12??
+    while(-not $successful -and $attempts -lt $MaxSearchAttempts) {
         try {
             $SearchResult = $UpdateSearcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
             $successful = $true
@@ -239,38 +256,38 @@ function Check-WindowsUpdates {
             Start-Sleep -s 10
         }
     }
+    if (-not $successful) {
+        throw "Unable to retrieve list of outstanding updates"
+    }
     
     $ApplicableUpdates = New-Object -ComObject 'Microsoft.Update.UpdateColl'
+    $SkippedUpdates = New-Object -ComObject 'Microsoft.Update.UpdateColl'
     foreach ($update in $SearchResult.Updates) {
-        if ($FilterInteractiveUpdates) {
-            try {
-                $CanRequestUserInput = $Update.InstallationBehavior.CanRequestUserInput
-            }
-            catch {
-                $CanRequestUserInput = $false
-            }
-            if ($CanRequestUserInput) {
-                 Write-WinUpEventLog -message "Skipping: $($Update.Title) because it requires user input"
-            }
-            else {
-                $ApplicableUpdates.Add($Update) | out-null
-            }
+        if ($FilterInteractiveUpdates -and 
+            [bool]$Update.InstallationBehavior.PSObject.Properties['CanRequestUserInput'] -and  # Because StrictMode
+            $Update.InstallationBehavior.CanRequestUserInput) 
+        {
+            $SkippedUpdates.Add($Update) | out-null
+            continue
         }
-        else {
-            $ApplicableUpdates.Add($Update) | out-null
-        }
+        $ApplicableUpdates.Add($Update) | out-null
     }
-   
-    if ($ApplicableUpdates.Count -ne 0) {
-        $message = "There are $($ApplicableUpdates.Count) remaining updates:`r`n"
-        foreach ($update in $ApplicableUpdates) { 
-            $message += "`r`n -  $($update.Title)"
-        }
-        Write-WinUpEventLog -message $message
-    } 
-    else {
-        Write-WinUpEventLog -message 'There are no applicable updates'
+    
+    $message = ""
+    if ($ApplicableUpdates.Count -eq 0) { $message += "There are no outstanding applicable updates" }
+    else { 
+        $message += "There are $($ApplicableUpdates.Count) outstanding applicable updates:`r`n"
+        $ApplicableUpdates |% { $message += "`r`n -  $(_.Title)" } 
     }
+    $message += "`r`n`r`n"
+    if ($SkippedUpdates.Could -eq 0) { $message += "There are no skipped updates" }
+    else { 
+        $message += "There are $($SkippedUpdates.Count) skipped updates:`r`n"
+        $SkippedUpdates |% { $message += "`r`n -  $(_.Title)" } 
+    }
+    $message += "`r`n`r`n"
+    Write-WinUpEventLog -message $message
+    
     return $ApplicableUpdates
 }
 
@@ -280,8 +297,21 @@ Run Windows Update, installing all available updates and rebooting as necessary
 #>
 function Run-WindowsUpdate {
     [cmdletbinding()] param()
+    
+    function Restart-ComputerWrapper {
+        if ($NoRestart) { write-host "NoRestart: exiting instead"; exit 1; } 
+        Set-RestartRegistryEntry -CyclesRemaining $maxCycles
+        Restart-Computer -force 
+    }
 
-    Unset-RestartRegistryEntry
+    $message = "Running Windows Update "
+    $message += if ($RunFromRegistry) { "from the Restart Registry Key" } else { "after being called directly" }
+    Write-WinUpEventLog $message
+    
+    if (Get-RestartPendingStatus) {
+        Restart-ComputerWrapper
+    }
+    
     $UpdateSession = New-UpdateSession
     if ($maxCycles -ge 1) {
         foreach ($cycleCtr in 1..$maxCycles) {
@@ -296,9 +326,7 @@ function Run-WindowsUpdate {
             $RebootRequired = Install-WindowsUpdates -UpdateSession $UpdateSession -UpdateList $CheckedUpdates
             if ($RebootRequired) {
                 Write-WinUpEventLog -message "Restart Required - Restarting..."
-                Set-RestartRegistryEntry -CyclesRemaining ($maxCycles - $cycleCtr)
-                if ($NoRestart) { write-host "NoRestart: exiting instead"; exit 1; } 
-                Restart-Computer -force 
+                Restart-ComputerWrapper
             }
         }
     }
