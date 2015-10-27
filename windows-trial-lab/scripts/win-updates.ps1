@@ -18,8 +18,8 @@ param(
     [int] $MaxCycles = 5,
     [string] $ScriptProductName = "MarionettistWindowsUpdate",
     [string] $PostUpdateExpression,
-    [switch] $NoRestart,
-    [switch] $RunFromRegistry
+    [string] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] $RestartAction = "NoRestart",
+    [switch] $CalledFromRegistry
 )
 
 <# Notes on the code: 
@@ -34,7 +34,12 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -version 2.0
 
 # I need to get the path to this script from inside functions, which mess with the $MyInvocation variable
-$script:ScriptPath = $MyInvocation.MyCommand.Path  
+$script:ScriptPath = $MyInvocation.MyCommand.Path
+$script:RestartRegistryKeys = @{
+    RunBeforeLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+    RunAtLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
+}
+$script:RestartRegistryProperty = "$ScriptProductName"
 
 <#
 .synopsis
@@ -64,22 +69,53 @@ Create and set the registry property which will run this script on reboot
 function Set-RestartRegistryEntry {
     param(
         [parameter(mandatory=$true)] [int] $CyclesRemaining,
+        [parameter(mandatory=$true)] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] [string] $RestartAction,
         [string] $scriptPath = $script:ScriptPath
     )
-    $RestartRegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce"
-    $RestartRegistryProperty = "$ScriptProductName"
-    $psCall = @(
+
+    if ($RestartAction -match "NoRestart") {
+        Write-WinUpEventLog "Called Set-RestartRegistryEntry with -RestartAction NoRestart, will not write registry key" 
+        return 
+    }
+    
+    $psCallComponents = @(
         "$PSHOME\powershell.exe"
         ('-File "{0}"' -f $scriptPath)
         "-MaxCycles $CyclesRemaining"
         "-ScriptProductName $ScriptProductName"
-        "-RunFromRegistry"
+        "-CalledFromRegistry"
+        "-RestartAction ${script:RestartAction}"
         ('-PostUpdateExpression "{0}"' -f "$PostUpdateExpression")
     )
-    $message = "Setting the Restart Registry Key at: {0}\{1}`r`n{2}" -f $script:RestartRegistryKey, $script:RestartRegistryProperty, ($psCall -join " ")
+    $psCall = $psCallComponents -join " "
+    $message = "Setting the Restart Registry Key at: {0}\{1}`r`n{2}" -f $script:RestartRegistryKeys.$RestartAction, $script:RestartRegistryProperty, $psCall
     Write-WinUpEventLog -message $message
-    New-Item $script:RestartRegistryKey -force | out-null
-    Set-ItemProperty -Path $script:RestartRegistryKey -Name $script:RestartRegistryProperty -Value ($psCall -join " ")
+    New-Item $script:RestartRegistryKeys.$RestartAction -force | out-null
+    Set-ItemProperty -Path $script:RestartRegistryKeys.$RestartAction -Name $script:RestartRegistryProperty -Value $psCall
+}
+
+function Remove-RestartRegistryEntries {
+    [cmdletbinding()] param()
+    foreach ($key in $script:RestartRegistryKeys.Keys) { 
+        try { Remove-ItemProperty -Path $script:RestartRegistryKeys[$key] -name $script:RestartRegistryProperty} catch {}
+    }
+}
+
+function Restart-ComputerAndUpdater {
+    param(
+        [parameter(mandatory=$true)] [int] $CyclesRemaining,
+        [parameter(mandatory=$true)] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] [string] $RestartAction
+    )
+    Remove-RestartRegistryEntries
+    if ($RestartAction -match "NoRestart") { 
+        Write-WinUpEventLog "Restart-ComputerAndUpdater was called, but '-RestartAction NoRestart' was passed; exiting instead..."
+        exit 1
+    }
+    else {
+        Set-RestartRegistryEntry -CyclesRemaining $CyclesRemaining -RestartAction $RestartAction
+        Write-WinUpEventLog "Rebooting..."
+        Restart-Computer -Force
+    }
 }
 
 <#
@@ -264,28 +300,24 @@ function Check-WindowsUpdates {
     $SkippedUpdates = New-Object -ComObject 'Microsoft.Update.UpdateColl'
     foreach ($update in $SearchResult.Updates) {
         if ($FilterInteractiveUpdates -and 
-            [bool]$Update.InstallationBehavior.PSObject.Properties['CanRequestUserInput'] -and  # Because StrictMode
+            [bool]$Update.InstallationBehavior.PSObject.Properties['CanRequestUserInput'] -and 
             $Update.InstallationBehavior.CanRequestUserInput) 
         {
             $SkippedUpdates.Add($Update) | out-null
-            continue
         }
-        $ApplicableUpdates.Add($Update) | out-null
+        else { 
+            $ApplicableUpdates.Add($Update) | out-null 
+        }
     }
     
-    $message = ""
-    if ($ApplicableUpdates.Count -eq 0) { $message += "There are no outstanding applicable updates" }
-    else { 
-        $message += "There are $($ApplicableUpdates.Count) outstanding applicable updates:`r`n"
-        $ApplicableUpdates |% { $message += "`r`n -  $(_.Title)" } 
+    $message = "There are $($ApplicableUpdates.Count) outstanding applicable updates"
+    if ($ApplicableUpdates.Count -gt 0) {
+        $ApplicableUpdates |% { $message += "`r`n -  $($_.Title)" } 
     }
-    $message += "`r`n`r`n"
-    if ($SkippedUpdates.Could -eq 0) { $message += "There are no skipped updates" }
-    else { 
-        $message += "There are $($SkippedUpdates.Count) skipped updates:`r`n"
+    $message += "`r`n`r`nThere are $($SkippedUpdates.Count) skipped updates"
+    if ($SkippedUpdates.Count -gt 0) {
         $SkippedUpdates |% { $message += "`r`n -  $(_.Title)" } 
     }
-    $message += "`r`n`r`n"
     Write-WinUpEventLog -message $message
     
     return $ApplicableUpdates
@@ -298,41 +330,31 @@ Run Windows Update, installing all available updates and rebooting as necessary
 function Run-WindowsUpdate {
     [cmdletbinding()] param()
     
-    function Restart-ComputerWrapper {
-        if ($NoRestart) { write-host "NoRestart: exiting instead"; exit 1; } 
-        Set-RestartRegistryEntry -CyclesRemaining $maxCycles
-        Restart-Computer -force 
-    }
-
     $message = "Running Windows Update "
-    $message += if ($RunFromRegistry) { "from the Restart Registry Key" } else { "after being called directly" }
+    $message += if ($CalledFromRegistry) { "from the Restart Registry Entry" } else { "after being called directly" }
     Write-WinUpEventLog $message
     
     if (Get-RestartPendingStatus) {
-        Restart-ComputerWrapper
+        Restart-ComputerAndUpdater -CyclesRemaining $maxCycles -RestartAction $script:RestartAction 
     }
     
     $UpdateSession = New-UpdateSession
-    if ($maxCycles -ge 1) {
-        foreach ($cycleCtr in 1..$maxCycles) {
-            Write-WinUpEventLog -message "Starting to check for updates. Cycle $cycleCtr of maximum $maxCycles"
-        
-            $CheckedUpdates = Check-WindowsUpdates -FilterInteractiveUpdates -UpdateSession $UpdateSession
-            if ((-not $CheckedUpdates) -or ($CheckedUpdates.Count -lt 1)) {
-                Write-WinUpEventLog "No applicable updates were detected. Done!" 
-                break 
-            }
-        
-            $RebootRequired = Install-WindowsUpdates -UpdateSession $UpdateSession -UpdateList $CheckedUpdates
-            if ($RebootRequired) {
-                Write-WinUpEventLog -message "Restart Required - Restarting..."
-                Restart-ComputerWrapper
-            }
+    for (; $maxCycles -gt 0; $maxCycles -= 1) {
+        Write-WinUpEventLog -message "Starting to check for updates. $maxCycles cycles remain."
+    
+        $CheckedUpdates = Check-WindowsUpdates -FilterInteractiveUpdates -UpdateSession $UpdateSession
+        if ((-not $CheckedUpdates) -or ($CheckedUpdates.Count -lt 1)) {
+            Write-WinUpEventLog "No applicable updates were detected. Done!" 
+            break 
+        }
+    
+        $RebootRequired = Install-WindowsUpdates -UpdateSession $UpdateSession -UpdateList $CheckedUpdates
+        if ($RebootRequired) {
+            Write-WinUpEventLog -message "Restart Required - Restarting..."
+            Restart-ComputerAndUpdater -CyclesRemaining $maxCycles -RestartAction $script:RestartAction
         }
     }
-    else {
-        Write-WinUpEventLog "We have reached our max cycle count - note that there may be outstanding updates"
-    }
+
     Run-PostUpdate
 }
 
