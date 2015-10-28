@@ -13,18 +13,18 @@
       "communicator": "winrm",
       "winrm_username": "vagrant",
       "winrm_password": "vagrant",
-      "winrm_timeout": "2h",
+      "winrm_timeout": "8h",
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "guest_os_type": "Windows81",
       "disk_size": 61440,
       "guest_additions_mode": "attach",
       "floppy_files": [
         "./Autounattend.xml",
-        "../scripts/microsoft-updates.bat",
         "../scripts/win-updates.ps1",
         "../scripts/enable-winrm.bat",
         "../scripts/postinstall/wintriallab-postinstall.psm1",
-        "../scripts/postinstall/autounattend-postinstall.ps1"
+        "../scripts/postinstall/autounattend-postinstall.ps1",
+        "../scripts/postinstall/provisioner-postinstall.ps1"
       ],
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "2048" ], 
@@ -33,33 +33,12 @@
     }
   ],
   "provisioners": [
-    {
-      "type": "windows-shell",
-      "inline": [
-        "cmd /c md C:\\PackerTemp\\PostInstall"
-      ]
-    },
-    { 
-      "type": "file",
-      "source": "../scripts/postinstall/wintriallab-postinstall.psm1",
-      "destination": "C:\\PackerTemp\\PostInstall\\wintriallab-postinstall.psm1",
-      "direction": "upload"
-    },
-    { 
-      "type": "file",
-      "source": "../scripts/postinstall/provisioner-postinstall.ps1",
-      "destination": "C:\\PackerTemp\\PostInstall\\provisioner-postinstall.ps1",
-      "direction": "upload"
-    },
-    {
-      "type": "powershell",
-      "inline": ["C:\\PackerTemp\\PostInstall\\provisioner-postinstall.ps1 -Verbose"]
-    },
 
     {
-      "type": "windows-shell",
-      "inline": ["rmdir /S /Q C:\\PackerTemp"]
+      "type": "powershell",
+      "inline": ["A:\\provisioner-postinstall.ps1 -Verbose"]
     }
+
   ],
   "post-processors": [
     {

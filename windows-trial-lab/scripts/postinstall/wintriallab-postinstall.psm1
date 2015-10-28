@@ -271,7 +271,7 @@ function Install-SevenZip {
     $szDlPath = Get-WebUrl -url $URLs.SevenZipDownload.$OSArch -outDir $env:temp
     try {
         write-verbose "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
-        $msiCall = 'msiexec /qn /i "{0}"' -format $szDlPath
+        $msiCall = 'msiexec /qn /i "{0}"' -f $szDlPath
         # Windows suxxx so msiexec sometimes returns right away? or something idk. fuck
         Invoke-ExpressionAndCheck -command $msiCall -sleepSeconds 30
     }
@@ -350,9 +350,9 @@ function Compress-WindowsInstall {
         rm -recurse -force ${env:WinDir}\SoftwareDistribution\Download
         start-service wuauserv
 
-        Invoke-ExpressionAndCheck -command ('{0} --optimize --repeat "{1}"' -f $udfExPath\udefrag.exe,"$env:SystemDrive")
+        Invoke-ExpressionAndCheck -command ('{0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
         
-        Set-ItemProperty -path HKCU\Software\Sysinternals\SDelete -name EulaAccepted -value 1 }
+        Set-ItemProperty -path HKCU\Software\Sysinternals\SDelete -name EulaAccepted -value 1 
         Invoke-ExpressionAndCheck -command ('{0} -q -z "{1}"' -f $sdExPath,$env:SystemDrive)
     }
     finally {

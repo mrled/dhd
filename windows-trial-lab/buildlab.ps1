@@ -40,11 +40,11 @@ import-module $PSScriptRoot\scripts\postinstall\wintriallab-postinstall.psm1 -ve
 Set-StrictMode -Version 2.0
 
 # This seems to be required with strict mode? 
-$verbose = $false
+$verbose = $true
 # This correctly covers -verbose -verbose:$false and -verbose:$true
-if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
-    $verbose = $true
-}
+# if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
+#     $verbose = $true
+# }
 
 $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
 $packerOutDir = "$baseOutDir\PackerOut"

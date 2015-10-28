@@ -115,6 +115,7 @@ function Restart-ComputerAndUpdater {
         Set-RestartRegistryEntry -CyclesRemaining $CyclesRemaining -RestartAction $RestartAction
         Write-WinUpEventLog "Rebooting..."
         Restart-Computer -Force
+        exit 0 # Restarting returns immediately and script execution continues until the reboot is processed. Lol. 
     }
 }
 
@@ -316,7 +317,7 @@ function Check-WindowsUpdates {
     }
     $message += "`r`n`r`nThere are $($SkippedUpdates.Count) skipped updates"
     if ($SkippedUpdates.Count -gt 0) {
-        $SkippedUpdates |% { $message += "`r`n -  $(_.Title)" } 
+        $SkippedUpdates |% { $message += "`r`n -  $($_.Title)" } 
     }
     Write-WinUpEventLog -message $message
     
