@@ -49,6 +49,7 @@ $verbose = $true
 $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
 $packerOutDir = "$baseOutDir\PackerOut"
 $packerCacheDir = "$baseOutDir\packer_cache"
+$packerLogFile = "$baseOutDir\packer.log"
 $wsusOfflineDir = "$baseOutDir\wsusoffline"
 
 $labTempDir = "$baseOutDir\temp-$dateStamp"
@@ -185,7 +186,11 @@ function Build-PackerFile {
     pushd (get-item $packerFile | select -expand fullname | split-path -parent)
     try { 
         write-host "Building packer file '$($packerFile.fullname)' to directory '$outDir'..."
+        $packerCall = ''
         if (-not $whatif) {
+            $env:PACKER_DEBUG = 1
+            $env:PACKER_LOG = 1 
+            $env:PACKER_PATH = $packerLogFile
             packer build -var "output_directory=$outDir" "$($packerFile.fullname)"
             if ($LASTEXITCODE -ne 0) { throw "External command failed with code $LASTEXITCODE" }
         }

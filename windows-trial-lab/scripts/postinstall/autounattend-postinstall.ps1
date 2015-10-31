@@ -4,21 +4,26 @@ param()
 import-module $PSScriptRoot\wintriallab-postinstall.psm1
 
 try {
+    Write-EventLogWrapper "Starting the autounattend postinstall script"
     Set-PasswordExpiry -accountName "vagrant" -expirePassword $false
     Disable-HibernationFile
     Enable-MicrosoftUpdate
-    A:\win-updates.ps1 -RestartAction RunAtLogon -PostUpdateExpression A:\enable-winrm.bat
+    Install-VBoxAdditions -fromDisc # Need to reboot for some of these drivers to take
+    
+    # To reboot, then run Windows updates, then enable WinRM: 
+    $restartCommand = "$PSHOME\powershell.exe -File A:\win-updates.ps1 -RestartAction RunAtLogon -PostUpdateExpression -CalledFromRegistry '$PSHOME\powershell.exe -File A:\enable-winrm.ps1'"
+    
+    # To reboot, then run winrm immediately without Windows Update
+    #$restartCommand = "$PSHOME\powershell.exe -File A:\enable-winrm.ps1"
+    
+    Set-RestartRegistryEntry -restartAction RunAtLogon -restartCommand $restartCommand    
+    Restart-Computer -force 
  }
 catch {
-    write-host "======== CAUGHT EXCEPTION ========"
-    write-host "$_"
-    write-host "======== CALL STACK ========"
-    Get-PSCallStack | format-list
-    write-host "======== ERROR STACK ========"
-	for ($i=0; $i -lt $error.count; $i+=1) {
-		write-host "`$error[$i]"
-		write-host $error[$i]
-	}
-    write-host "======== ========"
+    $message  = "======== CAUGHT EXCEPTION ========`r`n$_`r`n"
+    $message += "======== ERROR STACK ========"
+    $error |% { $message += "$_`r`n----`r`n" }
+    $message += "======== ========"
+    Write-EventLogWrapper $message
     exit 666
 }

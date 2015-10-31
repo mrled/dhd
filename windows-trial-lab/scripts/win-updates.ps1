@@ -16,7 +16,7 @@ This script is intended to be 100% standalone because it needs to be able to tel
 #>
 param(
     [int] $MaxCycles = 5,
-    [string] $ScriptProductName = "MarionettistWindowsUpdate",
+    [string] $ScriptProductName = "WinUp-Marionettist",
     [string] $PostUpdateExpression,
     [string] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] $RestartAction = "NoRestart",
     [switch] $CalledFromRegistry
@@ -190,7 +190,7 @@ function Install-WindowsUpdates {
         [int] $MaxDownloadAttempts = 12
     )
     
-    if ((-not $UpdateList) -or ($UpdateList.Count -lt 1)) {
+    if (-not $UpdateList) {
         Write-WinUpEventLog -message "No Updates To Download..."
         return $false
     }
@@ -201,6 +201,17 @@ function Install-WindowsUpdates {
     # from Check-WindowsUpdates), we have to create a new one here
     $UpdateComObject = New-Object -ComObject 'Microsoft.Update.UpdateColl'
     $UpdateList |% { $UpdateComObject.Add($_) }
+    
+    $AcceptedEulas = @()
+    foreach ($update in $UpdateComObject) { 
+        if ($update.PSObject.Properties['EulaAccepted']) { 
+            $AcceptedEulas += ($update)
+            $update.AcceptEula()
+        }
+    }
+    $message = "There were $($AcceptedEulas.count) updates with a EULA which was automatically accepted`r`n"
+    $AcceptedEulas |% { $message += "`r`n -  $($_.Title)"}
+    Write-WinUpEventLog $message
     
     Write-WinUpEventLog -message 'Downloading Updates...'
     $ok = $false
@@ -344,7 +355,7 @@ function Run-WindowsUpdate {
         Write-WinUpEventLog -message "Starting to check for updates. $maxCycles cycles remain."
     
         $CheckedUpdates = Check-WindowsUpdates -FilterInteractiveUpdates -UpdateSession $UpdateSession
-        if ((-not $CheckedUpdates) -or ($CheckedUpdates.Count -lt 1)) {
+        if (-not $CheckedUpdates) { 
             Write-WinUpEventLog "No applicable updates were detected. Done!" 
             break 
         }
@@ -355,7 +366,6 @@ function Run-WindowsUpdate {
             Restart-ComputerAndUpdater -CyclesRemaining $maxCycles -RestartAction $script:RestartAction
         }
     }
-
     Run-PostUpdate
 }
 

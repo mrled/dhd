@@ -12,7 +12,7 @@
       "boot_wait": "2m",
       "communicator": "winrm",
       "winrm_username": "vagrant",
-      "winrm_password": "vagrant",
+      "winrm_password": "V@grant123",
       "winrm_timeout": "8h",
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "guest_os_type": "Windows81",
@@ -21,7 +21,7 @@
       "floppy_files": [
         "./Autounattend.xml",
         "../scripts/win-updates.ps1",
-        "../scripts/enable-winrm.bat",
+        "../scripts/enable-winrm.ps1",
         "../scripts/postinstall/wintriallab-postinstall.psm1",
         "../scripts/postinstall/autounattend-postinstall.ps1",
         "../scripts/postinstall/provisioner-postinstall.ps1"

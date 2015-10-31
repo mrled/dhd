@@ -1,3 +1,9 @@
+param(
+    [String] $ScriptProductName = "PostInstall-Marionettist",
+    [String] $ScriptPath = $MyInvocation.MyCommand.Path,
+    [String] $ScriptName = $MyInvocation.MyCommand.Name
+)
+
 <# 
 jesus fucking christ
 fucking Packer
@@ -5,8 +11,8 @@ TODO:
 - make every function 100% reliant on itself only. 
 - get rid of calls to Get-LabTempDir
 - decided whether I'm using $URLs or not lol
+- get better logging - use an Event Log 
 #>
-
 
 ### Global Constants that I use elsewhere
 
@@ -65,7 +71,13 @@ $URLs = @{
     }
     SdeleteDownload = "http://download.sysinternals.com/files/SDelete.zip"
 }
-
+$script:ScriptPath = $MyInvocation.MyCommand.Path
+$script:RestartRegistryKeys = @{
+    RunBeforeLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+    RunAtLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
+}
+$script:RestartRegistryProperty = "$ScriptProductName"
+    
 ### Private support functions I use behind the scenes
 
 function Get-WebUrl {
@@ -89,9 +101,9 @@ function Invoke-ExpressionAndCheck {
         [int] $sleepSeconds
     )
     $global:LASTEXITCODE = 0
-    write-verbose "Invoking expression '$command'"
+    Write-EventLogWrapper "Invoking expression '$command'"
     invoke-expression -command $command
-    write-verbose "Expression '$command' had a last exit code of '$LastExitCode'"
+    Write-EventLogWrapper "Expression '$command' had a last exit code of '$LastExitCode'"
     if ($global:LASTEXITCODE -ne 0) {
         throw "LASTEXITCODE: ${global:LASTEXITCODE} for command: '${command}'"
     }
@@ -108,7 +120,7 @@ function Invoke-ExpressionAndCheck {
 #     )
 #     $path = resolve-path $path | select -expand path
 #     $sourceItems = Get-ChildItem -Path $path -Recurse -Exclude $exclude 
-#     write-verbose "Found $($sourceItems.count) items to copy from '$path'"
+#     Write-EventLogWrapper "Found $($sourceItems.count) items to copy from '$path'"
 #     #$sourceItems | copy-item -force:$force -destination {Join-Path $destination $_.FullName.Substring($path.length)}
 #     $sourceItems | copy-item -force:$force -destination {
 #         if ($_.GetType() -eq [System.IO.FileInfo]) {
@@ -161,7 +173,7 @@ function Get-AdkPath {
     $possibleAdkPaths = @("${env:ProgramFiles(x86)}\Windows Kits\8.1","${env:ProgramFiles}\Windows Kits\8.1")
     $possibleAdkPaths |% { if (test-path $_) { $adkPath = $_ } }
     if (-not $adkPath) { throw "Could not find the Windows Automated Installation Kit" }
-    write-verbose "Found the WAIK at '$adkPath'"
+    Write-EventLogWrapper "Found the WAIK at '$adkPath'"
 
     $arch = Get-OSArchitecture
     switch ($arch) {
@@ -205,7 +217,7 @@ function Get-WOShortCode { # TODO fixme I think I don't need this anymore becaus
     elseif ($OSArchitecture -match $ArchitectureId.amd64) { $shortCode += "-x64" }
     else { throw "Could not determine shortcode for an OS of architecture '$OSArchitecture'" }
 
-    write-verbose "Found shortcode '$shortcode' for OS named '$OSName' of architecture '$OSArchitecture'"
+    Write-EventLogWrapper "Found shortcode '$shortcode' for OS named '$OSName' of architecture '$OSArchitecture'"
     return $shortCode
 }
 
@@ -230,12 +242,68 @@ function Get-LabTempDir {
         $script:WinTrialLabTemp = "${env:Temp}\WinTrialLab-$dateStamp" 
     }
     $script:WinTrialLabTemp = [System.IO.Path]::GetFullPath($script:WinTrialLabTemp)
-    write-verbose "Using WinTrialLabTemp directory at '${script:WinTrialLabTemp}'"
+    Write-EventLogWrapper "Using WinTrialLabTemp directory at '${script:WinTrialLabTemp}'"
     if (-not (test-path $script:WinTrialLabTemp)) {
-        write-verbose "Temporary directory does not exist, creating it..."
+        Write-EventLogWrapper "Temporary directory does not exist, creating it..."
         mkdir -force $script:WinTrialLabTemp | out-null
     }
     return $script:WinTrialLabTemp
+}
+
+<#
+.synopsis 
+Wrapper that writes to the event log but also to the screen
+#>
+function Write-EventLogWrapper {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [String] $message,
+        [int] $eventId = 0,
+        [ValidateSet("Error",'Warning','Information','SuccessAudit','FailureAudit')] $entryType = "Information",
+        [String] $EventLogName = $ScriptProductName,
+        [String] $EventLogSource = $ScriptName
+    )
+    if (-not (get-eventlog -logname * |? { $_.Log -eq $eventLogName })) {
+        New-EventLog -Source $EventLogSource -LogName $eventLogName
+    }
+    $messagePlus = "$message`r`n`r`nScript: $($script:ScriptPath)`r`nUser: ${env:USERDOMAIN}\${env:USERNAME}"
+    Write-Host -foreground magenta "====Writing to $EvengLogName event log===="
+    write-host -foreground darkgray "$messagePlus`r`n"
+    Write-EventLog -LogName $eventLogName -Source $EventLogSource -EventID $eventId -EntryType $entryType -Message $MessagePlus
+}
+
+<#
+.synopsis
+Create and set the registry property which will run this script on reboot 
+#>
+function Set-RestartRegistryEntry {
+    param(
+        [parameter(mandatory=$true)] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] [string] $RestartAction,
+        [string] $restartCommand
+    )
+
+    if ($RestartAction -match "NoRestart") {
+        Write-EventLogWrapper "Called Set-RestartRegistryEntry with -RestartAction NoRestart, will not write registry key" 
+        return 
+    }
+    
+    $message = "Setting the Restart Registry Key at: {0}\{1}`r`n{2}" -f $script:RestartRegistryKeys.$RestartAction, $script:RestartRegistryProperty, $restartCommand
+    Write-EventLogWrapper -message $message
+    New-Item $script:RestartRegistryKeys.$RestartAction -force | out-null
+    Set-ItemProperty -Path $script:RestartRegistryKeys.$RestartAction -Name $script:RestartRegistryProperty -Value $restartCommand
+}
+
+function Get-RestartRegistryEntries {
+    [cmdletbinding()] param()
+    foreach ($key in $script:RestartRegistryKeys.Keys) { 
+        try { Get-ItemProperty -Path $script:RestartRegistryKeys[$key] -name $script:RestartRegistryProperty} catch {}
+    }
+}
+
+function Remove-RestartRegistryEntries {
+    [cmdletbinding()] param()
+    foreach ($key in $script:RestartRegistryKeys.Keys) { 
+        try { Remove-ItemProperty -Path $script:RestartRegistryKeys[$key] -name $script:RestartRegistryProperty} catch {}
+    }
 }
 
 <#
@@ -270,8 +338,8 @@ function Install-SevenZip {
     $OSArch = Get-OSArchitecture
     $szDlPath = Get-WebUrl -url $URLs.SevenZipDownload.$OSArch -outDir $env:temp
     try {
-        write-verbose "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
-        $msiCall = 'msiexec /qn /i "{0}"' -f $szDlPath
+        Write-EventLogWrapper "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
+        $msiCall = '& msiexec /qn /i "{0}"' -f $szDlPath
         # Windows suxxx so msiexec sometimes returns right away? or something idk. fuck
         Invoke-ExpressionAndCheck -command $msiCall -sleepSeconds 30
     }
@@ -282,34 +350,55 @@ function Install-SevenZip {
 set-alias sevenzip "${env:ProgramFiles}\7-Zip\7z.exe"
 
 function Install-VBoxAdditions {
-    [cmdletbinding()]
-    param(
-        [parameter(mandatory=$true)] [string] $isoPath
+    [cmdletbinding(DefaultParameterSetName="InstallFromDisc")] param(
+        [parameter(ParameterSetName="InstallFromIsoPath",mandatory=$true)] [string] $isoPath,
+        [parameter(ParameterSetName="InstallFromDisc",mandatory=$true)] [switch] $fromDisc
     )
-    $isoPath = resolve-path $isoPath | select -expand Path
-    $vbgaPath = "${env:Temp}\InstallVbox"
-    try {
-        mkdir -force $vbgaPath
-    
-        write-verbose "Extracting iso at '$isoPath' to directory at '$vbgaPath'..."
-        Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" -o"{1}"' -f $isoPath, $vbgaPath)
         
-        write-verbose "Installing the Oracle certificate..."
-        $oracleCert = resolve-path "$vbgaPath\cert\oracle-vbox.cer" | select -expand path
+    function InstallVBoxAdditionsFromDir {
+        param([Parameter(Mandatory=$true)][String]$baseDir)
+        $baseDir = resolve-path $baseDir | select -expand Path
+        Write-EventLogWrapper "Installing VBox Additions from '$baseDir'"
+        Write-EventLogWrapper "Installing the Oracle certificate..."
+        $oracleCert = resolve-path "$baseDir\cert\oracle-vbox.cer" | select -expand path
         # NOTE: Checking for exit code, but this command will fail with an error if the cert is already installed
-        Invoke-ExpressionAndCheck -command ('"{0}" add-trusted-publisher "{1}" --root "{1}"' -f "$vbgaPath\cert\VBoxCertUtil.exe",$oracleCert)
-
-        write-verbose "Installing the virtualbox additions"
-        Invoke-ExpressionAndCheck -command ('"{0}" /with_wddm /S' -f "$vbgaPath\VBoxWindowsAdditions.exe") # returns IMMEDIATELY, goddamn fuckers
-        while (get-process -Name VBoxWindowsAdditions*) { write-verbose 'Waiting for VBox install to finish...'; sleep 1; }
+        Invoke-ExpressionAndCheck -command ('& "{0}" add-trusted-publisher "{1}" --root "{1}"' -f "$baseDir\cert\VBoxCertUtil.exe",$oracleCert)
+        Write-EventLogWrapper "Installing the virtualbox additions"
+        Invoke-ExpressionAndCheck -command ('& "{0}" /with_wddm /S' -f "$baseDir\VBoxWindowsAdditions.exe") # returns IMMEDIATELY, goddamn fuckers
+        while (get-process -Name VBoxWindowsAdditions*) { write-host 'Waiting for VBox install to finish...'; sleep 1; }
+        Write-EventLogWrapper "virtualbox additions have now been installed"
     }
-    finally {
-        rm -recurse -force $vbgaPath
+    
+    switch ($PSCmdlet.ParameterSetName) {
+        "InstallFromIsoPath" {
+            $isoPath = resolve-path $isoPath | select -expand Path
+            $vbgaPath = mkdir -force "${env:Temp}\InstallVbox" | select -expand fullname
+            try {
+                Write-EventLogWrapper "Extracting iso at '$isoPath' to directory at '$vbgaPath'..."
+                Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" -o"{1}"' -f $isoPath, $vbgaPath)
+                InstallVBoxAdditionsFromDir $vbgaPath
+            }
+            finally {
+                rm -recurse -force $vbgaPath
+            }
+        }
+        "InstallFromDisc" {
+            $vboxDiskDrive = get-psdrive -PSProvider Filesystem |? { test-path "$($_.Root)\VBoxWindowsAdditions.exe" }
+            if ($vboxDiskDrive) { 
+                Write-EventLogWrapper "Found VBox Windows Additions disc at $vboxDiskDrive"
+                InstallVBoxAdditionsFromDir $vboxDiskDrive.Root
+            }
+            else {
+                $message = "Could not find VBox Windows Additions disc"
+                Write-EventLogWrapper $message
+                throw $message
+            }
+        }
     }
 }
 
 function Disable-AutoAdminLogon {
-    write-verbose "Function: $($MyInvocation.MyCommand)..."
+    Write-EventLogWrapper "Disabling auto admin logon"
     set-itemproperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 0    
 }
 
@@ -323,13 +412,13 @@ function Install-CompiledDotNetAssemblies {
     # http://robrelyea.wordpress.com/2007/07/13/may-be-helpful-ngen-exe-executequeueditems/
 
     $ngen = "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
-    Invoke-ExpressionAndCheck -command "$ngen update /force /queue"
-    Invoke-ExpressionAndCheck -command "$ngen executequeueditems"
+    Invoke-ExpressionAndCheck -command "& $ngen update /force /queue"
+    Invoke-ExpressionAndCheck -command "& $ngen executequeueditems"
         
     if ((Get-OSArchitecture) -match $ArchitectureId.amd64) { 
         $ngen64 = "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
-        Invoke-ExpressionAndCheck -command "$ngen64 update /force /queue"
-        Invoke-ExpressionAndCheck -command "$ngen64 executequeueditems"
+        Invoke-ExpressionAndCheck -command "& $ngen64 update /force /queue"
+        Invoke-ExpressionAndCheck -command "& $ngen64 executequeueditems"
     }
 }
 
@@ -337,7 +426,7 @@ function Compress-WindowsInstall {
     $OSArch = Get-OSArchitecture
     try {
         $udfZipPath = Get-WebUrl -url $URLs.UltraDefragDownload.$OSArch -outDir $env:temp
-        $udfExPath = "${env:temp}\ultradefrag-portable-6.1.0.$udfArch"
+        $udfExPath = "${env:temp}\ultradefrag-portable-6.1.0.$OSArch"
         # This archive contains a folder - extract it directly to the temp dir
         Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
 
@@ -350,10 +439,12 @@ function Compress-WindowsInstall {
         rm -recurse -force ${env:WinDir}\SoftwareDistribution\Download
         start-service wuauserv
 
-        Invoke-ExpressionAndCheck -command ('{0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
+        Invoke-ExpressionAndCheck -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
         
-        Set-ItemProperty -path HKCU\Software\Sysinternals\SDelete -name EulaAccepted -value 1 
-        Invoke-ExpressionAndCheck -command ('{0} -q -z "{1}"' -f $sdExPath,$env:SystemDrive)
+        $sdKey = "HKCU:\Software\Sysinternals\SDelete"
+        if (-not (test-path $sdKey)) { New-Item $sdKey -Force }
+        Set-ItemProperty -path $sdKey -name EulaAccepted -value 1 
+        Invoke-ExpressionAndCheck -command ('& {0} -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
     }
     finally {
         rm -recurse -force $udfZipPath,$udfExPath,$sdZipPath,$sdExPath -ErrorAction Continue
@@ -375,24 +466,24 @@ function Disable-WindowsUpdates {
 
 function Enable-MicrosoftUpdate {
     [cmdletbinding()] param()
-    write-verbose "Enabling Microsoft Update..."
+    Write-EventLogWrapper "Enabling Microsoft Update..."
     stop-service wuauserv
     $auKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" 
     Set-ItemProperty -path $auKey -name EnableFeaturedSoftware -value 1 
     Set-ItemProperty -path $auKey -name IncludeRecommendedUpdates -value 1 
 
     $ServiceManager = New-Object -ComObject "Microsoft.Update.ServiceManager"
-    $ServiceManager.AddService2("7971f918-a847-4430-9279-4a52d1efe18d",7,"")
+    $ServiceManager.AddService2("7971f918-a847-4430-9279-4a52d1efe18d",7,"") | out-null
 
     start-service wuauserv
 }
 
 function Install-Chocolatey {
-    [cmdleetbinding()] param()
+    [cmdletbinding()] param()
     
     $chocoExePath = "${env:ProgramData}\Chocolatey\bin"
     if ($($env:Path).ToLower().Contains($($chocoExePath).ToLower())) {
-        write-verbose "Chocolatey already in path, exiting..."
+        Write-EventLogWrapper "Attempting to install Chocolatey but it's already in path, exiting..."
         return
     }
 
@@ -404,7 +495,9 @@ function Install-Chocolatey {
     $userPath = [Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::User)
     if ($userPath) { $env:Path += ";$userPath" }
 
-    iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+    # TODO: capture and log output
+    $chocoOutput = iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+    Write-EventLogWrapper "Chocolatey install process completed:`r`n`r`n$chocoOutput"
 }
 
 function Set-UserOptions {
@@ -431,7 +524,7 @@ function Set-UserOptions {
 
 function Disable-HibernationFile {
     [cmdletbinding()] param()
-    write-verbose "Removing Hibernation file..."
+    Write-EventLogWrapper "Removing Hibernation file..."
     $powerKey = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power'
     Set-ItemProperty -path $powerKey -name HibernateFileSizePercent -value 0  # hiberfil is zero bytes
     Set-ItemProperty -path $powerKey -name HibernateEnabled -value 0          # disable hibernation altogether
@@ -439,7 +532,7 @@ function Disable-HibernationFile {
 
 function Enable-WinRM { # TODO fixme, would prefer this to be in Powershell if possible. also it's totally insecure
     [cmdletbinding()] param()
-    write-verbose "Enabling WinRM..."
+    Write-EventLogWrapper "Enabling WinRM..."
 
     cmd /c winrm quickconfig -q
     cmd /c winrm quickconfig -transport:http
@@ -542,7 +635,7 @@ function New-WindowsInstallMedia { # TODO fixme not sure I wanna handle temp dir
 
     $etfsBoot = resolve-path "$existingInstallMediaDir\boot\etfsboot.com" | select -expand Path
     $oscdimgCall = '& "{0}" -m -n -b"{1}" "{2}" "{3}"' -f @($oscdImgPath, $etfsBoot, $installMediaTemp, $outputIsoPath)
-    write-verbose "Calling OSCDIMG: '$oscdimgCall"
+    Write-EventLogWrapper "Calling OSCDIMG: '$oscdimgCall"
     Invoke-ExpressionAndCheck $oscdimgCall -verbose:$verbose
 
     dismount-diskimage -imagepath $sourceIsoPath
@@ -557,7 +650,7 @@ function Get-WindowsUpdateUrls { # TODO: is this how we wanna do temps tho?
         [switch] $debugSaveXslt
     )
     $xsltPath = [IO.Path]::GetTempFileName()
-    write-verbose "Downloading XSLT to '$xsltPath'"
+    Write-EventLogWrapper "Downloading XSLT to '$xsltPath'"
         
     if ($osArchitecture -match $ArchitectureId.i386) { $arch = "x86" }
     elseif ($osArchitecture -match $ArchitectureId.amd64) { $arch = "x64" }

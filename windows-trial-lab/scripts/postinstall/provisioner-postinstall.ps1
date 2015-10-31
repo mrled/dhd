@@ -23,8 +23,6 @@ $LASTEXITCODE = 0 # just in case
 import-module $PSScriptRoot\wintriallab-postinstall.psm1
 try {
     Install-SevenZip
-    #Install-VBoxAdditions -isoPath "C:\Users\vagrant\VBoxGuestAdditions.iso"
-    Install-VBoxAdditions -fromDisc
     Disable-AutoAdminLogon
     Enable-RDP
     Install-Chocolatey
