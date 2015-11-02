@@ -22,9 +22,9 @@
         "./Autounattend.xml",
         "../scripts/win-updates.ps1",
         "../scripts/enable-winrm.ps1",
-        "../scripts/postinstall/wintriallab-postinstall.psm1",
-        "../scripts/postinstall/autounattend-postinstall.ps1",
-        "../scripts/postinstall/provisioner-postinstall.ps1"
+        "../scripts/wintriallab-postinstall.psm1",
+        "../scripts/autounattend-postinstall.ps1",
+        "../scripts/provisioner-postinstall.ps1"
       ],
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "2048" ], 

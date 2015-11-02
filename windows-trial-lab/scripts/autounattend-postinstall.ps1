@@ -11,7 +11,7 @@ try {
     Install-VBoxAdditions -fromDisc # Need to reboot for some of these drivers to take
     
     # To reboot, then run Windows updates, then enable WinRM: 
-    $restartCommand = "$PSHOME\powershell.exe -File A:\win-updates.ps1 -RestartAction RunAtLogon -PostUpdateExpression -CalledFromRegistry '$PSHOME\powershell.exe -File A:\enable-winrm.ps1'"
+    $restartCommand = "$PSHOME\powershell.exe -File A:\win-updates.ps1 -CalledFromRegistry -RestartAction RunAtLogon -PostUpdateExpression '$PSHOME\powershell.exe -File A:\enable-winrm.ps1'"
     
     # To reboot, then run winrm immediately without Windows Update
     #$restartCommand = "$PSHOME\powershell.exe -File A:\enable-winrm.ps1"

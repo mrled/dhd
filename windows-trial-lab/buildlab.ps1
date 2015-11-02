@@ -35,7 +35,7 @@ import-module dism -verbose:$false
 
 # Module useful for Download-URL at least. TODO: this mixes concerns and may not be ideal?
 get-module wintriallab-postinstall | remove-module 
-import-module $PSScriptRoot\scripts\postinstall\wintriallab-postinstall.psm1 -verbose:$false
+import-module $PSScriptRoot\scripts\wintriallab-postinstall.psm1 -verbose:$false
 
 Set-StrictMode -Version 2.0
 
