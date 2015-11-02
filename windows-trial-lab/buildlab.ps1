@@ -16,13 +16,9 @@ param(
     [parameter(mandatory=$true,ParameterSetName="VagrantUp")]
     [string] $baseConfigName,
 
-    [parameter(mandatory=$true,ParameterSetName="DownloadWSUS")] [switch] $DownloadWSUS,
-    [parameter(mandatory=$true,ParameterSetName="ApplyWSUS")]    [switch] $ApplyWSUS,
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")]  [switch] $BuildPacker,
     [parameter(mandatory=$true,ParameterSetName="AddToVagrant")] [switch] $AddToVagrant,
     [parameter(mandatory=$true,ParameterSetName="VagrantUp")]    [switch] $VagrantUp,
-
-    [parameter(mandatory=$true,ParameterSetName="ApplyWSUS")] [string] $isoPath,
 
     [string] $baseOutDir = "D:\iso\wintriallab",
     [string] $tempDirOverride,
@@ -31,20 +27,8 @@ param(
     [switch] $whatIf
 )
 
-import-module dism -verbose:$false
-
-# Module useful for Download-URL at least. TODO: this mixes concerns and may not be ideal?
-get-module wintriallab-postinstall | remove-module 
-import-module $PSScriptRoot\scripts\wintriallab-postinstall.psm1 -verbose:$false
-
+$errorActionPreference = "Stop"
 Set-StrictMode -Version 2.0
-
-# This seems to be required with strict mode? 
-$verbose = $true
-# This correctly covers -verbose -verbose:$false and -verbose:$true
-# if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
-#     $verbose = $true
-# }
 
 $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
 $packerOutDir = "$baseOutDir\PackerOut"
@@ -59,7 +43,6 @@ $wimMountDir = "${labTempDir}\MountInstallWim"
 $installMediaTemp = "${labTempDir}\InstallMedia"
 $newMediaIsoPath = "${labTempDir}\windows.iso"
 
-$errorActionPreference = "Stop"
 $fullConfigName = "wintriallab-${baseConfigName}" 
 
 set-alias packer (gcm packer | select -expand path)
@@ -69,97 +52,10 @@ set-alias vagrant (gcm vagrant | select -expand path)
 $outDir = "${packerOutDir}\${fullConfigName}"
 if ($tag) { $outDir += "-${tag}"}
 
-$packerConfigRoot = "${PSScriptRoot}\${baseConfigName}"
+$packerConfigRoot = "${PSScriptRoot}\packer\${baseConfigName}"
 $packerFile = "${packerConfigRoot}\${baseConfigName}.packerfile.json"
 $packedBoxPath = "${outDir}\${baseConfigName}_virtualbox.box"
 $vagrantTemplate = "${packerConfigRoot}\vagrantfile-${baseConfigName}.template"
-
-function Download-WSUSOfflineUpdater {
-    if (test-path $wsusOfflineDir) { 
-        throw "WSUSOffline is already extracted to '$wsusOfflineDir'"
-    }
-    $filename = "wsusoffline101.zip"
-    $url = "http://download.wsusoffline.net/$filename"
-    $dlPath = "$labTempDir\$filename" 
-    Get-WebUrl -url $url -downloadPath $dlPath
-    $exDir = resolve-path "$wsusOfflineDir\.." # why the ".." ? because the zipfile puts everything in a 'wsusoffline' folder
-    sevenzip x "$dlPath" "-o$exDir"
-}
-function Download-WindowsUpdates {
-    set-alias DownloadUpdates "$wsusOfflineDir\cmd\DownloadUpdates.cmd"
-    foreach ($product in @('w63','w63-x64','w100','w100-x64')) {
-        DownloadUpdates $product glb /includedotnet /verify 
-    }
-}
-
-<#
-.notes
-The install.wim file doesn't (ever? sometimes?) denote architecture in its image names, but boot.wim (always? usually?) does
-#>
-function Get-BootWimArchitecture {
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] $wimFile
-    )
-    $bootWimInfo = Get-WindowsImage -imagePath $wimFile -verbose:$verbose
-
-    $arch = $null
-    if (-not $bootWimInfo) { throw "Got no information for wimfile at '$wimFile'"}
-    elseif ($bootWimInfo[0].ImageName -match "x86") { $arch = $ArchitectureId.i386 }
-    elseif ($bootWimInfo[0].ImageName -match "x64") { $arch = $ArchitectureId.amd64 }
-    else { throw "Could not determine architecture for '$wimFile'"}
-
-    write-verbose "Found an architecture of '$arch' for '$wimFile'"
-    return $arch
-}
-
-
-function Apply-WindowsUpdatesToIso {
-    [cmdletbinding()] param (
-        [parameter(mandatory=$true)] [string] $inputIso,
-        [parameter(mandatory=$true)] [string] $outputIso,
-        [parameter(mandatory=$true)] [string] $wsusOfflineDir,
-        [parameter(mandatory=$true)] [string] $wimMountDir
-    )
-
-    $myWimMounts = @()
-
-    mount-diskimage -imagepath $inputIso
-    $mountedDrive = get-diskimage -imagepath $inputIso | get-volume | select -expand DriveLetter
-
-    $installWim = "$labTempDir\install.wim"
-    if (-not (test-path $installWim)) { 
-        cp "${mountedDrive}:\Sources\install.wim" $labTempDir -verbose:$verbose
-    }
-    else {
-        write-verbose "Using EXISTING install.wim at '$installWim'"
-    }
-    Set-ItemProperty -path $installWim -name IsReadOnly -value $false -force 
-
-    $arch = Get-BootWimArchitecture -wimFile "${mountedDrive}:\sources\boot.wim" -verbose:$verbose
-    dismount-diskimage -imagepath $inputIso
-
-    $wimInfo = Get-WindowsImage -imagePath $installWim
-    $shortCode = Get-WOShortCode -OSName $wimInfo[0].ImageName -OSArchitecture $arch
-    #$updatePath = resolve-path "${wsusOfflineDir}\client\$shortCode\glb" | select -expand Path
-	$updatePath = "D:\iso\wintriallab\temp-slipstream\WSUSCache\w63-i386-glb"
-
-    foreach ($wimInfo in (Get-WindowsImage -imagePath $installWim)) {
-        $wimMountSubdir = mkdir "${wimMountDir}\$($wimInfo.ImageIndex)" -force | select -expand fullname
-        Mount-WindowsImage -imagePath $installWim -index $wimInfo.ImageIndex -path $wimMountSubdir
-
-		write-verbose "Applying '$((ls $updatePath).count)' updates to '$wimInfo'''"
-        try {
-            Add-WindowsPackage -PackagePath $updatePath -path $wimMountSubdir
-        }
-        catch {
-            write-verbose "Caught error(s) when installing packages:`n`n$_`n"
-        }
-        
-        Dismount-WindowsImage -Path $wimMountSubdir -Save 
-    }
-
-    New-WindowsInstallMedia -sourceIsoPath $inputIso -installMediaTemp $installMediaTemp -installWimPath $installWim -outputIsoPath $outputIso
-}
 
 function Build-PackerFile {
     [cmdletbinding()]
@@ -199,10 +95,10 @@ function Build-PackerFile {
         popd
     }
     $outBox = get-item $outDir\*.box
-    if ($outBox.count -gt 1) { 
+    if ($outBox.PSObject.Properties['count'] -and $outBox.count -gt 1) { 
         throw "Somehow you came up with more than one box here: '$outBox'"
     }
-    if ($outBox -notmatch [Regex]::Escape($packedBoxPath)) { 
+    if ($outBox.fullname -notmatch [Regex]::Escape($packedBoxPath)) { 
         throw "Found an output box '$outBox', but it doesn't match the expected packed box path of '$packedBoxPath'"
     }
     cp "$vagrantTemplate" "$outDir\Vagrantfile"
@@ -279,15 +175,6 @@ if ($baseConfigName) {
     write-output ""
 }
 
-if ($DownloadWSUS) {
-    if (-not (test-path $wsusOfflineDir))  {
-        Download-WSUSOfflineUpdater
-    }
-    Download-WindowsUpdates
-}
-if ($ApplyWSUS) {
-    Apply-WindowsUpdatesToIso -inputIso $isoPath -outputIso $newMediaIsoPath -wsusOfflineDir $wsusOfflineDir -wimMountDir $wimMountDir -verbose:$verbose
-}
 if ($BuildPacker) {
     $bpfParam = @{
         packerFile = $packerFile

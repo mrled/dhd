@@ -29,14 +29,8 @@
             </DiskConfiguration>
             <UserData>
                 <AcceptEula>true</AcceptEula>
-                
-                <!-- do I need this for anything at all? 
-                <FullName>Vagrant Administrator</FullName>
-                <Organization>Vagrant Inc.</Organization>
-                -->
-
                 <!--
-                    NOTE: If you are re-configuring this for use of a retail key 
+                    NOTE: If you are re-configuring this for use of a retail key
                     and using a retail ISO, you need to adjust the <ProductKey> block
                     below to look like this:
 
@@ -50,7 +44,7 @@
 
                 <!-- Product Key from http://technet.microsoft.com/en-us/library/jj612867.aspx -->
                 <ProductKey>
-                    MHF9N-XY6XB-WVXMC-BTDCT-MKKG7
+                    NPPR9-FWDCX-D2C8J-H872K-2YT43
                     <WillShowUI>Never</WillShowUI>
                 </ProductKey>
             </UserData>
@@ -65,7 +59,7 @@
                     <InstallFrom>
                         <MetaData wcm:action="add">
                             <Key>/IMAGE/NAME</Key>
-                            <Value>Windows 8.1 Enterprise Evaluation</Value>
+                            <Value>Windows 10 Enterprise Evaluation</Value>
                         </MetaData>
                     </InstallFrom>
                 </OSImage>
@@ -137,7 +131,7 @@
                     <Order>99</Order>
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
-                
+
             </FirstLogonCommands>
             <ShowWindowsLive>false</ShowWindowsLive>
         </component>
@@ -148,7 +142,7 @@
                 <HelpCustomized>false</HelpCustomized>
             </OEMInformation>
             <!-- Rename computer here. -->
-            <ComputerName>vagrant-81-x86</ComputerName>
+            <ComputerName>vagrant-10-x86</ComputerName>
             <TimeZone>Central Standard Time</TimeZone>
             <RegisteredOwner/>
         </component>

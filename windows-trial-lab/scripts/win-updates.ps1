@@ -370,7 +370,17 @@ function Run-WindowsUpdate {
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
-    Run-WindowsUpdate
+    try {
+        Run-WindowsUpdate
+    }
+    catch {
+        $message  = "======== CAUGHT EXCEPTION ========`r`n$_`r`n"
+        $message += "======== ERROR STACK ========`r`n"
+        $error |% { $message += "$_`r`n----`r`n" }
+        $message += "======== ========"
+        Write-WinUpEventLog $message
+        exit 666
+    }
 }
 
 # Original version was 234 lines

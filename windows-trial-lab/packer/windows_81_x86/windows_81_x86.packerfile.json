@@ -13,22 +13,25 @@
       "communicator": "winrm",
       "winrm_username": "vagrant",
       "winrm_password": "V@grant123",
-      "winrm_timeout": "8h",
+      "winrm_timeout": "72h",
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "guest_os_type": "Windows81",
       "disk_size": 61440,
       "guest_additions_mode": "attach",
       "floppy_files": [
         "./Autounattend.xml",
-        "../scripts/win-updates.ps1",
-        "../scripts/enable-winrm.ps1",
-        "../scripts/wintriallab-postinstall.psm1",
-        "../scripts/autounattend-postinstall.ps1",
-        "../scripts/provisioner-postinstall.ps1"
+        "../../scripts/win-updates.ps1",
+        "../../scripts/enable-winrm.ps1",
+        "../../scripts/wintriallab-postinstall.psm1",
+        "../../scripts/autounattend-postinstall.ps1",
+        "../../scripts/provisioner-postinstall.ps1"
       ],
       "vboxmanage": [
-        [ "modifyvm", "{{.Name}}", "--memory", "2048" ], 
-        [ "modifyvm", "{{.Name}}", "--cpus",   "2" ]
+        ["setextradata", "global", "GUI/SuppressMessages", "all" ],
+        ["modifyvm", "{{.Name}}", "--memory", "2048" ], 
+        ["modifyvm", "{{.Name}}", "--cpus",   "2" ],
+        ["modifyvm", "{{.Name}}", "--accelerate2dvideo", "on"],
+        ["modifyvm", "{{.Name}}", "--vram", 128]
       ]
     }
   ],

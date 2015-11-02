@@ -4,16 +4,6 @@ param(
     [String] $ScriptName = $MyInvocation.MyCommand.Name
 )
 
-<# 
-jesus fucking christ
-fucking Packer
-TODO: 
-- make every function 100% reliant on itself only. 
-- get rid of calls to Get-LabTempDir
-- decided whether I'm using $URLs or not lol
-- get better logging - use an Event Log 
-#>
-
 ### Global Constants that I use elsewhere
 
 $ArchitectureId = @{
@@ -21,7 +11,7 @@ $ArchitectureId = @{
     i386 = "i386"
 }
 $WindowsVersionId = @{
-    w63 = "w63" # TODO: rename to w81 probably
+    w81 = "w81" 
     w10 = "w10"
     w10ltsb = "w10ltsb"
     server2012r2 = "server2012r2"
@@ -30,7 +20,7 @@ $OfficeVersionId = @{
     o2013 = "o2013"
 }
 $IsoUrls = @{
-    $WindowsVersionId.w63 = @{
+    $WindowsVersionId.w81 = @{
         $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X86FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X86FREE_EN-US_DV9.ISO"
         $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X64FREE_EN-US_DV9.ISO" 
     }
@@ -55,7 +45,7 @@ $WSUSOfflineRepoBaseUrl = "https://svn.wsusoffline.net/svn/wsusoffline/trunk"
 $szUrl = "http://7-zip.org/a/$szFilename"
 $URLs = @{
     ISOs = @{
-        $WindowsVersionId.w63 = @{
+        $WindowsVersionId.w81 = @{
             $ArchitectureId.i386 = "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X86FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X86FREE_EN-US_DV9.ISO" 
         } 
     }
@@ -95,160 +85,34 @@ function Get-WebUrl {
     return (get-item $outFile)
 }
 
-function Invoke-ExpressionAndCheck {
+<#
+.synopsis
+Invoke an expression; log the expression, any output, and the last exit code 
+#>
+function Invoke-ExpressionAndLog {
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] [string] $command,
+        [switch] $invokeWithCmdExe,
+        [switch] $checkExitCode,
         [int] $sleepSeconds
     )
     $global:LASTEXITCODE = 0
-    Write-EventLogWrapper "Invoking expression '$command'"
-    invoke-expression -command $command
-    Write-EventLogWrapper "Expression '$command' had a last exit code of '$LastExitCode'"
-    if ($global:LASTEXITCODE -ne 0) {
+    if ($invokeWithCmdExe) {
+        Write-EventLogWrapper "Invoking CMD: '$command'"
+        $output = cmd /c "$command"
+    }
+    else { 
+        Write-EventLogWrapper "Invoking Powershell expression: '$command'"
+        $output = invoke-expression -command $command
+    }
+    Write-EventLogWrapper "Expression '$command' had a last exit code of '$LastExitCode' and output the following to the console:`r`n`r`n$output"
+    if (if ($checkExitCode -and $global:LASTEXITCODE -ne 0) {
         throw "LASTEXITCODE: ${global:LASTEXITCODE} for command: '${command}'"
     }
     if ($sleepSeconds) { start-sleep $sleepSeconds }
 }
 
-# TODO: Copy-ItemAndExclude
-# function Copy-ItemAndExclude {
-#     [cmdletbinding()] param(
-#         [parameter(mandatory=$true)] [string] $path,
-#         [parameter(mandatory=$true)] [string] $destination,
-#         [parameter(mandatory=$true)] [string[]] $exclude,
-#         [switch] $force
-#     )
-#     $path = resolve-path $path | select -expand path
-#     $sourceItems = Get-ChildItem -Path $path -Recurse -Exclude $exclude 
-#     Write-EventLogWrapper "Found $($sourceItems.count) items to copy from '$path'"
-#     #$sourceItems | copy-item -force:$force -destination {Join-Path $destination $_.FullName.Substring($path.length)}
-#     $sourceItems | copy-item -force:$force -destination {
-#         if ($_.GetType() -eq [System.IO.FileInfo]) {
-#             Join-Path $destination $_.FullName.Substring($path.length)
-#         } 
-#         else {
-#             Join-Path $destination $_.Parent.FullName.Substring($path.length)
-#         }
-#     }
-# }
-
-function Apply-XmlTransform {
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string] $xmlFile,
-        [parameter(mandatory=$true)] [string] $xsltFile,
-        [parameter(mandatory=$true)] [string] $outFile
-    )
-    $xmlFile = resolve-path $xmlFile | select -expand path
-    $xsltFile = resolve-path $xsltFile | select -expand path
-
-    if (test-path $outFile) { throw "outFile exists at '$outFile'" }
-    $outParent = split-path -parent $outFile | resolve-path | select -expand Path
-    $outName = split-path -leaf $outFile
-    $outFile = "$outParent\$outName"
-
-    $xslt = New-Object System.Xml.Xsl.XslCompiledTransform
-    $xslt.Load($xsltFile)
-    $xslt.Transform($xmlFile, $outFile)
-    return (get-item $outFile)
-}
-
-<#
-.description
-Get the path of the Windows ADK or AIK or whatever the fuck they're calling it from a format string
-- {0} is always the WAIK directory 
-    - e.g. "C:\Program Files (x86)\Windows Kits\8.1\" 
-    - e.g. "X:\Program Files\Windows Kits\8.0"
-- {1} is always the host architecture (x86 or amd64)
-    - i THINK this is right, but I don't understand WHY. why do you need an amd64 version of oscdimg.exe? 
-    - however, there are arm executables lying around, and i definitely can't execute those. wtf? 
-
-So we expect a string like "{0}\bin\{1}\wsutil.exe"
-#>
-function Get-AdkPath {
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string] $pathFormatString
-    )
-
-    $adkPath = ""
-    $possibleAdkPaths = @("${env:ProgramFiles(x86)}\Windows Kits\8.1","${env:ProgramFiles}\Windows Kits\8.1")
-    $possibleAdkPaths |% { if (test-path $_) { $adkPath = $_ } }
-    if (-not $adkPath) { throw "Could not find the Windows Automated Installation Kit" }
-    Write-EventLogWrapper "Found the WAIK at '$adkPath'"
-
-    $arch = Get-OSArchitecture
-    switch ($arch) {
-        $ArchitectureId.i386 { 
-            $formatted = $pathFormatString -f $adkPath,$waikArch
-            if (test-path $formatted) { return $formatted }
-        }
-        $ArchitectureId.amd64 { 
-            foreach ($waikArch in @("amd64","x64")) {
-                $formatted = $pathFormatString -f $adkPath,$waikArch
-                if (test-path $formatted) { return $formatted }
-            }
-        }
-        default { 
-            throw "Could not determine architecture of '$arch'" 
-        }
-    }
-    throw "Could not resolve format string '$pathFormatString' to an existing path"
-}
-
-<#
-.notes 
-For use with WSUS Offline Updater
-#>
-function Get-WOShortCode { # TODO fixme I think I don't need this anymore because I'm not using WSUS Offline anymore
-    param(
-        [parameter(mandatory=$true)] [string] $OSName,
-        [parameter(mandatory=$true)] [string] $OSArchitecture
-    )
-
-    # I'm adding to this list slowly, only as I encounter the actual names from install.wim 
-    # on the trial CDs when I actually try to install them
-    $shortCodeTable = @{
-        "8.1" = "w63"
-    }
-
-    $shortCodeTable.keys |% { if ($OSName -match $_) { $shortCode = $shortCodeTable[$_] } }
-    if (-not $shortCode) { throw "Could not determine shortcode for an OS named '$OSName'" }
-
-    if ($OSArchitecture -match $ArchitectureId.i386) { $shortCode += "" }
-    elseif ($OSArchitecture -match $ArchitectureId.amd64) { $shortCode += "-x64" }
-    else { throw "Could not determine shortcode for an OS of architecture '$OSArchitecture'" }
-
-    Write-EventLogWrapper "Found shortcode '$shortcode' for OS named '$OSName' of architecture '$OSArchitecture'"
-    return $shortCode
-}
-
-
 ### Publicly exported functions called directly from slipstreaming scripts
-
-<#
-.notes
-This is intended for use in the postinstall phase, on the target machine
-We expect calling scripts to get a lab temp dir with this function, but we do NOT permit functions in the module to call it
-TODO: does that even make sense to do??
-Only functions that were intended to run in that phase should have the concept of a "LabTempDir".
-NOTE: this will return the same directory every time it's called until the module is reimported
-#>
-function Get-LabTempDir {
-    if ("${script:WinTrialLabTemp}") {} # noop
-    elseif ("${env:WinTrialLabTemp}") {
-        $script:WinTrialLabTemp = $env:WinTrialLabTemp
-    }
-    else {
-        $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
-        $script:WinTrialLabTemp = "${env:Temp}\WinTrialLab-$dateStamp" 
-    }
-    $script:WinTrialLabTemp = [System.IO.Path]::GetFullPath($script:WinTrialLabTemp)
-    Write-EventLogWrapper "Using WinTrialLabTemp directory at '${script:WinTrialLabTemp}'"
-    if (-not (test-path $script:WinTrialLabTemp)) {
-        Write-EventLogWrapper "Temporary directory does not exist, creating it..."
-        mkdir -force $script:WinTrialLabTemp | out-null
-    }
-    return $script:WinTrialLabTemp
-}
 
 <#
 .synopsis 
@@ -269,6 +133,31 @@ function Write-EventLogWrapper {
     Write-Host -foreground magenta "====Writing to $EvengLogName event log===="
     write-host -foreground darkgray "$messagePlus`r`n"
     Write-EventLog -LogName $eventLogName -Source $EventLogSource -EventID $eventId -EntryType $entryType -Message $MessagePlus
+}
+
+<#
+.synopsis
+Invoke a scriptblock. If it throws, write the errors out to the event log and exist with an error code
+.notes
+This is intended to be a handy wrapper for calling functions in this module that takes care of logging an exception for you. 
+See the autounattend-postinstall.ps1 and provisioner-postinstall.ps1 scripts for examples.
+#>
+function Invoke-ScriptblockAndCatch {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [ScriptBlock] $scriptBlock,
+        [int] $failureExitCode = 666
+    )
+    try {
+        $scriptBlock.invoke()
+    }
+    catch {
+        $message  = "======== CAUGHT EXCEPTION ========`r`n$_`r`n"
+        $message += "======== ERROR STACK ========`r`n"
+        $_ |% { $message += "$_`r`n----`r`n" }
+        $message += "======== ========"
+        Write-EventLogWrapper $message
+        exit 666
+    }
 }
 
 <#
@@ -341,7 +230,7 @@ function Install-SevenZip {
         Write-EventLogWrapper "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
         $msiCall = '& msiexec /qn /i "{0}"' -f $szDlPath
         # Windows suxxx so msiexec sometimes returns right away? or something idk. fuck
-        Invoke-ExpressionAndCheck -command $msiCall -sleepSeconds 30
+        Invoke-ExpressionAndLog -checkExitCode -command $msiCall -sleepSeconds 30
     }
     finally {
         rm -force $szDlPath
@@ -362,9 +251,9 @@ function Install-VBoxAdditions {
         Write-EventLogWrapper "Installing the Oracle certificate..."
         $oracleCert = resolve-path "$baseDir\cert\oracle-vbox.cer" | select -expand path
         # NOTE: Checking for exit code, but this command will fail with an error if the cert is already installed
-        Invoke-ExpressionAndCheck -command ('& "{0}" add-trusted-publisher "{1}" --root "{1}"' -f "$baseDir\cert\VBoxCertUtil.exe",$oracleCert)
+        Invoke-ExpressionAndLog -checkExitCode -command ('& "{0}" add-trusted-publisher "{1}" --root "{1}"' -f "$baseDir\cert\VBoxCertUtil.exe",$oracleCert)
         Write-EventLogWrapper "Installing the virtualbox additions"
-        Invoke-ExpressionAndCheck -command ('& "{0}" /with_wddm /S' -f "$baseDir\VBoxWindowsAdditions.exe") # returns IMMEDIATELY, goddamn fuckers
+        Invoke-ExpressionAndLog -checkExitCode -command ('& "{0}" /with_wddm /S' -f "$baseDir\VBoxWindowsAdditions.exe") # returns IMMEDIATELY, goddamn fuckers
         while (get-process -Name VBoxWindowsAdditions*) { write-host 'Waiting for VBox install to finish...'; sleep 1; }
         Write-EventLogWrapper "virtualbox additions have now been installed"
     }
@@ -375,7 +264,7 @@ function Install-VBoxAdditions {
             $vbgaPath = mkdir -force "${env:Temp}\InstallVbox" | select -expand fullname
             try {
                 Write-EventLogWrapper "Extracting iso at '$isoPath' to directory at '$vbgaPath'..."
-                Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" -o"{1}"' -f $isoPath, $vbgaPath)
+                Invoke-ExpressionAndLog -checkExitCode -command ('sevenzip x "{0}" -o"{1}"' -f $isoPath, $vbgaPath)
                 InstallVBoxAdditionsFromDir $vbgaPath
             }
             finally {
@@ -402,7 +291,8 @@ function Disable-AutoAdminLogon {
     set-itemproperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 0    
 }
 
-function Enable-RDP { # TODO fixme
+function Enable-RDP {
+    Write-EventLogWrapper "Enabling RDP"
     netsh advfirewall firewall add rule name="Open Port 3389" dir=in action=allow protocol=TCP localport=3389
     reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
 }
@@ -410,15 +300,16 @@ function Enable-RDP { # TODO fixme
 function Install-CompiledDotNetAssemblies {
     # http://support.microsoft.com/kb/2570538
     # http://robrelyea.wordpress.com/2007/07/13/may-be-helpful-ngen-exe-executequeueditems/
+    # Don't check the return value - sometimes it fails and that's fine
 
-    $ngen = "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
-    Invoke-ExpressionAndCheck -command "& $ngen update /force /queue"
-    Invoke-ExpressionAndCheck -command "& $ngen executequeueditems"
+    set-alias ngen32 "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
+    ngen32 update /force /queue
+    ngen32 executequeueditems
         
     if ((Get-OSArchitecture) -match $ArchitectureId.amd64) { 
-        $ngen64 = "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
-        Invoke-ExpressionAndCheck -command "& $ngen64 update /force /queue"
-        Invoke-ExpressionAndCheck -command "& $ngen64 executequeueditems"
+        set-alias ngen64 "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
+        ngen64 update /force /queue
+        ngen64 executequeueditems
     }
 }
 
@@ -428,23 +319,23 @@ function Compress-WindowsInstall {
         $udfZipPath = Get-WebUrl -url $URLs.UltraDefragDownload.$OSArch -outDir $env:temp
         $udfExPath = "${env:temp}\ultradefrag-portable-6.1.0.$OSArch"
         # This archive contains a folder - extract it directly to the temp dir
-        Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
+        Invoke-ExpressionAndLog -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
 
         $sdZipPath = Get-WebUrl -url $URLs.SdeleteDownload -outDir $env:temp
         $sdExPath = "${env:temp}\SDelete"
         # This archive does NOT contain a folder - extract it to a subfolder (will create if necessary)
-        Invoke-ExpressionAndCheck -command ('sevenzip x "{0}" "-o{1}"' -f $sdZipPath,$sdExPath)
+        Invoke-ExpressionAndLog -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $sdZipPath,$sdExPath)
 
         stop-service wuauserv
         rm -recurse -force ${env:WinDir}\SoftwareDistribution\Download
         start-service wuauserv
 
-        Invoke-ExpressionAndCheck -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
+        Invoke-ExpressionAndLog -checkExitCode -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
         
         $sdKey = "HKCU:\Software\Sysinternals\SDelete"
         if (-not (test-path $sdKey)) { New-Item $sdKey -Force }
         Set-ItemProperty -path $sdKey -name EulaAccepted -value 1 
-        Invoke-ExpressionAndCheck -command ('& {0} -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
+        Invoke-ExpressionAndLog -checkExitCode -command ('& {0} -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
     }
     finally {
         rm -recurse -force $udfZipPath,$udfExPath,$sdZipPath,$sdExPath -ErrorAction Continue
@@ -530,63 +421,36 @@ function Disable-HibernationFile {
     Set-ItemProperty -path $powerKey -name HibernateEnabled -value 0          # disable hibernation altogether
 }
 
-function Enable-WinRM { # TODO fixme, would prefer this to be in Powershell if possible. also it's totally insecure
+<#
+.synopsis
+Forcibly enable WinRM 
+.notes 
+TODO: Rewrite in pure Powershell 
+#>
+function Enable-WinRM {
     [cmdletbinding()] param()
     Write-EventLogWrapper "Enabling WinRM..."
 
-    cmd /c winrm quickconfig -q
-    cmd /c winrm quickconfig -transport:http
-    cmd /c winrm set winrm/config @{MaxTimeoutms="1800000"}
-    cmd /c winrm set winrm/config/winrs @{MaxMemoryPerShellMB="1800"}
-    cmd /c winrm set winrm/config/service @{AllowUnencrypted="true"}
-    cmd /c winrm set winrm/config/service/auth @{Basic="true"}
-    cmd /c winrm set winrm/config/client/auth @{Basic="true"}
-    cmd /c winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"} 
-    cmd /c netsh advfirewall firewall set rule group="remote administration" new enable=yes 
-    cmd /c netsh firewall add portopening TCP 5985 "Port 5985" 
-    cmd /c net stop winrm 
-    cmd /c sc config winrm start= auto
-    cmd /c net start winrm
-
-<#
-    # cmd /c winrm quickconfig -q
-    # cmd /c winrm quickconfig -transport:http
-    Enable-PSRemoting –force -SkipNetworkProfileCheck
-
-    set-item wsman:\localhost\MaxTimeoutms -value 1800000 -force
-    set-item wsman:\localhost\Shell\MaxMemoryPerShellMB -value 1800 -force
-    set-item wsman:\localhost\Service\AllowUnencrypted -value $true -force
-    set-item wsman:\localhost\Service\Auth\Basic -value $true -force
-    set-item wsman:\localhost\Client\Auth\Basic -value $true -force
-
-    # cmd /c winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"} 
-    $httpListener = $null
-    foreach ($listener in (ls WSMan:\localhost\Listener)) {
-        foreach ($key in $listener.keys) {
-            $subKey = $key.split("=")[0]
-            $subVal = $key.split("=")[1]
-            if (($subKey -match "Transport") -and ($subVal = "HTTP")) {
-                $httpListener = $listener
-                break
-            }
-        }
-        if ($httpListener) { break }
-    }
-    set-item $httpListener -value 5894
-
-    Set-Item wsman:\localhost\client\auth\CredSSP -value true -force 
-    Enable-WSManCredSSP -force -role server -force
-    #set-item wsman:localhost\client\trustedhosts -value * -force
-    #set-item wsman:localhost\client\trustedhosts -value 1.1.2.242 
-    set-item wsman:\localhost\listener\listener*\port -value 81 -force
-
-    stop-service winrm 
-    set-service -StartupType "automatic"
-    start-service winrm
-
-    winrm get winrm/config 
-    winrm enumerate winrm/config/listener 
-    #>
+    # I've had the best luck doing it this way - NOT doing it in a single batch script
+    # Sometimes one of these commands will stop further execution in a batch script, but when I 
+    # call cmd.exe over and over like this, that problem goes away. 
+    # Note: order is important. This order makes sure that any time packer can successfully 
+    # connect to WinRm, it won't later turn winrm back off or make it unavailable.
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'net stop winrm'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'sc.exe config winrm start= auto'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm quickconfig -q'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm quickconfig -transport:http'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config @{MaxTimeoutms="1800000"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/winrs @{MaxMemoryPerShellMB="2048"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/service @{AllowUnencrypted="true"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/client @{AllowUnencrypted="true"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/service/auth @{Basic="true"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/client/auth @{Basic="true"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/service/auth @{CredSSP="true"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"}'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'netsh advfirewall firewall set rule group="remote administration" new enable=yes'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'netsh firewall add portopening TCP 5985 "Port 5985"'
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'net start winrm'
 }
 
 function Set-PasswordExpiry { # TODO fixme use pure Powershell
@@ -594,76 +458,67 @@ function Set-PasswordExpiry { # TODO fixme use pure Powershell
         [parameter(mandatory=$true)] [string] $accountName,
         [parameter(mandatory=$true)] [bool] $expirePassword
     )
-    $pe = "TRUE"
-    if (-not $expirePassword) { $pe = "FALSE" }
-    cmd.exe /c wmic useraccount where "name='$accountName'" set "PasswordExpires=$pe"
+    $passwordExpires = if ($expirePassword) {"TRUE"} else {"FALSE"}
+    $command = @"
+wmic useraccount where "name='{0}'" set "PasswordExpires={1}"
+"@ 
+    $command = $command -f $accountName, $passwordExpiress
+    Invoke-ExpressionAndLog -invokeWithCmdExe -command $command
 }
 
-function New-WindowsInstallMedia { # TODO fixme not sure I wanna handle temp dirs this way??
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string] $sourceIsoPath,
-        [parameter(mandatory=$true)] [string] $installMediaTemp,  # WILL BE DELETED
-        [parameter(mandatory=$true)] [string] $installWimPath,    # your new install.wim file
-        [parameter(mandatory=$true)] [string] $outputIsoPath
-    )
-    $oscdImgPath = Get-AdkPath "{0}\Assessment and Deployment Kit\Deployment Tools\{1}\Oscdimg\oscdimg.exe"
-    $installWimPath = resolve-path $installWimPath | select -expand path
-    $installMediaTemp = mkdir -force $installMediaTemp | select -expand fullname
+<#
+.synopsis
+Set all attached networks to Private
+.description
+(On some OSes) you cannot enable Windows PowerShell Remoting on network connections that are set to Public
+Spin through all the network locations and if they are set to Public, set them to Private
+using the INetwork interface:
+http://msdn.microsoft.com/en-us/library/windows/desktop/aa370750(v=vs.85).aspx
+For more info, see:
+http://blogs.msdn.com/b/powershell/archive/2009/04/03/setting-network-location-to-private.aspx
+#>
+function Set-AllNetworksToPrivate {
+    [cmdletbinding()] param()
 
-    $outputIsoParentPath = split-path $outputIsoPath -parent
-    $outputIsoFilename = split-path $outputIsoPath -leaf
-    $outputIsoParentPath = mkdir -force $outputIsoParentPath | select -expand fullname
-
-    if (test-path $installMediaTemp) { rm -recurse -force $installMediaTemp }
-    mkdir -force $installMediaTemp | out-null
-
-    $diskVol = get-diskimage -imagepath $sourceIsoPath | get-volume
-    if (-not $diskVol) {
-        mount-diskimage -imagepath $sourceIsoPath
-        $diskVol = get-diskimage -imagepath $sourceIsoPath | get-volume
+    # Network location feature was only introduced in Windows Vista - no need to bother with this
+    # if the operating system is older than Vista
+    if([environment]::OSVersion.version.Major -lt 6) { return }
+    
+    if(1,3,4,5 -contains (Get-WmiObject win32_computersystem).DomainRole) { throw "Cannot change network location on a domain-joined computer" }
+    
+    # Disable the GUI which will modally pop up (at least on Win10) lol
+    New-Item "HKLM:\System\CurrentControlSet\Control\Network\NewNetworkWindowOff" -force | out-null
+    
+    # Get network connections
+    $networkListManager = [Activator]::CreateInstance([Type]::GetTypeFromCLSID([Guid]"{DCB00C01-570F-4A9B-8D69-199FDBA5723B}"))
+    foreach ($connection in $networkListManager.GetNetworkConnections()) {
+        $connName = $connection.GetNetwork().GetName()
+        $oldCategory = $connection.GetNetwork().GetCategory()
+        $connection.getNetwork().SetCategory(1)
+        $newCategory = $connection.GetNetwork().GetCategory()
+        Write-EventLogWrapper "Changed connection category for '$connName' from '$oldCategory' to '$newCategory'"
     }
-    $driveLetter = $diskVol | select -expand DriveLetter
-    $existingInstallMediaDir = "${driveLetter}:"
-
-    # TODO: the first copy here copies the original install.wim, and the second copies the new one over it
-    # this is really fucking dumb right? but then, THIS is way fucking dumber: 
-    # http://stackoverflow.com/questions/731752/exclude-list-in-powershell-copy-item-does-not-appear-to-be-working
-    # PS none of those solutions are generic enough to get included so fuck it
-    copy-item -recurse -path "$existingInstallMediaDir\*" -destination "$installMediaTemp" -verbose:$verbose
-    remove-item -force -path "$installMediaTemp\sources\install.wim"
-    copy-item -path $installWimPath -destination "$installMediaTemp\sources\install.wim" -force -verbose:$verbose
-
-    $etfsBoot = resolve-path "$existingInstallMediaDir\boot\etfsboot.com" | select -expand Path
-    $oscdimgCall = '& "{0}" -m -n -b"{1}" "{2}" "{3}"' -f @($oscdImgPath, $etfsBoot, $installMediaTemp, $outputIsoPath)
-    Write-EventLogWrapper "Calling OSCDIMG: '$oscdimgCall"
-    Invoke-ExpressionAndCheck $oscdimgCall -verbose:$verbose
-
-    dismount-diskimage -imagepath $sourceIsoPath
 }
 
-function Get-WindowsUpdateUrls { # TODO: is this how we wanna do temps tho?
+<#
+.synopsis
+Set the idle time that must elapse before Windows will power off a display
+.parameter seconds 
+The number of seconds before poweroff. A value of 0 means never power off.
+.notes
+AFAIK, this cannot be done without shelling out to powercfg  
+#>
+function Set-IdleDisplayPoweroffTime {
     [cmdletbinding()] param(
-        [parameter(mandatory=$true)] $windowsVersion,
-        [parameter(mandatory=$true)] $osArchitecture,
-        [parameter(mandatory=$true)] $packageXml,
-        [parameter(mandatory=$true)] $outFile,
-        [switch] $debugSaveXslt
+        [parameter(mandatory=$true)] [int] $seconds
     )
-    $xsltPath = [IO.Path]::GetTempFileName()
-    Write-EventLogWrapper "Downloading XSLT to '$xsltPath'"
-        
-    if ($osArchitecture -match $ArchitectureId.i386) { $arch = "x86" }
-    elseif ($osArchitecture -match $ArchitectureId.amd64) { $arch = "x64" }
-    else { throw "Dunno bout architecture '$osArchitecture'" }
-    
-    $xsltUrl = "$WSUSOfflineRepoBaseUrl/xslt/ExtractDownloadLinks-$windowsVersion-$arch-glb.xsl"
-    Get-WebFile -url $xsltUrl -outFile $xsltPath
-    
-    Apply-XmlTransform -xmlFile $packageXml -xsltFile $xsltPath -outFile $outFile
-    if (-not $debugSaveXslt) { rm -force $xsltPath }
-    
-    return $outFile
+    $currentScheme = (powercfg /getactivescheme).split()[3]
+    $DisplaySubgroupGUID = "7516b95f-f776-4464-8c53-06167f40cc99"
+    $TurnOffAfterGUID = "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e"
+    set-alias powercfg "${env:SystemRoot}\System32\powercfg.exe"
+    powercfg /setacvalueindex $currentScheme $DisplaySubgroupGUID $TurnOffAfterGUID 0 
 }
+
 
 
 # Exports: #TODO
