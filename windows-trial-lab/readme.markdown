@@ -8,8 +8,11 @@ These were the *types* of changes I'm trying to make:
 
 - I rewrote their Windows Update script to be much more readable (imo). Now it has clearly defined functions with parameter blocks, you can set the postinstall step when calling it (rather than hardcoding calling `A:\openssh.ps1`) and you only have to set it once, and all functions MAY read global variables set at the top level but DO NOT write to them. 
 - I want to use WinRM rather than OpenSSH
-    - As a result of this, I don't copy anything to the host for provisioning, because this is buggy with WinRM
-- I rewrote lots of their scripts as functions in my Powershell module
+    - As a result of this, I don't copy anything to the host for provisioning, because this is buggy with WinRM. This isn't a big deal though - I just put everything I want to use on the A:\ drive and use the "attach" guest additions mode in Packer
+    - I have a much easier time dealing with my provisioners though
+- I rewrote lots of their scripts as functions in my Powershell module, and a couple of scripts that call into that module
+    - This means that my Autounattend.xml is simpler - I just have one or two postinstall commands in there. The last one must enable WinRM.
+    - It also means my packerfile is simpler AND it lets me place comments next to commands - packerfile uses JSON which doesn't allow this for stupid reasons
 - I log to Windows Event Log
 
 And these are some specific changes that may impact you
@@ -47,10 +50,16 @@ buildlab.ps1 improvements:
 packer/vagrant/postinstall improvements:
 
 - store passwords securely for shit and/or generate them on the fly
-- use client certs for WinRM: https://msdn.microsoft.com/en-us/library/aa384295%28v=vs.85%29.aspx
-- enable clipboard and drag&drop in my Vagrantfile - though NOT for throwaway VMs that might be insecure! 
+- use client certs for WinRM: https://msdn.microsoft.com/en-us/library/aa384295%28v=vs.85%29.aspx ?? only if packer/vagrant can support it tho
 - would be great if I didn't have duplicated Autounattend.xml files everywhere - can I templatize this?  
-- disable monitor blanking (useful for seeing where your VM is at from VBox's Manager app without actually opening the window)
+- in Autounattend.xml, we turn off UAC. (That's the `<EnableLUA>false</EnableLUA>` setting.) Is this really required? Or was it only required for using shitty SSH? 
+
+vagrant provisioners
+
+- decide on a systems management system. DSC seems like maybe the most natural option.
+- pull down git, conemu, my dhd repo 
+- configure launch bar
+- configure taskbar 
 
 other improvements
 
@@ -63,3 +72,5 @@ upstream improvements
 ## Whines
 
 - The shell, windows-shell, and powershell provisioners are VERY finicky. I canNOT make them work reliably. The easiest thing I can figure out how to do is to use a Powershell provisioner to call a file with no arguments over WinRM. lmfao
+- However the situation was much improved when I switched to WinRM with the powershell provisioner. That seems to work OK
+- I think the problem was that using the shell provisioner with OpenSSH, which provides an emulated POSIX environment of some kind

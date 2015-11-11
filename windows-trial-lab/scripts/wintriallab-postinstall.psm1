@@ -16,41 +16,8 @@ $WindowsVersionId = @{
     w10ltsb = "w10ltsb"
     server2012r2 = "server2012r2"
 }
-$OfficeVersionId = @{
-    o2013 = "o2013"
-}
-$IsoUrls = @{
-    $WindowsVersionId.w81 = @{
-        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X86FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X86FREE_EN-US_DV9.ISO"
-        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X64FREE_EN-US_DV9.ISO" 
-    }
-    $WindowsVersionId.w10 = @{
-        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X86FRE_EN-US.ISO"
-        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X64FRE_EN-US.ISO"
-    }
-    $WindowsVersionId.w10ltsb = @{
-        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/6/2/4/624ECF83-38A6-4D64-8758-FABC099503DC/10240.16384.150709-1700.TH1_CLIENTENTERPRISE_S_EVAL_X86FRE_EN-US.ISO"
-        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/6/2/4/624ECF83-38A6-4D64-8758-FABC099503DC/10240.16384.150709-1700.TH1_CLIENTENTERPRISE_S_EVAL_X64FRE_EN-US.ISO"
-    }
-    $WindowsVersionId.server2012r2 = @{
-        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/6/2/A/62A76ABB-9990-4EFC-A4FE-C7D698DAEB96/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO"
-    }
-    $OfficeVersionId.o2013 = @{
-        $ArchitectureId.i386 =  "http://care.dlservice.microsoft.com/dl/download/2/9/C/29CC45EF-4CDA-4710-9FB3-1489786570A1/OfficeProfessionalPlus_x86_en-us.img"
-        $ArchitectureId.amd64 = "http://care.dlservice.microsoft.com/dl/download/2/9/C/29CC45EF-4CDA-4710-9FB3-1489786570A1/OfficeProfessionalPlus_x64_en-us.img"
-    }
-}
-$WSUSCatalogUrl = "http://download.windowsupdate.com/microsoftupdate/v6/wsusscan/wsusscn2.cab"
-$WSUSOfflineRepoBaseUrl = "https://svn.wsusoffline.net/svn/wsusoffline/trunk"
-$szUrl = "http://7-zip.org/a/$szFilename"
+
 $URLs = @{
-    ISOs = @{
-        $WindowsVersionId.w81 = @{
-            $ArchitectureId.i386 = "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X86FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X86FREE_EN-US_DV9.ISO" 
-        } 
-    }
-    WindowsUpdateCatalog = "http://download.windowsupdate.com/microsoftupdate/v6/wsusscan/wsusscn2.cab"
-    WSUSOfflineRepoBase = "https://svn.wsusoffline.net/svn/wsusoffline/trunk"
     SevenZipDownload = @{
         $ArchitectureId.i386 = "http://7-zip.org/a/7z920.msi"
         $ArchitectureId.amd64 = "http://7-zip.org/a/7z920-x64.msi"
@@ -106,7 +73,7 @@ function Invoke-ExpressionAndLog {
         $output = invoke-expression -command $command
     }
     Write-EventLogWrapper "Expression '$command' had a last exit code of '$LastExitCode' and output the following to the console:`r`n`r`n$output"
-    if (if ($checkExitCode -and $global:LASTEXITCODE -ne 0) {
+    if ($checkExitCode -and $global:LASTEXITCODE -ne 0) {
         throw "LASTEXITCODE: ${global:LASTEXITCODE} for command: '${command}'"
     }
     if ($sleepSeconds) { start-sleep $sleepSeconds }
@@ -148,16 +115,23 @@ function Invoke-ScriptblockAndCatch {
         [int] $failureExitCode = 666
     )
     try {
-        $scriptBlock.invoke()
+        Invoke-Command $scriptBlock
     }
     catch {
-        $message  = "======== CAUGHT EXCEPTION ========`r`n$_`r`n"
-        $message += "======== ERROR STACK ========`r`n"
-        $_ |% { $message += "$_`r`n----`r`n" }
-        $message += "======== ========"
-        Write-EventLogWrapper $message
-        exit 666
+        Write-ErrorStackToEventLog -errorStack $_ 
+        exit $failureExitCode
     }
+}
+
+function Write-ErrorStackToEventLog {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] $errorStack
+    )
+    $message  = "======== CAUGHT EXCEPTION ========`r`n$errorStack`r`n"
+    $message += "======== ERROR STACK ========`r`n"
+    $errorStack |% { $message += "$_`r`n----`r`n" }
+    $message += "======== ========"
+    Write-EventLogWrapper $message
 }
 
 <#
@@ -181,11 +155,28 @@ function Set-RestartRegistryEntry {
     Set-ItemProperty -Path $script:RestartRegistryKeys.$RestartAction -Name $script:RestartRegistryProperty -Value $restartCommand
 }
 
-function Get-RestartRegistryEntries {
+function Get-RestartRegistryEntry {
     [cmdletbinding()] param()
-    foreach ($key in $script:RestartRegistryKeys.Keys) { 
-        try { Get-ItemProperty -Path $script:RestartRegistryKeys[$key] -name $script:RestartRegistryProperty} catch {}
+    $entries = @()
+    foreach ($key in $script:RestartRegistryKeys.Keys) {
+        $regKey = $script:RestartRegistryKeys[$key]
+        $entry = New-Object PSObject -Property @{
+            RegistryKey = $regKey
+            RegistryProperty = $script:RestartRegistryProperty
+            PropertyValue = $null
+        }
+        if (test-path $regKey) {
+            $regProps = get-item $regKey | select -expand Property  
+            if ($regProps -contains $script:RestartRegistryProperty) { 
+                $entry.PropertyValue = Get-ItemProperty -path $regKey | select -expand $script:RestartRegistryProperty  
+            }
+        }
+        Add-Member -inputObject $entry -memberType ScriptProperty -Name StringRepr -Value {
+            "Key: $($this.RegistryKey), Property: $($this.RegistryProperty), Value: $($this.PropertyValue)"
+        }
+        $entries += @($entry) 
     }
+    return $entries
 }
 
 function Remove-RestartRegistryEntries {
@@ -227,7 +218,7 @@ function Install-SevenZip {
     $OSArch = Get-OSArchitecture
     $szDlPath = Get-WebUrl -url $URLs.SevenZipDownload.$OSArch -outDir $env:temp
     try {
-        Write-EventLogWrapper "Downloaded '$szUrl' to '$szDlPath', now running msiexec..."    
+        Write-EventLogWrapper "Downloaded '$($URLs.SevenZipDownload.$OSArch)' to '$szDlPath', now running msiexec..."    
         $msiCall = '& msiexec /qn /i "{0}"' -f $szDlPath
         # Windows suxxx so msiexec sometimes returns right away? or something idk. fuck
         Invoke-ExpressionAndLog -checkExitCode -command $msiCall -sleepSeconds 30
@@ -331,11 +322,7 @@ function Compress-WindowsInstall {
         start-service wuauserv
 
         Invoke-ExpressionAndLog -checkExitCode -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
-        
-        $sdKey = "HKCU:\Software\Sysinternals\SDelete"
-        if (-not (test-path $sdKey)) { New-Item $sdKey -Force }
-        Set-ItemProperty -path $sdKey -name EulaAccepted -value 1 
-        Invoke-ExpressionAndLog -checkExitCode -command ('& {0} -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
+        Invoke-ExpressionAndLog -checkExitCode -command ('& {0} /accepteula -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
     }
     finally {
         rm -recurse -force $udfZipPath,$udfExPath,$sdZipPath,$sdExPath -ErrorAction Continue
@@ -399,7 +386,9 @@ function Set-UserOptions {
         [switch] $ShowStatusBar,
         [switch] $DisableSharingWizard,
         [switch] $EnablePSOnWinX,
-        [switch] $EnableQuickEdit
+        [switch] $EnableQuickEdit,
+        [switch] $DisableSystrayHide,
+        [switch] $DisableIEFirstRunCustomize
     )
     $explorerAdvancedKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
     if ($ShowHiddenFiles)      { Set-ItemProperty -path $explorerAdvancedKey -name Hidden -value 1 }
@@ -408,9 +397,78 @@ function Set-UserOptions {
     if ($ShowStatusBar)        { Set-ItemProperty -path $explorerAdvancedKey -name ShowStatusBar -value 1 }
     if ($DisableSharingWizard) { Set-ItemProperty -path $explorerAdvancedKey -name SharingWizardOn -value 0 }
     if ($EnablePSOnWinX)       { Set-ItemProperty -path $explorerAdvancedKey -name DontUsePowerShellOnWinX -value 0 }
+    
+    $explorerKey = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
+    if ($DisableSystrayHide)   { Set-ItemProperty -path $explorerKey -name EnableAutoTray -value 0 }
 
     $consoleKey = "HKCU:\Console"
     if ($EnableQuickEdit) { Set-ItemProperty -path $consoleKey -name QuickEdit -value 1 }
+    
+    $internetExplorerKey = "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main"
+    if ($DisableIEFirstRunCustomize) { Set-ItemProperty -path $internetExplorerKey -name DisableFirstRunCustomize -value 1 }
+}
+
+<#  
+.SYNOPSIS  
+This function are used to pin and unpin programs from the taskbar and Start-menu in Windows 7 and Windows Server 2008 R2 
+.DESCRIPTION  
+The function have to parameteres which are mandatory: 
+Action: PinToTaskbar, PinToStartMenu, UnPinFromTaskbar, UnPinFromStartMenu 
+FilePath: The path to the program to perform the action on 
+.notes
+from: https://gallery.technet.microsoft.com/scriptcenter/b66434f1-4b3f-4a94-8dc3-e406eb30b750
+TODO: I hate it when things pollute the global variable space!
+.EXAMPLE 
+Set-PinnedApplication -Action PinToTaskbar -FilePath "C:\WINDOWS\system32\notepad.exe" 
+.EXAMPLE 
+Set-PinnedApplication -Action UnPinFromTaskbar -FilePath "C:\WINDOWS\system32\notepad.exe" 
+#>  
+function Set-PinnedApplication { 
+    [CmdletBinding()] param( 
+        [Parameter(Mandatory=$true)][string]$Action,  
+        [Parameter(Mandatory=$true)][string]$FilePath 
+    ) 
+    if (-not (test-path $FilePath)) { throw "No file at '$FilePath'" }   
+    
+    function InvokeVerb { 
+        param([string]$FilePath,$verb) 
+        $verb = $verb.Replace("&","") 
+        $path = split-path $FilePath 
+        $shell = new-object -com "Shell.Application"  
+        $folder = $shell.Namespace($path)    
+        $item = $folder.Parsename((split-path $FilePath -leaf)) 
+        $itemVerb = $item.Verbs() | ? {$_.Name.Replace("&","") -eq $verb} 
+        if ($itemVerb) { $itemVerb.DoIt() } else { throw "Verb $verb not found." }
+    } 
+    function GetVerb { 
+        param([int]$verbId) 
+        try { $t = [type]"CosmosKey.Util.MuiHelper" }
+        catch { 
+            $def = [Text.StringBuilder]"" 
+            [void]$def.AppendLine('[DllImport("user32.dll")]') 
+            [void]$def.AppendLine('public static extern int LoadString(IntPtr h,uint id, System.Text.StringBuilder sb,int maxBuffer);') 
+            [void]$def.AppendLine('[DllImport("kernel32.dll")]') 
+            [void]$def.AppendLine('public static extern IntPtr LoadLibrary(string s);') 
+            add-type -MemberDefinition $def.ToString() -name MuiHelper -namespace CosmosKey.Util             
+        } 
+        if($global:CosmosKey_Utils_MuiHelper_Shell32 -eq $null){         
+            $global:CosmosKey_Utils_MuiHelper_Shell32 = [CosmosKey.Util.MuiHelper]::LoadLibrary("shell32.dll") 
+        } 
+        $maxVerbLength = 255
+        $verbBuilder = new-object Text.StringBuilder "",$maxVerbLength
+        [void][CosmosKey.Util.MuiHelper]::LoadString($CosmosKey_Utils_MuiHelper_Shell32,$verbId,$verbBuilder,$maxVerbLength)
+        return $verbBuilder.ToString()
+    }
+    $verbs = @{
+        "PintoStartMenu"=5381
+        "UnpinfromStartMenu"=5382
+        "PintoTaskbar"=5386
+        "UnpinfromTaskbar"=5387
+    }
+    if ($verbs.$Action -eq $null) { 
+        throw "Action $action not supported`nSupported actions are:`n`tPintoStartMenu`n`tUnpinfromStartMenu`n`tPintoTaskbar`n`tUnpinfromTaskbar"
+    }
+    InvokeVerb -FilePath $FilePath -Verb $(GetVerb -VerbId $verbs.$action)
 }
 
 function Disable-HibernationFile {
@@ -482,7 +540,11 @@ function Set-AllNetworksToPrivate {
 
     # Network location feature was only introduced in Windows Vista - no need to bother with this
     # if the operating system is older than Vista
-    if([environment]::OSVersion.version.Major -lt 6) { return }
+    if([environment]::OSVersion.version.Major -lt 6) {
+        Write-EventLogWrapper "Set-AllNetworksToPrivate: Running on pre-Vista machine, no changes necessary" 
+        return 
+    }
+    Write-EventLogWrapper "Setting all networks to private..."
     
     if(1,3,4,5 -contains (Get-WmiObject win32_computersystem).DomainRole) { throw "Cannot change network location on a domain-joined computer" }
     
@@ -499,6 +561,39 @@ function Set-AllNetworksToPrivate {
         Write-EventLogWrapper "Changed connection category for '$connName' from '$oldCategory' to '$newCategory'"
     }
 }
+
+<#
+function Get-PowerScheme {
+    [cmdletbinding(DefaultParameterSetName("Active"))] param(
+        [Parameter(Mandatory=$true,ParameterSetName="Active")] [switch] $Active,
+        [Parameter(Mandatory=$true,ParameterSetName="ByGuid")] [switch] $ByGuid,
+        [Parameter(Mandatory=$true,ParameterSetName="ByName")] [switch] $ByName,
+    )
+    $powerScheme = New-Object PSObject -Property @{Name="";GUID="";}
+    $psre = '^Power Scheme GUID\:\s+([A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})\s+\((.*)\)'
+        
+    switch ($PsCmdlet.ParameterSetName) {
+        "Active" {
+            $activeSchemeString = powercfg /getactivescheme
+            if ($activeSchemeString -match $psre) {
+                $powerScheme.Name = $matches[2]
+                $powerScheme.GUID = $matches[1]
+            }
+            else { write-error "Error: could not find active power configuration"}
+        }
+        "ByGuid" {
+            foreach ($powerSchemeString in (powercfg /list)) {
+                $
+            }
+        }
+        "ByName" {}
+        default {write-error "Error: not sure how to process a parameter set named $($PsCmdlet.ParameterSetName)"}
+    }
+
+
+    return $powerScheme
+}
+#>
 
 <#
 .synopsis
@@ -518,8 +613,6 @@ function Set-IdleDisplayPoweroffTime {
     set-alias powercfg "${env:SystemRoot}\System32\powercfg.exe"
     powercfg /setacvalueindex $currentScheme $DisplaySubgroupGUID $TurnOffAfterGUID 0 
 }
-
-
 
 # Exports: #TODO
 $emmParams = @{

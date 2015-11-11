@@ -19,10 +19,13 @@ param(
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")]  [switch] $BuildPacker,
     [parameter(mandatory=$true,ParameterSetName="AddToVagrant")] [switch] $AddToVagrant,
     [parameter(mandatory=$true,ParameterSetName="VagrantUp")]    [switch] $VagrantUp,
+    
+    [parameter(mandatory=$true,ParameterSetName="ShowConfig")]   [switch] $ShowConfig,
 
     [string] $baseOutDir = "D:\iso\wintriallab",
     [string] $tempDirOverride,
     [string] $tag,
+    [switch] $SkipSyntaxcheck,
     [switch] $force,
     [switch] $whatIf
 )
@@ -56,6 +59,27 @@ $packerConfigRoot = "${PSScriptRoot}\packer\${baseConfigName}"
 $packerFile = "${packerConfigRoot}\${baseConfigName}.packerfile.json"
 $packedBoxPath = "${outDir}\${baseConfigName}_virtualbox.box"
 $vagrantTemplate = "${packerConfigRoot}\vagrantfile-${baseConfigName}.template"
+    
+function Test-PowershellSyntax {
+    [cmdletbinding()]
+    param(
+        [parameter(mandatory=$true)] [string] $fileName,
+        [switch] $ThrowOnFailure
+    )
+    $tokens = @()
+    $parseErrors = @()
+    $parser = [System.Management.Automation.Language.Parser]
+    $fileName = resolve-path $fileName
+    $parsed = $parser::ParseFile($fileName, [ref]$tokens, [ref]$parseErrors)
+
+    if ($parseErrors.count -gt 0) {
+        $message = "$($parseErrors.count) parse errors found in file '$fileName':`r`n"
+        $parseErrors |% { $message += "`r`n    $_" }
+        if ($ThrowOnFailure) { throw $message } else { write-verbose $message }
+        return $false
+    }
+    return $true
+}
 
 function Build-PackerFile {
     [cmdletbinding()]
@@ -116,7 +140,7 @@ function Add-BoxToVagrant {
     if (-not $whatIf) {
         $forceOption = ""
         if ($force) { $forceOption = "--force" }
-        vagrant box add $forceOption --name $vagrantBoxName $packedBoxPath    
+        vagrant box add "$forceOption" --name $vagrantBoxName "$packedBoxPath"    
         if ($LASTEXITCODE -ne 0) { throw "External command failed with code '$LASTEXITCODE'" }
     }
 }
@@ -145,12 +169,12 @@ function Show-LabVariable {
         [parameter(mandatory=$true)] [string] $varName,
         [switch] $testPath
     )
+    $varValue = get-variable $varName | select -expand value
     $LabVariable = new-object PSObject -Property @{
         Variable = $varName
-        Value = get-variable $varName | select -expand value
-        PathExists = "-"
+        Value = $varValue
+        PathExists = if ($testPath) {test-path $varValue} else {"-"}
     }
-    if ($testPath) { $LabVariable.PathExists = test-path $LabVariable.Value }
     return $LabVariable
 }
 
@@ -158,6 +182,16 @@ function Show-LabVariable {
 
 #$Basename = Get-Item $MyInvocation.MyCommand.Path | select -expand BaseName
 #if ($MyInvocation.InvocationName -match $baseName) { # We were executed from the command line, not dot-sourced
+
+if (-not $SkipSyntaxcheck) {
+    foreach ($script in (gci $PSScriptRoot\scripts\* -include *.ps1,*.psm1)) { 
+        $valid = Test-PowershellSyntax -fileName $script.fullname
+        New-Object PSObject -Property @{
+            ScriptName = $script.name
+            ValidSyntax = $valid 
+        }
+    }
+}
 
 mkdir -force -path $labTempDir | out-null
 

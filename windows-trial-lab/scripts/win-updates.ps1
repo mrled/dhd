@@ -3,13 +3,14 @@
 Run Windows Update, installing all available updates and rebooting as necessary
 .parameter MaxCycles
 The number of times to check for updates before forcing a reboot, even if Windows Update has not indicated that one is required 
+TODO: this doesn't appear to be working reliably
 .parameter ScriptProductName
-The name for this script that you want to make visible to the sysadmin. Could just be hard coded everywhere but I put it in the param() block for simpler customizability.
+The name for this script that you want to make visible to the sysadmin in logs.
 .parameter PostUpdateExpression
 A string representing a PowerShell expression that is run one time after all updates have been applied (or MaxCycles has been reached without rebooting)
 TODO: the parenthetical is nonobvious behavior and should be eliminated. In fact the whole of MaxCycles should be rethought. 
-.parameter NoRestart
-Print a message to the screen instead of actually restarting the computer; useful for debugging
+.parameter RestartAction
+When reboots are required, you can choose to run this script again before logon (using the RunServicesOnce key) or after logon (using the RunOnce key), or to skip reboots.
 .notes
 This script can be run directly, but it can also be dot-sourced to get access to internal functions without automatically checking for updates, applying them, or rebooting
 This script is intended to be 100% standalone because it needs to be able to tell Windows to call it again upon reboot. There are intentionally no dependencies, and features related to Windows Update that don't fit here (such as enable Microsoft Update) should live elsewhere
@@ -94,11 +95,36 @@ function Set-RestartRegistryEntry {
     Set-ItemProperty -Path $script:RestartRegistryKeys.$RestartAction -Name $script:RestartRegistryProperty -Value $psCall
 }
 
+
 function Remove-RestartRegistryEntries {
     [cmdletbinding()] param()
     foreach ($key in $script:RestartRegistryKeys.Keys) { 
         try { Remove-ItemProperty -Path $script:RestartRegistryKeys[$key] -name $script:RestartRegistryProperty} catch {}
     }
+}
+
+function Get-RestartRegistryEntry {
+    [cmdletbinding()] param()
+    $entries = @()
+    foreach ($key in $script:RestartRegistryKeys.Keys) {
+        $regKey = $script:RestartRegistryKeys[$key]
+        $entry = New-Object PSObject -Property @{
+            RegistryKey = $regKey
+            RegistryProperty = $script:RestartRegistryProperty
+            PropertyValue = $null
+        }
+        if (test-path $regKey) {
+            $regProps = get-item $regKey | select -expand Property  
+            if ($regProps -contains $script:RestartRegistryProperty) { 
+                $entry.PropertyValue = Get-ItemProperty -path $regKey | select -expand $script:RestartRegistryProperty  
+            }
+        }
+        Add-Member -inputObject $entry -memberType ScriptProperty -Name StringRepr -Value {
+            "Key: $($this.RegistryKey), Property: $($this.RegistryProperty), Value: $($this.PropertyValue)"
+        }
+        $entries += @($entry) 
+    }
+    return $entries
 }
 
 function Restart-ComputerAndUpdater {
@@ -113,7 +139,9 @@ function Restart-ComputerAndUpdater {
     }
     else {
         Set-RestartRegistryEntry -CyclesRemaining $CyclesRemaining -RestartAction $RestartAction
-        Write-WinUpEventLog "Rebooting..."
+        $message = "Rebooting...`r`n`r`nChecking restart registry key:"
+        Get-RestartRegistryEntry | select -expand StringRepr |% { $message += "`r`n`r`n$_"}
+        Write-WinUpEventLog $message
         Restart-Computer -Force
         exit 0 # Restarting returns immediately and script execution continues until the reboot is processed. Lol. 
     }
@@ -363,7 +391,7 @@ function Run-WindowsUpdate {
         $RebootRequired = Install-WindowsUpdates -UpdateSession $UpdateSession -UpdateList $CheckedUpdates
         if ($RebootRequired) {
             Write-WinUpEventLog -message "Restart Required - Restarting..."
-            Restart-ComputerAndUpdater -CyclesRemaining $maxCycles -RestartAction $script:RestartAction
+            Restart-ComputerAndUpdater -CalledFromRegistry -CyclesRemaining $maxCycles -RestartAction $script:RestartAction
         }
     }
     Run-PostUpdate

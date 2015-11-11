@@ -13,7 +13,7 @@
       "communicator": "winrm",
       "winrm_username": "vagrant",
       "winrm_password": "V@grant123",
-      "winrm_timeout": "72h",
+      "winrm_timeout": "24h",
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "guest_os_type": "Windows10",
       "disk_size": 61440,
@@ -30,6 +30,8 @@
         ["setextradata", "global", "GUI/SuppressMessages", "all" ],
         ["modifyvm", "{{.Name}}", "--memory", "2048" ], 
         ["modifyvm", "{{.Name}}", "--cpus",   "2" ],
+        ["modifyvm", "{{.Name}}", "--clipboard", "bidirectional"],
+        ["modifyvm", "{{.Name}}", "--draganddrop", "bidirectional"],
         ["modifyvm", "{{.Name}}", "--accelerate2dvideo", "on"],
         ["modifyvm", "{{.Name}}", "--vram", 128]
       ]
