@@ -74,3 +74,8 @@ upstream improvements
 - The shell, windows-shell, and powershell provisioners are VERY finicky. I canNOT make them work reliably. The easiest thing I can figure out how to do is to use a Powershell provisioner to call a file with no arguments over WinRM. lmfao
 - However the situation was much improved when I switched to WinRM with the powershell provisioner. That seems to work OK
 - I think the problem was that using the shell provisioner with OpenSSH, which provides an emulated POSIX environment of some kind
+- There's lots of information on the Internet claiming you can use `HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServices` (or `RunServicesOnce`) to run something at boot, before logon - analogous to the `Run`/`RunOnce` keys. This is apparently false for any NT operating system. Properties on these keys DO NOT RUN AT BOOT - they are completely ignored by the operating system. 
+    - The original packer-windows crew got aroudn this by using the `Run` key and disabling UAC in `Autounattend.xml`
+    - I'm planning to get around this by creating a scheduled task that starts at boot and runs with highest privileges. This won't work pre-Vista/2008, but that's OK with me. 
+    - This means I need to write an executor that can start at boot, and then check for things to execute located elsewhere. Bleh. 
+

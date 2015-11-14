@@ -1,4 +1,7 @@
-[cmdletbinding()] param()
+[cmdletbinding(DefaultParameterSetName="RunWindowsUpdates")] param(
+    [Parameter(ParameterSetName="RunWindowsUpdates")] [switch] $RunWindowsUpdates,
+    [Parameter(Mandatory=$true,ParameterSetName="SkipWindowsUpdates")] [switch] $SkipWindowsUpdates    
+)
 
 import-module $PSScriptRoot\wintriallab-postinstall.psm1
 $errorActionPreference = "Stop"
@@ -9,25 +12,22 @@ Invoke-ScriptblockAndCatch -scriptBlock {
     Set-PasswordExpiry -accountName "vagrant" -expirePassword $false
     Disable-HibernationFile
     Enable-MicrosoftUpdate
-    Set-AllNetworksToPrivate # Required for Windows 10, not required for 81, not sure about other OSes
-    Install-VBoxAdditions -fromDisc # Need to reboot for some of these drivers to take
     
-    Set-PinnedApplication -Action PinToTaskbar -Filepath "$PSHOME\Powershell.exe"
-    Set-PinnedApplication -Action PinToTaskbar -Filepath "${env:SystemRoot}\system32\eventvwr.msc"
+    # Need to reboot for some of these drivers to take
+    # Requires that the packer file attach the Guest VM driver disc, rather than upload it 
+    # (Uploading it also gives problems when using WinRM - too big? - so this is a better solution anyway)
+    Install-VBoxAdditions -fromDisc 
     
-    # To reboot, then run Windows updates, then enable WinRM: 
-    $winRmCommand = "$PSHome\powershell.exe -File A:\enable-winrm.ps1"
-    $winUpdateCommand = "$PSHOME\powershell.exe -File A:\win-updates.ps1 -RestartAction RunAtLogon -PostUpdateExpression `"$winRmCommand`""
+    # Required for Windows 10, not required for 81, not sure about other OSes
+    # Should probably happen after installing Guest VM drivers, in case installing the drivers would cause Windows to see the network as a new connection 
+    Set-AllNetworksToPrivate  
 
-    # To install Windows Updates then enable WinRM after reboot:
-    Set-RestartRegistryEntry -restartAction RunAtLogon -restartCommand $winUpdateCommand
-
-    # To just enable WinRM without installing updates after reboot: 
-    #Set-RestartRegistryEntry -restartAction RunAtLogon -restartCommand $winRmCommand
-        
-    $message = "Checking restart registry key: `r`n"
-    Get-RestartRegistryEntry | select -expand StringRepr |% { $message += "`r`n$_`r`n"}
-    Write-EventLogWrapper $message
-    
+    switch ($PsCmdlet.ParameterSetName) {
+        "RunWindowsUpdates"  { $restartCommand = [ScriptBlock]::Create("A:\win-updates.ps1 -PostUpdateExpression A:\enable-winrm.ps1") }
+        "SkipWindowsUpdates" { $restartCommand = [ScriptBlock]::Create("A:\enable-winrm.ps1") }
+        default              { throw "Not configured for this parameter set..." }
+    }
+    Set-RestartScheduledTask -RestartCommand $restartCommand | out-null
     Restart-Computer -force 
 }
+

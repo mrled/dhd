@@ -4,23 +4,18 @@ Run Windows Update, installing all available updates and rebooting as necessary
 .parameter MaxCycles
 The number of times to check for updates before forcing a reboot, even if Windows Update has not indicated that one is required 
 TODO: this doesn't appear to be working reliably
-.parameter ScriptProductName
-The name for this script that you want to make visible to the sysadmin in logs.
 .parameter PostUpdateExpression
 A string representing a PowerShell expression that is run one time after all updates have been applied (or MaxCycles has been reached without rebooting)
 TODO: the parenthetical is nonobvious behavior and should be eliminated. In fact the whole of MaxCycles should be rethought. 
-.parameter RestartAction
-When reboots are required, you can choose to run this script again before logon (using the RunServicesOnce key) or after logon (using the RunOnce key), or to skip reboots.
+.parameter NoRestart
+Don't reboot (useful for debugging)
 .notes
 This script can be run directly, but it can also be dot-sourced to get access to internal functions without automatically checking for updates, applying them, or rebooting
-This script is intended to be 100% standalone because it needs to be able to tell Windows to call it again upon reboot. There are intentionally no dependencies, and features related to Windows Update that don't fit here (such as enable Microsoft Update) should live elsewhere
 #>
 param(
     [int] $MaxCycles = 5,
-    [string] $ScriptProductName = "WinUp-Marionettist",
     [string] $PostUpdateExpression,
-    [string] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] $RestartAction = "NoRestart",
-    [switch] $CalledFromRegistry
+    [switch] $NoRestart
 )
 
 <# Notes on the code: 
@@ -28,123 +23,39 @@ param(
 I'm trying to use StrictMode. That ends up making some code more complex than it would have to be otherwise. For instance, sometimes I have to check that a property exists (like $SomeVar.PSObject.Properties['PropertyName']) before I can use it. 
 
 TODO: Make sure every path of my program is writing unique log messages. Make sure all those paths are working.
-TODO: Pass unique event IDs for every event to Write-WinUpEventLog. ??
+TODO: Pass unique event IDs for every event to Write-EventLogWrapper. ??
 #>
 
 $ErrorActionPreference = "Stop"
-Set-StrictMode -version 2.0
+
+import-module $PSScriptRoot\wintriallab-postinstall.psm1
 
 # I need to get the path to this script from inside functions, which mess with the $MyInvocation variable
 $script:ScriptPath = $MyInvocation.MyCommand.Path
-$script:RestartRegistryKeys = @{
-    RunBeforeLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce"
-    RunAtLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
-}
-$script:RestartRegistryProperty = "$ScriptProductName"
-
-<#
-.synopsis
-Write to a special event log, named after the $ScriptProductName. 
-If that event log doesn't already exist, create it first.
-#>
-function Write-WinUpEventLog {
-    param(
-        [parameter(mandatory=$true)] [String] $message,
-        [int] $eventId = 0,
-        [ValidateSet("Error",'Warning','Information','SuccessAudit','FailureAudit')] $entryType = "Information"
-    )
-    $eventLogName = $ScriptProductName
-    if (-not (get-eventlog -logname * |? { $_.Log -eq $eventLogName })) {
-        New-EventLog -Source $ScriptProductName -LogName $eventLogName
-    }
-    $messagePlus = "$message`r`n`r`nScript: $($script:ScriptPath)`r`nUser: ${env:USERDOMAIN}\${env:USERNAME}"
-    Write-Host -foreground magenta "====Writing to $ScriptProductName event log===="
-    write-host -foreground darkgray "$messagePlus`r`n"
-    Write-EventLog -LogName $eventLogName -Source $ScriptProductName -EventID $eventId -EntryType $entryType -Message $MessagePlus
-}
-
-<#
-.synopsis
-Create and set the registry property which will run this script on reboot 
-#>
-function Set-RestartRegistryEntry {
-    param(
-        [parameter(mandatory=$true)] [int] $CyclesRemaining,
-        [parameter(mandatory=$true)] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] [string] $RestartAction,
-        [string] $scriptPath = $script:ScriptPath
-    )
-
-    if ($RestartAction -match "NoRestart") {
-        Write-WinUpEventLog "Called Set-RestartRegistryEntry with -RestartAction NoRestart, will not write registry key" 
-        return 
-    }
-    
-    $psCallComponents = @(
-        "$PSHOME\powershell.exe"
-        ('-File "{0}"' -f $scriptPath)
-        "-MaxCycles $CyclesRemaining"
-        "-ScriptProductName $ScriptProductName"
-        "-CalledFromRegistry"
-        "-RestartAction ${script:RestartAction}"
-        ('-PostUpdateExpression "{0}"' -f "$PostUpdateExpression")
-    )
-    $psCall = $psCallComponents -join " "
-    $message = "Setting the Restart Registry Key at: {0}\{1}`r`n{2}" -f $script:RestartRegistryKeys.$RestartAction, $script:RestartRegistryProperty, $psCall
-    Write-WinUpEventLog -message $message
-    New-Item $script:RestartRegistryKeys.$RestartAction -force | out-null
-    Set-ItemProperty -Path $script:RestartRegistryKeys.$RestartAction -Name $script:RestartRegistryProperty -Value $psCall
-}
-
-
-function Remove-RestartRegistryEntries {
-    [cmdletbinding()] param()
-    foreach ($key in $script:RestartRegistryKeys.Keys) { 
-        try { Remove-ItemProperty -Path $script:RestartRegistryKeys[$key] -name $script:RestartRegistryProperty} catch {}
-    }
-}
-
-function Get-RestartRegistryEntry {
-    [cmdletbinding()] param()
-    $entries = @()
-    foreach ($key in $script:RestartRegistryKeys.Keys) {
-        $regKey = $script:RestartRegistryKeys[$key]
-        $entry = New-Object PSObject -Property @{
-            RegistryKey = $regKey
-            RegistryProperty = $script:RestartRegistryProperty
-            PropertyValue = $null
-        }
-        if (test-path $regKey) {
-            $regProps = get-item $regKey | select -expand Property  
-            if ($regProps -contains $script:RestartRegistryProperty) { 
-                $entry.PropertyValue = Get-ItemProperty -path $regKey | select -expand $script:RestartRegistryProperty  
-            }
-        }
-        Add-Member -inputObject $entry -memberType ScriptProperty -Name StringRepr -Value {
-            "Key: $($this.RegistryKey), Property: $($this.RegistryProperty), Value: $($this.PropertyValue)"
-        }
-        $entries += @($entry) 
-    }
-    return $entries
-}
 
 function Restart-ComputerAndUpdater {
     param(
         [parameter(mandatory=$true)] [int] $CyclesRemaining,
-        [parameter(mandatory=$true)] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] [string] $RestartAction
+        [parameter(mandatory=$true)] [switch] $NoRestart
     )
-    Remove-RestartRegistryEntries
-    if ($RestartAction -match "NoRestart") { 
-        Write-WinUpEventLog "Restart-ComputerAndUpdater was called, but '-RestartAction NoRestart' was passed; exiting instead..."
+    $restartCommandComponents = @(
+        ('& "{0}"' -f $scriptPath)
+        "-MaxCycles $CyclesRemaining"
+    )
+    if ($PostUpdateExpression) { $restartCommandComponents += '-PostUpdateExpression "{0}"' -f "$PostUpdateExpression" }
+    if ($NoRestart) { $restartCommandComponents += "-NoRestart" }
+    $restartCommand = [ScriptBlock]::Create(($restartCommandComponents -join " "))
+    Set-RestartScheduledTask -RestartCommand $restartCommand | out-null
+    
+    if ($NoRestart) { 
+        Write-EventLogWrapper "Restart-ComputerAndUpdater was called, but '-NoRestart' was passed; exiting instead."
         exit 1
     }
     else {
-        Set-RestartRegistryEntry -CyclesRemaining $CyclesRemaining -RestartAction $RestartAction
-        $message = "Rebooting...`r`n`r`nChecking restart registry key:"
-        Get-RestartRegistryEntry | select -expand StringRepr |% { $message += "`r`n`r`n$_"}
-        Write-WinUpEventLog $message
+        Write-EventLogWrapper "Restarting..."
         Restart-Computer -Force
-        exit 0 # Restarting returns immediately and script execution continues until the reboot is processed. Lol. 
-    }
+        exit 0 # Restarting returns immediately and script execution continues until the reboot is processed. Lol.
+    } 
 }
 
 <#
@@ -154,7 +65,7 @@ Return a new Microsoft Update Session for use with Check-WindowsUpdates and Inst
 function New-UpdateSession {
     [cmdletbinding()] param()
     $UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
-    $UpdateSession.ClientApplicationID = "$ScriptProductName"
+    $UpdateSession.ClientApplicationID = "win-updates.ps1"
     return $UpdateSession
 }
 
@@ -164,11 +75,11 @@ Run the expression passed to this script with -PostUpdateExpression, if any
 #>
 function Run-PostUpdate {
     if ($PostUpdateExpression) {
-        Write-WinUpEventLog -message "Running PostUpdate expression:`r`n`r`n${PostUpdateExpression}"
+        Write-EventLogWrapper -message "Running PostUpdate expression:`r`n`r`n${PostUpdateExpression}"
         Invoke-Expression $PostUpdateExpression
     }
     else {
-        Write-WinUpEventLog -message "No PostUpdate to run"
+        Write-EventLogWrapper -message "No PostUpdate to run"
     }
 }
 
@@ -185,17 +96,17 @@ function Get-RestartPendingStatus {
     # Component Based Servicing (aka Windows components) (Vista+ only)
     $CsbProp = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing"
     if ($CsbProp.PSObject.Properties['RebootPending']) {
-        Write-WinUpEventLog "(Un)installation of a Windows component requires a restart" 
+        Write-EventLogWrapper "(Un)installation of a Windows component requires a restart" 
         return $true 
     }
 
     $WuauProp = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update"
     if ($WuauProp.PSObject.Properties['RebootRequired']) {
-        Write-WinUpEventLog "Updates have been installed recently, but the machine must be restarted before installation is complete" 
+        Write-EventLogWrapper "Updates have been installed recently, but the machine must be restarted before installation is complete" 
         return $true 
     }
     
-    Write-WinUpEventLog "There are no Windows Update -related reboots pending"
+    Write-EventLogWrapper "There are no Windows Update -related reboots pending"
     return $false
 }
 
@@ -219,7 +130,7 @@ function Install-WindowsUpdates {
     )
     
     if (-not $UpdateList) {
-        Write-WinUpEventLog -message "No Updates To Download..."
+        Write-EventLogWrapper -message "No Updates To Download..."
         return $false
     }
     
@@ -239,9 +150,9 @@ function Install-WindowsUpdates {
     }
     $message = "There were $($AcceptedEulas.count) updates with a EULA which was automatically accepted`r`n"
     $AcceptedEulas |% { $message += "`r`n -  $($_.Title)"}
-    Write-WinUpEventLog $message
+    Write-EventLogWrapper $message
     
-    Write-WinUpEventLog -message 'Downloading Updates...'
+    Write-EventLogWrapper -message 'Downloading Updates...'
     $ok = $false
     $attempts = 0
     while ((! $ok) -and ($attempts -lt $MaxDownloadAttempts)) {
@@ -253,7 +164,7 @@ function Install-WindowsUpdates {
         } 
         catch {
             $message = "Error downloading updates. Retrying in 30s.`r`n`r`n$($_.Exception)"
-            Write-WinUpEventLog -message $message
+            Write-EventLogWrapper -message $message
             $attempts += 1
             Start-Sleep -s 30
         }
@@ -267,7 +178,7 @@ function Install-WindowsUpdates {
             $UpdatesToInstall.Add($Update) |Out-Null
         }
     }
-    Write-WinUpEventLog -message $message
+    Write-EventLogWrapper -message $message
 
     $RebootRequired = $false
     if ($UpdatesToInstall.Count -gt 0) {
@@ -275,7 +186,7 @@ function Install-WindowsUpdates {
         $Installer.Updates = $UpdatesToInstall
         
         if ($Installer.PSObject.Properties['RebootRequiredBeforeInstallation'] -and $Installer.RebootRequiredBeforeInstallation) {
-            Write-WinUpEventLog "Reboot required before installation. (This can happen when updates are installed but the machine is not rebooted before trying to install again.)"
+            Write-EventLogWrapper "Reboot required before installation. (This can happen when updates are installed but the machine is not rebooted before trying to install again.)"
             return $true
         }
 
@@ -288,10 +199,10 @@ function Install-WindowsUpdates {
             $message += "`r`n`r`nItem: $($update.Title)"
             $message += "`r`nResult: $ResultCode"
         }
-        Write-WinUpEventLog -message $message
+        Write-EventLogWrapper -message $message
     }
     else {
-        Write-WinUpEventLog -message 'No updates available to install...'
+        Write-EventLogWrapper -message 'No updates available to install...'
     }
     return $RebootRequired
 }
@@ -314,7 +225,7 @@ function Check-WindowsUpdates {
         [switch] $FilterInteractiveUpdates,
         [int] $MaxSearchAttempts = 12
     )
-    Write-WinUpEventLog -message "Checking for Windows Updates at $(Get-Date)" -eventId 104
+    Write-EventLogWrapper -message "Checking for Windows Updates at $(Get-Date)" -eventId 104
     $SearchResult = $null
     
     $UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
@@ -327,7 +238,7 @@ function Check-WindowsUpdates {
         } 
         catch {
             $message = "Search call to UpdateSearcher was unsuccessful. Retrying in 10s.`r`n`r`n$($_.Exception | Format-List -force)"
-            Write-WinUpEventLog -message $message
+            Write-EventLogWrapper -message $message
             $attempts += 1
             Start-Sleep -s 10
         }
@@ -358,7 +269,7 @@ function Check-WindowsUpdates {
     if ($SkippedUpdates.Count -gt 0) {
         $SkippedUpdates |% { $message += "`r`n -  $($_.Title)" } 
     }
-    Write-WinUpEventLog -message $message
+    Write-EventLogWrapper -message $message
     
     return $ApplicableUpdates
 }
@@ -366,32 +277,34 @@ function Check-WindowsUpdates {
 <#
 .synopsis
 Run Windows Update, installing all available updates and rebooting as necessary
+.notes
+- Skips any update that requires user interaction 
+- Automatically accepts the EULA of all the updates it installs 
 #>
 function Run-WindowsUpdate {
     [cmdletbinding()] param()
     
-    $message = "Running Windows Update "
-    $message += if ($CalledFromRegistry) { "from the Restart Registry Entry" } else { "after being called directly" }
-    Write-WinUpEventLog $message
+    $message = "Running Windows Update..."
+    Write-EventLogWrapper $message
     
     if (Get-RestartPendingStatus) {
-        Restart-ComputerAndUpdater -CyclesRemaining $maxCycles -RestartAction $script:RestartAction 
+        Restart-ComputerAndUpdater -CyclesRemaining $maxCycles -NoRestart:$NoRestart 
     }
     
     $UpdateSession = New-UpdateSession
     for (; $maxCycles -gt 0; $maxCycles -= 1) {
-        Write-WinUpEventLog -message "Starting to check for updates. $maxCycles cycles remain."
+        Write-EventLogWrapper -message "Starting to check for updates. $maxCycles cycles remain."
     
         $CheckedUpdates = Check-WindowsUpdates -FilterInteractiveUpdates -UpdateSession $UpdateSession
         if (-not $CheckedUpdates) { 
-            Write-WinUpEventLog "No applicable updates were detected. Done!" 
+            Write-EventLogWrapper "No applicable updates were detected. Done!" 
             break 
         }
     
         $RebootRequired = Install-WindowsUpdates -UpdateSession $UpdateSession -UpdateList $CheckedUpdates
         if ($RebootRequired) {
-            Write-WinUpEventLog -message "Restart Required - Restarting..."
-            Restart-ComputerAndUpdater -CalledFromRegistry -CyclesRemaining $maxCycles -RestartAction $script:RestartAction
+            Write-EventLogWrapper -message "Restart Required - Restarting..."
+            Restart-ComputerAndUpdater -CyclesRemaining $maxCycles -NoRestart:$NoRestart 
         }
     }
     Run-PostUpdate
@@ -406,7 +319,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         $message += "======== ERROR STACK ========`r`n"
         $error |% { $message += "$_`r`n----`r`n" }
         $message += "======== ========"
-        Write-WinUpEventLog $message
+        Write-EventLogWrapper $message
         exit 666
     }
 }

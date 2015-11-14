@@ -29,11 +29,6 @@ $URLs = @{
     SdeleteDownload = "http://download.sysinternals.com/files/SDelete.zip"
 }
 $script:ScriptPath = $MyInvocation.MyCommand.Path
-$script:RestartRegistryKeys = @{
-    RunBeforeLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnce"
-    RunAtLogon = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
-}
-$script:RestartRegistryProperty = "$ScriptProductName"
     
 ### Private support functions I use behind the scenes
 
@@ -54,25 +49,38 @@ function Get-WebUrl {
 
 <#
 .synopsis
-Invoke an expression; log the expression, any output, and the last exit code 
+Invoke an expression; log the expression, optionally with any output, and the last exit code if appropriate
 #>
-function Invoke-ExpressionAndLog {
+function Invoke-ExpressionEx {
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] [string] $command,
         [switch] $invokeWithCmdExe,
         [switch] $checkExitCode,
+        [switch] $logToStdout,
         [int] $sleepSeconds
     )
     $global:LASTEXITCODE = 0
-    if ($invokeWithCmdExe) {
-        Write-EventLogWrapper "Invoking CMD: '$command'"
-        $output = cmd /c "$command"
+    $commandSb = if ($invokeWithCmdExe) {{cmd /c "$command"}} else {{invoke-expression -command $command}}
+    Write-EventLogWrapper "Invoke-ExpressionEx called to run command '$command'`r`n`r`nUsing scriptblock: $($commandSb.ToString())"
+    $output = $null
+    
+    try {
+        if ($logToStdout) { 
+            $commandSb.invoke() 
+            $message = "Expression '$command' exited with code '$LASTEXITCODE'"
+        } 
+        else { 
+            $output = $commandSb.invoke() 
+            $message = "Expression '$command' exited with code '$LASTEXITCODE' and output the following to the console:`r`n`r`n$output"
+        }
+        Write-EventLogWrapper -message $message 
     }
-    else { 
-        Write-EventLogWrapper "Invoking Powershell expression: '$command'"
-        $output = invoke-expression -command $command
+    catch {
+        Write-EventLogWrapper -message "Invoke-ExpressionEx faile3d to run command '$command'"
+        Write-ErrorStackToEventLog -errorStack $_
+        throw $_
     }
-    Write-EventLogWrapper "Expression '$command' had a last exit code of '$LastExitCode' and output the following to the console:`r`n`r`n$output"
+    
     if ($checkExitCode -and $global:LASTEXITCODE -ne 0) {
         throw "LASTEXITCODE: ${global:LASTEXITCODE} for command: '${command}'"
     }
@@ -97,6 +105,7 @@ function Write-EventLogWrapper {
         New-EventLog -Source $EventLogSource -LogName $eventLogName
     }
     $messagePlus = "$message`r`n`r`nScript: $($script:ScriptPath)`r`nUser: ${env:USERDOMAIN}\${env:USERNAME}"
+    if ($messagePlus.length -gt 32766) { $messagePlus = $messagePlus.SubString(0,32766) } # Because Write-EventLog will die otherwise
     Write-Host -foreground magenta "====Writing to $EvengLogName event log===="
     write-host -foreground darkgray "$messagePlus`r`n"
     Write-EventLog -LogName $eventLogName -Source $EventLogSource -EventID $eventId -EntryType $entryType -Message $MessagePlus
@@ -134,55 +143,89 @@ function Write-ErrorStackToEventLog {
     Write-EventLogWrapper $message
 }
 
-<#
-.synopsis
-Create and set the registry property which will run this script on reboot 
-#>
-function Set-RestartRegistryEntry {
+function Test-PowershellSyntax {
+    [cmdletbinding(DefaultParameterSetName='FromText')]
     param(
-        [parameter(mandatory=$true)] [ValidateSet('RunBeforeLogon','RunAtLogon','NoRestart')] [string] $RestartAction,
-        [string] $restartCommand
+        [parameter(mandatory=$true,ParameterSetName='FromText')] [string] $text,
+        [parameter(mandatory=$true,ParameterSetName='FromFile')] [string] $fileName,
+        [switch] $ThrowOnFailure
     )
-
-    if ($RestartAction -match "NoRestart") {
-        Write-EventLogWrapper "Called Set-RestartRegistryEntry with -RestartAction NoRestart, will not write registry key" 
-        return 
+    $tokens = @()
+    $parseErrors = @()
+    $parser = [System.Management.Automation.Language.Parser]
+    if ($pscmdlet.ParameterSetName -eq 'FromText') {
+        $parsed = $parser::ParseInput($text, [ref]$tokens, [ref]$parseErrors)
     }
+    elseif ($pscmdlet.ParameterSetName -eq 'FromFile') {
+        $fileName = resolve-path $fileName
+        $parsed = $parser::ParseFile($fileName, [ref]$tokens, [ref]$parseErrors)
+    }
+    write-verbose "$($tokens.count) tokens found."
+
+    if ($parseErrors.count -gt 0) {
+        $message = "$($parseErrors.count) parse errors found in file '$fileName':`r`n"
+        $parseErrors |% { $message += "`r`n    $_" }
+        if ($ThrowOnFailure) { throw $message } else { write-verbose $message }
+        return $false
+    }
+    return $true
+}
+
+
+<#
+.description
+Set a scheduled task to run on next logon of the calling user. Intended for tasks that need to reboot and then be restarted such as applying Windows Updates 
+.notes
+The Powershell New-ScheduledTask cmdlet is broken for me on Win81, but SchTasks.exe doesn't support actions with long arguments (requires a command line of < 200something characters). lmfao. 
+My workaround is to take a scriptblock, and then just save it to a file and call the file from Powershell. 
+I create the scheduled task with SchTasks.exe, then modify it with Powershell cmdlets that can handle long arguments just fine 
+#>
+function Set-RestartScheduledTask {
+    [cmdletbinding()] param(
+        [Parameter(Mandatory=$true)] [Scriptblock] $restartCommand,
+        [string] $tempRestartScriptPath = "${env:temp}\$ScriptProductName-TempRestartScript.ps1",
+        [string] $taskName = "$ScriptProductName-RestartTask"
+    )
+    Remove-RestartScheduledTask -taskName $taskName
     
-    $message = "Setting the Restart Registry Key at: {0}\{1}`r`n{2}" -f $script:RestartRegistryKeys.$RestartAction, $script:RestartRegistryProperty, $restartCommand
-    Write-EventLogWrapper -message $message
-    New-Item $script:RestartRegistryKeys.$RestartAction -force | out-null
-    Set-ItemProperty -Path $script:RestartRegistryKeys.$RestartAction -Name $script:RestartRegistryProperty -Value $restartCommand
+    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+    
+    $restartCommand.ToString() | Out-File -FilePath $tempRestartScriptPath
+    "Unregister-ScheduledTask -taskName '$taskName' -Confirm:`$false" | Out-File -Append -FilePath $tempRestartScriptPath
+    Test-PowershellSyntax -ThrowOnFailure -FileName $tempRestartScriptPath
+    
+    $schTasksCmd = 'SchTasks.exe /create /sc ONLOGON /tn "{0}" /tr "cmd.exe /c echo TemporparyPlaceholderCommand" /ru "{1}" /it /rl HIGHEST /f' -f $taskName,$currentUser 
+    Invoke-ExpressionEx -command $schTasksCmd -invokeWithCmdExe -checkExitCode
+        
+    # SchTasks.exe cannot specify a user for the LOGON schedule - it applies to all users. Modify it here:
+    $trigger = New-ScheduledTaskTrigger -AtLogon -User $currentUser
+    # SchTasks.exe cannot specify an action with long arguments (maxes out at like 200something chars). Modify it here: 
+    $action = New-ScheduledTaskAction -Execute "$PSHome\Powershell.exe" -Argument "-File `"$tempRestartScriptPath`""
+    Set-ScheduledTask -taskname $taskName -action $action -trigger $trigger
+    
+    $message  = "Created scheduled task called '$taskName', which will run a temp file at '$tempRestartScriptPath', containing:`r`n`r`n"
+    $message += (Get-Content $tempRestartScriptPath) -join "`r`n"
+    Write-EventLogWrapper -message $message 
 }
 
-function Get-RestartRegistryEntry {
-    [cmdletbinding()] param()
-    $entries = @()
-    foreach ($key in $script:RestartRegistryKeys.Keys) {
-        $regKey = $script:RestartRegistryKeys[$key]
-        $entry = New-Object PSObject -Property @{
-            RegistryKey = $regKey
-            RegistryProperty = $script:RestartRegistryProperty
-            PropertyValue = $null
-        }
-        if (test-path $regKey) {
-            $regProps = get-item $regKey | select -expand Property  
-            if ($regProps -contains $script:RestartRegistryProperty) { 
-                $entry.PropertyValue = Get-ItemProperty -path $regKey | select -expand $script:RestartRegistryProperty  
-            }
-        }
-        Add-Member -inputObject $entry -memberType ScriptProperty -Name StringRepr -Value {
-            "Key: $($this.RegistryKey), Property: $($this.RegistryProperty), Value: $($this.PropertyValue)"
-        }
-        $entries += @($entry) 
+function Get-RestartScheduledTask {
+    [cmdletbinding()] param(
+        [string] $taskName = $ScriptProductName
+    )
+    Get-ScheduledTask |? -Property TaskName -match $taskName
+}
+
+function Remove-RestartScheduledTask {
+    [cmdletbinding()] param(
+        [string] $taskName = $ScriptProductName
+    )
+    $existingTask = Get-RestartScheduledTask -taskName $taskName 
+    if ($existingTask) {
+        Write-EventLogWrapper -message "Found existing task named '$taskName'; deleting..."
+        Unregister-ScheduledTask -InputObject $existingTask -Confirm:$false | out-null
     }
-    return $entries
-}
-
-function Remove-RestartRegistryEntries {
-    [cmdletbinding()] param()
-    foreach ($key in $script:RestartRegistryKeys.Keys) { 
-        try { Remove-ItemProperty -Path $script:RestartRegistryKeys[$key] -name $script:RestartRegistryProperty} catch {}
+    else {
+        Write-EventLogWrapper -message "Did not find any existing task named '$taskName'"
     }
 }
 
@@ -221,7 +264,7 @@ function Install-SevenZip {
         Write-EventLogWrapper "Downloaded '$($URLs.SevenZipDownload.$OSArch)' to '$szDlPath', now running msiexec..."    
         $msiCall = '& msiexec /qn /i "{0}"' -f $szDlPath
         # Windows suxxx so msiexec sometimes returns right away? or something idk. fuck
-        Invoke-ExpressionAndLog -checkExitCode -command $msiCall -sleepSeconds 30
+        Invoke-ExpressionEx -checkExitCode -command $msiCall -sleepSeconds 30
     }
     finally {
         rm -force $szDlPath
@@ -242,9 +285,9 @@ function Install-VBoxAdditions {
         Write-EventLogWrapper "Installing the Oracle certificate..."
         $oracleCert = resolve-path "$baseDir\cert\oracle-vbox.cer" | select -expand path
         # NOTE: Checking for exit code, but this command will fail with an error if the cert is already installed
-        Invoke-ExpressionAndLog -checkExitCode -command ('& "{0}" add-trusted-publisher "{1}" --root "{1}"' -f "$baseDir\cert\VBoxCertUtil.exe",$oracleCert)
+        Invoke-ExpressionEx -checkExitCode -command ('& "{0}" add-trusted-publisher "{1}" --root "{1}"' -f "$baseDir\cert\VBoxCertUtil.exe",$oracleCert)
         Write-EventLogWrapper "Installing the virtualbox additions"
-        Invoke-ExpressionAndLog -checkExitCode -command ('& "{0}" /with_wddm /S' -f "$baseDir\VBoxWindowsAdditions.exe") # returns IMMEDIATELY, goddamn fuckers
+        Invoke-ExpressionEx -checkExitCode -command ('& "{0}" /with_wddm /S' -f "$baseDir\VBoxWindowsAdditions.exe") # returns IMMEDIATELY, goddamn fuckers
         while (get-process -Name VBoxWindowsAdditions*) { write-host 'Waiting for VBox install to finish...'; sleep 1; }
         Write-EventLogWrapper "virtualbox additions have now been installed"
     }
@@ -255,7 +298,7 @@ function Install-VBoxAdditions {
             $vbgaPath = mkdir -force "${env:Temp}\InstallVbox" | select -expand fullname
             try {
                 Write-EventLogWrapper "Extracting iso at '$isoPath' to directory at '$vbgaPath'..."
-                Invoke-ExpressionAndLog -checkExitCode -command ('sevenzip x "{0}" -o"{1}"' -f $isoPath, $vbgaPath)
+                Invoke-ExpressionEx -checkExitCode -command ('sevenzip x "{0}" -o"{1}"' -f $isoPath, $vbgaPath)
                 InstallVBoxAdditionsFromDir $vbgaPath
             }
             finally {
@@ -292,15 +335,21 @@ function Install-CompiledDotNetAssemblies {
     # http://support.microsoft.com/kb/2570538
     # http://robrelyea.wordpress.com/2007/07/13/may-be-helpful-ngen-exe-executequeueditems/
     # Don't check the return value - sometimes it fails and that's fine
-
-    set-alias ngen32 "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
-    ngen32 update /force /queue
-    ngen32 executequeueditems
+    
+    $ngen32 = "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
+    Invoke-ExpressionEx "$ngen32 update /force /queue"
+    Invoke-ExpressionEx "$ngen32 executequeueditems"
+    # set-alias ngen32 "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
+    # ngen32 update /force /queue
+    # ngen32 executequeueditems
         
     if ((Get-OSArchitecture) -match $ArchitectureId.amd64) { 
-        set-alias ngen64 "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
-        ngen64 update /force /queue
-        ngen64 executequeueditems
+        # set-alias ngen64 "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
+        # ngen64 update /force /queue
+        # ngen64 executequeueditems
+        $ngen64 = "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
+        Invoke-ExpressionEx "$ngen64 update /force /queue"
+        Invoke-ExpressionEx "$ngen64 executequeueditems"
     }
 }
 
@@ -310,19 +359,19 @@ function Compress-WindowsInstall {
         $udfZipPath = Get-WebUrl -url $URLs.UltraDefragDownload.$OSArch -outDir $env:temp
         $udfExPath = "${env:temp}\ultradefrag-portable-6.1.0.$OSArch"
         # This archive contains a folder - extract it directly to the temp dir
-        Invoke-ExpressionAndLog -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
+        Invoke-ExpressionEx -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
 
         $sdZipPath = Get-WebUrl -url $URLs.SdeleteDownload -outDir $env:temp
         $sdExPath = "${env:temp}\SDelete"
         # This archive does NOT contain a folder - extract it to a subfolder (will create if necessary)
-        Invoke-ExpressionAndLog -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $sdZipPath,$sdExPath)
+        Invoke-ExpressionEx -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $sdZipPath,$sdExPath)
 
         stop-service wuauserv
         rm -recurse -force ${env:WinDir}\SoftwareDistribution\Download
         start-service wuauserv
 
-        Invoke-ExpressionAndLog -checkExitCode -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
-        Invoke-ExpressionAndLog -checkExitCode -command ('& {0} /accepteula -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
+        Invoke-ExpressionEx -checkExitCode -logToStdout -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
+        Invoke-ExpressionEx -checkExitCode -command ('& {0} /accepteula -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
     }
     finally {
         rm -recurse -force $udfZipPath,$udfExPath,$sdZipPath,$sdExPath -ErrorAction Continue
@@ -494,21 +543,21 @@ function Enable-WinRM {
     # call cmd.exe over and over like this, that problem goes away. 
     # Note: order is important. This order makes sure that any time packer can successfully 
     # connect to WinRm, it won't later turn winrm back off or make it unavailable.
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'net stop winrm'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'sc.exe config winrm start= auto'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm quickconfig -q'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm quickconfig -transport:http'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config @{MaxTimeoutms="1800000"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/winrs @{MaxMemoryPerShellMB="2048"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/service @{AllowUnencrypted="true"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/client @{AllowUnencrypted="true"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/service/auth @{Basic="true"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/client/auth @{Basic="true"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/service/auth @{CredSSP="true"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"}'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'netsh advfirewall firewall set rule group="remote administration" new enable=yes'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'netsh firewall add portopening TCP 5985 "Port 5985"'
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command 'net start winrm'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'net stop winrm'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'sc.exe config winrm start= auto'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm quickconfig -q'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm quickconfig -transport:http'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config @{MaxTimeoutms="1800000"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config/winrs @{MaxMemoryPerShellMB="2048"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config/service @{AllowUnencrypted="true"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config/client @{AllowUnencrypted="true"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config/service/auth @{Basic="true"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config/client/auth @{Basic="true"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config/service/auth @{CredSSP="true"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"}'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'netsh advfirewall firewall set rule group="remote administration" new enable=yes'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'netsh firewall add portopening TCP 5985 "Port 5985"'
+    Invoke-ExpressionEx -invokeWithCmdExe -command 'net start winrm'
 }
 
 function Set-PasswordExpiry { # TODO fixme use pure Powershell
@@ -521,7 +570,7 @@ function Set-PasswordExpiry { # TODO fixme use pure Powershell
 wmic useraccount where "name='{0}'" set "PasswordExpires={1}"
 "@ 
     $command = $command -f $accountName, $passwordExpiress
-    Invoke-ExpressionAndLog -invokeWithCmdExe -command $command
+    Invoke-ExpressionEx -invokeWithCmdExe -command $command
 }
 
 <#

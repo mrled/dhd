@@ -8,9 +8,7 @@ Which build actions do you want to perform?
 .parameter tag
 A tag for the temporary directory, the output directory, and the resulting Vagrant box
 #>
-#function buildlab {
-[cmdletbinding()]
-param(
+[cmdletbinding()] param(
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")] 
     [parameter(mandatory=$true,ParameterSetName="AddToVagrant")] 
     [parameter(mandatory=$true,ParameterSetName="VagrantUp")]
@@ -31,7 +29,8 @@ param(
 )
 
 $errorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
+Get-Module |? -Property Name -match "wintriallab-postinstall" | Remove-Module 
+import-module $PSScriptRoot\scripts\wintriallab-postinstall.psm1
 
 $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
 $packerOutDir = "$baseOutDir\PackerOut"
@@ -59,27 +58,6 @@ $packerConfigRoot = "${PSScriptRoot}\packer\${baseConfigName}"
 $packerFile = "${packerConfigRoot}\${baseConfigName}.packerfile.json"
 $packedBoxPath = "${outDir}\${baseConfigName}_virtualbox.box"
 $vagrantTemplate = "${packerConfigRoot}\vagrantfile-${baseConfigName}.template"
-    
-function Test-PowershellSyntax {
-    [cmdletbinding()]
-    param(
-        [parameter(mandatory=$true)] [string] $fileName,
-        [switch] $ThrowOnFailure
-    )
-    $tokens = @()
-    $parseErrors = @()
-    $parser = [System.Management.Automation.Language.Parser]
-    $fileName = resolve-path $fileName
-    $parsed = $parser::ParseFile($fileName, [ref]$tokens, [ref]$parseErrors)
-
-    if ($parseErrors.count -gt 0) {
-        $message = "$($parseErrors.count) parse errors found in file '$fileName':`r`n"
-        $parseErrors |% { $message += "`r`n    $_" }
-        if ($ThrowOnFailure) { throw $message } else { write-verbose $message }
-        return $false
-    }
-    return $true
-}
 
 function Build-PackerFile {
     [cmdletbinding()]
@@ -185,7 +163,7 @@ function Show-LabVariable {
 
 if (-not $SkipSyntaxcheck) {
     foreach ($script in (gci $PSScriptRoot\scripts\* -include *.ps1,*.psm1)) { 
-        $valid = Test-PowershellSyntax -fileName $script.fullname
+        $valid = Test-PowershellSyntax -fileName $script.fullname -ThrowOnFailure
         New-Object PSObject -Property @{
             ScriptName = $script.name
             ValidSyntax = $valid 
@@ -228,6 +206,3 @@ if ($AddToVagrant) {
 if ($VagrantUp) {
     Run-VagrantBox -vagrantBoxName $fullConfigName -workingDirectory $outDir -whatif:$whatif
 }
-
-#}
-
