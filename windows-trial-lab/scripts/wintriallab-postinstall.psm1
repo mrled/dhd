@@ -60,7 +60,12 @@ function Invoke-ExpressionEx {
         [int] $sleepSeconds
     )
     $global:LASTEXITCODE = 0
-    $commandSb = if ($invokeWithCmdExe) {{cmd /c "$command"}} else {{invoke-expression -command $command}}
+    if ($invokeWithCmdExe) {
+        $commandSb = {cmd /c "$command"}.GetNewClosure()
+    }
+    else {
+        $commandSb = {invoke-expression -command $command}.GetNewClosure()
+    }
     Write-EventLogWrapper "Invoke-ExpressionEx called to run command '$command'`r`n`r`nUsing scriptblock: $($commandSb.ToString())"
     $output = $null
     
@@ -76,7 +81,7 @@ function Invoke-ExpressionEx {
         Write-EventLogWrapper -message $message 
     }
     catch {
-        Write-EventLogWrapper -message "Invoke-ExpressionEx faile3d to run command '$command'"
+        Write-EventLogWrapper -message "Invoke-ExpressionEx failed to run command '$command'"
         Write-ErrorStackToEventLog -errorStack $_
         throw $_
     }
@@ -563,14 +568,15 @@ function Enable-WinRM {
 function Set-PasswordExpiry { # TODO fixme use pure Powershell
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] [string] $accountName,
-        [parameter(mandatory=$true)] [bool] $expirePassword
+        [parameter(mandatory=$true,ParameterSetName="EnablePasswordExpiry")] [switch] $enable,
+        [parameter(mandatory=$true,ParameterSetName="DisablePasswordExpiry")] [switch] $disable
     )
-    $passwordExpires = if ($expirePassword) {"TRUE"} else {"FALSE"}
+    $passwordExpires = if ($PsCmdlet.ParameterSetName -match "EnablePasswordExpiry") {"TRUE"} else {"FALSE"}
     $command = @"
 wmic useraccount where "name='{0}'" set "PasswordExpires={1}"
 "@ 
-    $command = $command -f $accountName, $passwordExpiress
-    Invoke-ExpressionEx -invokeWithCmdExe -command $command
+    $command = $command -f $accountName,$passwordExpires
+    Invoke-ExpressionEx -command $command
 }
 
 <#

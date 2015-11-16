@@ -9,7 +9,7 @@ $errorActionPreference = "Stop"
 Invoke-ScriptblockAndCatch -scriptBlock {
     Write-EventLogWrapper "Starting the autounattend postinstall script"
     Set-IdleDisplayPoweroffTime -seconds 0
-    Set-PasswordExpiry -accountName "vagrant" -expirePassword $false
+    Set-PasswordExpiry -accountName "vagrant" -disable
     Disable-HibernationFile
     Enable-MicrosoftUpdate
     
