@@ -1256,31 +1256,28 @@ function Test-PowershellSyntax {
     [cmdletbinding(DefaultParameterSetName='FromText')]
     param(
         [parameter(mandatory=$true,ParameterSetName='FromText')] [string] $text,
-        [parameter(mandatory=$true,ParameterSetName='FromFile')] [string] $fileName
+        [parameter(mandatory=$true,ParameterSetName='FromFile')] [string] $fileName,
+        [switch] $ThrowOnFailure
     )
     $tokens = @()
     $parseErrors = @()
+    $parser = [System.Management.Automation.Language.Parser]
     if ($pscmdlet.ParameterSetName -eq 'FromText') {
-        $parsed = [System.Management.Automation.Language.Parser]::ParseInput(
-            $text, [ref]$tokens, [ref]$parseErrors)
+        $parsed = $parser::ParseInput($text, [ref]$tokens, [ref]$parseErrors)
     }
     elseif ($pscmdlet.ParameterSetName -eq 'FromFile') {
         $fileName = resolve-path $fileName
-        $parsed = [System.Management.Automation.Language.Parser]::ParseFile(
-            $fileName, [ref]$tokens, [ref]$parseErrors)
+        $parsed = $parser::ParseFile($fileName, [ref]$tokens, [ref]$parseErrors)
     }
     write-verbose "$($tokens.count) tokens found."
 
     if ($parseErrors.count -gt 0) {
-        write-verbose "$($parseErrors.count) parse errors found."
-        foreach ($e in $parseErrors) {
-            write-verbose "    $e"
-        }
+        $message = "$($parseErrors.count) parse errors found in file '$fileName':`r`n"
+        $parseErrors |% { $message += "`r`n    $_" }
+        if ($ThrowOnFailure) { throw $message } else { write-verbose $message }
         return $false
     }
-    else {
-        return $true
-    }
+    return $true
 }
 
 function Decrypt-SecureString {
@@ -1382,7 +1379,7 @@ function Show-ErrorReport {
 
             # $error can contain at least 2 kinda of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
             # The information we need is found in the ErrorRecord objects, so unwrap them here if necessary
-            if ($e.ErrorRecord) {
+            if ($e.PSObject.Properties['ErrorRecord']) { # This looks weird but it makes it work with strict mode
                 $e = $e.ErrorRecord
             }
 
@@ -1741,3 +1738,41 @@ function Send-NetworkData {
         $Client.Dispose()
     }
 } 
+
+<#
+.Description
+Retrieves all available Exceptions in the current session. Returns an array of strings which represent the exception type names. 
+.Notes
+Originally from: http://www.powershellmagazine.com/2011/09/14/custom-errors/
+#>
+function Get-AvailableExceptionsList {
+    [CmdletBinding()]
+    param()
+    $irregulars = 'Dispose|OperationAborted|Unhandled|ThreadAbort|ThreadStart|TypeInitialization'
+    $RelevantExceptions = @()
+    foreach ($assembly in [AppDomain]::CurrentDomain.GetAssemblies()) {
+        try {
+            $AllExceptions = $assembly.GetExportedTypes() -match 'Exception' -notmatch $irregulars 
+        }
+        catch {
+            write-verbose "Could not get exported types for assembly '$assembly'"
+            continue
+        }
+        foreach ($exc in $AllExceptions) {
+            if (-not $exc.GetConstructors()) { 
+                write-verbose "No constructors for '$exc' in '$assembly'"
+                continue 
+            }
+            try { 
+                $TestException = New-Object $exc.FullName 
+                $TestError = New-Object Management.Automation.ErrorRecord $TestException,ErrorID,OpenError,Target
+            } 
+            catch { # Tests failed, don't add this as a relevant exception
+                write-verbose "Could not create test exception/error for '$exc' in '$assembly'"
+                continue 
+            }
+            $RelevantExceptions += $exc.FullName
+        }
+    }
+    return $RelevantExceptions
+}
