@@ -123,9 +123,16 @@ $colorPrompt = {
     Write-Host " $hostname" -nonewline -foregroundcolor Blue
 
     $jobs = get-job
+    if ($jobs) { 
+        write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State) 
+    }
+    else { 
+        write-host " J0" -nonewline -foreground White
+    }
     #write-host ' {' -nonewline
-    write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
+    #write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
     #write-host '}' -nonewline
+
 
     Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
     
@@ -164,5 +171,6 @@ if ($env:term -eq "emacs") {
     # define one 
     if (test-path function:prompt) { rm function:prompt }
 }
+
 
 
