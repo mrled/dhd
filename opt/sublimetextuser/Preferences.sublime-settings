@@ -4,8 +4,8 @@
 	"font_size": 11,
 	"ignored_packages":
 	[
-		"Vintage",
-		"Markdown"
+		"Markdown",
+		"Vintage"
 	],
 	"show_encoding": true,
 	"tab_size": 4,
