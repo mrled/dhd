@@ -2,7 +2,7 @@
 
 if (-not $profile) {
     # This can happen in a remote session, for example
-    $profile = New-Object PSObject -Property {
+    $profile = New-Object PSObject -Property @{
         CurrentUserCurrentHost = "$Home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
     }
     Add-Member -InputObject $profile -MemberType ScriptMethod -Name ToString -Value {$this.CurrentUserCurrentHost} -Force
