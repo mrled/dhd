@@ -155,22 +155,20 @@ $simplePrompt = {
 $tinyPrompt = {
     if ($SoyAdmin) { $lcop = "#" }
     else { $lcop = ">" }
-    write-host "$($me.Identity.Name) PS$lcop" -foreground Blue -nonewline
+    write-host "$($me.Identity.Name) PS$lcop" -foreground Green -nonewline
     return " "
 }
 
-function reset-prompt {
-    if (test-path function:prompt) { rm function:prompt }
-    new-item -path function:prompt -value $colorPrompt | out-null
+function Set-UserPrompt {
+    [cmdletbinding()] param(
+        [Scriptblock] $newPrompt = $colorPrompt
+    )
+    #if (Test-Path function:prompt) { rm function:prompt }
+    #New-Item -Path function:prompt -value $newPrompt | out-null
+    $global:MicahPromptFunction = $newPrompt
 }
 
-. reset-prompt
+$global:MicahPromptFunction = {}
+New-Item -Force -Path function:prompt -Value { $global:MicahPromptFunction.Invoke() } | out-null
 
-if ($env:term -eq "emacs") {
-    # Emacs' "M-x powershell" seems to handle the prompt itself, and you get extra newlines if you 
-    # define one 
-    if (test-path function:prompt) { rm function:prompt }
-}
-
-
-
+Set-UserPrompt

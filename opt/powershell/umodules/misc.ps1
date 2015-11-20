@@ -1247,9 +1247,8 @@ function Set-Clipboard {
 }
 set-alias Out-Clipboard Set-Clipboard
 
-foreach ($exe in (gci "${env:windir}\Microsoft.NET\Framework\v4.0.30319" -filter *.exe)) {
-    #set-alias "$($exe.basename)_v40" $exe.fullname
-    set-alias "$($exe.basename)" $exe.fullname
+foreach ($exe in (gci "${env:ProgramFiles(x86)}\Graphviz*\bin\*.exe","${env:ProgramFiles}\Graphviz*\bin\*.exe")) {
+    set-alias "graphviz-$($exe.basename)" $exe.fullname
 }
 
 function Test-PowershellSyntax {
