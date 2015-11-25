@@ -7,6 +7,8 @@ The name of one of the subdirs like "windows_81_x86"
 Which build actions do you want to perform? 
 .parameter tag
 A tag for the temporary directory, the output directory, and the resulting Vagrant box
+.parameter vagrantHome
+If passed, before calling vagrant, it will resolve this path, then set the $env:VAGRANT_HOME variable to it. However, if there is alread an $env:VAGRANT_HOME variable present, it will NOT overwrite it.
 .notes
 PREREQUISITES: 
 - packer
@@ -22,10 +24,10 @@ PREREQUISITES:
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")]  [switch] $BuildPacker,
     [parameter(mandatory=$true,ParameterSetName="AddToVagrant")] [switch] $AddToVagrant,
     [parameter(mandatory=$true,ParameterSetName="VagrantUp")]    [switch] $VagrantUp,
-    
     [parameter(mandatory=$true,ParameterSetName="ShowConfig")]   [switch] $ShowConfig,
 
-    [string] $baseOutDir = "D:\iso\wintriallab",
+    [string] $baseOutDir,
+    [string] $vagrantHome,
     [string] $tempDirOverride,
     [string] $tag,
     [switch] $SkipSyntaxcheck,
@@ -36,6 +38,9 @@ PREREQUISITES:
 $errorActionPreference = "Stop"
 Get-Module |? -Property Name -match "wintriallab-postinstall" | Remove-Module 
 import-module $PSScriptRoot\scripts\wintriallab-postinstall.psm1
+
+if (-not $baseOutDir)  { $baseOutDir  = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\iso\wintriallabl") }
+if (-not $vagrantHome) { $vagrantHome = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\.vagrant") }
 
 $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
 $packerOutDir = "$baseOutDir\PackerOut"
@@ -129,13 +134,14 @@ function Add-BoxToVagrant {
 }
 
 function Run-VagrantBox { 
-    [cmdletbinding()]
-    param(
-        [parameter(mandatory=$true)] $vagrantBoxName,
+    [cmdletbinding()] param(
+    	[parameter(mandatory=$true)] $vagrantBoxName,
         [parameter(mandatory=$true)] $workingDirectory, # with a Vagrantfile in it
+        [string] $vagrantHome,
         [switch] $whatIf
     )
     if (-not $whatIf) {
+    	if ($vagrantHome) { $env:VAGRANT_HOME = $vagrantHome }
         try {
             pushd $workingDirectory
             vagrant up
@@ -206,7 +212,7 @@ if ($BuildPacker) {
     Build-PackerFile @bpfParam
 }
 if ($AddToVagrant) {
-    Add-BoxToVagrant -vagrantBoxName $fullConfigName -packedBoxPath $packedBoxPath -force:$force -whatif:$whatif
+    Add-BoxToVagrant -vagrantBoxName $fullConfigName -packedBoxPath $packedBoxPath -vagrantHome $vagrantHome -force:$force -whatif:$whatif
 }
 if ($VagrantUp) {
     Run-VagrantBox -vagrantBoxName $fullConfigName -workingDirectory $outDir -whatif:$whatif
