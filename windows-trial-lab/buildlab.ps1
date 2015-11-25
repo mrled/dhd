@@ -7,6 +7,11 @@ The name of one of the subdirs like "windows_81_x86"
 Which build actions do you want to perform? 
 .parameter tag
 A tag for the temporary directory, the output directory, and the resulting Vagrant box
+.notes
+PREREQUISITES: 
+- packer
+- vagrant 1.7.4
+- FOR NOW: the winrm-fs vagrant plugin - vagrant plugin install winrm-fs. This should come with the next Vagrant release tho. See: https://github.com/mitchellh/vagrant/issues/6060#issuecomment-130319797
 #>
 [cmdletbinding()] param(
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")] 
