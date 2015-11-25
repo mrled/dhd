@@ -82,11 +82,10 @@ function Export-ConemuConfig {
         [parameter(mandatory=$true)] [string] $filename,
         [switch] $force
     )
-    if ($force.ispresent) {
-        reg export "HKCU\Software\ConEmu\.Vanilla" "$filename" /y
-    } else {
-        reg export "HKCU\Software\ConEmu\.Vanilla" "$filename" 
-    }
+    $regKey = "HKCU\Software\ConEmu\.Vanilla"
+    $call = 'reg export $regKey "{0}"' -f "$filename"
+    if ($force) { $call += " /y" }
+    Invoke-Expression $call
 }
 if (test-path $env:ProgramFiles\ConEmu) {
     set-alias ConEmu64 $env:ProgramFiles\ConEmu\ConEmu64.exe
@@ -97,6 +96,35 @@ function Set-WindowTitle {
         [parameter(mandatory=$true)] [string] $message
     )
     $Host.UI.RawUI.WindowTitle = $message
+}
+
+function Get-PuttySession {
+    $regKey = "HKCU:\Software\SimonTatham\PuTTY\Sessions"
+    $fullNames = ls $regKey | Select -Expand Name 
+    $names = $fullNames |% { $_ -replace "HKEY_CURRENT_USER\\Software\\SimonTatham\\PuTTY\\Sessions\\","" }
+    return $names
+}
+
+function Export-PuttySession {
+    param(
+        [parameter(mandatory=$true)] [string] $filename,
+        [string] $sessionName = "Default%20Settings",
+        [switch] $force
+    )
+    $regKey = "HKCU\Software\SimonTatham\PuTTY\Sessions\$sessionName"
+    $call = 'reg export $regKey "{0}"' -f "$filename"
+    if ($force) { $call += " /y" }
+    Invoke-Expression $call
+}
+
+function Import-PuttySession {
+    param(
+        [parameter(mandatory=$true)] [string] $fileName,
+        [switch] $force
+    )
+    $call = 'reg import "{0}"' -f "$fileName"
+    if ($force) { $call += " /y" }
+    Invoke-Expression $call
 }
 
 function conkeror {
