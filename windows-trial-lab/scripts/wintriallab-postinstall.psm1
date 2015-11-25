@@ -565,6 +565,34 @@ function Enable-WinRM {
     Invoke-ExpressionEx -invokeWithCmdExe -command 'net start winrm'
 }
 
+function Add-LocalSamUser {
+    [cmdletbinding()] param(
+        [Parameter(Mandatory=$true)] [string] $userName,
+        [Parameter(Mandatory=$true)] [string] $password,
+        [string] $fullName,
+        [switch] $PassThru
+    )
+    Write-EventLogWrapper "Creating a new local user called '$userName'"
+    $computer = [ADSI]"WinNT://$env:COMPUTERNAME,Computer"
+    $newUser = $computer.Create("User", $userName)
+    $newUser.SetPassword($password)
+    $newUser.SetInfo()
+    $newUser.FullName = $fullName 
+    $newUser.SetInfo()
+    Add-LocalSamUserToGroup -userName $userName -groupName "Users"
+    if ($PassThru) { return $newUser }
+}
+
+function Add-LocalSamUserToGroup {
+    [cmdletbinding()] param(
+        [parameter(mandatory=$true)] [string] $userName,
+        [parameter(mandatory=$true)] [string] $groupName
+    )
+    Write-EventLogWrapper "Adding '$userName' to the local '$groupName' group"
+    $localAdmins = [ADSI]"WinNT://$env:COMPUTERNAME/$groupName,group"
+    $localAdmins.Add("WinNT://$userName")
+}
+
 function Set-PasswordExpiry { # TODO fixme use pure Powershell
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] [string] $accountName,
