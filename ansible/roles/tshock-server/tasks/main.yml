@@ -1,0 +1,32 @@
+---
+
+- name: TShock - Make config dir
+  file: >
+    path="{{ tshock_config_dir }}" 
+    state=directory owner=root group=root mode=0755
+
+- name: TShock - Add server config file
+  copy: >
+    src=tshock.config.json 
+    dest="{{ tshock_config_dir }}/config.json" 
+    owner=root group=root mode=0644
+
+- name: TShock - Copy server config file to data container    
+  command: docker cp "{{ tshock_config_dir }}/config.json" "{{ tshock_data_container_name }}:/tshock/config.json"
+
+- name: TShock - Run Docker service
+  docker:
+    name: "{{ openvpn_container_name }}"
+    image: "localhost:5000/{{ openvpn_image_name }}"
+    pull: always
+    state: reloaded
+    cap_add: NET_ADMIN
+    privileged: yes          # required because we deal with iptables and NAT in this container
+    insecure_registry: yes   # who cares, this is all on localhost
+    ports: 
+    - "1194:1194/udp"
+    - "1194:1194/tcp"
+    volumes:
+    - "{{ openvpn_config_dir }}:/etc/openvpn"
+
+

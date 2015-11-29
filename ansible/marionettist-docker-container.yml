@@ -1,0 +1,7 @@
+---
+
+## THIS IS A LOCAL PLAYBOOK INTENDED FOR DOCKER CONTAINERS
+
+- hosts: marionettist-docker-container
+  roles: 
+  - marionettist-docker-users

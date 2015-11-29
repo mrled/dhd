@@ -5,3 +5,4 @@
 - include: ovpnserver.yml
 - include: ovpnclientbuilder.yml
 - include: bitchboxen.yml
+- include: tshock.yml

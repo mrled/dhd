@@ -1,0 +1,20 @@
+---
+
+tasks: 
+  - name: Create marionettist docker groups
+    group: >
+      name={{ item.key }} 
+      gid={{ item.value }}
+      system=yes
+    with_items: marionettist_docker_users
+
+  - name: Create marionettist docker users
+    user: >
+      name={{ item.key }} 
+      uid={{ item.value }} 
+      group={{ item.key }} 
+      createhome=no 
+      home=/
+      shell=/bin/false
+      system=yes
+    with_items: marionettist_docker_users
