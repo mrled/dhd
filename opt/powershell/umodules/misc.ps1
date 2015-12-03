@@ -100,11 +100,11 @@ function Set-WindowTitle {
 
 function Get-PuttySession {
     $regKey = "HKCU:\Software\SimonTatham\PuTTY\Sessions"
-    $fullNames = ls $regKey | Select -Expand Name 
-    $names = $fullNames |% { $_ -replace "HKEY_CURRENT_USER\\Software\\SimonTatham\\PuTTY\\Sessions\\","" }
-    return $names
+    ls $regKey |% { $_.Name -replace "HKEY_CURRENT_USER\\Software\\SimonTatham\\PuTTY\\Sessions\\","" }
 }
 
+# These functions are useful because the default colors are far too dark (blue especially)
+# And I hate having to click around in the fucking thing just to fucking get the fucking colors so I can fucking see them again.
 function Export-PuttySession {
     param(
         [parameter(mandatory=$true)] [string] $filename,
