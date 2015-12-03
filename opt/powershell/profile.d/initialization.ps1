@@ -26,12 +26,17 @@ function Get-ExternalBinaryPath {
     param(
         [parameter(mandatory=$true)] [alias("name")] [string] [ValidateScript({
             $ExternalBinaryPathSearchPatterns.keys -contains $_
-            })] $BinaryName
+            })] $BinaryName,
+        [switch] $CygwinPath
         #[alias("version")] [int] $MajorVersion
     )
     $ExtantPathPatterns = $ExternalBinaryPathSearchPatterns.$BinaryName |? { test-path $_ }
     if ($ExtantPathPatterns) {
-        return (get-item $ExtantPathPatterns | sort)[-1].fullname
+        $foundPath = (get-item $ExtantPathPatterns | sort)[-1].fullname
+        if ($CygwinPath) { 
+            $foundPath = $foundPath -replace "^(.)\:\\",'\$1\' -replace "\\","/"
+        }
+        return $foundPath
     }
     else {
         #throw "Could not find a path for $BinaryName"

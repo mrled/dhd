@@ -480,13 +480,12 @@ if (test-path $sublpath) {
 # from the Git (bash) command line and cmd and Powershell etc.
 $env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
 
-
-# NOTES about doing this: 
-# 1) It would be better if I could use Get-VimDir, but I need an MSYS path, not a Windows path, so for now this is just hardcoded eww.
-# 2) You'll want to turn off colors for git diffs - `git config --global color.diff false` - b/c git colors are ANSI escapes and 
-#    Vim doesn't understand those (at least not out of the box)
-$env:GIT_PAGER = '"/c/Program Files (x86)/Vim/vim74/vim.exe" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -'
-
+# You'll want to turn off colors for git diffs - `git config --global color.diff false` - b/c git colors are ANSI escapes and 
+# Vim doesn't understand those (at least not out of the box)
+$vimCygwinPath = Get-ExternalBinaryPath -BinaryName vim -CygwinPath
+if ($vimCygwinPath) { 
+    $env:GIT_PAGER = '"{0}/vim.exe" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -' -f $vimCygwinPath
+}
 
 function Get-GitPrettyLog {
     git log --oneline --all --graph --decorate $args
