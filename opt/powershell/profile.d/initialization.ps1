@@ -1,48 +1,5 @@
 # Initialization stuff doesn't need to happen very often, and it might be slow ish maybe
 
-$ExternalBinaryPathSearchPatterns = @{
-    Python = @(
-        "${env:SystemDrive}\Python*"
-        "${env:SystemDrive}\Tools\Python*"
-    )
-    Ruby = @(
-        "${env:SystemDrive}\Ruby*"
-        "${env:SystemDrive}\Tools\Ruby*"
-    )
-    Vim = @(
-        "${env:programfiles}\vim\vim??"
-        "${env:programfiles(x86)}\vim\vim??"
-    )
-    WindowsSDK = @(
-        "${env:programfiles(x86)}\Windows Kits\8.1\bin\x64"
-        "${env:programfiles(x86)}\Windows Kits\8.0\bin\x64"
-        "${env:programfiles(x86)}\Microsoft SDKs\Windows\v7.1A\Bin\x64"
-    )
-    VisualStudio = @(
-        "${env:programfiles(x86)}\Microsoft Visual Studio*"
-    )
-}
-function Get-ExternalBinaryPath {
-    param(
-        [parameter(mandatory=$true)] [alias("name")] [string] [ValidateScript({
-            $ExternalBinaryPathSearchPatterns.keys -contains $_
-            })] $BinaryName,
-        [switch] $CygwinPath
-        #[alias("version")] [int] $MajorVersion
-    )
-    $ExtantPathPatterns = $ExternalBinaryPathSearchPatterns.$BinaryName |? { test-path $_ }
-    if ($ExtantPathPatterns) {
-        $foundPath = (get-item $ExtantPathPatterns | sort)[-1].fullname
-        if ($CygwinPath) { 
-            $foundPath = $foundPath -replace "^(.)\:\\",'\$1\' -replace "\\","/"
-        }
-        return $foundPath
-    }
-    else {
-        #throw "Could not find a path for $BinaryName"
-    }
-}
-
 <#
 .notes
 This function is necessary for "superpack" installers of Python modules
