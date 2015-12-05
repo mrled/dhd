@@ -1,0 +1,16 @@
+FROM debian:stable
+MAINTAINER Micah R Ledbetter <micah@micahrl.com
+
+{marionettist_common}
+
+RUN \
+    apt-get -y update && \
+    apt-get -y install \
+        irssi
+#VOLUME /irssi
+
+USER marionettist-1
+
+ENTRYPOINT ["irssi"]
+
+EXPOSE 7777/tcp
