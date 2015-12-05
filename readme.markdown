@@ -11,7 +11,7 @@ The design goals are: *All of my servers should be configured on a local, secura
 
 For some apps, the second goal won't make sense. For example, a database of user comments on a blog isn't easily commitable to Git (unless you're using a blogging system that commits them for you). However, by making this the rule of thumb, the exceptions can be clearly laid out and a backup strategy put in place.
 
-In practice, this means: 
+This means I want to use the following workflow: 
 
 - Build your Docker containers out of band - do NOT build them in Ansible
     - This is not how I've build my roles so far: 
@@ -20,7 +20,47 @@ In practice, this means:
         - ghost-server
         - openvpn-server
     - But it *is* how I want to build them going forward
+- Push your Docker containers to the hub.
+    - *Use content trust* by setting the `DOCKER_CONTENT_TRUST` environment variable before doing a docker push/pull/whatever
+    - This means that I sign my docker images, and I don't have to trust Docker's infrastructure
 - Use Ansible to deploy the Docker containers on the host, and obviously for any other configuration
+
+### How to use Docker
+
+NOTE: Docker Content Trust requires version 1.8.0 or higher - depending on your system, you may need to upgrade
+
+When creating new images: 
+
+    # 1. Decide on an image name and version. Also set your hub username and tell docker to use Content Trust
+    hub_username="mrled"
+    image_name="example-docker"
+    image_version="0.0.1"
+    DOCKER_CONTENT_TRUST=true
+
+    # 2. Create or modify a docker image in the docker/ subdirectory
+    emacs docker/$imagea_name/Dockerfile.template
+    docker/dmake.py $image_name
+    
+    # 3. Build it, making sure to tag it as <docker hub username>/<image name>:<image version>
+    docker build --tag=$hub_username/$image_name:$image_version build/$image_name/
+    
+    # 4. Push it
+    docker push $hub_username/$image_name
+    
+When consuming images: 
+
+    # 1. Determine image name and version and hub username and use Content Trust
+    hub_username="mrled"
+    image_name="example-docker"
+    image_version="0.0.1"
+    DOCKER_CONTENT_TRUST=true
+
+    # 2. Pull the image
+    docker pull $hub_username/$image_name
+    
+REMAINING QUESTIONS: 
+
+- How do I tag something with more than one tag - like if I want to have a :latest tag or something?
 
 ## devlog
 

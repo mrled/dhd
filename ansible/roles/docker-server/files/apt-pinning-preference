@@ -1,0 +1,11 @@
+Package: *
+Pin: release a=stable
+Pin-Priority: 900
+
+Package: *
+Pin: release a=testing
+Pin-Priority: 800
+
+package: docker.io
+Pin: release a=testing
+Pin-Priority: 901
