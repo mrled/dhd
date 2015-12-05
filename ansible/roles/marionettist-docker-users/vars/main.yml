@@ -1,0 +1,11 @@
+---
+
+# A hashtable of username:UID values
+# These names/UIDs *must* be free on both the Docker host and the Docker container! 
+asdfasdfasdfsadfasdf: fuck off
+marionettist_docker_users: 
+  marionettist1: 60001
+  marionettist2: 60002
+  marionettist3: 60003
+  marionettist4: 60004
+  marionettist5: 60005

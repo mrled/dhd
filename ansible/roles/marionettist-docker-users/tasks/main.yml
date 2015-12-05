@@ -1,12 +1,10 @@
 ---
-
-tasks: 
   - name: Create marionettist docker groups
     group: >
       name={{ item.key }} 
       gid={{ item.value }}
       system=yes
-    with_items: marionettist_docker_users
+    with_dict: "{{ marionettist_docker_users }}"
 
   - name: Create marionettist docker users
     user: >
@@ -17,4 +15,4 @@ tasks:
       home=/
       shell=/bin/false
       system=yes
-    with_items: marionettist_docker_users
+    with_dict: "{{ marionettist_docker_users }}"
