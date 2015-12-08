@@ -54,13 +54,6 @@ function Get-ExternalBinaryPath {
     }
 }
 
-
-# why does mingw do this. 
-# (Note: testing paths is more fragile but leads to faster shell startup.)
-if (test-path "C:\tools\mingw64\bin\mingw32-make.exe") {
-    set-alias gmake "mingw32-make.exe"
-}
-
 <#
 .description
 Parse a command line
@@ -119,8 +112,6 @@ function Echoexec-Expression {
     $cli.scriptblock.invoke()
 }
 set-alias echoexec echoexec-expression
-
-
 
 function Export-ConemuConfig {
     param(
@@ -273,26 +264,6 @@ function Invoke-ProcessAndWait {
     }
 }
 
-
-
-# note: 7-zip is in the same place on both 64 bit and 32 bit Windows
-# note: in some cases it won't complete commands starting with a digit, so we are reduced to this
-set-alias sz "$env:programfiles\7-Zip\7z.exe" 
-
-if (test-path $env:LocalAppData\Pandoc\pandoc.exe) {
-    set-alias pandoc $env:LocalAppData\Pandoc\pandoc.exe
-}
-
-if (test-path "${env:ProgramFiles}\Oracle\VirtualBox") { 
-    foreach ($exe in ls "${env:ProgramFiles}\Oracle\VirtualBox\*" -include *.exe) {
-        set-alias $exe.baseName $exe.fullname
-    }
-}
-
-#if (test-path C:\Chocolatey) {
-#    set-alias nuget C:\Chocolatey\chocolateyinstall\nuget.exe
-    #}
-
 # This works. Caveat: Emacs is iffy for some reason. 
 # You can 'elevate-process emacs \somefile.txt' just fine
 # You can 'elevate-process notepad "\somefile with spaces.txt"'
@@ -318,16 +289,6 @@ function gcollect {
     [GC]::Collect()
 }
 
-if (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 10.0\Common7\IDE") {
-    $vs2010path="${env:ProgramFiles(x86)}\Microsoft Visual Studio 10.0\Common7\IDE"
-    set-alias devenv "$vs2010path\devenv.exe"
-}
-
-if (test-path "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe") {
-    set-alias npp "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"  
-    set-alias notepad++ "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"    
-}
-    
 $emacsbin = "$Home\opt\emacs-23.4\bin" # this is going to change every time I upgrade Emacs or whatever, ugh
 if (test-path $emacsbin) {
     $emacsclient = "$emacsbin\emacsclientw.exe"
@@ -439,71 +400,9 @@ function vless {
 }
 set-alias vl vless
 
-<#
-$possibless = @(
-    "$home\Documents\WindowsPowerShell\Modules\PSCX\Apps\less.exe"
-    "C:\opt\MinGW\msys\1.0\bin\less.exe",
-    "${env:ProgramFiles(x86)}\Git\bin\less.exe",
-    "$env:windir\system32\more.com"
-)
-foreach ($pl in $possibless) {
-    if (test-path $pl) {
-        set-alias less "$pl"
-        set-alias l less
-        set-alias more less
-        set-alias m less
-        break
-    }
-}
-
-###### I think this is superseeded by PSCX's less function
-# this will only work with a decent less.exe as described above
-# it's intended so you can do something like 
-#     gci 'c:\program files' -include *.txt | lessall
-# like I do with my subl() function 
-# TODO: this is using PSCX's less.exe by calling 'less.exe' directly. 
-#       it won't work with the one from Git. Ugh. 
-function lessall {
-    $files = @()
-    foreach ($f in $input) { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
-    foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
-    $allfiles = $files -join " "
-    less.exe $allfiles
-}
-#>
-
 $sublpath = "${env:ProgramFiles}\Sublime Text 3\sublime_text.exe"
 
 if (test-path $sublpath) {
-    #set-alias subl "$sublpath"
-    function subl_OLDVERSION_FASTER_BROKEN {
-        [cmdletbinding()]
-
-        param(  
-            [Parameter(position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)] [string[]] $file
-        )
-
-        $files = @()
-        #foreach ($f in $input,$args) { 
-        foreach ($f in $file) {
-            if (-not [string]::IsNullOrEmpty($f)) { 
-                if ($f.fullname) {
-                    # This is probably a FileInfo object
-                    $ff = $f.fullName
-                    write-verbose "Using fileinfo object at full path $ff"
-                    $files += @("`"$ff`"")
-                }
-                else {
-                    # Assume it's just a string
-                    write-verbose "Using a string as $f"
-                    $files += @("`"$f`"") 
-                }
-            } 
-        }
-        foreach ($f in $args)  { if (-not [string]::IsNullOrEmpty($f)) { $files += @("`"$f`"") } }
-        start-process $sublpath -argumentlist $files
-        write-host $files
-    }
     function subl {
         [cmdletbinding()]
         param(  
@@ -516,10 +415,6 @@ if (test-path $sublpath) {
         }
     }
 }
-#$env:GIT_EDITOR = $sublpath
-#$env:SVN_EDITOR = $sublpath
-#$env:EDITOR = $sublpath
-#$env:VISUAL = $sublpath
 
 # You want this to be separated with forward slashes so that it works
 # from the Git (bash) command line and cmd and Powershell etc.
@@ -734,14 +629,6 @@ function tail {
     }
 }
 
-
-if (test-path "${env:ProgramFiles(x86)}\Git\bin\diff.exe") {
-    set-alias unixdiff "${env:ProgramFiles(x86)}\Git\bin\diff.exe"
-}
-if (test-path "${env:ProgramFiles(x86)}\Git\bin\sed.exe") {
-    set-alias unixsed "${env:ProgramFiles(x86)}\Git\bin\sed.exe"
-}
-
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
 if (test-path alias:touch) {del alias:touch}
 function touch {
@@ -755,7 +642,6 @@ function touch {
         }
     }
 }
-
 
 if (test-path alias:man) { del alias:man }
 function man {
@@ -1318,10 +1204,6 @@ function Set-Clipboard {
     }
 }
 set-alias Out-Clipboard Set-Clipboard
-
-foreach ($exe in (gci "${env:ProgramFiles(x86)}\Graphviz*\bin\*.exe","${env:ProgramFiles}\Graphviz*\bin\*.exe")) {
-    set-alias "graphviz-$($exe.basename)" $exe.fullname
-}
 
 function Test-PowershellSyntax {
     [cmdletbinding(DefaultParameterSetName='FromText')]

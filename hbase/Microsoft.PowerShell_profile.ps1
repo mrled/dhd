@@ -56,7 +56,7 @@ foreach ($pmp in $PossibleModulePaths) {
     if (test-path $pmp) { $env:PSModulePath += ";$pmp" }
 }
 
-import-module IPConfiguration,uPackageManager,PSWindowsUpdate
+import-module IPConfiguration,uPackageManager,PSWindowsUpdate,Aliases-MRL
 
 # If these modules don't exist, don't throw an error
 try {
