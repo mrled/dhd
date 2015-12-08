@@ -35,6 +35,7 @@ Invoke-ScriptblockAndCatch -scriptBlock {
         "Emacs"
         "vim"
         "PsGet"
+        "ultravnc"
     )
     $chocolateyPackages |% { Invoke-ExpressionEx "choco install --yes '$_'" }
     

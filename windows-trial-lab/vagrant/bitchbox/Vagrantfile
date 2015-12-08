@@ -8,7 +8,7 @@ Vagrant.require_version ">= 1.6.2"
 
 Vagrant.configure("2") do |config|
     #config.vm.define "gheis-" + DateTime.now.strftime("%Y-%m-%d-%H-%M-%S")
-    config.vm.define "gheis-" + DateTime.now.strftime("%Y-%m-%d")
+    config.vm.define "gheis-2015-11-20"
     config.vm.box = "windows_10_x86_virtualbox.box"
     config.vm.communicator = "winrm"
     
@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
     config.vm.guest = :windows
     config.windows.halt_timeout = 15
 
-    config.vm.network :forwarded_port, guest: 3389, host: 3389, id: "rdp", auto_correct: true
+    config.vm.network :forwarded_port, guest: 3389, host: 33389, id: "rdp", auto_correct: true
 
     config.vm.provider :virtualbox do |v, override|
         #v.gui = true
@@ -34,11 +34,11 @@ Vagrant.configure("2") do |config|
         v.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
     end
 
+    Dir.mkdir('./synced')
     config.vm.synced_folder ".", "/vagrant", disabled: true
     config.vm.synced_folder "./synced", "/vagrant", create: true
-    FileUtils.cp "../../scripts/vagrant-postinstall.psm1" "./synced"
-    FileUtils.cp "../../scripts/wintriallab-postinstall.psm1" "./synced"
-    FileUtils.cp "./bitchbox-postinstall.ps1" "./synced"
+    FileUtils.cp "../../scripts/wintriallab-postinstall.psm1" "./synced/"
+    FileUtils.cp "./bitchbox-postinstall.ps1" "./synced/"
     
     config.vm.provision "shell", inline: "C:/marionettist/bitchbox-postinstall.ps1"
 end
