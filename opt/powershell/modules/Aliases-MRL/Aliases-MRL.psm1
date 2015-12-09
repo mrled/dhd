@@ -32,6 +32,18 @@ $Executables = @{
     ":ProgramFiles:\Graphviz*\bin" = "graphviz-"
 
     ":ProgramFiles:\Amazon\AWSCLI\aws.exe" = $null
+
+    # From http://slproweb.com/products/Win32OpenSSL.html
+    ":ProgramFiles:\OpenSSL\bin\openssl.exe" = $null
+
+    ":ProgramFiles:\GNU\GnuPG\gpg2.exe" = @("gpg2","gpg")
+    ":ProgramFiles:\GNU\GnuPG\gpgtar.exe" = $null
+    ":ProgramFiles:\GNU\GnuPG\gpgv2.exe" = $null
+    ":ProgramFiles:\GNU\GnuPG\gpgconf.exe" = $null
+    ":ProgramFiles:\GNU\GnuPG\bin\kleopatra.exe" = $null
+    ":ProgramFiles:\GNU\GnuPG\md5sum.exe" = $null
+    ":ProgramFiles:\GNU\GnuPG\sha1sum.exe" = $null
+    ":ProgramFiles:\GNU\GnuPG\sha256sum.exe" = $null
 }
 
 $FoundAliases = @()
