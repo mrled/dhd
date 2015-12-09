@@ -1,0 +1,330 @@
+#!/bin/tcsh <---- THIS MAKES EMACS DTRT. 
+# .tcshrc
+
+# thanks to all the little people:
+# http://howto.unixdev.net/tcshrc.html
+# http://www.dotfiles.com
+# ...
+# and probably a lot more
+
+# All this stuff applies to ALL SESSIONS - not just interactive ones! 
+
+
+set uname = `uname`
+set host = `hostname`
+
+
+## PATH... should come before everything else
+# Future:
+#  I should include a util that: 
+#   - searches /etc /usr/etc /usr/local/etc /usr/nekoware/etc for execable files
+#   - links them to /usr/etcbin or something like that
+#   - man that is an abomination
+# NOTE: this method does NOT seem to be workable if a directory has spaces
+set p=() # Make the $PATH not suck:
+# don't include: /usr/ucb /usr/sfw/bin
+# /opt/alternatives is where I put commands that I want to come BEFORE system-
+# supplied commands in /bin. e.g. on Interix, su, make, ksh, and tar are all
+# there, mostly as links to other commands such as /usr/pkg/bin/gtar. 
+# This way, I don't break OS-updates by "updating" my version of /bin/tar
+# with the new OS version of /bin/tar - /bin/tar always belongs to the OS, and 
+# my stuff always belongs to me. 
+foreach binpath ( \
+    ~/opt/alternatives /opt/alternatives \
+    ~/opt/{,s}bin ~/opt/perl/bin \
+    ~/doc/remote/dhd/hbase/local/bin ~/doc/remote/dhd/os/$uname/bin \
+    \
+    /sw/{,s}bin /opt/local/{,s}bin \
+    /usr/pkg/{,s}bin \
+    /usr/nekoware/{,s}bin /usr/freeware/bin \
+    /opt/csw/{,s}bin /opt/csw/flex/{,s}bin /opt/csw/gcc4/{,s}bin /usr/sfw/bin \
+    \
+    /opt/gcc.3.3/bin/i586-pc-interix3 /usr/local/MSVisualStudio/bin \
+    /opt/gcc.3.3/bin /opt/ast/bin \
+    /usr/contrib/bin /usr/contrib/win32/bin /usr/examples/admin \
+    /opt/SUNWspro/{,s}bin \
+    \
+    /{,s}bin /usr/{,s}bin /usr/local/{,s}bin \
+    /usr/games{,/bin} /usr/X11R6/{,s}bin  /usr/bin/X11 \
+    )
+    if (-d $binpath) set p=( $p $binpath )
+end
+set path = ( $p )
+unset p binpath
+
+setenv PERL5LIB "~/opt/perl/share/perl/5.8:~/opt/perl/share/perl/5.8.4:~/opt/perl/lib/perl5:~/opt/perl/lib/perl/5.8.4"
+
+umask 077 #stop reading my files!!
+setenv CVS_RSH ssh
+
+
+# INTERACTIVE SHELLS ONLY
+
+# (This makes it so, for instance, rsync, scp, and sftp don't die... if your
+#  shell init file outputs to STDOUT, it will confuse those apps)
+if ($?prompt) then # this is how we determine if we're in an interactive shell
+
+
+    # ls... the search for GNU
+    set ls = "/bin/ls"
+    if ( -X gls ) set ls = "gls"
+    # GNU sed
+    if ( -X gsed ) alias sed "gsed"
+    # GNU du for the -h option :):):)
+    if ( -X gdu ) alias du gdu
+
+    # GNU dircolors
+    # This spirts out a big line of 'setenv LS_COLORS=lkasjdflkjasdlfkj'
+    #if (-X gdircolors) gdircolors -c ~/doc/remote/dhd/hbase/.dir_colors
+    #else if (-X dircolors) dircolors -c ~/doc/remote/dhd/hbase/.dir_colors
+    #endif
+
+
+    ######################
+    # Checking For Stuff #
+    ######################
+
+    # GNUstep
+    if ( -fx /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
+	source /usr/local/GNUstep/System/Library/Makefiles/GNUstep.csh
+    else if ( -fx /usr/GNUstep/System/Library/Makefiles/GNUstep.csh ) then
+	source /usr/GNUstep/System/Library/Makefiles/GNUstep.csh
+    endif
+
+    if ( -d /cygdrive ) then    # Cygwin
+        # it inherits the Windows path, so if your Windows path has this set, 
+        #  then it will be wrong:
+        setenv SVN_SSH /usr/bin/ssh  
+        # lists.gnu.org/archive/html/help-emacs-windows/2002-10/msg00109.html:
+        setenv CYGWIN "binmode ntsec stty"	# I don't know what does what here
+        set winc = "/cygdrive/c"
+    else if ( -d /dev/fs ) then # SFU/SUA/Interix
+        set winc = "/dev/fs/C"
+        setenv SVN_SSH /usr/local/bin/ssh
+        
+        #skd="/dev/fs/J/Neuric/Apps/puTTY"
+        #alias ssh "if ( -d $sdk ) ssh -i /dev/fs/J/Neuric/Apps/puTTY/id_rsa"
+        alias ssh "ssh -i /dev/fs/J/Neuric/Apps/puTTY/id_rsa"
+        if ( -f /usr/examples/win32/aliases.csh ) source /usr/examples/win32/aliases.csh
+        alias df /bin/df -Fk 
+        alias du /bin/du -k
+        # Interix ls has to be upgraded from the /Tools warehouse to support color, and it isn't GNU ls
+        # ... it's some *BSD ls instead that doesn't use the same kind of LSCOLORS variable
+        setenv LS_COLOURS 'dir=[34m:dir_r=[0m:norm=[0m:exe=[32m:all_r=[0m' 
+        # the following assume updated rxvt and xterm, as well as /opt/alternatives
+        if ( -X rxvt  ) alias rxvt  "rxvt  -bg black -fg white -fn fixed -sl 10000 -ls -fn -misc-profontwindows-medium-r-normal--12-0-0-0-m-0-iso8859-1"
+        if ( -x /usr/local/bin/xterm ) alias xterm "/usr/local/bin/xterm -bg black -fg white -sl 10000 -ls -fn -misc-profontwindows-medium-r-normal--12-0-0-0-m-0-iso8859-1"
+    else if ( $uname == Darwin ) then # Mac OS X
+        set surf = 'open -f "$argv" /Apps/Net\ -\ Web/Camino.app'
+        test -r /sw/bin/init.csh && source /sw/bin/init.csh  # fink
+    else if ( $uname == SunOS ) then  # Solaris
+        setenv CC "/opt/csw/gcc4/bin/gcc"
+        alias psa ps -ef
+        alias psaf 'ps -ef|grep -i \!*'
+    endif
+
+    if ( $?winc ) then # we are on Windows, either cygwin or SFU or something
+        # psh. I do all this and then realize that I should just use 
+        # `runwin32 explorer` instead. 
+        set windir =    "$winc/WINDOWS"
+        set wins32 =    "$winc/WINDOWS/system32"
+        set progfiles = "$winc/Program\ Files"
+        set surf =      "$progfiles/Mozilla\ Firefox/firefox.exe"
+        alias explorer  "$windir/explorer.exe" # you *must* use \ paths and quote *everything*
+        alias explore    explorer
+        alias expl       explorer
+        alias hh        "$windir/hh.exe"
+        alias regedit   "$windir/regedit.exe"
+        alias ifconfig  "$wins32/ipconfig.exe"
+        alias mstsc     "$wins32/mstsc.exe"
+        alias fsutil    "$wins32/fsutil.exe"
+        alias net       "$wins32/net.exe"
+        alias netsh     "$wins32/netsh.exe"
+    endif
+
+    if ( $?surf ) then # we have a web browser!
+        alias surf $surf
+        alias firefox $surf
+        alias stfu $surf
+    endif
+
+
+    ##################
+    # Global Aliases #
+    ##################
+
+    alias ppath  'echo $PATH | sed "s/:/\n/g"'
+    alias pupath 'echo $PATH | sed "s/:/\n/g" | sort | uniq'
+    alias logrec 'lsl /var/log | grep -v \\.bz2 | grep -v \\.0 | grep "`date +%b\ %d\ %k`"'
+
+    alias psa ps ax
+    alias psaf 'ps ax|grep -i \!*'
+
+    alias .. 'cd ..'
+    alias c clear
+    alias df df -h
+    alias h history
+    alias m more
+    alias l less
+    alias wh where
+
+    alias ls '$ls -hF --color'
+    alias lsa '$ls -ahF --color'
+    alias lsl '$ls -alhF --color'
+    alias lsli '$ls -alhFi --color' # lsl+inodes
+    alias l1 '$ls -1hF --color'
+    alias llm '$ls -lahrtF --color' # lists by last mod time
+
+    alias pu pushd
+    alias po popd
+    alias dush "du -sh"
+    alias ff "find . -name '\!*' -print"
+    alias trash 'mv $argv ~/.Trash/'
+    alias tailmes 'tail -f /var/log/messages'
+    alias mess less /var/log/messages
+    alias dmesg 'dmesg|less'
+    if ( -X wn ) alias define 'wn \!* -over'
+    alias wh where
+    alias .t source ~/.tcshrc
+    alias listen 'netstat -a | grep LISTEN'
+
+    # under OS X, `posd` tells you where the topmost Finder window is. (in fink)
+    # `fdc` changes the directory of the shell to match that of the
+    # topmost Finder window. This alias is the reverse behavior. 
+    alias cdf 'cd "`posd`"' # requires posd (in fink). 
+
+    alias arin      'whois -h whois.arin.net'
+    alias ripe      'whois -h whois.ripe.net'
+    alias apnic     'whois -h whois.apnic.net'
+
+    alias co-dhd "svn co http://mrled.org/svn/dhd ~/doc/remote/dhd"
+
+    alias omg		'echo wtf'
+
+    alias pushid "cat .ssh/id_rsa.pub | ssh \!* 'cat - >> .ssh/authorized_keys"
+
+    if      ( -x /usr/local/bin/emacsclient) alias e "/usr/local/bin/emacsclient"
+    else if ( -X emacsclient)                alias e "emacsclient"
+    endif
+
+
+    ####################
+    # Software Systems #
+    ####################
+
+    if ( -f /usr/portage ) then # Gentoo Portage
+        alias ugrep "grep -i $1 /usr/portage/profiles/use{,.local}.desc"
+        alias fnc 'find /etc -iname "._cfg????*"'
+        # might want to rewrite this for when I have boot mounted, but ro. 
+        alias kinst "mount /boot && cp arch/i386/boot/bzImage /boot/bzImage && umount /boot"
+    endif
+    if ( -f /usr/pkgsrc ) then  # NetBSD pkgsrc
+        alias pkgup "cd /usr/pkgsrc && sudo cvs -d anoncvs@anoncvs4.us.NetBSD.org:/cvsroot up"
+        if ( $uname == Interix ) setenv PKG_PATH "ftp://ftp.netbsd.org/pub/NetBSD/packages/current-packages/Interix-3.5/i386/current"
+        else if ( $uname == SunOS ) setenv PKG_PATH "ftp://ftp.netbsd.org/pub/NetBSD/packages/current-packages/SunOS-5.9/sparc/current-20040131"
+        else if ( $uname == IRIX ) setenv PKG_PATH "ftp://ftp.netbsd.org/pub/NetBSD/packages/current-packages/IRIX-6.5/64/pkgsrc-2006Q3"
+    endif
+
+
+
+    ###################
+    # Global Settings #
+    ###################
+
+    # tcsh settings
+    set correct=none # don't correct me... I know I'm right!
+    set autolist # not only can tcsh list completions, it can do it in color!
+    set color    # ...
+    set colorcat # ...
+    set noding # disable annoying DING!
+    unset ampm # set 24-hr time
+    set listjobs=long # list jobs long
+    set listlinks # ls-F builtin will list the filetype to which a symlink points
+    set matchbeep=never # turn off beeping for ambiguous completion (so annoying)
+    set savehist # save history between sessions
+    set watch=(any any) # print logins and logouts
+    set autologout=0 # autologout drives me crazy
+    set notify # tell me emediately when jobs complete; don't wait for prompt
+    #set noclobber # > only into new files; >> only into existing files
+    set history = 100
+    set savehist = 100
+
+    # YES! correct backslash escape sequences: 
+    # backslashes always quote the following characters: \'"
+    # not default b/c it creates errors with some csh scripts. 
+    set backslash_quote
+
+    # will set my pager to be the best available
+    where more >/dev/null && setenv PAGER more
+    where less >/dev/null && setenv PAGER less
+    #where most >/dev/null && setenv PAGER most
+
+    # set my editor to be correct
+    # (the -nw tells it not to open up a new window)
+    set myeditor = "emacs"
+    if ( -X zile ) set myeditor = "zile" # textdrive = meanies
+    setenv EDITOR $myeditor
+    setenv VISUAL $myeditor
+    setenv FSEDIT $myeditor
+    unset myeditor
+
+    # set my edit mode to emacs
+    # why in the WORLD would someone set this to vi by default?
+    # no new freaking user wants to learn how to enter "edit mode"
+    # to edit his command history. STUPID!
+    # (Interix, at least, does this wrong)
+    bindkey -e
+    bindkey ^G kill-whole-line #behaves somewhat more like emacs
+
+    if (-X mesg) mesg y # turn on talk
+    #alias postcmd "rehash" # see new apps after install. SLOW
+
+    # Setting the default prompt
+    # Gentoo default:  
+    # set prompt='[%n@%m %c]# '
+    # Mine: looks like the following, but in color
+    # 12:14:46 micah@AndrAIa micah % 
+    #
+    # first prompt: in case this is standalone (and there is no dhd)
+    if ( -f ~/doc/remote/dhd/hbase/.ansi-colors ) source ~/doc/remote/dhd/hbase/.ansi-colors
+    set prompt='%{\033[37m\033[1m\033[37\033[1m%}%P %{\033[32m%}%n@%m %{\033[34m%}%C%#%{\033[0m%} '
+    #if ( -f ~/doc/remote/dhd/hbase/ansi_colors ) then
+    #    source ~/doc/remote/dhd/hbase/ansi_colors
+    #    set prompt="$ansi_bold"
+    #endif
+
+    # the rprompt is a string printed on the right hand side of the screen
+    # (after the command input) when the prompt is being displayed on the
+    # left. recognizes same formatting as 'prompt'. automatically appears 
+    # and reappears as necessary. appears only when it fits. 
+    #set rprompt='somethinghere?'
+
+
+
+    ###############
+    # Completions #
+    ###############
+
+    complete find \
+        'n/-name/f/' \
+        'n/-type/(c b d f p l s)/' \
+        'n/-exec/c/' \
+        'c/-/(name type user size ctime mtime atime print exec )/' \
+        'n/*/d/'
+
+    ###################
+    # Pretty pictures #
+    ###################
+    if ( -f ~/doc/remote/dhd/hbase/.pretty-picture ) source ~/doc/remote/dhd/hbase/.pretty-picture
+
+endif #complete the prompt
+
+
+alias get_dhd "svn co http://mrled.org/svn/dhd ~/doc/remote/dhd"
+alias get_mr  "git-clone git://git.kitenet.net/mr ~/opt/src/mr"
+alias init_mr "ln -sf ~/doc/remote/dhd/hbase/.mrconfig ~/.mrconfig && ~/doc/remote/dhd/hbase/local/bin/mr checkout"
+alias ikimake "umask 022 && /usr/local/bin/ikiwiki --verbose ~/doc/remote/wikiwc/data ~/Sites/Documents/wiki --url=http://AndrAIa.local/wiki && umask 077"
+
+alias vuurmuur "echo You really mean \'vuurmuur_conf\', right\?"
+
+

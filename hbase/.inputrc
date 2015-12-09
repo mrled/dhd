@@ -1,0 +1,5 @@
+M-p: history-search-backward
+M-n: history-search-forward
+set completion-ignore-case on
+set bell-style none
+set show-all-if-ambiguous on

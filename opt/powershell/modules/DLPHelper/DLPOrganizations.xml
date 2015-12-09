@@ -1,0 +1,177 @@
+<projects>
+  <!--
+  <project localname="mrled" githubname="mrled" checkout="false">
+    <repositories>
+      <repository name="Ed-Fi-Apps" />
+      <repository name="Ed-Fi-Core" />
+      <repository name="Ed-Fi-Tools" />
+      <repository name="Ed-Fi-Dashboards-Core" />
+      <repository name="Ed-Fi-ODS" />
+      <repository name="Ed-Fi-ODS-Implementation" />
+      <repository name="Ed-Fi-Common" />
+      <repository name="minipki" />
+    </repositories>
+  </project>
+-->
+  <project localname="mrled" githubname="mrled" checkout="false">
+    <repositories>
+      <repository name="Ed-Fi-Common" />
+      <repository name="Ed-Fi-Common-1" forkof="Ed-Fi-Common" aliasname="mrled-community" />
+    </repositories>
+    <repoaliases>
+      <repoalias name="Ed-Fi-Common-1" forkof="Ed-Fi-Common" aliasname="mrled-community" />
+    </repoaliases>
+  </project>
+  <project localname="mrled-community" githubname="mrled" checkout="false">
+    <repositories>
+      <repository name="Ed-Fi-Common-1" forkof="Ed-Fi-Common"/>
+    </repositories>
+  </project>
+
+  <project localname="dlp" githubname="DoubleLinePartners" checkout="true">
+    <repositories>
+      <repository name="InternalTools" />
+      <repository name="InternalTools.wiki" />
+      <repository name="RestClientUnitTests" />
+    </repositories>
+  </project>
+  <project localname="msdf" githubname="DoubleLinePartners-MSDF" checkout="true">
+    <repositories>
+      <repository name="Ed-Fi-Apps" />
+      <repository name="Ed-Fi-Core" />
+      <repository name="Ed-Fi-Common" />
+    </repositories>
+  </project>
+  <project localname="alliance" githubname="Ed-Fi-Alliance" checkout="true">
+    <repositories>
+      <repository name="Ed-Fi-Apps" />
+      <repository name="Ed-Fi-Core" />
+    </repositories>
+    <contexts>
+      <context name="rest">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Standard" />
+          <repository name="Ed-Fi-ODS" />
+          <repository name="Ed-Fi-ODS-Implementation" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="community" githubname="EdOrgCommunity" checkout="false">
+    <repositories>
+      <repository name="Ed-Fi-Common" />
+      <repository name="Ed-Fi-ODS" />
+      <repository name="Ed-Fi-ODS-Implementation" />
+      <repository name="Eduid" />
+    </repositories>
+  </project>  
+  <project localname="tdoe" githubname="TennesseeDOE" checkout="true">
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Dashboards-Core" />
+          <repository name="Ed-Fi-Apps" />
+        </repositories>
+      </context>
+      <context name="rest">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="EduId" />
+          <repository name="Ed-Fi-ODS" />
+          <repository name="Ed-Fi-ODS-Implementation" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="nedoe" githubname="NebraskaDOE" checkout="true">
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Dashboards-Core" />
+          <repository name="Ed-Fi-Plugins" />
+          <repository name="Ed-Fi-Apps" />
+          <repository name="Ed-Fi-ADM" />
+          <repository name="Ed-Fi-DataWarehouse" />
+        </repositories>
+      </context>
+      <context name="rest">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-ODS" />
+          <repository name="Ed-Fi-ODS-Implementation" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="edfiteam" githubname="DoubleLinePartners-Ed-FiTeam" checkout="true">
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Apps" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="pde" githubname="PennsylvaniaDOE" checkout="true">
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Plugins" />
+          <repository name="Ed-Fi-Apps" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="ade" githubname="ArkansasDOE" checkout="true">
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Dashboards-plugins" />
+          <repository name="DLPSelectiveETLRunner" />
+          <repository name="Ed-Fi-Apps" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="tea" githubname="TexasEA" checkout="true">
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Core" />
+          <repository name="Ed-Fi-Apps" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+  <project localname="michtrig" githubname="Michigan-TRIG" checkout="true">
+    <repositories>
+      <repository name="OperationsCockpit" />
+      <repository name="Ed-Fi-Standard" />
+      <repository name="Ed-Fi-Extractors" />
+    </repositories>
+    <contexts>
+      <context name="dash">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-Dashboards-Core" />
+          <repository name="Ed-Fi-Apps" />
+        </repositories>
+      </context>
+      <context name="rest">
+        <repositories>
+          <repository name="Ed-Fi-Common" />
+          <repository name="Ed-Fi-ODS" />
+          <repository name="Ed-Fi-ODS-Implementation" />
+        </repositories>
+      </context>
+    </contexts>
+  </project>
+</projects>

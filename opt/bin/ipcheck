@@ -1,0 +1,22 @@
+#!/bin/sh
+# Mac OS X, check IP addresses
+# (GeekTool doesn't work with csh scripts?)
+
+echo "en0: wired:       `ifconfig en0|grep netmask|cut -d\  -f2`"
+echo "en1: wireless:    `ifconfig en1|grep netmask|cut -d\  -f2`"
+echo "external IPv4:    `curl -s ipv4.icanhazip.com`"
+echo "external IPv6:    `curl -s ipv6.icanhazip.com`"
+#if [ "$1" == "e" ]; then
+#    echo "external ip:      `curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g'`"
+#fi
+
+
+
+
+# OLD junk
+#echo "en0, wired:    `ifconfig en0 | grep inet`"
+#echo "en1, wireless: `ifconfig en1 | grep inet`"
+#echo "en0: wired"; ipconfig getifaddr en0 | grep inet
+#echo "en1: wireless"; ipconfig getifaddr en1 | grep inet
+#echo "en0: wired"; ifconfig en0 | grep inet
+#echo "en1: wireless"; ifconfig en1 | grep inet

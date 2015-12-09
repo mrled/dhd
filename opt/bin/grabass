@@ -1,0 +1,87 @@
+#!/bin/bash
+
+cmdname=$(basename $0)
+
+usage() {
+cat <<EOF
+$cmdname: Grab A Screen Shot
+
+This script will grab an arbitrary number of screenshots from a movie file and write them to the current directory using a filename derived from that of the movie. 
+
+The screenshots are taken at random times and the offset from the start of the movie is encoded into the filename in seconds. In the unlikely event that $cmdname tries to grab a screenshot with an offset which would result in a file which is already present in the current directory, it will NOT overwrite the extant file and print an explanation instead. 
+
+$cmdname uses ffmpeg to grab screenshots, which means that ffmpeg must support the movie file you want to process.
+
+OPTIONS: 
+ -h    Show this message
+ -f    Filename of a movie you want 
+ -n    Number of screenshots you want; defaults to 4
+
+EOF
+}
+
+passedfilename=
+totalshots=4
+while getopts "hn:f:" OPTION; do
+    case $OPTION in 
+        h)
+            usage
+            exit 1
+            ;;
+        n)
+            totalshots=$OPTARG
+            ;;
+        f)
+            passedfilename=$OPTARG
+            ;;
+    esac
+done
+if [ ! "$passedfilename" ]; then 
+    echo "ERROR: You must pass a filename using the -f argument"
+    echo ""
+    usage
+    exit
+fi
+if [ $totalshots -lt 1 ]; then
+    echo "ERROR: You must pass a positive integer to the -n argument"
+    echo ""
+    usage
+    exit
+fi
+
+filedir=$(dirname "$passedfilename")
+filename=$(basename "$passedfilename")
+filenoext=${filename%.*}
+
+ffmpeg_cmd=`which ffmpeg`
+if [ ! -x $ffmpeg_cmd ]; then 
+    echo "You need ffmpeg installed in your path to continue"
+    exit;
+fi
+
+# duration will hold a number like 00:15:12 or 04:53:59
+duration=$($ffmpeg_cmd -i "$passedfilename" 2>&1 | grep Duration | sed 's/  Duration\: //' | sed 's/\..*//')
+
+# these lines use sed's substring support to extract the first, second, or third number from $duration
+dhours=$(echo $duration | sed 's/\(..\):\(..\):\(..\)/\1/')
+dmins=$(echo $duration  | sed 's/\(..\):\(..\):\(..\)/\2/')
+dsecs=$(echo $duration  | sed 's/\(..\):\(..\):\(..\)/\3/')
+totalsecs=$(($dsecs + $(($dmins * 60)) + $(($dhours * 60 * 60))))
+
+# note: $RANDOM returns an int between 0-32767
+# 32767 seconds is 9.mumble hours, which is probably fine for this particular application
+# however, note that if you're using this to generate screenshots for very long movies,
+# you'll only get shots from the first 9.something hours
+for (( i=1; i<$totalshots; i++ )); do
+    sstime=$RANDOM
+    let "sstime %= $totalsecs"
+    ssfilename=$filenoext.shot$(printf %05d $sstime).png
+    if [ -a $ssfilename ]; then 
+        echo "There is already a screenshot at $sstime seconds; not overwriting"
+    else
+        echo "Creating $ssfilename"
+        $ffmpeg_cmd -y -ss $sstime -i "$passedfilename" -vcodec png -vframes 1 -an -f rawvideo "$ssfilename" &> /dev/null
+    fi
+done
+
+

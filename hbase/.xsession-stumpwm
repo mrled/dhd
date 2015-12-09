@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# for Thunderbird, because this is the only way to control date formatting lol:
+# http://kb.mozillazine.org/Date_display_format
+# Perl does not like this, but falls back to LOCALE="C", which is fine I guess. 
+#export LC_TIME="en-DK.utf8"
+#do this in your thunderbird aliases instead plz
+
+# xrandr stuff must happen first. 
+# Obviously the correct thing here is host-dependent.
+#if [ `hostname` == "hornsby" ]; then
+#    xrandr --output HDMI-0 --auto --output DVI-0 --auto --right-of HDMI-0
+#fi
+
+setxkbmap -option ctrl:nocaps
+xrdb -merge ~/.Xresources
+if type -P xscreensaver >/dev/null; then 
+    xscreensaver &
+fi
+if type -P dropbox >/dev/null; then # assumes Ubuntu's dropbox script
+    dropbox start &
+fi
+
+# hsetroot is its own package; lets you scale to full screen without stretching, but treats multi heads like one big screen.
+# feh is also a separate package; will center the same image to any number of heads
+# link any image to ~/.xbackground and this will put it on the background. 
+if `type -P feh > /dev/null`; then
+    if [ -r ~/.xbackground ]; then
+        feh --bg-max ~/.xbackground
+    fi
+elif `type -P hsetroot >/dev/null`; then
+    if [ -r ~/.xbackground ]; then
+        hsetroot -full ~/.xbackground
+    fi
+fi
+
+# Note that 'camelot' is my default screen session from .bashrc
+#xterm -T xterm-camelot -e screen -D -R -S camelot &
+#xterm -T xterm-selene -e ssh -t "h.younix.us" "screen -D -R -S camelot" &
+
+#if type -P emacs >/dev/null; then 
+#    emacs &
+#fi
+#if type -P conkeror >/dev/null; then 
+#    conkeror &
+#fi
+
+exec stumpwm 

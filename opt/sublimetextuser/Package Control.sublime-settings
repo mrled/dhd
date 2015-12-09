@@ -1,0 +1,19 @@
+{
+	"bootstrapped": true,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"FuzzyFileNav",
+		"Mako",
+		"MarkdownEditing",
+		"Package Control",
+		"PlainTasks",
+		"PowerShell",
+		"sublemacspro",
+		"Theme - Soda",
+		"View In Browser",
+		"WordCount"
+	]
+}

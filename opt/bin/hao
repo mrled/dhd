@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+"""
+Hypemachine Automagic Obtainer
+Grab tracks I fave from HypeM using youtube-dl.
+"""
+
+import re
+import urllib.request
+import argparse
+import sys
+import xml.etree.ElementTree as ET
+
+hypem_faves = "http://hypem.com/feed/loved/mrled/1/feed.xml"
+
+def get_fave_xml(local=False):
+    if local:
+        xml_h = open('./feed.xml', encoding="utf8")
+    else:
+        xml_h = urllib.request.urlopen(hypem_faves, encoding="utf8")
+    fxml = xml_h.read()
+    xml_h.close()
+    return fxml
+
+def parse_fave_xml(xmlstring):
+    xmltree = ET.fromstring(xmlstring)
+    print("trying to find all description nodes...")
+    in_post_re = re.compile('.*in post \<a href=\"(.*?)\"\>')
+    for item in xmltree[0].findall("item"):
+        #xmltree is root; xmltree[0] is everything in <rss>...</rss>
+
+        title = item.find('title').text # could probably parse this into artist and song title separately if necessary
+        desc = item.find('description').text
+        orig_post_match = in_post_re.search(desc)
+        orig_post_url = orig_post_match.group(1)
+
+        # If you're having trouble printing a string b/c of "'charmap' codec can't encode character"
+        # errors, I think this is a Windows problem. Force it to downconvert to ascii with:
+        # print(PROBLEM_STRING.encode('ascii', errors='ignore'))
+        print(title, " --- ", orig_post_url)
+        
+
+def main(*args):
+    argparser = argparse.ArgumentParser(description='Grab faved tracks from HypeMachine.')
+    #subparsers = argparser.add_subparsers()
+    argparser.add_argument('--local', '-l', action='store_true',
+                           help="Don't fetch faves; use a local .xml file called feed.xml in cwd instead.")
+    parsed = argparser.parse_args()
+
+    fxml = get_fave_xml(parsed.local)
+    parse_fave_xml(fxml)
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv))
+
+
+print(fxml)
