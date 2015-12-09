@@ -738,6 +738,8 @@ export PYTHONPATH=${HOME}/.dhd/opt/python
 # Global Settings #
 ###################
 
+[ -f $HOME/.bashrc.secrets ] && . $HOME/.bashrc.secrets
+
 ## Completion
 complete -cf sudo
 # via <http://hints.macworld.com/article.php?story=20080317085050719>
