@@ -3,27 +3,36 @@ MAINTAINER Micah R Ledbetter <micah@micahrl.com
 
 ENV tshockurl https://github.com/NyxStudios/TShock/releases/download/v4.3.11/tshock_release.zip
 
-ADD ./bin /usr/local/bin
-
-{marionettist_common}
+$marionettist_common
 
 RUN \
     apt-get -y update && \
     apt-get -y install \
         wget \
         unzip \
-        mono-complete
+        mono-runtime \
+        libmysql6.4-cil \
+        libmono-corlib2.0-cil \
+        libmono-system-drawing4.0-cil \
+        libmono-system-runtime4.0-cil \
+        libmono-system-runtime-serialization4.0-cil \
+        libmono-system-numerics4.0-cil \
+        libmono-system-xml-linq4.0-cil
 RUN \
-    mkdir /terraria && \
-    chown marionettist-1:marionettist-1 /terraria
-#VOLUME /terraria
+    usermod --home /terraria marionettist1 && \
+    mkdir -p /terraria /opt/tshock && \
+    chown marionettist1:marionettist1 /terraria /opt/tshock
 
-USER marionettist-1
+VOLUME /terraria
+
+USER marionettist1
 
 RUN \
-    mkdir /terraria/tshock && \
-    wget "${tshockurl}" -O /terraria/TShock.zip && \
-    unzip /terraria/TShock.zip -d /terraria/tshock
-ENTRYPOINT ["mono","/terraria/tshock/TerrariaServer.exe","-configpath","/terraria/tshock/config.json"]
+    wget "${tshockurl}" -O /opt/tshock/tshock_release.zip && \
+    unzip /opt/tshock/tshock_release.zip -d /opt/tshock 
+
+WORKDIR /terraria
+CMD ["mono","/opt/tshock/TerrariaServer.exe","-config","/terraria/config.json","-logpath","/terraria/logs","-autocreate","1"]
+# mono /opt/tshock/TerrariaServer.exe -config /terraria/config.json -logpath /terraria/tshock.log -autocreate 1
 
 EXPOSE 7777/tcp

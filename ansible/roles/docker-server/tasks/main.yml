@@ -1,25 +1,4 @@
 ---
-# In Debian Jessie, Docker is only in backports, but that version is 1.6x
-# I need 1.8+, so I have to enable APT Pinning
-
-# - name: Docker | Set pinning preferences
-#   copy: > 
-#     src=apt-pinning-preference
-#     dest=/etc/apt/preferences.d/90-apt-pinning-preference
-#     mode=0644
-#     owner=root
-#     group=root
-# - name: Docker | Enabale testing repository
-#   apt_repository: repo='deb http://http.debian.net/debian stretch main' state=present update_cache=yes
-
-#- name: Docker | Enable backports
-#  apt_repository: repo='deb http://http.debian.net/debian jessie-backports main' state=present update_cache=yes
-#- name: Docker | Install docker
-#  apt: pkg=docker.io default_release=jessie-backports 
-#  notify: 
-#  - start-docker
-
-
 - name: Docker | Install APT HTTPS transport
   apt: pkg=apt-transport-https
 - name: Docker | Install Docker APT key
@@ -31,15 +10,10 @@
     repo='deb https://apt.dockerproject.org/repo debian-jessie main'
     state=present
     update_cache=yes
-
-
-
 - name: Docker | Install docker
-  #apt: pkg=docker.io 
   apt: pkg=docker-engine
   notify: 
   - start-docker
-
 - name: Docker | Install pip
   easy_install: name=pip 
 - name: Docker | Install docker-py
