@@ -19,6 +19,7 @@ RUN \
         python \
         ansible
 $insert_files
+RUN chmod 644 /etc/ansible/hosts
 RUN ansible-playbook /marionettist/marionettist-docker-container.yml --connection=local
 
 ### END Marionettist Docker configuration
