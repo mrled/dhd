@@ -874,12 +874,13 @@ set-alias reimport reimport-module
 
 # todo : could mimic set-variable options as closely aspossible
 function Set-WinEnvironmentVariable {
-    param(
+    [CmdletBinding()] param(
         [parameter(mandatory=$true)] [string] $Name,
         [string] $Value = "",
         [validateset("Machine","User","Process")] [string[]] $TargetLocation = "Process"
     )
     foreach ($target in $TargetLocation) {
+        Write-Verbose "Setting '$Name' = '$Value' in '$target' scope"
         [Environment]::SetEnvironmentVariable($Name, $Value, $target)
     }
 }
@@ -1728,4 +1729,32 @@ function Get-AvailableExceptionsList {
         }
     }
     return $RelevantExceptions
+}
+
+<#
+.description
+'docker-machine env <name>' returns some Bash export functions. Translate these to Powershell.
+#>
+function Parse-DockerMachineEnv {
+    [CmdletBinding()] param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)] [String] $env
+    )
+    process {
+        if ($env -match "^\s*#") {} #comment
+        elseif ($env -match "^\s*export (?<name>[a-zA-Z0-9_]+)\=`"(?<value>.*)`"") {
+            Set-WinEnvironmentVariable -name $matches.name -value $matches.value #-verbose:$verbose
+        }
+        else {
+            throw "I don't know how to parse this input"
+        }
+    }
+}
+
+function Apply-DockerMachineEnv {
+    [CmdletBinding()] param(
+        [Parameter(Mandatory=$true)] [String] $machineName
+    )
+    $env = docker-machine env "$machineName"
+    $env | Parse-DockerMachineEnv
+    $env
 }
