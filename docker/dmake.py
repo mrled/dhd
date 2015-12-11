@@ -161,7 +161,7 @@ def dmake_main(*args):
         help='Build the docker image')
     argparser.add_argument(
         '--push', action='store_true',
-        help='Push the docker image to the registry. (Implies --build.)')
+        help='Push the docker image to the registry. (Does NOT --build.)')
     # argparser.add_argument(
     #     '--no-latest','-l', action='store_true',
     #     help='Do not push the :latest tag, just the named tag')
@@ -173,7 +173,7 @@ def dmake_main(*args):
         raise Exception("No such docker name '{}'".format(parsedargs.name))
     build_dir = os.path.abspath("{}/build/{}".format(script_root, parsedargs.name))
     populate_build_dir(parsedargs.name, build_dir)
-    if parsedargs.build or parsedargs.push: 
+    if parsedargs.build:
         docker_build(parsedargs.name, parsedargs.tag, build_dir)
         # if not parsedargs.no_latest:
         #     docker_build(parsedargs.name, 'latest', build_dir)
