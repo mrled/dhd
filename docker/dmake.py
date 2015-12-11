@@ -42,19 +42,28 @@ class AsciiEscapes:
     Bold = '\033[1m'
     Underline = '\033[4m'
 
-# Just fucking make a directory
-# If you have to make a whole tree, just fucking do it
-# If the leaf directory already exists, I don't fucking care
 def just_fucking_makedirs(dirname):
+    """
+    Just fucking make a directory
+    If you have to make a whole tree, just fucking do it 
+    If the leaf directory already exisrts, I don't fucking care
+    """
     try: 
         os.makedirs(dirname)
     except FileExistsError:
         pass
 
-# Just fucking copy it
-# If it's a directory, just fucking use shutil.copytree()
-# If it's a file, just fucking use shutil.copy()
 def just_fucking_copy(src, dst):
+    """
+    Just fucking copy this thing
+    If it's a directory
+    - just fucking use shutil.copytree()
+    - if the dst path exists, just fucking copy src to be a subdir of dst
+    - if the dst path doesn't exist, just fucking copy src to dst
+    If it's a file
+    - just fucking use shutil.copy()
+    - if the dst path doesn't exist, just fucking create it
+    """
     just_fucking_makedirs(os.path.dirname(dst))
     if os.path.isdir(src):
         shutil.copytree(src, dst) # NOTE: this copies data at symlinks into non-symlink files in the dst
@@ -100,20 +109,20 @@ def populate_build_dir(imagename, build_dir):
             AsciiEscapes.Green, build_dir, AsciiEscapes.Default))
     if os.path.exists(build_dir):
         shutil.rmtree(build_dir)
-    base_df_path = os.path.abspath("{}/{}/Dockerfile.template".format(script_root, imagename))
-    just_fucking_makedirs(build_dir)
-    shutil.copy(base_df_path, build_dir)
-    insert_common_dockerfile(build_dir)
+    base_path = os.path.abspath("{}/{}".format(script_root, imagename))
+    shutil.copytree(base_path, build_dir)
     copy_common_files(build_dir)
+    insert_common_dockerfile(build_dir)
 
 def docker_build(imagename, imagetag, build_dir): 
     print('{}Building docker image...{}'.format(
             AsciiEscapes.Green, AsciiEscapes.Default))
     tagged_image_name = '{user}/{image}:{tag}'.format(
         user=docker_hub_user, image=imagename, tag=imagetag)
-    subprocess.check_call([
-            'docker','build','--disable-content-trust=false','-t',
-            tagged_image_name,build_dir])
+    callArgs = [
+        'docker','build','--disable-content-trust=false','-t',
+        tagged_image_name,'--disable-content-trust=false',build_dir]
+    subprocess.check_call(callArgs)
 
 def docker_push(imagename, imagetag, build_dir): 
     print('{}Pushing docker image...{}'.format(
@@ -153,9 +162,9 @@ def dmake_main(*args):
     argparser.add_argument(
         '--push', action='store_true',
         help='Push the docker image to the registry. (Implies --build.)')
-    argparser.add_argument(
-        '--no-latest','-l', action='store_true',
-        help='Do not build/push the :latest tag, just the named tag')
+    # argparser.add_argument(
+    #     '--no-latest','-l', action='store_true',
+    #     help='Do not push the :latest tag, just the named tag')
     
     parsedargs = argparser.parse_args()
 
@@ -166,12 +175,12 @@ def dmake_main(*args):
     populate_build_dir(parsedargs.name, build_dir)
     if parsedargs.build or parsedargs.push: 
         docker_build(parsedargs.name, parsedargs.tag, build_dir)
-        if not parsedargs.no_latest:
-            docker_build(parsedargs.name, 'latest', build_dir)
+        # if not parsedargs.no_latest:
+        #     docker_build(parsedargs.name, 'latest', build_dir)
     if parsedargs.push:
         docker_push(parsedargs.name, parsedargs.tag, build_dir)
-        if not parsedargs.no_latest:
-            docker_push(parsedargs.name, 'latest', build_dir)
+        # if not parsedargs.no_latest:
+        #     docker_push(parsedargs.name, 'latest', build_dir)
     show_docker_commands(parsedargs.name, parsedargs.tag, build_dir)
 
 if __name__ == '__main__':
