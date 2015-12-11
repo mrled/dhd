@@ -22,20 +22,21 @@ Invoke-ScriptblockAndCatch -scriptBlock {
     
     # Install apps
     $chocolateyPackages = @(
-        "git.install"
-        "terminals"
-        "Firefox"
-        "thunderbird"
         "ConEmu"
         "dropbox"
-        "Everything"
-        "sysinternals"
-        "putty.install"
-        "sublimetext3"
         "Emacs"
-        "vim"
+        "Everything"
+        "Firefox"
+        "git.install"
         "PsGet"
+        "putty.install"
+        "python3"
+        "sublimetext3"
+        "sysinternals"
+        "terminals"
+        "thunderbird"
         "ultravnc"
+        "vim"
     )
     $chocolateyPackages |% { Invoke-ExpressionEx "choco install --yes '$_'" }
     
