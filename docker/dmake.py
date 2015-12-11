@@ -76,6 +76,14 @@ def copy_common_files(build_dir):
         dst = os.path.abspath("{}/{}".format(build_dir, marionettist_common_files[key]))
         just_fucking_copy(src, dst)
 
+def run_docker(docker_args, docker_env={}):
+    docker_env['DOCKER_CONTENT_TRUST'] = '1'
+    docker_args.insert(0, 'docker')
+    print("Docker environment: ")
+    for key in docker_env.keys(): print("    {}={}".format(key, docker_env[key]))
+    print("Docker call: {}".format(docker_args))
+    subprocess.check_call(docker_args, env=docker_env)
+
 def insert_common_dockerfile(build_dir): 
     print('{}Creating Dockerfile...{}'.format(AsciiEscapes.Green, AsciiEscapes.Default))
     in_df_path  = os.path.abspath("{}/Dockerfile.template".format(build_dir))
@@ -119,19 +127,19 @@ def docker_build(imagename, imagetag, build_dir):
             AsciiEscapes.Green, AsciiEscapes.Default))
     tagged_image_name = '{user}/{image}:{tag}'.format(
         user=docker_hub_user, image=imagename, tag=imagetag)
-    callArgs = [
-        'docker','build','--disable-content-trust=false','-t',
-        tagged_image_name,'--disable-content-trust=false',build_dir]
-    subprocess.check_call(callArgs)
+    run_docker(['build', '--disable-content-trust=false', '-t', tagged_image_name, build_dir])
 
-def docker_push(imagename, imagetag, build_dir): 
+def docker_push(imagename, imagetag, build_dir, root_pass, repo_pass): 
     print('{}Pushing docker image...{}'.format(
             AsciiEscapes.Green, AsciiEscapes.Default))
     tagged_image_name = '{user}/{image}:{tag}'.format(
         user=docker_hub_user, image=imagename, tag=imagetag)
-    subprocess.check_call([
-            'docker','push','--disable-content-trust=false',
-            tagged_image_name])
+
+    env = {
+        'DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE': root_pass,
+        'DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE': repo_pass}
+
+    run_docker(['push', '--disable-content-trust=false', tagged_image_name], env)
 
 def show_docker_commands(imagename, imagetag, build_dir):
 
@@ -162,6 +170,12 @@ def dmake_main(*args):
     argparser.add_argument(
         '--push', action='store_true',
         help='Push the docker image to the registry. (Does NOT --build.)')
+    argparser.add_argument(
+        '--root-pass', action='store',
+        help='The password for the root private key')
+    argparser.add_argument(
+        '--repo-pass', action='store',
+        help='The password for the repo private key')
     # argparser.add_argument(
     #     '--no-latest','-l', action='store_true',
     #     help='Do not push the :latest tag, just the named tag')
@@ -178,7 +192,7 @@ def dmake_main(*args):
         # if not parsedargs.no_latest:
         #     docker_build(parsedargs.name, 'latest', build_dir)
     if parsedargs.push:
-        docker_push(parsedargs.name, parsedargs.tag, build_dir)
+        docker_push(parsedargs.name, parsedargs.tag, build_dir, parsedargs.root_pass, parsedargs.repo_pass)
         # if not parsedargs.no_latest:
         #     docker_push(parsedargs.name, 'latest', build_dir)
     show_docker_commands(parsedargs.name, parsedargs.tag, build_dir)
