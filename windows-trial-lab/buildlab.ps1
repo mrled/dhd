@@ -7,8 +7,6 @@ The name of one of the subdirs like "windows_81_x86"
 Which build actions do you want to perform? 
 .parameter tag
 A tag for the temporary directory, the output directory, and the resulting Vagrant box
-.parameter vagrantHome
-If passed, before calling vagrant, it will resolve this path, then set the $env:VAGRANT_HOME variable to it. However, if there is alread an $env:VAGRANT_HOME variable present, it will NOT overwrite it.
 .notes
 PREREQUISITES: 
 - packer
@@ -26,8 +24,8 @@ PREREQUISITES:
     [parameter(mandatory=$true,ParameterSetName="VagrantUp")]    [switch] $VagrantUp,
     [parameter(mandatory=$true,ParameterSetName="ShowConfig")]   [switch] $ShowConfig,
 
-    [string] $baseOutDir,
-    [string] $vagrantHome,
+    #[string] $baseOutDir = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\iso\wintriallabl"),
+    [string] $baseOutDir = "E:\Micah\iso\wintriallab",
     [string] $tempDirOverride,
     [string] $tag,
     [switch] $SkipSyntaxcheck,
@@ -36,14 +34,9 @@ PREREQUISITES:
 )
 
 $errorActionPreference = "Stop"
-Get-Module |? -Property Name -match "wintriallab-postinstall" | Remove-Module 
-import-module $PSScriptRoot\scripts\wintriallab-postinstall.psm1
-
-if (-not $baseOutDir)  { $baseOutDir  = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\iso\wintriallabl") }
-if (-not $vagrantHome) { $vagrantHome = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\.vagrant") }
+if (-not (Get-Module |? -Property Name -match "wintriallab-postinstall")) { import-module $PSScriptRoot\scripts\wintriallab-postinstall.psm1 }
 
 $dateStamp = get-date -UFormat "%Y-%m-%d-%H-%M-%S"
-$packerOutDir = "$baseOutDir\PackerOut"
 $packerCacheDir = "$baseOutDir\packer_cache"
 $packerLogFile = "$baseOutDir\packer.log"
 $wsusOfflineDir = "$baseOutDir\wsusoffline"
@@ -57,16 +50,18 @@ $newMediaIsoPath = "${labTempDir}\windows.iso"
 
 $fullConfigName = "wintriallab-${baseConfigName}" 
 
+$packerOutDir = "$baseOutDir\PackerOut\${fullConfigName}"
+$vagrantUpDir = "$baseOutDir\VagrantUp\${fullConfigName}"
+
 set-alias packer (gcm packer | select -expand path)
 set-alias vagrant (gcm vagrant | select -expand path)
 
-
-$outDir = "${packerOutDir}\${fullConfigName}"
-if ($tag) { $outDir += "-${tag}"}
+if ($tag) { $packerOutDir += "-${tag}"}
 
 $packerConfigRoot = "${PSScriptRoot}\packer\${baseConfigName}"
+$vagrantConfigRoot = "${PSScriptRoot}\vagrant\${baseConfigName}"
 $packerFile = "${packerConfigRoot}\${baseConfigName}.packerfile.json"
-$packedBoxPath = "${outDir}\${baseConfigName}_virtualbox.box"
+$packedBoxPath = "${packerOutDir}\${baseConfigName}_virtualbox.box"
 $vagrantTemplate = "${packerConfigRoot}\vagrantfile-${baseConfigName}.template"
 
 function Build-PackerFile {
@@ -126,30 +121,40 @@ function Add-BoxToVagrant {
         [switch] $whatIf
     )
     if (-not $whatIf) {
+        $packedBoxDir = Split-Path $packedBoxPath
+        $packedBoxName = Split-Path -Leaf $packedBoxPath
+
+        # Had problems until I changed $pwd to be $packedBoxDir and didn't pass vagrant a full path. lol
+        Push-Location $packedBoxDir
         $forceOption = ""
-        if ($force) { $forceOption = "--force" }
-        vagrant box add "$forceOption" --name $vagrantBoxName "$packedBoxPath"    
-        if ($LASTEXITCODE -ne 0) { throw "External command failed with code '$LASTEXITCODE'" }
+        if ($force) { $forceOption = "--force"}
+        $vadCmd = "vagrant box add $forceOption --name $vagrantBoxName $packedBoxName"
+        write-host -foreground Green $vadCmd
+        Invoke-Expression $vadCmd
+        Pop-Location
+
+        if ($LASTEXITCODE -ne 0) { throw "External command failed with code '$LASTEXITCODE'" } 
     }
 }
 
 function Run-VagrantBox { 
     [cmdletbinding()] param(
     	[parameter(mandatory=$true)] $vagrantBoxName,
-        [parameter(mandatory=$true)] $workingDirectory, # with a Vagrantfile in it
-        [string] $vagrantHome,
+        [parameter(mandatory=$true)] $sourceDirectory,  # a subdirectory of the vagrant/ dir
+        [parameter(mandatory=$true)] $upDirectory,      # somewhere to copy it to so that vagrant doesn't plop a VM down into the middle of this repo
+        [switch] $force,
         [switch] $whatIf
     )
     if (-not $whatIf) {
-    	if ($vagrantHome) { $env:VAGRANT_HOME = $vagrantHome }
-        try {
-            pushd $workingDirectory
-            vagrant up
-            if ($LASTEXITCODE -ne 0) { throw "External command failed with code '$LASTEXITCODE'" }
-        }
-        finally {
-            popd 
-        }
+        $env:VAGRANT_CWD=$sourceDirectory
+        write-verbose "Set VAGRANT_CWD environment variable to ${ENV:VAGRANT_CWD}"
+        if (test-path $upDirectory) { rm -recurse -force $upDirectory }
+        mkdir -force $upDirectory | out-null
+        pushd $upDirectory
+        write-verbose "Using '$upDirectory' as location for VM"
+        vagrant up
+        popd 
+        if ($LASTEXITCODE -ne 0) { throw "External command failed with code '$LASTEXITCODE'" }
     }
 }
 
@@ -164,6 +169,7 @@ function Show-LabVariable {
         Value = $varValue
         PathExists = if ($testPath) {test-path $varValue} else {"-"}
     }
+    write-host $LabVariable
     return $LabVariable
 }
 
@@ -193,7 +199,7 @@ if ($baseConfigName) {
     Show-LabVariable packerFile -testPath
     Show-LabVariable vagrantTemplate -testPath
     ##write-output "`nPaths to files that SHOULD NOT exist (unless you passed -force): "
-    Show-LabVariable outDir -testPath
+    Show-LabVariable packerOutDir -testPath
     Show-LabVariable packedBoxPath -testPath
     write-output ""
 }
@@ -205,15 +211,15 @@ if ($BuildPacker) {
         vagrantBoxName = $fullConfigName
         tag = $tag
         packerCacheDir = $packerCacheDir
-        outDir = $outDir
+        outDir = $packerOutDir
         force = $force
         whatIf = $whatIf
     }
     Build-PackerFile @bpfParam
 }
 if ($AddToVagrant) {
-    Add-BoxToVagrant -vagrantBoxName $fullConfigName -packedBoxPath $packedBoxPath -vagrantHome $vagrantHome -force:$force -whatif:$whatif
+    Add-BoxToVagrant -vagrantBoxName $fullConfigName -packedBoxPath $packedBoxPath -force:$force -whatif:$whatif
 }
 if ($VagrantUp) {
-    Run-VagrantBox -vagrantBoxName $fullConfigName -workingDirectory $outDir -whatif:$whatif
+    Run-VagrantBox -vagrantBoxName $fullConfigName -sourceDirectory $vagrantConfigRoot -upDirectory $vagrantUpDir -whatif:$whatif
 }
