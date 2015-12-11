@@ -1,10 +1,19 @@
-#!/bin/bash
-#set -eu
+#!/bin/sh
+
+set -e
+set -u
+
+OVPNDIR=$1
+OVPNUSER=$2
+OVPNSUBNET=$3
 
 OVPNDIR="/etc/openvpn"
+LOGFILE="${OVPNDIR}/ovpn-root-setup.log"
+touch ${LOGFILE}
+exec 3>&1 4>&2 >${LOGFILE} 2>&1
 
-touch /etc/openvpn/docker-run.log
-exec 3>&1 4>&2 >/etc/openvpn/docker-run.log 2>&1
+id ${OVPNUSER} >/dev/null 2>&1  || { echo "OpenVPN service user '${OVPNUSER}' does not exist"; exit 1; };
+[ -z "${OVPNSUBNET}" ]          && { echo "There is no subnet specified"; exit 1; }
 
 log() {
     date=`date --rfc-3339=seconds`
@@ -29,18 +38,11 @@ else
 fi
 
 log "Using OpenVPN to make the tun1194 device"
-openvpn --mktun --dev tun1194 --dev-type tun --user openvpn --group openvpn
-
-cd /etc/openvpn
-[ -f server.ovpn ] || {
-    echo "The \"$file\" file is missing from your \"/etc/openvpn\" volume"
-    exit 1
-}
-#chown -R openvpn:openvpn .
+openvpn --mktun --dev tun1194 --dev-type tun --user ${OVPNUSER} --group ${OVPNUSER}
 
 #sysctl -w net.ipv4.ip_forward=1
 log "Using OpenVPN to make the tun1194 device"
-iptables -t nat -A POSTROUTING -s {{ openvpn_private_subnet }}/24 -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s ${OVPNSUBNET}/24 -o eth0 -j MASQUERADE
 
 log "Creating the OpenVPN server log"
 touch openvpn-server.log
@@ -48,8 +50,3 @@ log "Starting OpenVPN..."
 
 # Undo the output redirection:
 exec 1>&3 2>&4
-
-openvpn server.ovpn | tee --append openvpn-server.log 
-#while true ; do openvpn server.ovpn ; done >> openvpn-server.log &
-#su -c "openvpn server.ovpn" - openvpn | tee --append openvpn-server.log 
-

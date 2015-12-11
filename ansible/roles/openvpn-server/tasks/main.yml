@@ -1,5 +1,7 @@
 ---
 
+# NOTE: Requires Ansible 2.0 for 'cap_add'
+
 # TODO: better way to trigger the Docker build & upload? Right now if the upload fails, it cannot detect that the next time
 # TODO: seems like the openvpn server process isn't noticing when its config changes. Fixme
 

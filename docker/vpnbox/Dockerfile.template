@@ -1,0 +1,25 @@
+# Originally from: https://blog.docker.com/2013/09/docker-joyent-openvpn-bliss/
+# NOTE: Requires '-privileged' and '--cap +NET_ADMIN'
+FROM debian:stable
+
+$marionettist_common
+
+ADD ./bin /usr/local/sbin
+
+VOLUME /etc/openvpn
+RUN \
+    usermod --home /etc/openvpn marionettist1 && \
+    chown -R marionettist1:marionettist1 /etc/openvpn
+
+RUN \
+    apt-get update && \
+    apt-get install -y openvpn iptables socat curl sudo
+RUN \
+    /bin/echo 'marionettist1 ALL=(ALL) NOPASSWD: /sbin/ip' > /etc/sudoers.d/openvpn && \
+    /bin/echo 'marionettist1 ALL=(ALL) NOPASSWD: /usr/local/sbin/ovpn-root-setup.sh' >> /etc/sudoers.d/openvpn
+
+EXPOSE 1194/udp
+EXPOSE 1194/tcp
+
+USER marionettist1
+CMD /usr/local/sbin/run-openvpn.sh
