@@ -5,9 +5,16 @@ require "date"
 
 Vagrant.require_version ">= 1.6.2"
 
+# Resolve paths before passing them to config.vm.provision
+# I do this because, when run from my buildlab.ps1 script, I set ENV:VAGRANT_CWD to this directory, 
+# but pushd away into a working directory on a bigger disk for actually keeping the VM
+thisVagrantfileDir = File.dirname(__FILE__)
+commonScriptsDir = "#{thisVagrantfileDir}/../../scripts"
+
 Vagrant.configure("2") do |config|
     config.vm.define "FreyjaA " + DateTime.now.strftime("%Y-%m-%d-%H-%M-%S")
-    config.vm.box = "windows_10_x86_virtualbox.box"
+    #config.vm.box = "wintriallab-windows_10_x86"
+    config.vm.box = "wintriallab-windows_81_x86"
     config.vm.communicator = "winrm"
 
     # Admin user name and password
@@ -17,7 +24,8 @@ Vagrant.configure("2") do |config|
     config.vm.guest = :windows
     config.windows.halt_timeout = 15
 
-    config.vm.network :forwarded_port, guest: 3389, host: 3389, id: "rdp", auto_correct: true
+    #config.vm.network :forwarded_port, guest: 3389, host: 33891, id: "rdp", auto_correct: true
+    config.vm.network :bridged
 
     config.vm.provider :virtualbox do |v, override|
         #v.gui = true
@@ -30,7 +38,5 @@ Vagrant.configure("2") do |config|
         v.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
     end
 
-    config.vm.provision "file", source: "../../vagrant-postinstall.psm1", destination: "marionettist/vagrant-postinstall.psm1"
-    config.vm.provision "file", source: "../../wintriallab-postinstall.psm1", destination: "marionettist/wintriallab-postinstall.psm1"
-
+    config.vm.provision "file", source: "#{commonScriptsDir}/wintriallab-postinstall.psm1", destination: "marionettist/wintriallab-postinstall.psm1"
 end
