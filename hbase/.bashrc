@@ -558,6 +558,16 @@ extractaudio() {
     echo "The files are written as .m4a files but we didn't check first!"
     echo "(You can check yourself with 'ffmpeg -i "vidfile" 2>&1|grep Audio'"
 }
+flac2mp3() {
+    if [ ! `type -P flac` ]; then echo "flac binary not in path!"; return 1; fi
+    if [ ! `type -P lame` ]; then echo "lame binary not in path!"; return 1; fi
+    for flacfile in *.flac; do
+        flac -d "$flacfile"
+    done
+    for wavfile in *.wav; do
+        lame --preset extreme "$wavfile"
+    done
+}
 
 manualman() {
 # this is basically the function that man uses to view its manpages
