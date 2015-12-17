@@ -77,11 +77,26 @@ def copy_common_files(build_dir):
         just_fucking_copy(src, dst)
 
 def run_docker(docker_args, docker_env={}):
+
     docker_env['DOCKER_CONTENT_TRUST'] = '1'
-    docker_args.insert(0, 'docker')
+    possible_env_vars = [
+        'DOCKER_TLS_VERIFY',
+        'DOCKER_HOST',
+        'DOCKER_CERT_PATH',
+        'DOCKER_MACHINE_NAME']
+    for var_name in possible_env_vars:
+        docker_env[var_name] = os.environ[var_name]
+    # Cannot pass an item to subprocess.check_call's 'env=' argument if it is None; set those to empty string instead
+    for var_name in docker_env.keys():
+        if not docker_env[var_name]: 
+            docker_env[var_name] = ""
     print("Docker environment: ")
     for key in docker_env.keys(): print("    {}={}".format(key, docker_env[key]))
+
+    #docker_args.insert(0, 'docker')
+    docker_args.insert(0, '/opt/homebrew/bin/docker')
     print("Docker call: {}".format(docker_args))
+
     subprocess.check_call(docker_args, env=docker_env)
 
 def insert_common_dockerfile(build_dir): 
@@ -139,6 +154,7 @@ def docker_push(imagename, imagetag, build_dir, root_pass, repo_pass):
         'DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE': root_pass,
         'DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE': repo_pass}
 
+    print("This is fucking broken right now, you need to run this manually")
     run_docker(['push', '--disable-content-trust=false', tagged_image_name], env)
 
 def show_docker_commands(imagename, imagetag, build_dir):

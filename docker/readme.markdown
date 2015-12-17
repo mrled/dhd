@@ -1,4 +1,4 @@
-# Marionettist Docker
+# Marionettist Docker
 
 NOTE: Docker Content Trust requires version 1.8.0 or higher - depending on your system, you may need to upgrade
 
@@ -47,4 +47,4 @@ NOTES:
 
 - If you can't figure out why it's not trying to use Trusted Content, you can force it with `docker <COMMAND> --disable-content-trust=false` (lol yes, that seems backwards to me too)
 - To tag something twice, you can *build* it one time, then `docker tag` the image that you build, and then you have to `docker push` both tags separately (you have to call `docker push` twice)
-    
+- dmake can handle pushing after the keys are already set up locally, but currently, you have to do your initial `docker push` by calling docker from your shell so it can interactively ask you for the fucking passwords. christ.    
