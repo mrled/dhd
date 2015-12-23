@@ -26,3 +26,11 @@ This means I want to use the following workflow:
     - *Use content trust* by setting the `DOCKER_CONTENT_TRUST` environment variable before doing a docker push/pull/whatever
     - This means that I sign my docker images, and I don't have to trust Docker's infrastructure
 - Use Ansible to deploy the Docker containers on the host, and obviously for any other configuration
+
+## Ansible and Docker
+
+I think it's time to say that my Docker hosts will not be configured by Ansible, at least for the time being
+
+- Ansible doesn't support Docker Content Trust at this time
+- Docker has good support for remote work with docker-machine
+- 
