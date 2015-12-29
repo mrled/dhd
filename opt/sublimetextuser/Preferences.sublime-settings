@@ -11,5 +11,6 @@
 	"tab_size": 4,
 	"theme": "Soda Dark.sublime-theme",
 	"translate_tabs_to_spaces": true,
+	"typescript_plugin_tsc_version": "1.7.3",
 	"word_wrap": true
 }
