@@ -16,17 +16,38 @@ $WindowsVersionId = @{
     w10ltsb = "w10ltsb"
     server2012r2 = "server2012r2"
 }
-
 $URLs = @{
     SevenZipDownload = @{
-        $ArchitectureId.i386 = "http://7-zip.org/a/7z920.msi"
+        $ArchitectureId.i386  = "http://7-zip.org/a/7z920.msi"
         $ArchitectureId.amd64 = "http://7-zip.org/a/7z920-x64.msi"
     }
     UltraDefragDownload = @{
-        $ArchitectureId.i386 =  "http://downloads.sourceforge.net/project/ultradefrag/stable-release/6.1.0/ultradefrag-portable-6.1.0.bin.i386.zip"
+        $ArchitectureId.i386  = "http://downloads.sourceforge.net/project/ultradefrag/stable-release/6.1.0/ultradefrag-portable-6.1.0.bin.i386.zip"
         $ArchitectureId.amd64 = "http://downloads.sourceforge.net/project/ultradefrag/stable-release/6.1.0/ultradefrag-portable-6.1.0.bin.amd64.zip"
     }
     SdeleteDownload = "http://download.sysinternals.com/files/SDelete.zip"
+    WindowsIsoDownload = @{
+        $WindowsVersionId.w81 = @{
+            $ArchitectureId.i386  = @{
+                URL  = "http://care.dlservice.microsoft.com/dl/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.17050.WINBLUE_REFRESH.140317-1640_X86FRE_ENTERPRISE_EVAL_EN-US-IR3_CENA_X86FREE_EN-US_DV9.ISO"
+                SHA1 = "4ddd0881779e89d197cb12c684adf47fd5d9e540"
+            }
+            $ArchitectureId.amd64 = @{
+                URL  = "http://download.microsoft.com/download/B/9/9/B999286E-0A47-406D-8B3D-5B5AD7373A4A/9600.16384.WINBLUE_RTM.130821-1623_X64FRE_ENTERPRISE_EVAL_EN-US-IRM_CENA_X64FREE_EN-US_DV5.ISO"
+                SHA1 = "5e4ecb86fd8619641f1d58f96e8561ec"
+            }
+        }
+        $WindowsVersionId.w10 = @{
+            $ArchitectureId.i386  = @{
+                URL  = "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X86FRE_EN-US.ISO"
+                SHA1 = "875b450d67e7176b8b3c72a80c60a0628bf1afac"
+            }
+            $ArchitectureId.amd64 = @{
+                URL  = "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X64FRE_EN-US.ISO"
+                SHA1 = "56ab095075be28a90bc0b510835280975c6bb2ce"
+            }
+        }
+    }
 }
 $script:ScriptPath = $MyInvocation.MyCommand.Path
     
@@ -93,6 +114,38 @@ function Invoke-ExpressionEx {
 }
 
 ### Publicly exported functions called directly from slipstreaming scripts
+
+<#
+.synopsis
+Create a temporary directory
+#>
+function New-TemporaryDirectory {
+    $dirPath = [System.IO.Path]::GetTempFileName() # creates a file automatically
+    rm $dirPath
+    mkdir $dirPath # mkdir returns a DirectoryInfo object; not capturing it here returns it to the caller
+}
+
+<#
+.synopsis
+Return an object containing metadata for the trial ISO for a particular version of Windows
+.notes
+TODO: this sucks but I can't think of anything better to do
+#>
+function Get-WindowsTrialISO {
+    [cmdletbinding()] param(
+        $WindowsVersion = [Environment]::OSVersion.Version.
+        $WindowsArchitecture = Get-OSArchitecture
+    )
+    if ($WindowsVersion.Major -eq 6 -and $WindowsVersion.Minor -eq 3) {
+        return $URLs.WindowsIsoDownload.w81.$WindowsArchitecture
+    }
+    elseif ($WindowsVersion.Major -eq 10 -and $WindowsVersion.Minor -eq 0) {
+        return $URLs.WindowsIsoDownload.w10.$WindowsArchitecture
+    }
+    else {
+        throw "No URL known for Windows version '$WindowsVersion' and architecture '$WindowsArchitecture'"
+    }
+}
 
 <#
 .synopsis 
