@@ -37,8 +37,9 @@ Invoke-ScriptblockAndCatch -scriptBlock {
         "thunderbird"
         "ultravnc"
         "vim"
+        "VisualStudioCommunity2015"
     )
-    $chocolateyPackages |% { Invoke-ExpressionEx "choco install --yes '$_'" }
+    $chocolateyPackages |% { Invoke-ExpressionEx "choco install --yes --force '$_'" }
     
     Invoke-Command -ComputerName localhost -Creds $newAccountCreds -EnableNetworkAccess -ScriptBlock {
         Import-Module C:\vagrant\wintriallab-postinstall.psm1
