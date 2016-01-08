@@ -7,7 +7,7 @@ It downloads the Windows trial ISO that corresponds to the machine that runs it 
 #>
 
 [cmdletbinding()] param(
-    $WorkingDirectory
+    $VagrantSharePath = "C:\Vagrant"
 )
 
 import-module $PSScriptRoot\wintriallab-postinstall.psm1
@@ -34,25 +34,30 @@ function Get-AdkPath {
     $possibleAdkPaths = @("${env:ProgramFiles(x86)}\Windows Kits\8.1","${env:ProgramFiles}\Windows Kits\8.1")
     $possibleAdkPaths |% { if (test-path $_) { $adkPath = $_ } }
     if (-not $adkPath) { throw "Could not find the Windows Automated Installation Kit" }
-    write-verbose "Found the WAIK at '$adkPath'"
+    Write-EventLogWrapper "Found the WAIK at '$adkPath'"
 
     $arch = Get-OSArchitecture
-    switch ($arch) {
-        $ArchitectureId.i386 {
-            $formatted = $pathFormatString -f $adkPath,$arch
-            if (test-path $formatted) { return $formatted }
-        }
-        $ArchitectureId.amd64 {
-            foreach ($goddammit in @("amd64","x64")) {
-                $formatted = $pathFormatString -f $adkPath,$goddammit
-                if (test-path $formatted) { return $formatted }
-            }
-        }
-        default {
-            throw "Could not determine path for format string '$pathFormatString' for host architecture of '$arch'"
+    $resolvedPath = $null
+    if ($arch -match $ArchitectureId.i386) {
+        $formatted = $pathFormatString -f $adkPath,$arch
+        if (test-path $formatted) { $resolvedPath = $formatted }
+    }
+    elseif ($arch -match $ArchitectureId.amd64) {
+        foreach ($goddammit in @("amd64","x64")) {
+            $formatted = $pathFormatString -f $adkPath,$goddammit
+            if (test-path $formatted) { $resolvedPath = $formatted }
         }
     }
-    throw "Could not resolve format string '$pathFormatString' to an existing path"
+
+    if ($resolvedPath) {
+        Write-EventLogWrapper "Resolved ADK path to '$resolvedPath'"
+        return $resolvedPath
+    }
+    else {
+        $message = "Could not resolve format string '$pathFormatString' to an existing path"
+        Write-EventLogWrapper $message
+        throw $message
+    }
 }
 
 <#
@@ -103,7 +108,7 @@ function New-WindowsInstallMedia {
 
     $etfsBoot = resolve-path "$existingInstallMediaDir\boot\etfsboot.com" | select -expand Path
     $oscdimgCall = '& "{0}" -m -n -b"{1}" "{2}" "{3}"' -f @($oscdImgPath, $etfsBoot, $installMediaTemp, $outputIsoPath)
-    write-verbose "Calling OSCDIMG: '$oscdimgCall"
+    Write-EventLogWrapper "Calling OSCDIMG: '$oscdimgCall'"
     Invoke-ExpressionAndCheck $oscdimgCall -verbose:$verbose
 
     dismount-diskimage -imagepath $sourceIsoPath
@@ -123,7 +128,8 @@ function Apply-WindowsUpdatesToTrialIso {
         [Parameter(Mandatory=$True, ParameterSetName="CorrespondingVersion")] [switch] $CorrespondingVersion,
         [Parameter(Mandatory=$True, ParameterSetName="SpecifiedVersion")] $TrialIsoInfo,
         [Parameter(Mandatory=$True, ParameterSetName="SpecifiedVersion")] $Architecture,
-        [Parameter(Mandatory=$True, ParameterSetName="SpecifiedVersion")] $WindowsUpdateCacheDir
+        [Parameter(Mandatory=$True, ParameterSetName="SpecifiedVersion")] $WindowsUpdateCacheDir,
+        $updatedIsoPath = $null
     )
 
     if ($PsCmdlet.ParameterSetName -match "$CorrespondingVersion") {
@@ -138,7 +144,9 @@ function Apply-WindowsUpdatesToTrialIso {
     $filenameVersionStamp = "$($hostWinVer.Major)-$($hostWinVer.Minor)-$Architecture"
     $dateStamp = Get-Date -Format get-date -format yyyy-MM-dd
     $pristineIsoPath = "$WorkingDirectory\Windows-$filenameVersionStamp-Pristine.iso"
-    $updatedIsoPath  = "$WorkingDirectory\Windows-$filenameVersionStamp-Updated-$dateStamp.iso"
+    if (-not $updatedIsoPath) {
+        $updatedIsoPath  = "$WorkingDirectory\Windows-$filenameVersionStamp-Updated-$dateStamp.iso"
+    }
     $installWimFilePath = "$WorkingDirectory\install.wim"
     $installWimMountPath = "$WorkingDirectory\mnt"
     $nwimTemp = "$WorkingDirectory\NewWindowsInstallMediaTemp"
@@ -156,13 +164,16 @@ function Apply-WindowsUpdatesToTrialIso {
             Add-WindowsPackage -PackagePath $WindowsUpdateCacheDir -Path $wimMountSubdir
         }
         catch {
-            write-verbose "Caught error(s) when installing packages:`n`n$_`n"
+            Write-EventLogWrapper "Caught error(s) when installing packages:`n`n$_`n"
         }
         Dismount-WindowsImage -Path $wimMountSubdir -Save
     }
 
     New-WindowsInstallMedia -SourceIsoPath $pristineIsoPath -InstallMediaTemp $nwimTemp -InstallWimPath $installWimFilePath -OutputIsoPath $updatedIsoPath
+
+    Get-Item $updatedIsoPath
 }
 
-throw "Need to install oscdimg.exe and the DISM Powershell module somehow...?"
-Apply-WindowsUpdatesToTrialIso -CorrespondingVersion
+$iso = Apply-WindowsUpdatesToTrialIso -CorrespondingVersion
+mv $iso "$VagrantSharePath\"
+Stop-Computer

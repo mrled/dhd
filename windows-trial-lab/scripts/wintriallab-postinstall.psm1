@@ -133,8 +133,8 @@ TODO: this sucks but I can't think of anything better to do
 #>
 function Get-WindowsTrialISO {
     [cmdletbinding()] param(
-        $WindowsVersion = [Environment]::OSVersion.Version.
-        $WindowsArchitecture = Get-OSArchitecture
+        $WindowsVersion = ([Environment]::OSVersion.Version),
+        $WindowsArchitecture = (Get-OSArchitecture)
     )
     if ($WindowsVersion.Major -eq 6 -and $WindowsVersion.Minor -eq 3) {
         return $URLs.WindowsIsoDownload.w81.$WindowsArchitecture
@@ -165,6 +165,7 @@ function Write-EventLogWrapper {
     $messagePlus = "$message`r`n`r`nScript: $($script:ScriptPath)`r`nUser: ${env:USERDOMAIN}\${env:USERNAME}"
     if ($messagePlus.length -gt 32766) { $messagePlus = $messagePlus.SubString(0,32766) } # Because Write-EventLog will die otherwise
     Write-Host -foreground magenta "====Writing to $EvengLogName event log===="
+    Write-Host -foreground darkgray (get-date -Format "yyyy-MM-dd HH:mm:ss")              # The event log tracks the date, but writing to host never shows it
     write-host -foreground darkgray "$messagePlus`r`n"
     Write-EventLog -LogName $eventLogName -Source $EventLogSource -EventID $eventId -EntryType $entryType -Message $MessagePlus
 }
@@ -378,9 +379,29 @@ function Install-VBoxAdditions {
     }
 }
 
-function Disable-AutoAdminLogon {
-    Write-EventLogWrapper "Disabling auto admin logon"
-    set-itemproperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 0    
+function Set-AutoAdminLogon {
+    [CmdletBinding(DefaultParameterSetName="Enable")] param(
+        [Parameter(Mandatory=$true,ParameterSetName="Enable")] [String] $Username,
+        [Parameter(Mandatory=$true,ParameterSetName="Enable")] [String] $Password,
+        [Parameter(Mandatory=$true,ParameterSetName="Disable")] [Switch] $Disable
+    )
+    if ($PsCmdlet.ParameterSetName -Match "Disable") {
+        Write-EventLogWrapper "Disabling auto admin logon"
+        $AutoAdminLogon = 0
+        $Username = ""
+        $Password = ""
+    }
+    elseif ($PsCmdlet.ParameterSetName -Match "Enable") {
+        Write-EventLogWrapper "Enabling auto admin logon for user '$Username'"
+        $AutoAdminLogon = 1
+    }
+    else {
+        throw "Invalid parameter set name"
+    }
+    $winLogonKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    Set-ItemProperty -Path $winLogonKey -Name "AutoAdminLogon"  -Value $AutoAdminLogon
+    Set-ItemProperty -Path $winLogonKey -Name "DefaultUserName" -Value $Username
+    Set-ItemProperty -Path $winLogonKey -Name "DefaultPassword" -Value $Password
 }
 
 function Enable-RDP {

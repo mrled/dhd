@@ -22,7 +22,7 @@ catch {}
 Invoke-ScriptblockAndCatch -scriptBlock {
     Write-EventLogWrapper "PostInstall for packer build '$packerBuildName' of type '$packerBuilderType'"
     Install-SevenZip
-    Disable-AutoAdminLogon
+    Set-AutoAdminLogon -Disable
     Enable-RDP
     Install-Chocolatey
 

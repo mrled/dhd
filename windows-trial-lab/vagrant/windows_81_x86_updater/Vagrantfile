@@ -37,8 +37,9 @@ Vagrant.configure("2") do |config|
     end
 
     config.vm.provision "file", source: "#{commonScriptsDir}/wintriallab-postinstall.psm1", destination: "marionettist/wintriallab-postinstall.psm1"
-    config.vm.provision "file", source: "#{commonScriptsDir}/isoupdater-postinstall.ps1", destination: "marionettist/isoupdater-postinstall.ps1"
+    config.vm.provision "file", source: "#{commonScriptsDir}/trial-iso-updater.ps1", destination: "marionettist/trial-iso-updater.ps1"
     config.vm.provision "file", source: "#{commonScriptsDir}/win-updates.ps1", destination: "marionettist/win-updates.ps1"
+    config.vm.provision "file", source: "isoupdater-postinstall.ps1", destination: "marionettist/isoupdater-postinstall.ps1"
 
-    config.vm.provision "shell", inline: "C:/marionettist/win-updates.ps1 -PostUpdateExpression C:/marionettist/isoupdater-postinstall.ps1"
+    config.vm.provision "shell", inline: 'powershell.exe -File "${ENV:UserProfile}/marionettist/isoupdater-postinstall.ps1"'
 end
