@@ -9,7 +9,7 @@ Vagrant.require_version ">= 1.6.2"
 Vagrant.configure("2") do |config|
     #config.vm.define "gheis-" + DateTime.now.strftime("%Y-%m-%d-%H-%M-%S")
     config.vm.define "tgirl-2015-11-20"
-    config.vm.box = "wintriallab-windows_10_x86"
+    config.vm.box = "wintriallab-windows_81_x86"
     config.vm.communicator = "winrm"
     
     config.vm.hostname = "tgirl"
