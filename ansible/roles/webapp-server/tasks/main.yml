@@ -1,0 +1,57 @@
+---
+
+# - name: Install git
+#   apt: pkg=git 
+# - name: Install Python3
+#   apt: pkg=python3
+# - name: Install CherryPy
+#   apt: pkg=python3-cherrypy3
+# - name: Install Mako
+#   apt: pkg=python3-mako
+
+# - name: Install Apache
+#   apt: name=apache2 update_cache=yes state=latest
+# - name: Install WSGI
+#   apt: name=libapache2-mod-wsgi-py3 update_cache=yes state=latest
+# - name: Remove default apache configuration
+#   file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
+#   notify: 
+#   - restart-apache
+# - name: Enable mod_rewrite
+#   apache2_module: name=rewrite state=present
+#   notify: 
+#   - restart-apache
+# - name: Enable mod_wsgi
+#   apache2_module: name=wsgi state=present
+#   notify: 
+#   - restart-apache
+
+- name: Add Apache configuration
+  template: src=apache.conf.j2 dest=/etc/apache2/sites-available/apache.conf owner=root group=root mode=0644
+  notify: 
+  - restart-apache
+- name: Link Apache configuration
+  file: path=/etc/apache2/sites-enabled/apache.conf state=link src=../sites-available/apache.conf
+  notify: 
+  - restart-apache
+
+- name: Make webapps clone dir
+  file: path={{ webapps_clone_dir }} state=directory owner=www-data group=www-data mode=0755
+- name: Make webapps live dir
+  file: path={{ webapps_live_dir }} state=directory owner=www-data group=www-data mode=0755
+
+- name: Make test live dir
+  file: path={{ webapps_live_dir }}/test state=directory owner=www-data group=www-data mode=0755
+- name: Copy WSGI test script
+  template: src=test.wsgi dest={{ webapps_live_dir }}/test/test.wsgi owner=www-data group=www-data mode=755 
+- name: Copy CherryPy test script
+  template: src=test.cherrypy.wsgi dest={{ webapps_live_dir }}/test/test.cherrypy.wsgi owner=www-data group=www-data mode=755 
+
+# TODO: Ideally, this wouuld NOT chown the dir to www-data:www-data, but would instead make it readable by this user (755/644 perms are fine)
+# TODO: Ideally, the location of the biblemunger sqlite database would be configurable, and we'd put it elsewhere on the filesystem
+- name: Clone biblemunger
+  git: repo=https://github.com/mrled/biblemunger dest={{ webapps_clone_dir }}/biblemunger
+- name: Set biblemunger permissions
+  file: path={{ webapps_clone_dir }}/biblemunger owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
+- name: Copy biblemunger to live webapp location
+  command: rsync -aP {{ webapps_clone_dir }}/biblemunger/ {{ webapps_live_dir }}/biblemunger/

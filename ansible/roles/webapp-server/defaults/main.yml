@@ -1,0 +1,9 @@
+
+## Doing it this way lets us manage owner/mode of cloned repos:
+# The directory that we clone Git repos into
+webapps_clone_dir: /var/www/webapps/clones
+#webapps_clone_dir: /webappsclones
+# The directory we copy cloned Git repos into
+webapps_live_dir: /var/www/webapps/live
+#webapps_live_dir: /webappslive
+

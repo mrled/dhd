@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+
+    ServerName nullyork.younix.us
+    ServerAdmin mrled@younix.us
+    DocumentRoot /var/www/html
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    <Directory {{ webapps_live_dir }}>
+        Options +ExecCGI 
+        Require all granted
+    </Directory>
+
+    WSGIScriptAlias /test {{ webapps_live_dir }}/test/test.wsgi
+    WSGIScriptAlias /testcp {{ webapps_live_dir }}/test/test.cherrypy.wsgi
+    WSGIScriptAlias /biblemunger {{ webapps_live_dir }}/biblemunger/bmweb.py
+
+</VirtualHost>
