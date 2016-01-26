@@ -1,30 +1,30 @@
 ---
 
-# - name: Install git
-#   apt: pkg=git 
-# - name: Install Python3
-#   apt: pkg=python3
-# - name: Install CherryPy
-#   apt: pkg=python3-cherrypy3
-# - name: Install Mako
-#   apt: pkg=python3-mako
+- name: Install git
+  apt: pkg=git 
+- name: Install Python3
+  apt: pkg=python3
+- name: Install CherryPy
+  apt: pkg=python3-cherrypy3
+- name: Install Mako
+  apt: pkg=python3-mako
 
-# - name: Install Apache
-#   apt: name=apache2 update_cache=yes state=latest
-# - name: Install WSGI
-#   apt: name=libapache2-mod-wsgi-py3 update_cache=yes state=latest
-# - name: Remove default apache configuration
-#   file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
-#   notify: 
-#   - restart-apache
-# - name: Enable mod_rewrite
-#   apache2_module: name=rewrite state=present
-#   notify: 
-#   - restart-apache
-# - name: Enable mod_wsgi
-#   apache2_module: name=wsgi state=present
-#   notify: 
-#   - restart-apache
+- name: Install Apache
+  apt: name=apache2 update_cache=yes state=latest
+- name: Install WSGI
+  apt: name=libapache2-mod-wsgi-py3 update_cache=yes state=latest
+- name: Remove default apache configuration
+  file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
+  notify: 
+  - restart-apache
+- name: Enable mod_rewrite
+  apache2_module: name=rewrite state=present
+  notify: 
+  - restart-apache
+- name: Enable mod_wsgi
+  apache2_module: name=wsgi state=present
+  notify: 
+  - restart-apache
 
 - name: Add Apache configuration
   template: src=apache.conf.j2 dest=/etc/apache2/sites-available/apache.conf owner=root group=root mode=0644
