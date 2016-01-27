@@ -2,7 +2,7 @@
 
     ServerName {{ webapp_hostname }}
     ServerAdmin mrled@younix.us
-    DocumentRoot /var/www/html
+    DocumentRoot {{ webapps_document_root }}
 
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
@@ -13,7 +13,7 @@
     </Directory>
 
     WSGIScriptAlias /test {{ webapps_live_dir }}/test/test.wsgi
-    WSGIScriptAlias /testcp {{ webapps_live_dir }}/test/test.cherrypy.wsgi
+    WSGIScriptAlias /testcp {{ webapps_live_dir }}/test/testcp.wsgi
     WSGIScriptAlias /biblemunger {{ webapps_live_dir }}/biblemunger/bmweb.py
 
 </VirtualHost>

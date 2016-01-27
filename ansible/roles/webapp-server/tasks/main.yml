@@ -35,6 +35,11 @@
   notify: 
   - restart-apache
 
+- name: Create DocumentRoot
+  file: path={{ webapps_document_root }} state=directory owner=www-data group=www-data mode=0755
+- name: Upload index.html
+  template: src=index.html.j2 dest={{ webapps_document_root }}/index.html owner=www-data group=www-data mode=755 
+
 - name: Make webapps clone dir
   file: path={{ webapps_clone_dir }} state=directory owner=www-data group=www-data mode=0755
 - name: Make webapps live dir
@@ -45,7 +50,7 @@
 - name: Copy WSGI test script
   template: src=test.wsgi dest={{ webapps_live_dir }}/test/test.wsgi owner=www-data group=www-data mode=755 
 - name: Copy CherryPy test script
-  template: src=test.cherrypy.wsgi dest={{ webapps_live_dir }}/test/test.cherrypy.wsgi owner=www-data group=www-data mode=755 
+  template: src=testcp.wsgi dest={{ webapps_live_dir }}/test/testcp.wsgi owner=www-data group=www-data mode=755 
 
 # TODO: Ideally, this wouuld NOT chown the dir to www-data:www-data, but would instead make it readable by this user (755/644 perms are fine)
 # TODO: Ideally, the location of the biblemunger sqlite database would be configurable, and we'd put it elsewhere on the filesystem
