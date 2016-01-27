@@ -1,13 +1,13 @@
 ---
 
 - name: Install git
-  apt: pkg=git 
+  apt: pkg=git update_cache=yes state=latest
 - name: Install Python3
-  apt: pkg=python3
+  apt: pkg=python3 update_cache=yes state=latest
 - name: Install CherryPy
-  apt: pkg=python3-cherrypy3
+  apt: pkg=python3-cherrypy3 update_cache=yes state=latest
 - name: Install Mako
-  apt: pkg=python3-mako
+  apt: pkg=python3-mako update_cache=yes state=latest
 
 - name: Install Apache
   apt: name=apache2 update_cache=yes state=latest

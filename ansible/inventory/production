@@ -1,9 +1,29 @@
-[blogserver]
-example.com
-
 [ovpnserver]
-example.com
+noradia.younix.us
+
+[bitchboxen]
+noradia.younix.us
+
+#[tshockserver]
+#nullyork.younix.us
+
+[webappserver]
+noradia.younix.us
+
 
 [all:vars]
+
 ansible_ssh_user = root
 
+openvpn_image_name      = younix_openvpn
+openvpn_image_build_dir = /srv/docker-younix-openvpn-image
+
+openvpn_server_name     = vpn.younix.us
+
+# A /24 network: 
+openvpn_private_subnet  = 192.168.252.0
+
+#should be the first addr in the /24: 
+openvpn_private_addr    = 192.168.252.1
+
+webapp_hostname = toys.younix.us
