@@ -1,14 +1,5 @@
-#[blogserver]
-#nullyork.younix.us
-
 [ovpnserver]
 nullyork.younix.us
-
-#[dockreg]
-#nullyork.younix.us
-
-#[dockerserver]
-#nullyork.younix.us
 
 [bitchboxen]
 nullyork.younix.us

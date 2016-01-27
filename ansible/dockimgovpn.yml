@@ -1,6 +1,0 @@
----
-- hosts: docker
-  roles:
-  - docker-server
-  - docker-registry-server
-  - openvpn-docker-builder
