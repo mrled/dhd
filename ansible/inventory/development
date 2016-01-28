@@ -27,4 +27,4 @@ openvpn_private_subnet  = 192.168.252.0
 openvpn_private_addr    = 192.168.252.1
 
 webapp_hostname = dev.younix.us
-webapp_landing_desc = the STAGING environment for <a href="toys.younix.us">toys.younix.us</a>
+webapp_landing_desc = the STAGING environment for <a href="http://toys.younix.us">http://toys.younix.us</a>
