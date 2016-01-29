@@ -1,0 +1,11 @@
+#!/bin/sh
+
+datestamp=$(date +%Y-%m-%d--%H-%M-%S)
+biblemungerdb="{{ webapps_live_dir }}/biblemunger/bmweb.sqlite"
+ansiblehostname="{{ ansible_hostname }}"
+encryptedfile="$encrypteddir/$datestamp-$ansiblehostname-bmweb.sqlite.gpg"
+encryptedfiletmppath="/tmp/$encryptedfile"
+
+/usr/local/bin/backupencrypt.sh "$biblemungerdb" "$encryptedfiletmppath"
+/usr/local/sbin/backupupload.sh "$encryptedfiletmppath"
+rm "$encryptedfiletmppath"

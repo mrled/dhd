@@ -60,3 +60,6 @@
   file: path={{ webapps_clone_dir }}/biblemunger owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
 - name: Copy biblemunger to live webapp location
   command: rsync -aP {{ webapps_clone_dir }}/biblemunger/ {{ webapps_live_dir }}/biblemunger/
+- name: Upload biblemunger database backup job
+  template: src=backup-biblemunger-cron-job.sh.j2 dest=/etc/cron.daily/backup-biblemunger.sh owner=root group=root mode=755
+  when: autobackup_enabled

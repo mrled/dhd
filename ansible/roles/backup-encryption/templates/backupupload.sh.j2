@@ -1,0 +1,4 @@
+#!/bin/sh
+
+filename=$1
+s3cmd --access_key {{ autobackup_iam_access_key_id }} --secret_key {{ autobackup_iam_secret_access_key }} put "$filename" s3://{{ autobackup_s3_bucket }}

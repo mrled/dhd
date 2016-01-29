@@ -1,0 +1,16 @@
+---
+
+- name: Install GPG
+  apt: pkg=gnupg update_cache=yes state=latest
+- name: Install s3cmd
+  apt: pkg=s3cmd update_cache=yes state=latest
+
+- name: Upload public key
+  copy: src=autobackup-public.gpg.asc dest=~/autobackup-public.gpg.asc
+- name: Import public key
+  command: gpg --import ~/autobackup-public.gpg.asc
+
+- name: Upload backupencrypt script
+  template: src=backupencrypt.sh.j2 dest=/usr/local/bin/backupencrypt.sh owner=root group=root mode=755
+- name: Upload backupupload script
+  template: src=backupupload.sh.j2 dest=/usr/local/sbin/backupupload.sh owner=root group=root mode=700

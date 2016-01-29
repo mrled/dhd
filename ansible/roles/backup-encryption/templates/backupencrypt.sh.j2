@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+set -u
+
+plaintextpath=$1
+encryptedpath=$2
+# We have to --trust-model always b/c the backup recipient key is not trusted
+# (And we cannot trust it without generating a key on each server which is a whole mess on VMs with no entropy sources)
+gpg --encrypt --recipient "{{ autobackup_recipient_key_name }}" --trust-model always --output "$encryptedpath" "$plaintextpath"
