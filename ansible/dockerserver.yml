@@ -1,4 +1,0 @@
----
-- hosts: dockerserver
-  roles: 
-  - docker-server

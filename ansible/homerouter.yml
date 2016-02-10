@@ -1,4 +1,0 @@
----
-- hosts: homerouter
-  roles: 
-  - home-router

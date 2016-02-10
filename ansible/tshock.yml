@@ -1,5 +1,0 @@
----
-- hosts: tshockserver
-  roles: 
-  - marionettist-docker-users
-  - tshock-server
