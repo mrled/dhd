@@ -1,17 +1,3 @@
 ---
-- hosts: ovpnserver
-  roles:
-  - openvpn-server
-- hosts: webappserver
-  roles:
-  - webapp-server
-
-# - hosts: bitchboxen
-#   roles: 
-#   - bitchbox
-# - hosts: homerouter
-#   roles: 
-#   - home-router
-# - hosts: tshockserver
-#   roles: 
-#   - tshock-server
+- include: webappserver.yml
+- include: ovpnserver.yml

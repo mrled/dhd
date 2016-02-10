@@ -1,0 +1,29 @@
+client
+proto udp
+port {{ openvpn_port }}
+dev tun
+remote {{ openvpn_server_name }} {{ openvpn_port }}
+nobind
+verb 3
+persist-key
+persist-tun
+comp-lzo
+remote-cert-tls server
+key-direction 1
+
+<key>
+# OPENVPN CLIENT KEY HERE
+</key>
+<cert>
+# OPENVPN CLIENT CERTIFICATE HERE
+</cert>
+<ca>
+{{ openvpn_ca_cert }}
+</ca>
+<dh>
+{{ openvpn_dh_param }}
+</dh>
+<tls-auth>
+{{ openvpn_tlsauth_key }}
+</tls-auth>
+
