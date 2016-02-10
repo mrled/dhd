@@ -2,6 +2,16 @@
 
 Controlling other machines with puppet strings
 
+## Requirements
+
+- Ansible 2.0+: `pip install ansible`
+- netaddr for the `ipaddr` jinja2 filter: `pip install netaddr`
+
+**DON'T FORGET:** 
+
+1. If you're doing `sudo pip install ...` make sure to change your `umask`
+2. Ansible doesn't work with python3. Is your `pip` binary for python3 or python2? lol u don't know
+
 ## How to use
 
 The design goals are: *All of my servers should be configured on a local, securable workstation, and all data should be checked into Git*
