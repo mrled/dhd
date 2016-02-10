@@ -1,3 +1,18 @@
 #!/bin/sh
+set -eu
+
 netprefix="{{ openvpn_private_addr | ipaddr('network') }}/{{ openvpn_private_addr | ipaddr('prefix') }}"
-iptables -t nat -A POSTROUTING -s $netprefix -o eth0 -j MASQUERADE
+primarynic="{{ openvpn_primary_nic }}"
+tunnic="{{ openvpn_tun_devname }}"
+
+# Only apply the firewall rules when the primary NIC comes up
+case "$IFACE" in 
+    $primarynic)
+        iptables -A FORWARD -i $primarynic -o $tunnic -m state --state ESTABLISHED,RELATED -j ACCEPT
+        iptables -A FORWARD -s $netprefix -o $primarynic -j ACCEPT
+        iptables -t nat -A POSTROUTING -s $netprefix -o $primarynic -j MASQUERADE
+        ;;
+    *)
+        exit 0
+        ;;
+esac

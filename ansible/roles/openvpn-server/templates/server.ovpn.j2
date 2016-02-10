@@ -1,28 +1,34 @@
 proto udp
-port 1194
-dev tun1194
+port {{ openvpn_port }}
+dev {{ openvpn_tun_devname }}
 iproute /etc/openvpn/sudo-ip.sh
-status openvpn-status.log
+#status openvpn-status.log
 verb 3
 keepalive 10 60
 persist-key
 persist-tun
-duplicate-cn
 comp-lzo
 key-direction 0
 
 user {{ openvpn_user }}
 group {{ openvpn_group }}
 
-server {{ openvpn_private_addr | ipaddr('network') }} {{ openvpn_private_addr | ipaddr('broadcast') }}
+# Read about the '--server' option in 'man openvpn' - it's a shortcut for this:
+server {{ openvpn_private_addr | ipaddr('network') }} {{ openvpn_private_addr | ipaddr('netmask') }}
 
+# According to 'man openvpn', using the 'server' directive expands to lots of statements, 
+# including 'push route-gateway {{ openvpn_private_addr | ipaddr('address') }}'
+# ... does that mean I don't need this? 
+# PS: Lots of stuff changed in OpenVPN 2.1 - maybe require that for all clients
+#push "remote-gateway {{ openvpn_private_addr | ipaddr('address') }}"
 #push "redirect-gateway def1"
-push "remote-gateway {{ openvpn_private_addr | ipaddr('address') }}"
+
 push "dhcp-option DNS {{ openvpn_dns_a }}"
 push "dhcp-option DNS {{ openvpn_dns_b }}"
 
+#duplicate-cn
 # Apparently this won't work with duplicate-cn
-#ifconfig-pool-persist ipp.txt
+ifconfig-pool-persist ipp.txt
 
 <key>
 {{ openvpn_server_key }}

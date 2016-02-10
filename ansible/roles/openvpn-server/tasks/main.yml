@@ -1,10 +1,5 @@
 ---
 
-- name: "openvpn_private_network"
-  debug: var=openvpn_private_network
-- name: "openvpn_private_addr"
-  debug: var=openvpn_private_addr
-
 - name: Install OpenVPN
   apt: pkg=openvpn update_cache=yes state=latest
 - name: Install sudo
@@ -24,19 +19,22 @@
   command: mknod /dev/net/tun c 10 200
   args: 
     creates: /dev/net/tun
+
+# This must happen before firewall rules can be applied
+# This results in a new interface (viewable with 'ifconfig {{ openvpn_tun_devname }}')
+# These do NOT survive a reboot
 - name: Make OpenVPN tunnel device
   command: openvpn --mktun --dev {{ openvpn_tun_devname }} --dev-type tun --user {{ openvpn_user }} --group {{ openvpn_group }}
   args:
-    creates: /sys/class/net/tun1194
+    creates: /sys/class/net/{{ openvpn_tun_devname }}
 
 - name: Allow OpenVPN user to "sudo /sbin/ip"
   template: src=openvpn.sudoers.j2 dest=/etc/sudoers.d/openvpn validate='visudo -cf %s'
 
-# TODO: the way this is implemented means Ansible will think the configuration has changed every time I apply. Fix? 
+# - name: Configure OpenVPN interface
+#   template: src=openvpn.interface.j2 dest=/etc/network/interfaces.d/openvpn owner=root group=root mode=0644
 - name: Configure iptables firewall
   template: src=openvpn.iptables.sh.j2 dest=/etc/network/if-pre-up.d/openvpn.iptables.sh owner=root group=root mode=0755
-# # - name: Apply iptables firewall configuration
-# #   command: /etc/network/if-pre-up.d/openvpn.iptables.sh
 
 - name: Create configuration directory
   file: path=/etc/openvpn state=directory owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
@@ -45,6 +43,6 @@
   copy: src=sudo-ip.sh dest=/etc/openvpn/sudo-ip.sh owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
 
 - name: Upload server configuration
-  template: src=server.ovpn.j2 dest=/etc/openvpn/server.ovpn.j2 owner={{ openvpn_user }} group={{ openvpn_group }} mode=0644
+  template: src=server.ovpn.j2 dest=/etc/openvpn/server.ovpn owner={{ openvpn_user }} group={{ openvpn_group }} mode=0644
   notify:
     - restart-openvpn

@@ -1,8 +1,8 @@
 
 # The address + CIDR range for your OpenVPN private network
-# NOTE: This should be the server's host address, not the network address
-#       We use the ipaddr jinja2 filter to find network address, broadcast address, etc etc
-#       https://docs.ansible.com/ansible/playbooks_filters_ipaddr.html
+# This should be the FIRST ADDRESS in the subnet. OpenVPN will assume this is the server's private VPN address.
+# We use the ipaddr jinja2 filter to find network address, broadcast address, etc etc
+#https://docs.ansible.com/ansible/playbooks_filters_ipaddr.html
 openvpn_private_network: 192.168.2.1/24
 openvpn_private_addr: "{{ openvpn_private_network | ipv4('host/prefix') }}"
 
@@ -17,8 +17,11 @@ openvpn_private_addr: "{{ openvpn_private_network | ipv4('host/prefix') }}"
 openvpn_user: openvpn
 openvpn_group: openvpn
 
-# Used in openvpn --mktun
-openvpn_tun_devname: tun1194
+openvpn_port: 1194
+openvpn_tun_devname: tunovpn
+
+# Required for firewall rules
+openvpn_primary_nic: eth0
 
 # Defaults are OpenDNS
 openvpn_dns_a: 208.67.222.222
