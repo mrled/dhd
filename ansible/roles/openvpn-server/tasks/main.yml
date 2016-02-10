@@ -1,34 +1,50 @@
 ---
 
-# NOTE: Requires Ansible 2.0 for 'cap_add'
+- name: "openvpn_private_network"
+  debug: var=openvpn_private_network
+- name: "openvpn_private_addr"
+  debug: var=openvpn_private_addr
 
-# TODO: better way to trigger the Docker build & upload? Right now if the upload fails, it cannot detect that the next time
-# TODO: seems like the openvpn server process isn't noticing when its config changes. Fixme
+- name: Install OpenVPN
+  apt: pkg=openvpn update_cache=yes state=latest
+- name: Install sudo
+  apt: pkg=sudo update_cache=yes state=latest
 
-- name: OpenVPN | Make openvpn_config_dir
-  file: >
-    path="{{ openvpn_config_dir }}" 
-    state=directory owner=root group=root mode=0755
+- name: Enable IPv4 forwarding
+  sysctl: name="net.ipv4.ip_forward" value=1 state=present sysctl_set=yes reload=yes
 
-- name: OpenVPN | Add server config file
-  template: >
-    src=server.ovpn.j2 
-    dest="{{ openvpn_config_dir }}/server.ovpn" 
-    owner=root group=root mode=0644
+- name: Add OpenVPN group
+  group: name={{ openvpn_group }} system=yes state=present
+- name: Add OpenVPN user
+  user: name={{ openvpn_user }} group={{ openvpn_group }} home=/etc/openvpn createhome=false shell=/usr/sbin/nologin system=yes state=present
 
-- name: run openvpn docker
-  docker:
-    name: "{{ openvpn_container_name }}"
-    image: "localhost:5000/{{ openvpn_image_name }}"
-    pull: always
-    state: reloaded
-    cap_add: NET_ADMIN
-    privileged: yes          # required because we deal with iptables and NAT in this container
-    insecure_registry: yes   # who cares, this is all on localhost
-    ports: 
-    - "1194:1194/udp"
-    - "1194:1194/tcp"
-    volumes:
-    - "{{ openvpn_config_dir }}:/etc/openvpn"
+- name: Make /dev/net
+  file: path=/dev/net state=directory owner=root group=root mode=0755
+- name: Make /dev/net/tun
+  command: mknod /dev/net/tun c 10 200
+  args: 
+    creates: /dev/net/tun
+- name: Make OpenVPN tunnel device
+  command: openvpn --mktun --dev {{ openvpn_tun_devname }} --dev-type tun --user {{ openvpn_user }} --group {{ openvpn_group }}
+  args:
+    creates: /sys/class/net/tun1194
 
+- name: Allow OpenVPN user to "sudo /sbin/ip"
+  template: src=openvpn.sudoers.j2 dest=/etc/sudoers.d/openvpn validate='visudo -cf %s'
 
+# TODO: the way this is implemented means Ansible will think the configuration has changed every time I apply. Fix? 
+- name: Configure iptables firewall
+  template: src=openvpn.iptables.sh.j2 dest=/etc/network/if-pre-up.d/openvpn.iptables.sh owner=root group=root mode=0755
+# # - name: Apply iptables firewall configuration
+# #   command: /etc/network/if-pre-up.d/openvpn.iptables.sh
+
+- name: Create configuration directory
+  file: path=/etc/openvpn state=directory owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
+
+- name: Upload sudo-ip script
+  copy: src=sudo-ip.sh dest=/etc/openvpn/sudo-ip.sh owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
+
+- name: Upload server configuration
+  template: src=server.ovpn.j2 dest=/etc/openvpn/server.ovpn.j2 owner={{ openvpn_user }} group={{ openvpn_group }} mode=0644
+  notify:
+    - restart-openvpn

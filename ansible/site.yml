@@ -1,8 +1,17 @@
 ---
-- include: dockreg.yml
-- include: dockimgovpn.yml
-- include: blogserver.yml
-- include: ovpnserver.yml
-- include: ovpnclientbuilder.yml
-- include: bitchboxen.yml
-- include: tshock.yml
+- hosts: ovpnserver
+  roles:
+  - openvpn-server
+- hosts: webappserver
+  roles:
+  - webapp-server
+
+# - hosts: bitchboxen
+#   roles: 
+#   - bitchbox
+# - hosts: homerouter
+#   roles: 
+#   - home-router
+# - hosts: tshockserver
+#   roles: 
+#   - tshock-server

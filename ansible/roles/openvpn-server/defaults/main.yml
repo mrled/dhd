@@ -1,17 +1,36 @@
-### ALL OF THESE MUST BE OVERRIDDEN PER ENVIRONMENT:  
 
-openvpn_private_subnet: 127.0.0.0       # a /24 subnet like 192.168.0.0 or 10.11.12.0
-openvpn_private_addr: 127.0.0.1         # first address in the subnet
+# The address + CIDR range for your OpenVPN private network
+# NOTE: This should be the server's host address, not the network address
+#       We use the ipaddr jinja2 filter to find network address, broadcast address, etc etc
+#       https://docs.ansible.com/ansible/playbooks_filters_ipaddr.html
+openvpn_private_network: 192.168.2.1/24
+openvpn_private_addr: "{{ openvpn_private_network | ipv4('host/prefix') }}"
 
-### These could be defined in here, but are needed elsewhere so must be defined environment-wide
+# openvpn_private_subnet: {{ openvpn_private_network | ipaddr('network') }}
+# openvpn_private_netmask: {{ openvpn_private_network | ipaddr('netmask') }}
+# openvpn_private_subnet: 192.168.2.0
+# openvpn_private_netmask: 255.255.255.0
+# openvpn_private_subnet_netmask_concat: "{{ openvpn_private_subnet }}/{{ openvpn_private_netmask }}"
+# openvpn_private_cidr: "{{ openvpn_private_subnet_netmask_concat | ipaddr('net') }}"
 
-# openvpn_image_build_dir: /srv/younix-docker-openvpn-image
-# openvpn_image_name: younix_openvpn
+# For least-privilege
+openvpn_user: openvpn
+openvpn_group: openvpn
 
-### These have sensible default values, at least for me, but can still be overridden
+# Used in openvpn --mktun
+openvpn_tun_devname: tun1194
 
-openvpn_container_name: younix-openvpn
-openvpn_config_dir: /srv/younix-openvpn-config
+# Defaults are OpenDNS
+openvpn_dns_a: 208.67.222.222
+openvpn_dns_b: 208.67.220.220
 
-openvpn_dns_a: 208.67.222.222       # OpenDNS
-openvpn_dns_b: 208.67.220.220       # OpenDNS
+# These all must be overridden per environment
+# Can base64-encode these with `base64 /path/to/filename` - useful b/c they're multi-line files
+# And then set varname_b64: <LONG BASE64 STRING>
+# And then set varname: {{ varname_b64 | b64decode }}
+# The server key, DH param, and TLSAuth key all should be stored in the vault, but they could work exactly the same way
+openvpn_server_key: NONE
+openvpn_server_cert: NONE
+openvpn_ca_cert: NONE
+openvpn_dh_param: NONE
+openvpn_tlsauth_key: NONE

@@ -1,7 +1,7 @@
 proto udp
 port 1194
 dev tun1194
-iproute /usr/local/sbin/sudo-ip.sh
+iproute /etc/openvpn/sudo-ip.sh
 status openvpn-status.log
 verb 3
 keepalive 10 60
@@ -11,10 +11,13 @@ duplicate-cn
 comp-lzo
 key-direction 0
 
-server {{ openvpn_private_subnet }} 255.255.255.0
+user {{ openvpn_user }}
+group {{ openvpn_group }}
+
+server {{ openvpn_private_addr | ipaddr('network') }} {{ openvpn_private_addr | ipaddr('broadcast') }}
 
 #push "redirect-gateway def1"
-push "remote-gateway {{ openvpn_private_addr }}"
+push "remote-gateway {{ openvpn_private_addr | ipaddr('address') }}"
 push "dhcp-option DNS {{ openvpn_dns_a }}"
 push "dhcp-option DNS {{ openvpn_dns_b }}"
 

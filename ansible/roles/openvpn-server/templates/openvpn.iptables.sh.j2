@@ -1,0 +1,3 @@
+#!/bin/sh
+netprefix="{{ openvpn_private_addr | ipaddr('network') }}/{{ openvpn_private_addr | ipaddr('prefix') }}"
+iptables -t nat -A POSTROUTING -s $netprefix -o eth0 -j MASQUERADE
