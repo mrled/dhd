@@ -1,5 +1,7 @@
 ---
 
+# TODO: https://openvpn.net/index.php/open-source/documentation/howto.html#mitm
+
 - name: Install OpenVPN
   apt: pkg=openvpn update_cache=yes state=latest
 - name: Install sudo
