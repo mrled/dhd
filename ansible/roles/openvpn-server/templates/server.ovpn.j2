@@ -11,6 +11,7 @@ key-direction 0
 user {{ openvpn_user }}
 group {{ openvpn_group }}
 server {{ openvpn_private_addr | ipaddr('network') }} {{ openvpn_private_addr | ipaddr('netmask') }}
+client-to-client
 
 # Easiest for me to just write logs & state to /etc, sorry, I know, sorry
 log /etc/openvpn/openvpn-server.log
