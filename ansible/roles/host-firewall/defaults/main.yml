@@ -1,0 +1,5 @@
+
+# The SSH_CLIENT environment variable should contain something like this: 
+#   "172.87.133.182 57455 22"
+# This grabs the port from the end
+current_management_port: "{{ ansible_env.SSH_CLIENT | regex_replace('^.* (\\d+)', '\\1') }}"

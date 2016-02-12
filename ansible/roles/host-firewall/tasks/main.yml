@@ -1,0 +1,11 @@
+---
+- name: Install ferm
+  apt: pkg=ferm update_cache=yes state=latest
+- name: Make main config directory
+  file: path=/etc/ferm state=directory owner=root group=root mode=0755
+- name: Make config include directory
+  file: path=/etc/ferm/ferm.conf.d state=directory owner=root group=root mode=0755
+- name: Install basic config file
+  template: src=ferm.conf.j2 dest=/etc/ferm/ferm.conf
+  notify:
+  - apply-firewall

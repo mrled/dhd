@@ -1,0 +1,2 @@
+- name: apply-firewall
+  service: name=ferm state=restarted

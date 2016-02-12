@@ -45,10 +45,10 @@
   notify:
   - restart-openvpn
 
-# - name: Configure OpenVPN interface
-#   template: src=openvpn.interface.j2 dest=/etc/network/interfaces.d/openvpn owner=root group=root mode=0644
-- name: Configure iptables firewall
-  template: src=openvpn.iptables.sh.j2 dest=/etc/network/if-pre-up.d/openvpn.iptables.sh owner=root group=root mode=0755
+- name: Upload firewall configuration
+  template: src=openvpn.ferm.j2 dest=/etc/ferm/ferm.conf.d/openvpn.ferm owner=root group=root mode=0644
+  notify: 
+  - apply-firewall
 
 - name: Create configuration directory
   file: path=/etc/openvpn state=directory owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755

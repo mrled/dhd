@@ -1,0 +1,11 @@
+# OpenVPN firewall configuration for ferm
+
+@def $PRIMARY_NIC = {{ openvpn_primary_nic }};
+@def $OPENVPN_DEV = {{ openvpn_tun_devname }};
+@def $NET_PREFIX  = {{ openvpn_private_addr | ipaddr('network') }}/{{ openvpn_private_addr | ipaddr('prefix') }};
+
+table filter chain FORWARD interface $PRIMARY_NIC outerface $OPENVPN_DEV mod state state (ESTABLISHED RELATED) ACCEPT;
+table filter chain FORWARD source $NET_PREFIX outerface $PRIMARY_NIC ACCEPT;
+table nat chain POSTROUTING source $NET_PREFIX outerface $PRIMARY_NIC MASQUERADE;
+
+table filter chain INPUT proto udp dport {{ openvpn_port }} ACCEPT;

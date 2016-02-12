@@ -26,6 +26,11 @@
   notify: 
   - restart-apache
 
+- name: Configure firewall
+  template: src=apache.ferm.j2 dest=/etc/ferm/ferm.conf.d/apache.ferm owner=root group=root mode=0644
+  notify:
+  - apply-firewall
+
 - name: Add Apache configuration
   template: src=apache.conf.j2 dest=/etc/apache2/sites-available/apache.conf owner=root group=root mode=0644
   notify: 
