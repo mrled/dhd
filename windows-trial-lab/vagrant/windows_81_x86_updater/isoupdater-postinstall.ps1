@@ -11,13 +11,18 @@ TODO: can I pull the Vagrant username/password from the environment somehow? Suc
 
 import-module $PSScriptRoot\wintriallab-postinstall.psm1
 
-Install-Chocolatey
-choco install --yes --force windows-adk
+Invoke-ScriptblockAndCatch -scriptBlock {
 
-$restartCommandString = '& "{0}\win-updates.ps1" -MaxCycles 5 -PostUpdateExpression "{0}\trial-iso-updater.ps1"' -f $PSScriptRoot
-Set-RestartScheduledTask -RestartCommand [ScriptBlock]::Create($restartCommandString)
+    Install-Chocolatey
+    choco install --yes --force windows-adk
 
-Set-AutoAdminLogon -Username "vagrant" -Password "V@grant123"
+    $restartCommandString = '& "{0}\win-updates.ps1" -MaxCycles 5 -PostUpdateExpression "{0}\trial-iso-updater.ps1"' -f $PSScriptRoot
+    $restartCommandSb = [ScriptBlock]::Create($restartCommandString)
+    Set-RestartScheduledTask -RestartCommand $restartCommandSb
 
-# This returns immediately, which means Vagrant's provisioner will hopefully not interpret the restart as a failure? 
-shutdown.exe /r /f /t 10 /d u:0:0 /c "Reboot to run win-updates.ps1"
+    Set-AutoAdminLogon -Username "vagrant" -Password "V@grant123"
+
+    # This returns immediately, which means Vagrant's provisioner will hopefully not interpret the restart as a failure? 
+    shutdown.exe /r /f /t 10 /d u:0:0 /c "Reboot to run win-updates.ps1"
+
+}
