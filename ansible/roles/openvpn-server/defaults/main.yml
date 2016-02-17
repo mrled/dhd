@@ -19,13 +19,17 @@ openvpn_group: openvpn
 
 openvpn_port: 1194
 openvpn_tun_devname: tunovpn
+openvpn_dir: /etc/openvpn
 
 # Required for firewall rules
 openvpn_primary_nic: eth0
 
-# Defaults are OpenDNS
-openvpn_dns_a: 208.67.222.222
-openvpn_dns_b: 208.67.220.220
+# Push OpenDNS to clients:
+#openvpn_dns_servers:
+#- 208.67.222.222
+#- 208.67.220.220
+# Don't push any DNS to clients:
+openvpn_dns_servers: no
 
 # These all must be overridden per environment
 # Can base64-encode these with `base64 /path/to/filename` - useful b/c they're multi-line files

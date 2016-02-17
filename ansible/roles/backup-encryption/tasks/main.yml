@@ -1,9 +1,10 @@
 ---
 
-- name: Install GPG
-  apt: pkg=gnupg update_cache=yes state=latest
-- name: Install s3cmd
-  apt: pkg=s3cmd update_cache=yes state=latest
+- name: Install required packages
+  apt: pkg={{ item }} update_cache=yes state=latest
+  with_items:
+  - gnupg
+  - s3cmd
 
 - name: Upload public key
   copy: src=autobackup-public.gpg.asc dest=~/autobackup-public.gpg.asc

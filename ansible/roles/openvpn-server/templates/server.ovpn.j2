@@ -1,7 +1,7 @@
 proto udp
 port {{ openvpn_port }}
 dev {{ openvpn_tun_devname }}
-iproute /etc/openvpn/sudo-ip.sh
+iproute {{ openvpn_dir }}/sudo-ip.sh
 verb 3
 keepalive 10 60
 persist-key
@@ -10,17 +10,25 @@ comp-lzo
 key-direction 0
 user {{ openvpn_user }}
 group {{ openvpn_group }}
+topology subnet
 server {{ openvpn_private_addr | ipaddr('network') }} {{ openvpn_private_addr | ipaddr('netmask') }}
 client-to-client
 
 # Easiest for me to just write logs & state to /etc, sorry, I know, sorry
-log /etc/openvpn/openvpn-server.log
-status /etc/openvpn/openvpn-status.log
-ifconfig-pool-persist /etc/openvpn/ipp.txt
+log {{ openvpn_dir }}/openvpn-server.log
+status {{ openvpn_dir }}/openvpn-status.log
+ifconfig-pool-persist {{ openvpn_dir }}/ipp.txt
 
-push "redirect-gateway def1"
-push "dhcp-option DNS {{ openvpn_dns_a }}"
-push "dhcp-option DNS {{ openvpn_dns_b }}"
+# Don't push this - let the client choose
+# This way some machines can connect to my VPN so I can contact them behind their firewalls,
+# but without having to route all traffic through
+#push "redirect-gateway def1"
+
+{% if openvpn_dns_servers %}
+{% for dnsserver in openvpn_dns_servers %}
+push dhcp-option DNS {{ dnsserver }}
+{% endfor %}
+{% endif %}
 
 <key>
 {{ openvpn_server_key }}

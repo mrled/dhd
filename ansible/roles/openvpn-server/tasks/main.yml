@@ -1,11 +1,13 @@
 ---
 
-# TODO: https://openvpn.net/index.php/open-source/documentation/howto.html#mitm
+- name: Show DNS servers
+  debug: var=openvpn_dns_servers
 
-- name: Install OpenVPN
-  apt: pkg=openvpn update_cache=yes state=latest
-- name: Install sudo
-  apt: pkg=sudo update_cache=yes state=latest
+- name: Install required packages
+  apt: pkg={{ item }} update_cache=yes state=latest
+  with_items:
+  - openvpn
+  - sudo
 
 - name: Enable IPv4 forwarding
   sysctl: name="net.ipv4.ip_forward" value=1 state=present sysctl_set=yes reload=yes
@@ -15,7 +17,7 @@
   notify:
   - restart-openvpn
 - name: Add OpenVPN user
-  user: name={{ openvpn_user }} group={{ openvpn_group }} home=/etc/openvpn createhome=false shell=/usr/sbin/nologin system=yes state=present
+  user: name={{ openvpn_user }} group={{ openvpn_group }} home={{ openvpn_dir }} createhome=false shell=/usr/sbin/nologin system=yes state=present
   notify:
   - restart-openvpn
 
@@ -51,16 +53,16 @@
   - apply-firewall
 
 - name: Create configuration directory
-  file: path=/etc/openvpn state=directory owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
+  file: path={{ openvpn_dir }} state=directory owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
 
 - name: Upload sudo-ip script
-  copy: src=sudo-ip.sh dest=/etc/openvpn/sudo-ip.sh owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
+  copy: src=sudo-ip.sh dest={{ openvpn_dir }}/sudo-ip.sh owner={{ openvpn_user }} group={{ openvpn_group }} mode=0755
   notify:
   - restart-openvpn
 
 - name: Upload server configuration
-  template: src=server.ovpn.j2 dest=/etc/openvpn/openvpn.conf owner={{ openvpn_user }} group={{ openvpn_group }} mode=0600
+  template: src=server.ovpn.j2 dest={{ openvpn_dir }}/openvpn.conf owner={{ openvpn_user }} group={{ openvpn_group }} mode=0600
   notify:
   - restart-openvpn
 - name: Upload client configuration template
-  template: src=client.ovpn.template.j2 dest=/etc/openvpn/client.ovpn.template owner={{ openvpn_user }} group={{ openvpn_group }} mode=0644
+  template: src=client.ovpn.template.j2 dest={{ openvpn_dir }}/client.ovpn.template owner={{ openvpn_user }} group={{ openvpn_group }} mode=0644
