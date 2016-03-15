@@ -62,6 +62,7 @@ function Setup-SystemPath {
         "__ProgramFiles__\GNU\GnuPG"
         "__ProgramFiles__\Xpra"
         "C:\opt\strawberry\perl\bin"
+        "${env:SystemDrive}:\Perl64"
     )
 
     $azureSDKs = "$env:ProgramFiles\Microsoft SDKs\Windows Azure\.NET SDK"
