@@ -65,3 +65,6 @@
 - name: Upload biblemunger database backup job
   template: src=backup-biblemunger-cron-job.sh.j2 dest=/etc/cron.daily/backup-biblemunger.sh owner=root group=root mode=755
   when: autobackup_enabled
+
+- name: Start Apache
+  service: name=apache2 state=started
