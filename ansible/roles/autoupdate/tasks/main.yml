@@ -1,0 +1,5 @@
+- name: Install required packages
+  apt: pkg={{ item }} update_cache=yes state=latest
+  with_items:
+  - aptitude 
+  - apt-cron

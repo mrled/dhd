@@ -1,3 +1,4 @@
 ---
+- include: base.yml
 - include: webappserver.yml
 - include: ovpnserver.yml

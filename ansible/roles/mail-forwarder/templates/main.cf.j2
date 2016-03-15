@@ -1,0 +1,20 @@
+
+
+# Debian specific:  Specifying a file name will cause the first
+# line of that file to be used as the name.  The Debian default
+# is /etc/mailname.
+#myorigin = /etc/mailname
+
+smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+
+smtp_sasl_auth_enable = yes 
+smtp_sasl_password_maps = static:{{ mail_relay_username }}:{{ mail_relay_password }}
+smtp_sasl_security_options = noanonymous 
+smtp_tls_security_level = may
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+start_tls = yes
+header_size_limit = 4096000
+relayhost = [{{ mail_relay_host }}]:{{ mail_relay_port }}
