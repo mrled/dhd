@@ -1027,6 +1027,15 @@ function uploadid {
     "",$keydata | plink -pw "$sshPass" $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
 
+
+$possiblePlink = @(
+    "${env:ProgramFiles}\putty\plink.exe"
+    "${env:ProgramFiles(x86)}\putty\plink.exe"
+)
+foreach ($pp in $possiblePlink) {
+    if (test-path $pp) { $env:GIT_SSH = $pp; break; }
+}
+
 $bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
 if (test-path $bvssh) {
 
