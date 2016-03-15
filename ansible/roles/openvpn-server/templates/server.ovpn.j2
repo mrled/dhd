@@ -13,11 +13,12 @@ group {{ openvpn_group }}
 topology subnet
 server {{ openvpn_private_addr | ipaddr('network') }} {{ openvpn_private_addr | ipaddr('netmask') }}
 client-to-client
+mlock
 
 # Easiest for me to just write logs & state to /etc, sorry, I know, sorry
 log {{ openvpn_dir }}/openvpn-server.log
 status {{ openvpn_dir }}/openvpn-status.log
-ifconfig-pool-persist {{ openvpn_dir }}/ipp.txt
+ifconfig-pool-persist {{ openvpn_dir }}/ipp.txt 15
 
 # Don't push this - let the client choose
 # This way some machines can connect to my VPN so I can contact them behind their firewalls,

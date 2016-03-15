@@ -6,13 +6,6 @@
 openvpn_private_network: 192.168.2.1/24
 openvpn_private_addr: "{{ openvpn_private_network | ipv4('host/prefix') }}"
 
-# openvpn_private_subnet: {{ openvpn_private_network | ipaddr('network') }}
-# openvpn_private_netmask: {{ openvpn_private_network | ipaddr('netmask') }}
-# openvpn_private_subnet: 192.168.2.0
-# openvpn_private_netmask: 255.255.255.0
-# openvpn_private_subnet_netmask_concat: "{{ openvpn_private_subnet }}/{{ openvpn_private_netmask }}"
-# openvpn_private_cidr: "{{ openvpn_private_subnet_netmask_concat | ipaddr('net') }}"
-
 # For least-privilege
 openvpn_user: openvpn
 openvpn_group: openvpn
