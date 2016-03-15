@@ -12,7 +12,8 @@ thisVagrantfileDir = File.dirname(__FILE__)
 commonScriptsDir = "#{thisVagrantfileDir}/../../scripts"
 
 Vagrant.configure("2") do |config|
-    config.vm.define "FreyjaA " + DateTime.now.strftime("%Y-%m-%d-%H-%M-%S")
+    #config.vm.define "FreyjaA " + DateTime.now.strftime("%Y-%m-%d-%H-%M-%S")
+    config.vm.define "FreyjaA-2016-01-08"
     #config.vm.box = "wintriallab-windows_10_x86"
     config.vm.box = "wintriallab-windows_81_x86"
     config.vm.communicator = "winrm"
@@ -25,7 +26,8 @@ Vagrant.configure("2") do |config|
     config.windows.halt_timeout = 15
 
     #config.vm.network :forwarded_port, guest: 3389, host: 33891, id: "rdp", auto_correct: true
-    config.vm.network :bridged
+    #config.vm.network :bridged
+    config.vm.network "public_network"
 
     config.vm.provider :virtualbox do |v, override|
         #v.gui = true
@@ -38,5 +40,15 @@ Vagrant.configure("2") do |config|
         v.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
     end
 
-    config.vm.provision "file", source: "#{commonScriptsDir}/wintriallab-postinstall.psm1", destination: "marionettist/wintriallab-postinstall.psm1"
+    begin
+        Dir.mkdir('./synced')
+    rescue
+        puts "./synced is already created I guess idk"
+    end
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.synced_folder "./synced", "/vagrant", create: true
+    FileUtils.cp "#{commonScriptsDir}/wintriallab-postinstall.psm1", "./synced/wintriallab-postinstall.psm1"
+    FileUtils.cp "./provision-dlpvpns.ps1", "./synced/provision-dlpvpns.ps1"
+
+    config.vm.provision "shell", inline: "C:/vagrant/provision-dlpvpns.ps1"
 end

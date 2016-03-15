@@ -39,6 +39,6 @@ Invoke-ScriptblockAndCatch -scriptBlock {
     }
     Set-UserOptions @suoParams
 
-    Install-CompiledDotNetAssemblies   # Takes about 15 minutes for me 
-    Compress-WindowsInstall            # Takes maybe another 15 minutes
+    #Install-CompiledDotNetAssemblies   # Takes about 15 minutes for me 
+    #Compress-WindowsInstall            # Takes maybe another 15 minutes
 }

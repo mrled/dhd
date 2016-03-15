@@ -8,8 +8,8 @@ Vagrant.require_version ">= 1.6.2"
 
 Vagrant.configure("2") do |config|
     #config.vm.define "gheis-" + DateTime.now.strftime("%Y-%m-%d-%H-%M-%S")
-    config.vm.define "gheis-2015-11-20"
-    config.vm.box = "windows_10_x86_virtualbox.box"
+    config.vm.define "gheis-2016-02-05"
+    config.vm.box = "wintriallab-windows_10_x86"
     config.vm.communicator = "winrm"
     
     config.vm.hostname = "gheis"
@@ -24,21 +24,25 @@ Vagrant.configure("2") do |config|
     config.vm.network :forwarded_port, guest: 3389, host: 33389, id: "rdp", auto_correct: true
 
     config.vm.provider :virtualbox do |v, override|
-        #v.gui = true
+        v.gui = true
         v.customize ["modifyvm", :id, "--memory", 2048]
         v.customize ["modifyvm", :id, "--cpus", 2]
-        v.customize ["setextradata", "global", "GUI/SuppressMessages", "all" ]
+        #v.customize ["setextradata", "global", "GUI/SuppressMessages", "all" ]
         v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
         v.customize ["modifyvm", :id, "--vram", 128]
         v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
         v.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
     end
 
-    Dir.mkdir('./synced')
+    begin
+        Dir.mkdir('./synced')
+    rescue
+        puts "./synced is already created I guess idk"
+    end
     config.vm.synced_folder ".", "/vagrant", disabled: true
     config.vm.synced_folder "./synced", "/vagrant", create: true
-    FileUtils.cp "../../scripts/wintriallab-postinstall.psm1" "./synced/"
-    FileUtils.cp "./bitchbox-postinstall.ps1" "./synced/"
+    FileUtils.cp "../../scripts/wintriallab-postinstall.psm1", "./synced/"
+    FileUtils.cp "./gheis-postinstall.ps1", "./synced/"
     
-    config.vm.provision "shell", inline: "C:/marionettist/bitchbox-postinstall.ps1"
+    config.vm.provision "shell", inline: "C:/marionettist/gheis-postinstall.ps1"
 end

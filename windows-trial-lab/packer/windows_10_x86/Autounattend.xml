@@ -128,7 +128,7 @@
 
                 <SynchronousCommand wcm:action="add">
                     <!-- This task MUST include enabling winrm for Packer to be able to continue -->
-                    <CommandLine>powershell.exe -File A:\autounattend-postinstall.ps1</CommandLine>
+                    <CommandLine>powershell.exe -File A:\autounattend-postinstall.ps1 -SkipWindowsUpdates</CommandLine>
                     <Description>Run Postinstall Script</Description>
                     <Order>99</Order>
                     <RequiresUserInput>true</RequiresUserInput>

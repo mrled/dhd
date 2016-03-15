@@ -186,7 +186,7 @@ function Invoke-ScriptblockAndCatch {
         Invoke-Command $scriptBlock
     }
     catch {
-        Write-ErrorStackToEventLog -errorStack $_ 
+        Write-ErrorStackToEventLog -errorStack $error
         exit $failureExitCode
     }
 }
@@ -415,20 +415,20 @@ function Install-CompiledDotNetAssemblies {
     # http://robrelyea.wordpress.com/2007/07/13/may-be-helpful-ngen-exe-executequeueditems/
     # Don't check the return value - sometimes it fails and that's fine
     
-    $ngen32 = "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
-    Invoke-ExpressionEx "$ngen32 update /force /queue"
-    Invoke-ExpressionEx "$ngen32 executequeueditems"
-    # set-alias ngen32 "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
-    # ngen32 update /force /queue
-    # ngen32 executequeueditems
+    $ngen32path = "${env:WinDir}\microsoft.net\framework\v4.0.30319\ngen.exe"
+    # Invoke-ExpressionEx "$ngen32path update /force /queue"
+    # Invoke-ExpressionEx "$ngen32path executequeueditems"
+    set-alias ngen32 $ngen32path
+    ngen32 update /force /queue
+    ngen32 executequeueditems
         
     if ((Get-OSArchitecture) -match $ArchitectureId.amd64) { 
-        # set-alias ngen64 "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
-        # ngen64 update /force /queue
-        # ngen64 executequeueditems
-        $ngen64 = "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
-        Invoke-ExpressionEx "$ngen64 update /force /queue"
-        Invoke-ExpressionEx "$ngen64 executequeueditems"
+        $ngen64path = "${env:WinDir}\microsoft.net\framework64\v4.0.30319\ngen.exe"
+        # Invoke-ExpressionEx "$ngen64path update /force /queue"
+        # Invoke-ExpressionEx "$ngen64path executequeueditems"
+        set-alias ngen64 $ngen64path
+        ngen64 update /force /queue
+        ngen64 executequeueditems
     }
 }
 
@@ -438,19 +438,19 @@ function Compress-WindowsInstall {
         $udfZipPath = Get-WebUrl -url $URLs.UltraDefragDownload.$OSArch -outDir $env:temp
         $udfExPath = "${env:temp}\ultradefrag-portable-6.1.0.$OSArch"
         # This archive contains a folder - extract it directly to the temp dir
-        Invoke-ExpressionEx -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
+        Invoke-ExpressionEx -command ('sevenzip x "{0}" "-o{1}"' -f $udfZipPath,$env:temp)
 
         $sdZipPath = Get-WebUrl -url $URLs.SdeleteDownload -outDir $env:temp
         $sdExPath = "${env:temp}\SDelete"
         # This archive does NOT contain a folder - extract it to a subfolder (will create if necessary)
-        Invoke-ExpressionEx -checkExitCode -command ('sevenzip x "{0}" "-o{1}"' -f $sdZipPath,$sdExPath)
+        Invoke-ExpressionEx -command ('sevenzip x "{0}" "-o{1}"' -f $sdZipPath,$sdExPath)
 
         stop-service wuauserv
         rm -recurse -force ${env:WinDir}\SoftwareDistribution\Download
         start-service wuauserv
 
-        Invoke-ExpressionEx -checkExitCode -logToStdout -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
-        Invoke-ExpressionEx -checkExitCode -command ('& {0} /accepteula -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
+        Invoke-ExpressionEx -logToStdout -command ('& {0} --optimize --repeat "{1}"' -f "$udfExPath\udefrag.exe","$env:SystemDrive")
+        Invoke-ExpressionEx -command ('& {0} /accepteula -q -z "{1}"' -f "$sdExPath\SDelete.exe",$env:SystemDrive)
     }
     finally {
         rm -recurse -force $udfZipPath,$udfExPath,$sdZipPath,$sdExPath -ErrorAction Continue

@@ -24,7 +24,7 @@ PREREQUISITES:
     [parameter(mandatory=$true,ParameterSetName="VagrantUp")]    [switch] $VagrantUp,
     [parameter(mandatory=$true,ParameterSetName="ShowConfig")]   [switch] $ShowConfig,
 
-    #[string] $baseOutDir = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\iso\wintriallabl"),
+    #[string] $baseOutDir = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\iso\wintriallab"),
     [string] $baseOutDir = "E:\Micah\iso\wintriallab",
     [string] $tempDirOverride,
     [string] $tag,
@@ -68,9 +68,6 @@ function Build-PackerFile {
     [cmdletbinding()]
     param(
         [parameter(mandatory=$true)] $packerFile,
-        [parameter(mandatory=$true)] $vagrantTemplate,
-        [parameter(mandatory=$true)] [string] $vagrantBoxName,
-        $tag,
         $packerCacheDir,
         $outDir,
         [switch] $force,
@@ -82,11 +79,24 @@ function Build-PackerFile {
     if ($packerCacheDir) { $env:PACKER_CACHE_DIR = $packerCacheDir }
 
     if (test-path $outDir) {
-        if ($force) { rm -force -recurse $outDir }
-        else        { throw "Outdir already exists at '$outDir'" }
+        if ($force) { 
+            rm -force -recurse $outDir 
+        }
+        else {
+            throw "Outdir already exists at '$outDir'" 
+        }
     }
 
-    pushd (get-item $packerFile | select -expand fullname | split-path -parent)
+    $packerDir = get-item $packerFile | select -expand fullname | split-path -parent
+    if (Test-Path "$packerDir\output-*") {
+        if ($force) { 
+            rm -recurse -force "$packerDir\output-*"
+        }
+        else {
+            throw "Existing packer tmp dir(s) at '$packerDir\output-*'"
+        }
+    }
+    pushd $packerDir
     try { 
         write-host "Building packer file '$($packerFile.fullname)' to directory '$outDir'..."
         $packerCall = ''
@@ -108,7 +118,6 @@ function Build-PackerFile {
     if ($outBox.fullname -notmatch [Regex]::Escape($packedBoxPath)) { 
         throw "Found an output box '$outBox', but it doesn't match the expected packed box path of '$packedBoxPath'"
     }
-    cp "$vagrantTemplate" "$outDir\Vagrantfile"
     write-verbose "Packed .box file: '$packedBoxPath'"
 }
 
@@ -205,17 +214,7 @@ if ($baseConfigName) {
 }
 
 if ($BuildPacker) {
-    $bpfParam = @{
-        packerFile = $packerFile
-        vagrantTemplate = $vagrantTemplate
-        vagrantBoxName = $fullConfigName
-        tag = $tag
-        packerCacheDir = $packerCacheDir
-        outDir = $packerOutDir
-        force = $force
-        whatIf = $whatIf
-    }
-    Build-PackerFile @bpfParam
+    Build-PackerFile -packerFile $packerFile -packerCacheDir $packerCacheDir -outDir $packerOutDir -force:$force -whatif:$whatif
 }
 if ($AddToVagrant) {
     Add-BoxToVagrant -vagrantBoxName $fullConfigName -packedBoxPath $packedBoxPath -force:$force -whatif:$whatif
