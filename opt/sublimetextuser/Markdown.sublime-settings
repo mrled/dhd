@@ -13,7 +13,7 @@
 	    "txt"
 	],
 	"trim_trailing_whitespace_on_save": false,
-	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
+	//"color_scheme": "Packages/Color Scheme - Default/Eiffel.tmTheme",
 
 	//"font_face": "Menlo",
 	//"font_options": [ "subpixel_antialias", "no_round", "directwrite"],
@@ -24,6 +24,7 @@
 	//"auto_match_enabled": true,
 	"line_padding_top": 0,
 	//"caret_style": "wide",
-	"highlight_line": false,
+	"line_numbers": true,
+	"highlight_line": true,
 	"match_header_hashes": false
 }
