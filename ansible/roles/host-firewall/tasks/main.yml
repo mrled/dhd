@@ -8,4 +8,6 @@
 - name: Install basic config file
   template: src=ferm.conf.j2 dest=/etc/ferm/ferm.conf
   notify:
-  - apply-firewall
+  - restart-ferm
+- name: apply-firewall
+  service: name=ferm state=started
