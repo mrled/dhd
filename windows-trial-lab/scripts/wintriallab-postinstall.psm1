@@ -53,6 +53,63 @@ $script:ScriptPath = $MyInvocation.MyCommand.Path
     
 ### Private support functions I use behind the scenes
 
+<#
+.description
+Do some very basic filename sanitization
+#>
+function Get-SanitizedFilename {
+    [cmdletbinding()] param(
+        [Parameter(Mandatory=$true)] [String] $fileName
+    )
+    $invalidChars = [System.IO.Path]::GetInvalidFileNameChars()
+    $replacementCharacter = "_"
+    $newName = [System.String]::Copy($fileName)
+    foreach ($invChar in $invalidChars) {
+        $newName = $newName.Replace($invChar, $replacementCharacter)
+    }
+    return $newName
+}
+
+<#
+.synopsis
+Get a rooted path
+.notes
+Especially useful for .NET functions, which don't understand Powershell's $pwd, and instead have their own concept of the working directory, which is (in any normal case) always %USERPROFILE%. This means that if you do this:
+
+    cd C:\Windows
+    (New-Object System.Net.WebClient).DownloadFile("http://example.com/file.txt", "./file.txt")
+
+... the file will be downloaded to %USERPROFILE%\file.txt, not C:\Windows\file.txt
+#>
+function Get-RootedPath {
+    [cmdletbinding()] param(
+        [Parameter(Mandatory=$true)] [String] $path
+    )
+    if (-not [System.IO.Path]::IsPathRooted($path)) {
+        $path = Join-Path -Path $pwd -ChildPath $path
+    }
+    try {
+        $rootedPath = [System.IO.Path]::GetFullPath($path)
+    }
+    catch {
+        Write-Error "Failed to validate path '$path'"
+        throw $_
+    }
+    return $rootedPath
+}
+
+<#
+.synopsis
+Download a URL from the web
+.parameter url
+The URL to download
+.parameter outDir
+Save the file to this directory. The filename will be the last part of the URL. This will make sense for a basic case like http://example.com/file.txt, but might be a little ugly for URLs like http://example.com/?product=exampleProduct&version=exampleVersion
+.parameter outFile
+Save the file to this exact filename.
+.notes
+Why not use Invoke-WebRequest or Invoke-RestMethod? Because those are not available before Powershell 3.0, and I still want to be able to use this function on vanilla Windows 7 (hopefully just before applying all updates and getting a more recent Powershell, but still.)
+#>
 function Get-WebUrl {
     [cmdletbinding(DefaultParameterSetName="outDir")] param(
         [parameter(mandatory=$true)] [string] $url,
@@ -60,12 +117,15 @@ function Get-WebUrl {
         [parameter(mandatory=$true,ParameterSetName="outFile")] [string] $outFile
     )
     if ($PScmdlet.ParameterSetName -match "outDir") {
-        $filename = [System.IO.Path]::GetFileName($url)
-        $outFile = "$outDir\$filename"
+        # If the URL is http://example.com/whatever/somefile.txt, the last URL component is somefile.txt
+        $lastUrlComponent = [System.IO.Path]::GetFileName($url)
+        $filename = Get-SanitizedFilename -fileName $lastUrlComponent
+        $outFile = Join-Path -Path $outDir -ChildPath $fileName
     }
-    $outFile = [IO.Path]::GetFullPath($outFile)
+    $outFile = Get-RootedPath $outFile
+    Write-EventLogWrapper "Downloading '$url' to '$outFile'..."
     (New-Object System.Net.WebClient).DownloadFile($url, $outFile)
-    return (get-item $outFile)
+    return (Get-Item $outFile)
 }
 
 <#
@@ -504,6 +564,70 @@ function Install-Chocolatey {
     # TODO: capture and log output
     $chocoOutput = iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
     Write-EventLogWrapper "Chocolatey install process completed:`r`n`r`n$chocoOutput"
+}
+
+<#
+.notes
+One nice thing about FF and Chrome is that you don't have to handle updates yourself - they both install services that update the browser for you
+#>
+function Install-Firefox {
+    [cmdletbinding()] param(
+        [ValidateSet("Standard","ESR")] [String] $edition = "Standard",
+        [String] $language = "en-US"
+    )
+    switch ($edition) {
+        "Standard" {$downloadPageUrl = 'https://www.mozilla.org/en-US/firefox/all/'}
+        "ESR"      {$downloadPageUrl = 'https://www.mozilla.org/en-US/firefox/organizations/all'}
+    }
+    $osarch = Get-OSArchitecture
+    switch ($osarch) {
+        $ArchitectureId.amd64 {$os = 'win64'}
+        $ArchitectureId.i386 {$os = 'win'}
+    }
+    $firefoxIniFile = "${env:temp}\firefox-installer.ini"
+
+    try {
+        Write-EventLogWrapper "Finding download location for $edition edition of Firefox..."
+        $response = Invoke-WebRequest -Uri $downloadPageUrl
+        $downloadUrl = $response.ParsedHtml.getElementById($language).getElementsByClassName('download win')[0].getElementsByTagName('a') | Select -Expand href
+        $firefoxInstallerFile = Get-WebUrl -url $downloadUrl -outFile "${env:temp}\firefox-installer.exe"
+
+        $firefoxIniContents = @(
+            "QuickLaunchShortcut=false"
+            "DesktopShortcut=false"
+        )
+        Out-File -FilePath $firefoxIniFile -InputObject $firefoxIniContents -Encoding UTF8
+        Write-EventLogWrapper "Beginning Firefox installation process..."
+        $process = Start-Process -FilePath $firefoxInstallerFile.FullName -ArgumentList @("/INI=`"$firefoxIniFile`"") -Wait
+        if ($process.ExitCode -ne 0) {
+            throw "Firefox installer at $($firefoxInstallerFile.FullName) exited with code $($process.ExitCode)"
+        }
+    }
+    catch {
+        @($firefoxInstallerFile,$firefoxIniFile) |% { if ($_ -and (Test-Path $_)) { Remove-Item $_ } }
+        throw $_
+    }
+
+    Write-EventLogWrapper "Firefox installation process complete"
+    Remove-Item @($firefoxInstallerFile,$firefoxIniFile)
+}
+
+function Set-FirefoxOptions {
+    [cmdletbinding()] param(
+        [switch] $setDefaultBrowser
+    )
+    @($env:ProgramFiles,${env:ProgramFiles(x86)}) |% {
+        $testPath = "$_\Mozilla Firefox\firefox.exe"
+        if (Test-Path $testPath) {$ffPath = $testPath} 
+    }
+    if (-not $ffPath) { throw "Could not find the Firefox install location." }
+    if ($setDefaultBrowser) { 
+        Start-Process -FilePath $ffPath -ArgumentList @("-silent", "-setDefaultBrowser") -Wait -Verb RunAs
+        # This didn't appear to work:
+        # $defaultBrowserPath = "HKCU:\Software\Classes\http\shell\open\command"
+        # $defaultBrowserValue = '"{0}" -osint -url "%1"' -f $ffPath
+        # Set-ItemProperty -path $defaultBrowserPath -name "(default)" -value $defaultBrowserValue
+    }
 }
 
 function Set-UserOptions {
