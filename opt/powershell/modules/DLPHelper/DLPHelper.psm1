@@ -473,3 +473,40 @@ function Get-OctopusVariables {
     }
     $retval | sort -Unique
 }
+
+function Get-LogisticsFile {
+    [cmdletbinding()] param(
+        [string[]] $client = "*",
+        [string[]] $repository = "*",
+        [string[]] $namedPattern,
+        [string[]] $notNamedPattern,
+        [string] $containingPattern,
+        [string] $notContainingPattern
+    )
+
+    $gciParams = @{}
+    $gciParams["Recurse"] = $true
+    $gciParams["File"] = $true
+
+    $clientPath = Get-Item "${DLPHelperProjectBase}*" -include $client
+    $repoPath = $clientPath |% { Get-Item "$_\*" -include $repository }
+    $logisticsPath = $repoPath |? { Test-Path "$_\logistics" } |% { "$_\logistics" }
+    $gciParams["Path"] = $logisticsPath
+
+    if ($namedPattern) { $gciParams["Include"] = $namedPattern }
+    if ($notNamedPattern) { $gciParams["Exclude"] = $notNamedPattern }
+
+    Write-Verbose "GCI params: "
+    $gciParams.keys |% { Write-Verbose "  $_ = $($gciParams[$_])"}
+    #$logisticsFiles = Get-ChildItem @gciParams |? { $_.GetType().Name -eq "FileInfo" } 
+    $logisticsFiles = Get-ChildItem @gciParams
+
+    if ($containingPattern) {
+        $logisticsFiles = $logisticsFiles |? { Select-String -Pattern $containingPattern -Path $_ -Quiet }
+    }
+    if ($notContainingPattern) {
+        $logisticsFiles = $logisticsFiles |? { Select-String -NotMatch -Pattern $notContainingPattern -Path $_ -Quiet }
+    }
+
+    return $logisticsFiles
+}
