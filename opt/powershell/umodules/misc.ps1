@@ -1487,7 +1487,7 @@ extracted, delete the existing item first.
 function Extract-FuckingArchive {
     [cmdletbinding()] param(
         [parameter(mandatory=$true)] [string[]] $archive,
-        [string] $outDir = "$pwd",
+        [string] $outDir,
         [switch] $force
     )
 
@@ -1504,34 +1504,28 @@ function Extract-FuckingArchive {
     function fuckingExtractOneLayer {
         [cmdletbinding()] param(
             [parameter(mandatory=$true)] [System.IO.FileInfo] $archive,
-            [parameter(mandatory=$true,parametersetname="outdir")] [System.IO.DirectoryInfo] $outDir,
-            [parameter(mandatory=$true,parametersetname="nooutdir")] [switch] $noOutDir
+            [parameter(mandatory=$true,parametersetname="outDir")] [System.IO.DirectoryInfo] $outDir,
+            [parameter(mandatory=$true,parametersetname="noOutDir")] [switch] $noOutDir
         )
 
-        if ($noOutDir) { 
-            $outdir = $archive.directory.fullname
-            $feTempDir = $outdir
+        if ($noOutDir) {
+            $outDir = $archive.directory.fullname
         }
         else {
-            $outdir = (get-item $outdir).fullname
-            $feTempDir = "$outDir\fuckingextract-$([System.IO.Path]::GetRandomFileName())"
-            if (test-path $feTempDir) {
+            $tempDirName = "fuckingextract-" + [System.IO.Path]::GetRandomFileName()
+            $outDir = "$($outDir.fullname)\$tempDirName"
+            if (test-path $outDir) {
                 throw "The temporary directory that already exists"
             }
-            mkdir $feTempDir | out-null
+            mkdir $outDir | out-null
         }
 
-        $7zcmd = "7z x `"-o$feTempDir`" `"$($archive.fullname)`""
-
+        $7zcmd = '7z x "-o{0}" "{1}"' -f @($outDir, $archive.fullName)
         $7zout = iex $7zcmd
-
         if ($LASTEXITCODE -ne 0) {
-            throw ("7z exited with code $LASTEXITCODE",
-                "`n`tcommand line: $7zcmd",
-                "`n`toutput: `n$7zout")
+            throw "7z exited with code $LASTEXITCODE`n`tcommand line: $7zcmd`n`toutput: `n$7zout"
         }
-
-        return $feTempDir
+        return $outDir
     }
 
     try {
@@ -1543,10 +1537,13 @@ function Extract-FuckingArchive {
 
     $secondLayerExtensions = @(".tar") # There aren't any more that I can think of?
 
-    if (-not (test-path $outDir)) {
+    if (-not $outDir) {
+        $outDir = $pwd
+    }
+    elseif (-not (test-path $outDir)) {
         mkdir -force $outDir | out-null
     }
-    $outdir = get-item $outdir
+    $outDirItem = get-item $outDir
 
     $outFiles = @()
     foreach ($arch in $archive) {
@@ -1556,7 +1553,7 @@ function Extract-FuckingArchive {
         # this will be used as the eventual directory name to extract to 
         $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($archItem.name)
 
-        $exDir = fuckingExtractOneLayer -archive $archItem -outdir $outdir
+        $exDir = fuckingExtractOneLayer -archive $archItem -outdir $outDirItem
         write-verbose "Using temporary extraction directory: $exDir"
         $exItems = gci $exDir
 
@@ -1575,13 +1572,10 @@ function Extract-FuckingArchive {
 
         # If there is only one item in the archive, we don't need the 
         # extraction directory - just move the item into the output dir
-        # If there's more than one, then rename the dir to the bare name of the
-        # archive
-        # TODO: add a -force flag 
         if ($exItems.count -eq 1) {
             $outItem = $exItems[0]
-            $outItemName = "$($outdir.fullname)\$($outItem.name)"
-            write-verbose "Only one item in archive: '$($outItem.fullname)'; moving to '$($outdir.fullname)'"
+            $outItemName = "$($outDirItem.fullname)\$($outItem.name)"
+            write-verbose "Only one item in archive: '$($outItem.fullname)'; moving to '$($outDirItem.fullname)'"
 
             if ((test-path $outItemName) -and $force) {
                 write-verbose "Found existing item at '$outItemName' but -force was specified; removing..."
@@ -1594,8 +1588,10 @@ function Extract-FuckingArchive {
             $outFiles += @( mv $outItem.fullname $outItemName -passthru )
             rm -recurse $exDir
         }
+        # If there's more than item in the archive, then rename the dir to the
+        # bare name of the archive
         else {
-            $outItemName = "$($outdir.fullName)\$archBareName"
+            $outItemName = "$($outDirItem.fullName)\$archBareName"
             write-verbose "Multiple items in archive; moving temporary extraction directory to '$outItemName'"
 
             if ((test-path $outItemName) -and $force) {
