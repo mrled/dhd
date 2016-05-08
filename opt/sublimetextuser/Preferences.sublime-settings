@@ -1,12 +1,13 @@
 {
 	"caret_style": "wide",
 	"color_scheme": "Packages/Color Scheme - Default/Eiffel.tmTheme",
-	"font_size": 13,
+	"font_size": 12,
 	"ignored_packages":
 	[
 		"Markdown",
 		"Vintage"
 	],
+	"scroll_past_end": true,
 	"show_encoding": true,
 	"tab_size": 4,
 	"theme": "Soda Light.sublime-theme",
