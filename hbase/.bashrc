@@ -7,7 +7,6 @@
 h="${HOME}"
 PATH=
 d=
-d="${d} $h/.rvm/bin"
 d="${d} $h/opt/bin $h/opt/sbin $h/.dhd/opt/bin"
 d="${d} $h/opt/homebrew/bin $h/opt/homebrew/sbin"
 d="${d} /opt/homebrew/bin /opt/homebrew/sbin"
@@ -22,6 +21,14 @@ for p in ${d}; do
     if [ -d ${p} ]; then PATH="${PATH}${p}:"; fi
 done
 export PATH
+
+if type -P ruby >/dev/null; then
+    usrdir=$(ruby -rubygems -e 'puts Gem.user_dir')
+    sysdir=$(ruby -rubygems -e 'puts Gem.dir')
+    if [ -d $usrdir ]; then PATH="${PATH}:$usrdir/bin"; fi
+    if [ -d $sysdir ]; then PATH="${PATH}:$sysdir/bin"; fi
+    unset usrdir sysdir
+fi
 
 # Homebrew library bullshit
 # This doesn't seem to work??
