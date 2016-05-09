@@ -55,6 +55,25 @@ $script:ScriptPath = $MyInvocation.MyCommand.Path
 
 <#
 .description
+Add a line to a file idempotently; that is, if the line is not already present in the file, add it, but if it is already present, then do nothing
+#>
+function Add-FileLineIdempotently {
+    [CmdletBinding()] param(
+        [Parameter(Mandatory=$true)] [String] $file,
+        [Parameter(Mandatory=$true)] [String[]] $newLine,
+        [Parameter(Mandatory=$true)] [String] $encoding = "UTF8"
+    )
+    if (-not (Test-Path $file)) { New-Item -ItemType File -Path $file | Out-Null }
+    $origContents = Get-Content $file
+    $newLine |% { 
+        if ($origContents -notcontains $_) {
+            Out-File -FilePath $file -InputObject $_ -Encoding $encoding -Append
+        }
+    }
+}
+
+<#
+.description
 Do some very basic filename sanitization
 #>
 function Get-SanitizedFilename {
@@ -566,6 +585,20 @@ function Install-Chocolatey {
     Write-EventLogWrapper "Chocolatey install process completed:`r`n`r`n$chocoOutput"
 }
 
+function Get-FirefoxInstallDirectory {
+    [cmdletbinding()] param()
+    @($env:ProgramFiles,${env:ProgramFiles(x86)}) |% {
+        $testPath = "$_\Mozilla Firefox"
+        if (Test-Path "$testPath\firefox.exe") {$ffDir = $testPath}
+    }
+    if (-not $ffDir) { 
+        throw "Could not find the Firefox install location." 
+    }
+    else {
+        return $ffDir
+    }
+}
+
 <#
 .notes
 One nice thing about FF and Chrome is that you don't have to handle updates yourself - they both install services that update the browser for you
@@ -589,7 +622,7 @@ function Install-Firefox {
     try {
         Write-EventLogWrapper "Finding download location for $edition edition of Firefox..."
         $response = Invoke-WebRequest -Uri $downloadPageUrl
-        $downloadUrl = $response.ParsedHtml.getElementById($language).getElementsByClassName('download win')[0].getElementsByTagName('a') | Select -Expand href
+        $downloadUrl = $response.ParsedHtml.getElementById($language).getElementsByClassName("download $os")[0].getElementsByTagName('a') | Select -Expand href
         $firefoxInstallerFile = Get-WebUrl -url $downloadUrl -outFile "${env:temp}\firefox-installer.exe"
 
         $firefoxIniContents = @(
@@ -598,7 +631,7 @@ function Install-Firefox {
         )
         Out-File -FilePath $firefoxIniFile -InputObject $firefoxIniContents -Encoding UTF8
         Write-EventLogWrapper "Beginning Firefox installation process..."
-        $process = Start-Process -FilePath $firefoxInstallerFile.FullName -ArgumentList @("/INI=`"$firefoxIniFile`"") -Wait
+        $process = Start-Process -FilePath $firefoxInstallerFile.FullName -ArgumentList @("/INI=`"$firefoxIniFile`"") -Wait -PassThru
         if ($process.ExitCode -ne 0) {
             throw "Firefox installer at $($firefoxInstallerFile.FullName) exited with code $($process.ExitCode)"
         }
@@ -612,22 +645,214 @@ function Install-Firefox {
     Remove-Item @($firefoxInstallerFile,$firefoxIniFile)
 }
 
+function Uninstall-Firefox {
+    [cmdletbinding()] param()
+    $ffDir = Get-FirefoxInstallDirectory
+    $ffUninstallHelper = Get-Item "$ffDir\uninstall\helper.exe"
+    $process = Start-Process -FilePath $ffUninstallHelperPath.FullName -ArgumentList "/S" -Wait -PassThru
+    if ($process.ExitCode -ne 0) {
+        throw "Firefox uninstall helper at $($ffUninstallHelper.FullName) exited with code $($process.ExitCode)"
+    }
+    Remove-Item -Recurse -Force $ffDir
+}
+
+<#
+.parameter systemDisableImportWizard
+Don't run the import wizard when starting Firefox for the first time
+.parameter systemDisableWhatsNew
+Don't open dumb tabs that no one needs when starting Firefox for the first time
+See also: http://kb.mozillazine.org/Browser.startup.homepage_override.mstone
+.parameter systemEnableGlobalAddOns
+By default, add-ons that are installed to the global Firefox application directory are available to users, but disabled by default. Enable them by default instead.
+.parameter userDeleteConfiguration
+Wipe out the configuration, including profiles, of the current user
+.parameter userSetDefaultBrowser
+Set Firefox to be the default browser for the current user
+.notes
+Parameters prepended with "system" affect all Firefox users on the entire machine
+
+Parameters prepended with "user" affect only the current user's Firefox configuration
+#>
 function Set-FirefoxOptions {
     [cmdletbinding()] param(
-        [switch] $setDefaultBrowser
+        [switch] $systemDisableImportWizard,
+        [switch] $systemDisableWhatsNew,
+        [switch] $systemEnableGlobalAddOns,
+        [string[]] $systemInstallAddOnsFromUrl,
+        [switch] $userDeleteConfiguration,
+        [switch] $userSetDefaultBrowser
     )
-    @($env:ProgramFiles,${env:ProgramFiles(x86)}) |% {
-        $testPath = "$_\Mozilla Firefox\firefox.exe"
-        if (Test-Path $testPath) {$ffPath = $testPath} 
+    $ffDir = Get-FirefoxInstallDirectory
+    $ffPath = "$ffDir\firefox.exe"
+
+    function Test-LockCfgSetting {
+        param(
+            [String] $name,
+            [String] $lockFile = "$(Get-FirefoxInstallDirectory)\mozilla.cfg"
+        )
+        if (-not (Test-Path $lockFile)) { return $false }
+        foreach ($line in (Get-Content $lockFile)) {
+            if ($line -match "`"$name`"") {
+                return $true
+            }
+        }
+        return $false
     }
-    if (-not $ffPath) { throw "Could not find the Firefox install location." }
-    if ($setDefaultBrowser) { 
+
+    function Remove-LockCfgSetting {
+        param(
+            [String] $name,
+            [String] $lockFile = "$(Get-FirefoxInstallDirectory)\mozilla.cfg"
+        )
+        $newLockFileContents = @()
+        foreach ($line in (Get-Content $lockFile)) {
+            if ($line -notmatch "`"$name`"") {
+                $newLockFileContents += @($line)
+            }
+        }
+        Out-File -InputObject $newLockFileContents -FilePath $lockFile -Encoding ASCII -Force
+    }
+
+    function Add-LockCfgSetting {
+        param(
+            [String] $name,
+            $value,
+            [String] $lockFile = "$(Get-FirefoxInstallDirectory)\mozilla.cfg"
+        )
+
+        if ($value.GetType().FullName -match "System.Int*") {
+            $wrappedValue = $value
+        }
+        else {
+            $wrappedValue = "`"$value`""
+        }
+        $newSettingLine = 'pref("{0}", {1});' -f $name, $wrappedValue
+
+        if (-not (Test-Path $lockFile)) {
+            Out-File -InputObject "//" -FilePath $lockFile -Encoding "ASCII"
+        }
+        if (Test-LockCfgSetting -name $name -lockFile $lockFile) {Remove-LockCfgSetting -name $name -lockFile $lockFile}
+        Add-FileLineIdempotently -file $lockFile -Encoding ASCII -newLine $newSettingLine
+    }
+
+    <#
+    .notes
+    We assume that $lockPrefFile is unique to us and we can always overwrite it
+    See also: http://kb.mozillazine.org/Locking_preferences
+    #>
+    function Enable-LockCfg {
+        [cmdletbinding()] param(
+            [String] $lockPrefFile = "$(Get-FirefoxInstallDirectory)\defaults\pref\marionettist-locked-configuration.js"
+        )
+        $lockPrefContents = @(
+            'pref("general.config.obscure_value", 0);' # only needed if you do not want to obscure the content with ROT-13
+            'pref("general.config.filename", "mozilla.cfg");'
+        )
+        Out-File -InputObject $lockPrefContents -FilePath $lockPrefFile -Encoding ASCII -Force
+    }
+
+    if ($systemDisableImportWizard) {
+        $overrideIniContents = @(
+            '[XRE]'
+            'EnableProfileMigrator=false'
+        )
+        Out-File -InputObject $overrideIniContents -FilePath "$ffDir\browser\override.ini" -Encoding UTF8
+    }
+    if ($systemDisableWhatsNew) {
+        Add-LockCfgSetting -name "browser.startup.homepage_override.mstone" -value "ignore"
+        Enable-LockCfg
+    }
+    if ($systemEnableGlobalAddOns) {
+        $globalAddOnsPrefFile = "$ffDir\defaults\pref\marionettist-enable-global-add-ons"
+        Add-FileLineIdempotently -file "$globalAddOnsPrefFile" -Encoding ASCII -newLine @(
+            'pref("extensions.enabledScopes", "0");'
+            'pref("extensions.autoDisableScopes", 0);'
+            'pref("extensions.shownSelectionUI", true);'
+            'pref("extensions.autoDisableScopes", 0);'
+        )
+    }
+    if ($systemInstallAddOnsFromUrl) {
+        foreach ($url in $systemInstallAddOnsFromUrl) {
+            Install-FirefoxAddOnGlobally $url
+        }
+    }
+    if ($userDeleteConfiguration) {
+        Get-Process |? Name -eq "firefox" | Stop-Process
+        @("${env:AppData}\Mozilla\Firefox", "${env:LocalAppData}\Mozilla\Firefox") |% { if (test-path $_) {Remove-Item -Recurse -Force $_} }
+    }
+    if ($userSetDefaultBrowser) { 
         Start-Process -FilePath $ffPath -ArgumentList @("-silent", "-setDefaultBrowser") -Wait -Verb RunAs
         # This didn't appear to work:
         # $defaultBrowserPath = "HKCU:\Software\Classes\http\shell\open\command"
         # $defaultBrowserValue = '"{0}" -osint -url "%1"' -f $ffPath
         # Set-ItemProperty -path $defaultBrowserPath -name "(default)" -value $defaultBrowserValue
     }
+}
+
+<#
+.parameter latestDownloadUrl
+Obtain this parameter by going to the site for the add-on at addons.mozilla.org and copying the link from under the "Add to Firefox" button
+.notes
+Since recent versions of Firefox, you must use only signed add-ons, which typically means you have to get them from addons.mozilla.org
+
+See also: https://support.mozilla.org/en-US/questions/966922
+#>
+function Install-FirefoxAddOnGlobally {
+    [CmdletBinding()] param(
+        [Parameter(Mandatory=$true)] [String] $latestDownloadUrl
+    )
+    $ffDir = Get-FirefoxInstallDirectory
+    $ffSystemExtensionsDir = "$ffDir\browser\extensions"
+
+    # Cannot install from GitHub, because the version posted there is not signed
+    # $latestReleaseUrl = "https://api.github.com/repos/gorhill/uBlock/releases/latest"
+    # $uboXpiInfo = Invoke-RestMethod -Uri $latestReleaseUrl | Select -Expand assets |? -Property content_type -eq "application/x-xpinstall"
+    # $downloadedXpiPath = Get-WebUrl -url $uboXpiInfo.browser_download_url -outDir $ffSystemExtensionsDir
+
+    # Instead, install from addons.mozilla.org:
+    $downloadedXpiPath = Get-WebUrl -url $latestDownloadUrl -outDir $ffSystemExtensionsDir
+
+    $tempExtractDir = Join-Path ${env:temp} $downloadedXpiPath.BaseName
+    sevenzip x -y "-o$tempExtractDir" $downloadedXpiPath
+
+    # For automatic installation, you must install the extension to a folder named after its id, which can be found in the install.rdf of the extension itself:
+    [System.Xml.XmlDocument] $installRdfXml = Get-Content "$tempExtractDir\install.rdf"
+    $deployedExtractDir = Join-Path $ffSystemExtensionsDir $installrdfxml.RDF.Description.id
+    if (Test-Path $deployedExtractDir) { Remove-Item -Force -Recurse $deployedExtractDir }
+    mv $tempExtractDir $deployedExtractDir
+
+    Set-FirefoxOptions -systemEnableGlobalAddOns
+}
+
+<#
+.parameter uniquePreferenceFileName
+We assume that this file is unique to us and we can always overwrite it
+.notes
+See also: https://support.mozilla.org/en-US/questions/966922
+#>
+function Install-FirefoxUBlockOrigin {
+    [CmdletBinding()] param()
+    $ffDir = Get-FirefoxInstallDirectory
+    $ffSystemExtensionsDir = "$ffDir\browser\extensions"
+    $tempExtractDir = Join-Path ${env:temp} 'uBlockOrigin'
+
+    # Cannot install from GitHub, because the version posted there is not signed
+    # $latestReleaseUrl = "https://api.github.com/repos/gorhill/uBlock/releases/latest"
+    # $uboXpiInfo = Invoke-RestMethod -Uri $latestReleaseUrl | Select -Expand assets |? -Property content_type -eq "application/x-xpinstall"
+    # $downloadedXpiPath = Join-Path $ffSystemExtensionsDir $uboXpiInfo.name
+    # Get-WebUrl -url $uboXpiInfo.browser_download_url -outFile $downloadedXpiPath
+    # Instead, install from addons.mozilla.org:
+    Get-WebUrl -url "https://addons.mozilla.org/firefox/downloads/latest/607454/addon-607454-latest.xpi"
+
+    sevenzip x -y "-o$tempExtractDir" $downloadedXpiPath
+
+    # For automatic installation, you must install the extension to a folder named after its id, which can be found in the install.rdf of the extension itself:
+    [System.Xml.XmlDocument] $installRdfXml = Get-Content "$tempExtractDir\install.rdf"
+    $deployedExtractDir = Join-Path $ffSystemExtensionsDir $installrdfxml.RDF.Description.id
+    if (Test-Path $deployedExtractDir) { Remove-Item -Force -Recurse $deployedExtractDir }
+    mv $tempExtractDir $deployedExtractDir
+
+    Set-FirefoxOptions -systemEnableGlobalAddOns
 }
 
 function Set-UserOptions {
