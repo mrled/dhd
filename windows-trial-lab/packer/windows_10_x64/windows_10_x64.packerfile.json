@@ -1,0 +1,56 @@
+{
+  "variables": {
+    "output_directory": "packer-output"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "iso_url": "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X64FRE_EN-US.ISO",
+      "iso_checksum_type": "sha1",
+      "iso_checksum": "56ab095075be28a90bc0b510835280975c6bb2ce",
+      "headless": true,
+      "boot_wait": "2m",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "V@grant123",
+      "winrm_timeout": "24h",
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "guest_os_type": "Windows10_64",
+      "disk_size": 61440,
+      "guest_additions_mode": "attach",
+      "floppy_files": [
+        "./Autounattend.xml",
+        "../../scripts/win-updates.ps1",
+        "../../scripts/enable-winrm.ps1",
+        "../../scripts/wintriallab-postinstall.psm1",
+        "../../scripts/autounattend-postinstall.ps1",
+        "../../scripts/provisioner-postinstall.ps1"
+      ],
+      "vboxmanage": [
+        ["setextradata", "global", "GUI/SuppressMessages", "all" ],
+        ["modifyvm", "{{.Name}}", "--memory", "2048" ], 
+        ["modifyvm", "{{.Name}}", "--cpus",   "2" ],
+        ["modifyvm", "{{.Name}}", "--clipboard", "bidirectional"],
+        ["modifyvm", "{{.Name}}", "--draganddrop", "bidirectional"],
+        ["modifyvm", "{{.Name}}", "--accelerate2dvideo", "on"],
+        ["modifyvm", "{{.Name}}", "--vram", 128]
+      ]
+    }
+  ],
+  "provisioners": [
+
+    {
+      "type": "powershell",
+      "inline": ["A:\\provisioner-postinstall.ps1 -Verbose"]
+    }
+
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "keep_input_artifact": false,
+      "output": "{{user `output_directory`}}/windows_10_x64_{{.Provider}}.box",
+      "vagrantfile_template": "vagrantfile-windows_10_x64.template"
+    }
+  ]
+}
