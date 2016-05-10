@@ -649,7 +649,7 @@ function Uninstall-Firefox {
     [cmdletbinding()] param()
     $ffDir = Get-FirefoxInstallDirectory
     $ffUninstallHelper = Get-Item "$ffDir\uninstall\helper.exe"
-    $process = Start-Process -FilePath $ffUninstallHelperPath.FullName -ArgumentList "/S" -Wait -PassThru
+    $process = Start-Process -FilePath $ffUninstallHelper.FullName -ArgumentList "/S" -Wait -PassThru
     if ($process.ExitCode -ne 0) {
         throw "Firefox uninstall helper at $($ffUninstallHelper.FullName) exited with code $($process.ExitCode)"
     }
@@ -763,12 +763,12 @@ function Set-FirefoxOptions {
         Enable-LockCfg
     }
     if ($systemEnableGlobalAddOns) {
-        $globalAddOnsPrefFile = "$ffDir\defaults\pref\marionettist-enable-global-add-ons"
+        $globalAddOnsPrefFile = "$ffDir\defaults\pref\marionettist-enable-global-add-ons.js"
+        # See also: https://mike.kaply.com/2012/02/21/understanding-add-on-scopes/
         Add-FileLineIdempotently -file "$globalAddOnsPrefFile" -Encoding ASCII -newLine @(
-            'pref("extensions.enabledScopes", "0");'
+            'pref("extensions.enabledScopes", "15");'
             'pref("extensions.autoDisableScopes", 0);'
             'pref("extensions.shownSelectionUI", true);'
-            'pref("extensions.autoDisableScopes", 0);'
         )
     }
     if ($systemInstallAddOnsFromUrl) {
@@ -798,11 +798,20 @@ Since recent versions of Firefox, you must use only signed add-ons, which typica
 See also: https://support.mozilla.org/en-US/questions/966922
 #>
 function Install-FirefoxAddOnGlobally {
-    [CmdletBinding()] param(
-        [Parameter(Mandatory=$true)] [String] $latestDownloadUrl
+    [CmdletBinding(DefaultParameterSetName="Name")] param(
+        [Parameter(ParameterSetName="Url", Mandatory=$true)] [String] $latestDownloadUrl,
+        [Parameter(ParameterSetName="Name", Mandatory=$true)] [String] $addOnName
     )
     $ffDir = Get-FirefoxInstallDirectory
     $ffSystemExtensionsDir = "$ffDir\browser\extensions"
+
+    if ($addOnName) {
+        $downloadPageUrl = "https://addons.mozilla.org/en-US/firefox/addon/$addOnName/"
+        $downloadPageResponse = Invoke-WebRequest -Uri $downloadPageUrl
+        #$downloadUrl = $downloadPageResponse.ParsedHtml.getElementById("addon").getElementsByClassName("install-button")[0].getElementsByTagName('a')[0] | Select -Expand href
+        $addOnId = $downloadPageResponse.ParsedHtml.getElementById("addon").attributes |? { $_.nodeName -eq "data-id" } | Select -Expand nodeValue
+        $latestDownloadUrl = "https://addons.mozilla.org/firefox/downloads/latest/$addOnId/addon-$addOnId-latest.xpi"
+    }
 
     # Cannot install from GitHub, because the version posted there is not signed
     # $latestReleaseUrl = "https://api.github.com/repos/gorhill/uBlock/releases/latest"
