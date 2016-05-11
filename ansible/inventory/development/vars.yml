@@ -1,21 +1,23 @@
 [ovpnserver]
-nullyork.younix.us
+nullyork.micahrl.com
 
 [bitchboxen]
-nullyork.younix.us
+nullyork.micahrl.com
 
 [webappserver]
-nullyork.younix.us
+nullyork.micahrl.com
 
 [all:vars]
 
 ansible_user = root
 
+# Can't change VPN stuff to micahrl.com without regenerating server certificates
 openvpn_server_name = nullyork.younix.us
 openvpn_private_network = 192.168.251.1/24
 
-webapp_hostname = dev.younix.us
-webapp_landing_desc = the STAGING environment for <a href="http://toys.younix.us">http://toys.younix.us</a>
+webapp_hostname = dev.micahrl.com
+webapp_serveradmin_email = me@micahrl.com
+webapp_landing_desc = the STAGING environment for <a href="http://toys.micahrl.com">http://toys.micahrl.com</a>
 
 autobackup_enabled = false
 autobackup_recipient_key_name = no

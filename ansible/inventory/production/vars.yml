@@ -1,11 +1,11 @@
 [ovpnserver]
-noradia.younix.us
+noradia.micahrl.com
 
 [bitchboxen]
-noradia.younix.us
+noradia.micahrl.com
 
 [webappserver]
-noradia.younix.us
+noradia.micahrl.com
 
 [all:vars]
 
@@ -14,7 +14,8 @@ ansible_user = root
 openvpn_server_name = vpn.younix.us
 openvpn_private_network = 192.168.252.1/24
 
-webapp_hostname = toys.younix.us
+webapp_hostname = toys.micahrl.com
+webapp_serveradmin_email = me@micahrl.com
 webapp_landing_desc = my web host for random shit I made
 
 autobackup_enabled = true

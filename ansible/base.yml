@@ -1,4 +1,4 @@
 - hosts: all
   roles:
-  - mail-forwarder
+#  - mail-forwarder
 #  - autoupdate

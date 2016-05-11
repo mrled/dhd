@@ -1,17 +1,7 @@
 <VirtualHost *:80>
-    # currently, younix.us resolves to the same IP as toys.younix.us - my production webapp server
-    # ultimately, would like to resolve it differently
-    # but for now, gonna just redirect users to use the new toys. domain
-    # (NOTE: this will only ever come into play for situations where the client resolves younix.us 
-    # to my apache server - which, under normal circumstances, will only happen in production)
-    ServerName younix.us
-    Redirect / http://{{ webapp_hostname }}/
-</VirtualHost>
-
-<VirtualHost *:80>
 
     ServerName {{ webapp_hostname }}
-    ServerAdmin mrled@younix.us
+    ServerAdmin {{ webapp_serveradmin_email }}
     DocumentRoot {{ webapps_document_root }}
 
     ErrorLog ${APACHE_LOG_DIR}/error.log
