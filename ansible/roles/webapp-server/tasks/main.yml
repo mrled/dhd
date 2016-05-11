@@ -54,12 +54,17 @@
 - name: Copy CherryPy test script
   template: src=testcp.wsgi dest={{ webapps_live_dir }}/test/testcp.wsgi owner=www-data group=www-data mode=755 
 
-# TODO: Ideally, this wouuld NOT chown the dir to www-data:www-data, but would instead make it readable by this user (755/644 perms are fine)
 # TODO: Ideally, the location of the biblemunger sqlite database would be configurable, and we'd put it elsewhere on the filesystem
+# Note: Restart apache if the repo is updated b/c otherwise WSGI can keep an old version of your app around in memory
 - name: Clone biblemunger
   git: repo=https://github.com/mrled/biblemunger dest={{ webapps_clone_dir }}/biblemunger
+  notify: 
+  - restart-apache
+
+# TODO: Ideally, this wouuld NOT chown the dir to www-data:www-data, but would instead make it readable by this user (755/644 perms are fine)
 - name: Set biblemunger permissions
   file: path={{ webapps_clone_dir }}/biblemunger owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
+
 - name: Copy biblemunger to live webapp location
   command: rsync -aP {{ webapps_clone_dir }}/biblemunger/ {{ webapps_live_dir }}/biblemunger/
 - name: Upload biblemunger database backup job
