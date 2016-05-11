@@ -12,6 +12,18 @@ Controlling other machines with puppet strings
 1. If you're doing `sudo pip install ...` make sure to change your `umask`
 2. Ansible doesn't work with python3. Is your `pip` binary for python3 or python2? lol u don't know
 
+## How to deploy
+
+Here's an example of a development deployment
+
+    ansible-playbook --inventory-file=inventory/development site.yml
+
+This will prompt for a password to decrypt the sensitive configuration variables stored in inventory/development/vault.yml
+
+You can save the vault password somewhere on your filesystem so you don't have to type it in every time. `.gitignore` ignores files named `.vault-pass*` to make sure these don't get accidentally commited. Here's how they're used: 
+
+    ansible-playbook --inventory-file=inventory/development --vault-password-file=.vault-pass-development site.yml
+
 ## How to use
 
 The design goals are: *All of my servers should be configured on a local, securable workstation, and all data should be checked into Git*
