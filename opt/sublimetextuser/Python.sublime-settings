@@ -10,6 +10,7 @@
         "E501", // lines over 80 chars
         "E221", // >1 space before operator (such as "x     = 2")
         "E225",
+        "E241", // >1 space after colon in dict: {'name':     'value'}
         "E265", // block comments MUST have a leading space: "# comment" not "#comment"
         "E262"  // inline comments MUST have a leading space: "# comment" not "#comment"
     ],
