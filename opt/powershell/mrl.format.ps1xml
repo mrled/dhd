@@ -232,6 +232,34 @@ Change the way objects are displayed.
           </TableRowEntry>
         </TableRowEntries>
       </TableControl>
-    </View>          
+    </View>
+
+    <View>
+      <Name>IP Address (Condensed)</Name>
+      <ViewSelectedBy>
+        <TypeName>Microsoft.Management.Infrastructure.CimInstance#ROOT/StandardCimv2/MSFT_NetIPAddress</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AddressFamily</PropertyName> 
+      </GroupBy>
+      <TableControl>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>InterfaceIndex</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>InterfaceAlias</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IPAddress</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
   </ViewDefinitions>
 </Configuration>
