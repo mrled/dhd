@@ -55,21 +55,24 @@
   template: src=testcp.wsgi dest={{ webapps_live_dir }}/test/testcp.wsgi owner=www-data group=www-data mode=755 
 
 # TODO: Ideally, the location of the biblemunger sqlite database would be configurable, and we'd put it elsewhere on the filesystem
-# Note: Restart apache if the repo is updated b/c otherwise WSGI can keep an old version of your app around in memory
 - name: Clone biblemunger
   git: repo=https://github.com/mrled/biblemunger dest={{ webapps_clone_dir }}/biblemunger
   register: biblemungergit
   notify: 
+    # Otherwise WSGI can keep an old version of your app in memory
   - restart-apache
 
-- name: Drop biblemunger version.txt
+- name: Drop biblemunger deployment info
   copy:
-    dest={{ webapps_clone_dir }}/biblemunger/version.txt
+    dest={{ webapps_clone_dir }}/biblemunger/deploymentinfo.txt
     content="Deployed from GH hash {{ biblemungergit.after }} on {{ ansible_date_time.iso8601 }}"
     force=yes
     mode=0644
     owner=www-data
     group=www-data
+  notify:
+    # Otherwise WSGI can keep an old version of your app in memory
+  - restart-apache
 
 # TODO: Ideally, this wouuld NOT chown the dir to www-data:www-data, but would instead make it readable by this user (755/644 perms are fine)
 - name: Set biblemunger permissions
