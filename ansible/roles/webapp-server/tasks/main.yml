@@ -58,8 +58,18 @@
 # Note: Restart apache if the repo is updated b/c otherwise WSGI can keep an old version of your app around in memory
 - name: Clone biblemunger
   git: repo=https://github.com/mrled/biblemunger dest={{ webapps_clone_dir }}/biblemunger
+  register: biblemungergit
   notify: 
   - restart-apache
+
+- name: Drop biblemunger version.txt
+  copy:
+    dest={{ webapps_clone_dir }}/biblemunger/version.txt
+    content="Deployed from GH hash {{ biblemungergit.after }} on {{ ansible_date_time.iso8601 }}"
+    force=yes
+    mode=0644
+    owner=www-data
+    group=www-data
 
 # TODO: Ideally, this wouuld NOT chown the dir to www-data:www-data, but would instead make it readable by this user (755/644 perms are fine)
 - name: Set biblemunger permissions
