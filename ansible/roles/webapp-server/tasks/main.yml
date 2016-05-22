@@ -65,7 +65,7 @@
 - name: Drop biblemunger deployment info
   copy:
     dest={{ webapps_clone_dir }}/biblemunger/deploymentinfo.txt
-    content="Deployed from GH hash {{ biblemungergit.after }} on {{ ansible_date_time.iso8601 }}"
+    content="Deployed from git hash {{ biblemungergit.after }} on {{ ansible_date_time.iso8601 }}"
     force=yes
     mode=0644
     owner=www-data
