@@ -1,14 +1,23 @@
 ---
 
-- name: Install required packages
+- name: Install required apt packages
   apt: pkg={{ item }} update_cache=yes state=latest
   with_items:
   - git
   - python3
   - python3-cherrypy3
   - python3-mako
+  - python3-pip
   - apache2
   - libapache2-mod-wsgi-py3
+
+- name: Install required pip packages
+  # Christ. They fucking added umask in 2.1
+  # Fuck pip and every other half assed package manager that naively uses umask
+  #pip: name={{ item }} executable=pip3 umask=0022
+  pip: name={{ item }} executable=pip3
+  with_items:
+  - wordfilter
 
 - name: Remove default apache configuration
   file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
