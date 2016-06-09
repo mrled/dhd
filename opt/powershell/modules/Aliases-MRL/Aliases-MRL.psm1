@@ -55,7 +55,7 @@ function Add-Alias {
     )
     if (-not $Alias) { $Alias = Get-Item $Path | Select-Object -Expand BaseName }
     foreach ($AliasName in $Alias) {
-        Set-Alias -Name $AliasName -Value $Path -Scope Global -Verbose 
+        Set-Alias -Name $AliasName -Value $Path -Scope Global
         $FoundAliases += @($AliasName)
     }
 }
