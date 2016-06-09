@@ -891,6 +891,7 @@ function Set-UserOptions {
     if ($EnableQuickEdit) { Set-ItemProperty -path $consoleKey -name QuickEdit -value 1 }
     
     $internetExplorerKey = "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main"
+    mkdir -Force $internetExplorerKey
     if ($DisableIEFirstRunCustomize) { Set-ItemProperty -path $internetExplorerKey -name DisableFirstRunCustomize -value 1 }
 }
 
