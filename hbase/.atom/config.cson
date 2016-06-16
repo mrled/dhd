@@ -1,0 +1,11 @@
+"*":
+  editor:
+    fontSize: 12
+    scrollPastEnd: true
+    tabType: "soft"
+  "exception-reporting":
+    userId: "eb4943cd-70d1-b275-cb4f-270aba3b3217"
+  "tree-view":
+    hideVcsIgnoredFiles: true
+  welcome:
+    showOnStartup: false
