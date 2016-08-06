@@ -666,8 +666,6 @@ rawurldecode() {
   echo "${REPLY}"  #+or echo the result (EASIER)... or both... :p
 }
 
-    
-
 # Serve files over http. This rules. 
 # Serve all files under the directory this was run in. Does NOT serve an
 # index page; you have to directly request the files themselves.
@@ -749,7 +747,16 @@ if type -P ipython3  >/dev/null; then
     alias ipy=ipython3
     alias ipython=ipython3
 fi
-export PYTHONPATH=${HOME}/.dhd/opt/python
+
+pp=
+pp="${pp} ${HOME}/.dhd/opt/python"
+pp="${pp} ${HOME}/opt/lib/python3.4/site-packages/"
+for p in ${pp}; do
+    if [ -d ${p} ]; then PYTHONPATH="${PYTHONPATH}${p}:"; fi
+done
+export PYTHONPATH
+unset pp
+
 
 ###################
 # Global Settings #
