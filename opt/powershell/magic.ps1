@@ -1,140 +1,115 @@
+<#
+.description
+Set up a new Windows machine
+.example
+Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/powershell/magic.ps1 | Invoke-Expression
 
-function invoke-magic {
+Must be run from an administrative prompt, unless Chocolatey and everything we install from it is already present
+#>
 
-    $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-    $SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-
-    if ($soyadmin) { $sepscope = "localmachine" }
-    else { $sepscope = "currentuser" }
-    set-executionpolicy unrestricted -scope $sepscope -force
-    if ([Environment]::Is64BitProcess) {
-        start-job { Set-ExecutionPolicy unrestricted -scope $sepscope -force } -RunAs32
-    }
-    $magicJobs = @()
-
-    $erroractionpreference = "silentlycontinue"
-    $magicJobs += @(Register-EngineEvent -SourceIdentifier DhdCloned -Action {
-        copy ~/.dhd/opt/win32/ConEmu.xml $env:appdata
-        mkdir ~/Documents/WindowsPowerShell -force | out-null
-        $dhdprofile = "~/.dhd/hbase/Microsoft.Powershell_profile.win32.ps1"
-        copy $dhdprofile ~/Documents/WindowsPowerShell/Microsoft.Powershell_profile.ps1
-        . $dhdprofile
-        reinit # from my initialization.ps1 file in .dhd
-    })
-    $magicJobs += @(Register-EngineEvent -SourceIdentifier GitInstalled -Action {
-        Register-EngineEvent -SourceIdentifier DhdCloned -Forward
-        foreach ($maybegit in "C:\Program Files (x86)\git\cmd\git.exe","C:\Program Files\git\cmd\git.exe") {
-            if (test-path $maybegit) {
-                set-alias git $maybegit
-            }
-        }
-        if (-not (test-path alias:/git)) {
-            write-error "Can't find git - where was it installed?"
-        }
-        if (test-path $home/.dhd) {
-            rm -force -recurse $home/.dhd
-        }
-        git clone https://github.com/mrled/dhd.git $home/.dhd
-        $null = New-Event -SourceIdentifier DhdCloned
-    })
-    $magicJobs += @(Register-EngineEvent -SourceIdentifier PsgetInstalled -Action {
-        import-module "C:\Program Files\Common Files\Modules\PsGet\PsGet.psm1"
-        install-module "PSReadLine"
-        install-module "TabExpansion++"
-        install-module "PSCX"
-    })
-
-    $magicJobs += @(Register-EngineEvent -SourceIdentifier ChocolateyInstalled -Action { 
-        Register-EngineEvent -SourceIdentifier GitInstalled -Forward
-        Register-EngineEvent -SourceIdentifier PsgetInstalled -Forward
-        Register-EngineEvent -SourceIdentifier ConemuInstalled -Forward
-        cinst git.install 
-        $null = New-Event -SourceIdentifier GitInstalled
-        cinst psget
-        $null = New-Event -SourceIdentifier PsgetInstalled
-        cinst conemu
-        $null = New-Event -SourceIdentifier ConemuInstalled
-    })
-
-    $magicJobs += @(start-job -name InstallChocolatey -scriptblock {
-        Register-EngineEvent -SourceIdentifier ChocolateyInstalled -Forward
-        iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
-        if ($SoyAdmin) {
-            [Environment]::SetEnvironmentVariable("path", $env:path+";${env:systemdrive}\chocolatey\bin", "System")
-        }
-        else {
-            [Environment]::SetEnvironmentVariable("path", $env:path+";${env:systemdrive}\chocolatey\bin", "User")
-        }
-        [Environment]::SetEnvironmentVariable("path", $env:path+";${env:systemdrive}\chocolatey\bin", "Process")
-        $null = New-Event -SourceIdentifier ChocolateyInstalled
-    })
-    $erroractionpreference = "stop"
-    return $magicJobs
-}
-
-function Show-StatusLoop {
-    param(
-        [parameter(mandatory=$true)] $jobs
+<#
+.parameter name
+The name of the task (for logging)
+.parameter action
+A scriptblock to invoke
+.parameter condition
+A boolean; if it evaluates to $true, run the action; otherwise, skip the action
+.description
+Perform an action, logging it with a name.
+#>
+function Invoke-MagicStep {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$true)] [String] $name,
+        [Parameter(Mandatory=$true)] [ScriptBlock] $action,
+        [Bool] $condition = $true
     )
-    write-host "Casting magical spells and whatever bullshit..."
-    $complete = $false
-    $counter = 0
-    while (-not $complete) {
-        $anyFailed = $anyUnstarted = $false
-        foreach ($job in $jobs) {
-            switch ($job.state) {
-                Failed {
-                    $anyFailed = $true
-                    $stateColor = "red"
-                }
-                NotStarted {
-                    $anyUnstarted = $true
-                    $stateColor = "yellow"
-                }
-                Running {
-                    $stateColor = "blue"
-                }
-                Completed {
-                    $stateColor = "green"
-                }
-                default {
-                    $stateColor = "white"
-                }
-            }
-            write-host -nonewline "$counter " -foreground magenta
-            write-host -nonewline $job.name
-            write-host -nonewline ": "
-            write-host $job.state -foreground $stateColor
-        }
-        if ($anyFailed -or (-not $anyUnstarted)) { $complete = $true }
-        $counter += 1
-        sleep 2
-    }
-    write-host "========"
-    foreach ($job in $jobs) {
-        write-host "Job: $($job.name): " -nonewline 
-        write-host $job.state
-        if ($job.output) {
-            write-host "$($job.name) Output: " 
-            write-host $job.output -foreground green
-        }
-        if ($job.warning) {
-            write-host "$($job.name) Warning: "
-            write-host $job.warning -foreground yellow
-        }
-        if ($job.error) {
-            write-host "$($job.name) Error: "
-            write-host $job.error -foreground red
-        }
-    }
-    write-host "========"
-    if ($anyFailed) {
-        write-host "~*~ SPELL CASTING WAS UNSUCCESSFUL ~*~" -foreground red
+    if ($condition) {
+        Write-Host "Invoking action '$name'..."
+        Invoke-Command -ScriptBlock $action
     }
     else {
-        write-host "~*~ SPELL CASTING WAS SUCCESSFUL ~*~" -foreground green
+        Write-Host "Skipping action '$name'"
     }
 }
 
-# $magicJobs = invoke-magic 
-# Show-StatusLoop $magicJobs
+<#
+.description
+Determine
+#>
+function Test-CommandInPath {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$true)] $commandName
+    )
+    foreach ($path in ($env:path -split ';' | Sort-Object -Unique)) {
+        $pathToTest = "$path\$commandName"
+        if (Test-Path $pathToTest) {
+            Write-Verbose $pathToTest
+            return $true
+        }
+    }
+    return $false
+}
+
+function Test-AdministratorRole {
+    $me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+    $SoyAdmin = $me.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+}
+
+function Set-ExecPolUnrestricted {
+    $sepScope = if (Test-AdministratorRole) { "LocalMachine" } else { "CurrentUser" }
+    Set-ExecutionPolicy Unrestricted -Scope $sepScope -Force
+    if ([Environment]::Is64BitProcess) {
+        Start-Job { Set-ExecutionPolicy Unrestricted -Scope $sepScpope -Force } -RunAs32
+    }
+}
+
+function Install-ConEmuConfiguration {
+    $conEmuXmlPath = "${env:AppData}\ConEmu.xml"
+    $conEmuXmlBakPath = "${conEmuXmlPath}.magic.bak"
+    if (Test-Path $conEmuXmlPath) {
+        if (-not (Test-Path $conEmuXmlBakPath)) {
+            # Under normal circumstances, the backup path won't exist; store a backup of the ConEmu XML file just in case
+            Move-Item $conEmuXmlPath $conEmuXmlBakPath
+        }
+        else {
+            # If the backup path exists, assume we've run before and just delete the ConEmu XML file
+            Remove-Item $conEmuXmlPath
+        }
+    }
+    Copy-Item $Home\.dhd\opt\win32\ConEmu.xml $conEmuXmlPath
+}
+
+function Install-PowershellProfile {
+    mkdir -Force (Split-Path $Profile) | Out-Null
+    $dhdProfile = "~/.dhd/hbase/Microsoft.Powershell_profile.win32.ps1"
+    copy "$Home\.dhd\hbase\Microsoft.Powershell_profile.win32.ps1" $Profile -Force
+}
+
+function Invoke-PowershellProfile {
+    . $Profile
+    reinit # from my initialization.ps1 file in .dhd
+}
+
+function Install-Chocolatey {
+    Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression
+}
+
+function Install-PsGet {
+    (New-Object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | Invoke-Expression
+}
+
+$ErrorActionPreference = "Stop"
+Set-ExecPolUnrestricted
+
+# Tasks that require administrative privileges:
+Invoke-MagicStep "install chocolatey" {Install-Chocolatey} (-not (Test-CommandInPath choco.exe))
+Invoke-MagicStep "install git" {choco.exe install git.install} (-not (Test-CommandInPath git.exe))
+Invoke-MagicStep "install conemu" {choco.exe install conemu} (-not (Test-Path "${env:ProgramFiles}\ConEmu\ConEmu.exe"))
+
+# Remaining tasks do not require admin privs
+Invoke-MagicStep "install psget" {Install-PsGet} (-not (Get-Module -ListAvailable PsGet)) 
+Invoke-MagicStep "checkout dhd" {git.exe checkout https://github.com/mrled/dhd.git $Home\.dhd} (-not (Test-Path $Home\.dhd)) 
+Invoke-MagicStep "install conemu config" {Install-ConEmuConfiguration}
+Invoke-MagicStep "install powershell profile" {Install-PowershellProfile}
+# Invoke-MagicStep "install psreadline" {Install-Module PSReadLine}
+Invoke-MagicStep "invoke powershell profile" {Invoke-PowershellProfile}
