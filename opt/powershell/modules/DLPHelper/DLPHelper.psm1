@@ -510,3 +510,73 @@ function Get-LogisticsFile {
 
     return $logisticsFiles
 }
+
+<#
+.description
+Generate a singing cert and an encryption cert for the Dashboard STS
+#>
+function New-DashboardStsCertificateSet {
+    [CmdletBinding()] param(
+        $baseName = "EdFi",
+        $opensslConfig = "C:\Program Files\OpenSSL\bin\openssl.cfg",
+        $days = 7200,
+        $bits = 2048
+    )
+
+    [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
+    $sha1 = New-Object -TypeName System.Security.Cryptography.SHA1CryptoServiceProvider 
+    $utf8 = New-Object -TypeName System.Text.UTF8Encoding
+
+    $escapedOpensslConfig = '"{0}"' -f $opensslConfig
+
+    $certNames = @("${baseName}StsSignCert", "${baseName}StsEncryptCert")
+    foreach ($certName in $certNames) {
+        $pemFile = "${certName}.pem"
+        $pfxFile = "${certName}.pfx"
+
+        # Get a good random password containing any ASCII character:
+        $randomPass = [System.Web.Security.Membership]::GeneratePassword(32,2)
+        # Hash the password so it only has alphanumerics:
+        $pfxPass = [System.BitConverter]::ToString($sha1.ComputeHash($utf8.GetBytes($randomPass))) -Replace "-",""
+        $pfxSecurePass = ConvertTo-SecureString -String $pfxPass -Force -AsPlainText
+
+        # Generate a self-signed key/cert pair in .pem format
+        $opensslReqParams = @(
+            "req",
+            "-config", "$escapedOpensslConfig",
+            "-x509",
+            "-nodes",
+            "-days", "$days",
+            "-subj", "/CN=$certName",
+            "-newkey", "rsa:${bits}",
+            "-keyout", "$pemFile",
+            "-out", "$pemFile"
+        )
+        $ret = Start-Process -FilePath "openssl.exe" -ArgumentList $opensslReqParams -NoNewWindow -PassThru -Wait
+        if ($ret.ExitCode -ne 0) { throw "OpenSSL request process exited with code '$($ret.ExitCode)'"}
+
+        # Convert the .pem to .pfx because Microsoft
+        $opensslExportParams = @(
+            "pkcs12",
+            "-export",
+            "-out", "$pfxFile",
+            "-in", "$pemFile",
+            "-name", "$certName",
+            "-password", "pass:$pfxPass"
+        )
+        $ret = Start-Process -FilePath "openssl.exe" -ArgumentList $opensslExportParams -NoNewWindow -PassThru -Wait
+        if ($ret.ExitCode -ne 0) { throw "OpenSSL export process exited with code '$($ret.ExitCode)'"}
+        Remove-Item $pemFile
+
+        # This is dumb, we don't need the cert in our cert store...
+        # But Get-PfxCertificate will not take a password as a parameter - it always prompts when running the command - so
+        # we have to do it this way in order to get the thumbprint
+        $imported = Import-PfxCertificate -FilePath $pfxFile -Password $pfxSecurePass -CertStoreLocation "cert:\CurrentUser\My"
+
+        New-Object PSObject -Property @{
+            PFX = Get-Item $pfxFile
+            Password = $pfxPass
+            Thumbprint = $imported.Thumbprint
+        }
+    }
+}

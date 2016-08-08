@@ -30,7 +30,7 @@ gci "$dlpProjectDrive\" |% {
 }
 
 ipmo DLPHelper
-ipmo "$DLPProjectBase\dlp\InternalTools\encrypted-credentials"
+ipmo "$DLPProjectBase\misc\InternalTools\encrypted-credentials"
 
 <#
 Functionality I'd like to have: 
