@@ -588,6 +588,19 @@ manualman() {
     fi
 }
 
+# Colorize man pages
+# See: http://boredzo.org/blog/archives/2016-08-15/colorized-man-pages-understood-and-customized
+man() {
+    env \
+        LESS_TERMCAP_md=$'\e[1;36m' \
+        LESS_TERMCAP_me=$'\e[0m' \
+        LESS_TERMCAP_se=$'\e[0m' \
+        LESS_TERMCAP_so=$'\e[1;40;92m' \
+        LESS_TERMCAP_ue=$'\e[0m' \
+        LESS_TERMCAP_us=$'\e[1;32m' \
+            man "$@"
+}
+
 # This is intended to be used in situations like album art scans, 
 # where you have several image files that should be converted to
 # one PDF so that iTunes can store it. 
