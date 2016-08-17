@@ -1,5 +1,0 @@
-# -*- mode: sh -*-
-# this file is for bash with MinGW/MSYS
-# just copy it to ~/ instead of trying to worry about symlinks, which not all Windows
-# programs support, or hardlinks, which keep getting unlinked from each other. 
-. ~/.dhd/hbase/.profile
