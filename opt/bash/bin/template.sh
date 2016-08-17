@@ -1,13 +1,13 @@
 #!/bin/bash
 
-set -u  # Exit immediately if a command files
-set -e  # Treat unset variables as errors
+set -e  # Exit immediately if a command files
+set -u  # Treat unset variables as errors
 
 usage() {
-    cat << USAGE
-template() [-h|--help]
+    cat << ENDUSAGE
+$0 [-h|--help]
 A template for new Bash scripts
-    -h: Print help anbd exit
+    -h: Print help and exit
 
 **IN GENERAL, PLEASE DO NOT WRITE NEW BASH SCRIPTS**
 Bash scripts are only appropriate if:
@@ -15,7 +15,7 @@ Bash scripts are only appropriate if:
 - The script is less than one single solitary PgDn
 - The script deals heavily with shell issues
 - The script does not rely on third party external tools
-USAGE
+ENDUSAGE
 }
 
 # First get options - that is, arguments preceded with a dash like "-h" or "--help"
@@ -31,13 +31,13 @@ while [ $i -lt $argcount ]; do
         -d | --debug )
             # Show each line before executing
             set -x
-            # Here we have passed a bare option, so we consume only one argument from $argv
+            # Here we have passed a bare option, so we consume only one argument from $@
            ((i++))
             shift
             ;;
         -1 | --one-argument )
-            # Here we have passed an option that takes a parameter, so we consume 2 arguments from $argv
-            # (This can of course be expanded to take N parameters, and consume N+1 parameters from $argv)
+            # Here we have passed an option that takes a parameter, so we consume 2 arguments from $@
+            # (This can of course be expanded to take N parameters, and consume N+1 parameters from $@)
             one_argument_value=$2
             ((i+=2))
             shift 2
