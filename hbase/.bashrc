@@ -1,6 +1,8 @@
 # .bashrc
 
-## Set the path to inclode only directories that exist on this system.
+#### Set the path
+# 
+# Set the path to inclode only directories that exist on this system.
 #   - not workable if the directory has spaces (!!)
 #   - put commands that should come before system commands in {,~}/opt/alternatives/
 
@@ -101,7 +103,7 @@ alias grep="grep --color=auto"
 if type -P xscreensaver-command >/dev/null; then alias xslock="xscreensaver-command -lock"; fi
 
 xttitle() {
-    echo -e "\033]2;""$1""\007"
+    echo -e "\e]2;""$1""\007"
 }
 alias xtt=xtermtitle
 
@@ -119,7 +121,7 @@ if [ $STY ]; then
     # $STY looks like 123123.camelot; just grab the text name and ignore the number:
     session_name=${STY#*.} 
     screen_window_hardstatus="${USER}@${HOSTNAME} <${session_name}>"
-    echo -ne "\033]2;${screen_window_hardstatus}\007"
+    echo -ne "\e]2;${screen_window_hardstatus}\007"
 fi
 
 alias scrl="screen -list"
@@ -161,6 +163,7 @@ man() {
         LESS_TERMCAP_us=$'\e[1;32m' \
             man "$@"
 }
+
 
 # Bulk replace file extensions on all files in current directory
 # Use it like "changext html php" to move everything ending in .html to filename.php
@@ -253,27 +256,18 @@ export FSEDIT="$myeditor"
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 
-# last character of prompt
-if   [ $UID = 0 ]; then lcop='#'  #root user
-else lcop='>'                     #normal user
-fi
+#### The prompt
 
-# Setting the default prompt
-# Make sure that all of the non-printing characters in $PS1 are
-# surrounded by \[ and \] - otherwise you will get retarded line
+# lcop = last character of prompt
+if   [ $UID = 0 ]; then lcop='#'; else lcop='>'; fi
+
+# Make sure that all of the non-printing characters in $PS1 are surrounded by
+# \[ and \] - otherwise you will get line wrapping problems
 # wrapping problems. mmmmkay?
-# Also, note that you can use \e instead of \033 in recent
-# versions of bash. 
-# 
-#export PS1="\[\e[01;32m\]\u@\h\[\e[01;34m\] \w \$\[\e[00m\] "
-#export PS1="\[\e[01;32m\]\u@\h\[\e[01;34m\] \w \$\[\e[00m\] "
-# COLORS      bold,green           bold,blue         unbold,white
-#           \[\e[01;32m\]     \[\e[01;34m\]      \[\e[00m\]
-#      PS1="              \u@\h              \w \$           "
-export PS1="\[\e[01;37m\]\t \[\e[01;34m\]\h\[\e[01;37m\]:\[\e[00;32m\]\W \[\e[01;34m\]$lcop \[\e[00m\]"
-#                        \t              \h             :             \W              >
-# COLORS:    bold,white         normal,green      bold,blue       normal,white 
-#export PS1="$ansi_bold $ansi_fg_white hello $ansi_fg_green sonny $ansi_fg_white $ansi_norm $ "
-#export PS1="\t \w \$ "
+boldwhite="\[\e[01;37m\]"
+boldblue="\[\e[01;34m\]"
+normalgreen="\[\e[00;32m\]"
+clearrformat="\[\e[00m\]"
+export PS1="${boldwhite}\t ${boldblue}\h${boldwhite}:${normalgreen}\W ${boldblue}${lcop} ${clearrformat}"
 
 unset lcop
