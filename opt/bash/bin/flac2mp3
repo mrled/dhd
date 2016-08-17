@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -e  # Exit immediately if a command files
+set -u  # Treat unset variables as errors
+
+usage() {
+    cat << ENDUSAGE
+$0 [-h]
+Convert all FLAC files in this directory to MP3s, using the 'flac' and 'lame' commands
+    -h: Print help and exit
+ENDUSAGE
+}
+
+if [ $# -gt 1 ]; then echo "too many arguments!"; exit 1; fi
+if [ $# == 1 ]; then
+    if [ $1 == '-h' ]; then usage; exit
+    else echo "bad argument '$1'"; exit 1
+    fi
+fi
+if [ ! `type -P flac` ]; then echo "flac binary not in path!"; exit 1; fi
+if [ ! `type -P lame` ]; then echo "lame binary not in path!"; exit 1; fi
+if ! ls *.flac 2>/dev/null; then echo "no flac files found in current directory"; exit 1; fi
+
+for flacfile in *.flac; do
+    flac -d "$flacfile"
+done
+for wavfile in *.wav; do
+    lame --preset extreme "$wavfile"
+done

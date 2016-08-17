@@ -1,0 +1,109 @@
+#!/bin/bash
+
+# set -e
+# set -u
+
+usage() {
+    echo "scr() [-h|--help] [-r|--remote <REMOTE HOST>] [-d|--debug] "
+    echo "      [SESSION NAME] [-- <SSH ARGUMENTS>]"
+    echo ""
+    echo "Screen session management wrapper"
+    echo "Attach to session if it exists, otherwise create a new one"
+    echo ""
+    echo "    -r <REMOTE HOST>: connect to a screen session on a remote host."
+    echo "    -d: Print debug messages (probably useless)."
+    echo "    -h: Print help and exit."
+    echo "    SESSION NAME: provide an optional session name. Default is 'camelot'."
+    echo "        It is recommended to use the default until you need more than one"
+    echo "        session on a given host."
+    echo "    --: Indicates that all remaining arguments should be passed to ssh."
+    echo "        For example: scr -r example.com -- -i ~/.ssh/special_id_rsa"
+}
+
+i=0
+pctr=0
+argcount=$#
+posargs=()
+remote=false
+
+# These functions are redefined if debug mode is turned on
+#execute the arguments directly (normal mode; will change this in debug mode)
+ee(){ $*; }
+#noop; totally ignore arguments.
+debugprint() { true; }
+
+while [ $i -lt $argcount ]; do
+    debugprint "Processing argument '$1'..."
+    case "$1" in
+        -r | --remote )
+            # increment i twice because we are eating 2 arguments
+            remote=true; rhost=$2; ((i+=2)); shift 2;;
+        -d | --debug )
+            set -x
+            # don't execute, just print
+            ee() { echo $*; }
+            # print debug statements too
+            debugprint() { echo $*; }
+            debugprint "Debuggin'"
+            shift;;
+        -h | --help ) usage; return ;;
+        --)
+            declare -a sa
+            sctr=0
+            shift
+            while [ $i -lt $argcount ]; do
+                sa[$sctr]=$1
+                ((sctr++))
+                ((i++))
+                shift
+            done
+            ;;
+        *)
+            [ $1 ] && if [ ${1:0:1} == "-" ]; then 
+                echo "Error: you supplied option '$1', but there is no such option"
+                scr_help
+                return
+            fi
+            posargs[pctr]=$1; ((pctr++)); ((i++)); 
+            shift;;
+    esac
+done
+
+if [ $pctr -gt 1 ]; then
+    echo "Error: you supplied too many positional arguments"
+    usage
+    return
+elif [ $posargs ]; then
+    sessionname=$posargs #posargs will never have more than 1 so this is safe in this function
+elif [ $default_session_name ]; then
+    sessionname="${default_session_name}"
+else
+    sessionname="fallback"
+fi
+debugprint "Session name: $sessionname"
+
+# if you're in a screen session and creating a new one, use a different escape key (handy)
+if [[ $TERM == "screen" ]]; then
+    # -e :: changes the screen escape key. NOT set in .screenrc! otherwise that *sometimes* overrides cli option (bug?)
+    scrargs="-e^]]"
+    debugprint "Running inside a screen session, going to use srcargs: ${srcargs}"
+else
+    scrargs="-e^tt"
+    debugprint "Not running inside screen, going to use srcargs: ${srcargs}"
+fi
+
+sshargs=" "
+if $sa; then
+    i=0
+    while [ $i -lt ${#sa} ]; do
+        sshargs+=" ${sshargs[$i]}"
+        ((i++))
+    done
+fi
+
+screen_call="screen $scrargs -D -R -S $sessionname"
+if $remote; then
+    ee ssh $sshargs -t $rhost "$screen_call"
+else
+    ee $screen_call
+fi

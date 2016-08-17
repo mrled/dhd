@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+set -u
+
+usage() {
+    cat << ENDUSAGE
+fingerprint() [REMOTE_HOSTNAME ...]
+    REMOTE_HOSTNAME: get fingerprints for this remote host
+
+Print the public key fingerprints for the SSH server
+ENDUSAGE
+}
+
+if [ $1 == "-h" ]; then usage; exit; fi
+
+_fingerprint='
+    # it is usually in /etc/ssh
+    if ls /etc/ssh/ssh_host*key.pub >/dev/null 2>&1; then
+        for publickey in /etc/ssh/ssh_host*key.pub; do 
+            ssh-keygen -lf "$publickey"
+        done
+    # but on the mac the ssh configuration is just directly in /etc
+    elif ls /etc/ssh_host*key.pub >/dev/null 2>&1; then
+        for publickey in /etc/ssh_host*key.pub; do
+            ssh-keygen -lf "$publickey"
+        done
+    fi
+'
+echo "Local key(s):"
+echo "$_fingerprint" | /bin/bash
+
+for host in $@; do
+    echo "Remote key(s) on $host:"
+    ssh -Tq $host "$_fingerprint"
+done
