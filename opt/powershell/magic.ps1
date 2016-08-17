@@ -7,6 +7,8 @@ Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/m
 Must be run from an administrative prompt, unless Chocolatey and everything we install from it is already present
 #>
 
+$ErrorActionPreference = "Stop"
+
 <#
 .parameter name
 The name of the task (for logging)
@@ -90,26 +92,45 @@ function Invoke-PowershellProfile {
     reinit # from my initialization.ps1 file in .dhd
 }
 
+function Install-ChocolateyPackage {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$true)] [String[]] $packageName
+    )
+    choco.exe install $packageName
+    refreshenv
+}
+
 function Install-Chocolatey {
     Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression
+}
+
+function Configure-Chocolatey {
+    choco.exe feature enable --name=allowGlobalConfirmation --yes
 }
 
 function Install-PsGet {
     (New-Object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | Invoke-Expression
 }
 
-$ErrorActionPreference = "Stop"
 Set-ExecPolUnrestricted
 
-# Tasks that require administrative privileges:
+#### Tasks that require administrative privileges:
+#
 Invoke-MagicStep "install chocolatey" {Install-Chocolatey} (-not (Test-CommandInPath choco.exe))
-Invoke-MagicStep "install git" {choco.exe install git.install} (-not (Test-CommandInPath git.exe))
-Invoke-MagicStep "install conemu" {choco.exe install conemu} (-not (Test-Path "${env:ProgramFiles}\ConEmu\ConEmu.exe"))
+Invoke-MagicStep "configure chocolatey" {Configure-Chocolatey}
+Invoke-MagicStep "install git" {Install-ChocolateyPackage git.install} (-not (Test-CommandInPath git.exe))
+Invoke-MagicStep "install conemu" {Install-ChocolateyPackage conemu} (-not (Test-Path "${env:ProgramFiles}\ConEmu\ConEmu.exe"))
+# NOTE: refreshenv won't reload PATH for some reason? so if this has been installed and you wanna re-run magic.ps1, open a new window
+Invoke-MagicStep "install less" {Install-ChocolateyPackage less} (-not (Test-CommandInPath less.exe))
+Invoke-MagicStep "install vim" {Install-ChocolateyPackage vim} (-not (Test-CommandInPath vim.exe))
+Invoke-MagicStep "install openssh" {Install-ChocolateyPackage win32-openssh} (-not (Test-CommandInPath ssh.exe))
+# TODO: fixme, this installer doesn't add 7z.exe to path
+Invoke-MagicStep "install 7zip" {Install-ChocolateyPackage 7zip} (-not (Test-CommandInPath 7z.exe))
 
-# Remaining tasks do not require admin privs
+#### Remaining tasks do not require admin privs
+#
 Invoke-MagicStep "install psget" {Install-PsGet} (-not (Get-Module -ListAvailable PsGet)) 
 Invoke-MagicStep "checkout dhd" {git.exe checkout https://github.com/mrled/dhd.git $Home\.dhd} (-not (Test-Path $Home\.dhd)) 
 Invoke-MagicStep "install conemu config" {Install-ConEmuConfiguration}
 Invoke-MagicStep "install powershell profile" {Install-PowershellProfile}
-# Invoke-MagicStep "install psreadline" {Install-Module PSReadLine}
 Invoke-MagicStep "invoke powershell profile" {Invoke-PowershellProfile}
