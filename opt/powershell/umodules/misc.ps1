@@ -472,6 +472,21 @@ function Get-MagicNumber {
     return $MagicNumberContainer
 }
 
+function Get-MagicNumberEx {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)] [String[]] $filePath,
+        [Int] $bytes = 2
+    )
+    process {
+        $firstBytes = Get-Content $filePath -Encoding Byte | Select-Object -First $bytes
+        New-Object PSObject -Property @{
+            FullName = Get-Item $filePath | Select-Object -Expand FullName
+            FirstBytesDecimal = $firstBytes
+            FirstBytesHexadecimal = $firstBytes |% { "0x{0:X0}" -f $_ }
+        }
+    }
+}
+
 function Get-Profiles {
     [cmdletbinding()]
     param(
@@ -1375,6 +1390,32 @@ function Clear-Error {
     $global:LASTEXITCODE = 0
 }
 set-alias clerr Clear-Error
+
+function Get-ErrorType {
+    [CmdletBinding()] Param(
+        $errorObject
+    )
+
+    if (-not $errorObject) {
+        if ($Error[0]) {
+            $errorObject = $Error[0]
+        }
+        else {
+            throw "No object passed as -errorObject, and `$Error is empty"
+        }
+    }
+
+    if ($errorObject.Exception) {
+        $exception = $errorObject.Exception
+    }
+    else {
+        $exception = $errorObject
+    }
+
+    $errNamespace = $exception.GetType().Namespace
+    $errName = $exception.GetType().Name
+    return "${errNamespace}.${errName}"
+}
 
 set-alias gj Get-Job
 set-alias jobs Get-Job
