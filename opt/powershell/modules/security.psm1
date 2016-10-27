@@ -160,26 +160,24 @@ function Get-TSLsaSecret {
         # Check if User is Elevated
         $currentPrincipal = New-Object Security.Principal.WindowsPrincipal( [Security.Principal.WindowsIdentity]::GetCurrent())
         if($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -ne $true) {
-          Write-Warning "Run the Command as an Administrator"
-          Break
+            Write-Warning "Run the Command as an Administrator"
+            Break
         }
 
         # Check if Script is run in a 32-bit Environment by checking a Pointer Size
         if([System.IntPtr]::Size -eq 8) {
-          Write-Warning "Run PowerShell in 32-bit mode"
-          Break
+            Write-Warning "Run PowerShell in 32-bit mode"
+            Break
         }
-
-
 
         # Check if RegKey is specified
         if([string]::IsNullOrEmpty($registryKey)) {
-          [string[]]$registryKey = (Split-Path (Get-ChildItem HKLM:\SECURITY\Policy\Secrets | Select -ExpandProperty Name) -Leaf)
+            [string[]]$registryKey = (Split-Path (Get-ChildItem HKLM:\SECURITY\Policy\Secrets | Select -ExpandProperty Name) -Leaf)
         }
 
         # Create Temporary Registry Key
         if( -not(Test-Path "HKLM:\\SECURITY\Policy\Secrets\MySecret")) {
-          mkdir "HKLM:\\SECURITY\Policy\Secrets\MySecret" | Out-Null
+            mkdir "HKLM:\\SECURITY\Policy\Secrets\MySecret" | Out-Null
         }
 
         $signature = @"
