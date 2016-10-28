@@ -176,9 +176,10 @@ function Get-TSLsaSecret {
         }
 
         # Create Temporary Registry Key
-        if( -not(Test-Path "HKLM:\\SECURITY\Policy\Secrets\MySecret")) {
-            mkdir "HKLM:\\SECURITY\Policy\Secrets\MySecret" | Out-Null
-        }
+        $tempRegKeyName = "TempSecret"
+        $tempRegPath = "HKLM:\SECURITY\Policy\Secrets\$tempRegKeyName"
+        # $tempRegPath = "HKCU:\Temp\$tempRegKeyName" # <-- this doesn't appear to work... I guess it has to be somewhere in HKLM ?
+        mkdir -Force $tempRegPath | Out-Null
 
         $signature = @"
 [StructLayout(LayoutKind.Sequential)]
@@ -261,8 +262,6 @@ public static extern uint LsaFreeMemory(
     Process{
         foreach($key in $RegistryKey) {
             $regPath = "HKLM:\\SECURITY\Policy\Secrets\" + $key
-            $tempRegPath = "HKLM:\\SECURITY\Policy\Secrets\MySecret"
-            $myKey = "MySecret"
             if (Test-Path $regPath) {
                 Try {
                     Get-ChildItem $regPath -ErrorAction Stop | Out-Null
@@ -272,11 +271,11 @@ public static extern uint LsaFreeMemory(
                     Break
                 }
 
-                if(Test-Path $regPath) {
+                if (Test-Path $regPath) {
                     # Copy Key
                     "CurrVal","OldVal","OupdTime","CupdTime","SecDesc" | ForEach-Object {
                         $copyFrom = "HKLM:\SECURITY\Policy\Secrets\" + $key + "\" + $_
-                        $copyTo = "HKLM:\SECURITY\Policy\Secrets\MySecret\" + $_
+                        $copyTo = Join-Path $tempRegPath $_
 
                         if( -not(Test-Path $copyTo) ) {
                           mkdir $copyTo | Out-Null
@@ -301,9 +300,9 @@ public static extern uint LsaFreeMemory(
 
                 # Secret Name
                 $secretName = New-Object LSAUtil.LSAUtil+LSA_UNICODE_STRING
-                $secretName.Buffer = [System.Runtime.InteropServices.Marshal]::StringToHGlobalUni($myKey)
-                $secretName.Length = [Uint16]($myKey.Length * [System.Text.UnicodeEncoding]::CharSize)
-                $secretName.MaximumLength = [Uint16](($myKey.Length + 1) * [System.Text.UnicodeEncoding]::CharSize)
+                $secretName.Buffer = [System.Runtime.InteropServices.Marshal]::StringToHGlobalUni($tempRegKeyName)
+                $secretName.Length = [Uint16]($tempRegKeyName.Length * [System.Text.UnicodeEncoding]::CharSize)
+                $secretName.MaximumLength = [Uint16](($tempRegKeyName.Length + 1) * [System.Text.UnicodeEncoding]::CharSize)
 
                 # Get LSA PolicyHandle
                 $lsaPolicyHandle = [IntPtr]::Zero
@@ -368,7 +367,7 @@ public static extern uint LsaFreeMemory(
     }
     end {
         if(Test-Path $tempRegPath) {
-            Remove-Item -Path "HKLM:\\SECURITY\Policy\Secrets\MySecret" -Recurse -Force
+            Remove-Item -Path $tempRegPath -Recurse -Force
         }
     }
 }
