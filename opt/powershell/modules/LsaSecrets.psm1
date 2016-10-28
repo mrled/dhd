@@ -1,3 +1,6 @@
+
+$script:secretsRootPath = "HKLM:\SECURITY\Policy\Secrets"
+
 <#
 .SYNOPSIS
 Duplicates the Access token of lsass and sets it in the current process thread.
@@ -144,8 +147,7 @@ List possible LSA secrets
 #>
 function Get-TSLsaSecretNames {
     [CmdletBinding()] Param()
-    $secretsRootPath = "HKLM:\SECURITY\Policy\Secrets"
-    Get-ChildItem $secretsRootPath | Select-Object -ExpandProperty Name | Split-Path -Leaf
+    Get-ChildItem $script:secretsRootPath | Select-Object -ExpandProperty Name | Split-Path -Leaf
 }
 
 <#
@@ -180,8 +182,6 @@ function Get-TSLsaSecret {
             Break
         }
 
-        $secretsRootPath = "HKLM:\SECURITY\Policy\Secrets"
-
         # Check if Script is run in a 32-bit Environment by checking a Pointer Size
         if ([System.IntPtr]::Size -eq 8) {
             Write-Warning "Run PowerShell in 32-bit mode"
@@ -190,7 +190,7 @@ function Get-TSLsaSecret {
 
         # Create Temporary Registry Key
         $tempRegKeyName = "TempSecret"
-        $tempRegPath = Join-Path $secretsRootPath $tempRegKeyName
+        $tempRegPath = Join-Path $script:secretsRootPath $tempRegKeyName
         # $tempRegPath = "HKCU:\Temp\$tempRegKeyName" # <-- this doesn't appear to work... I guess it has to be somewhere in HKLM ?
         mkdir -Force $tempRegPath | Out-Null
 
@@ -274,7 +274,7 @@ public static extern uint LsaFreeMemory(
 
     Process{
         foreach($key in $RegistryKey) {
-            $regPath = Join-Path $secretsRootPath $key
+            $regPath = Join-Path $script:secretsRootPath $key
             if (Test-Path $regPath) {
                 Try {
                     Get-ChildItem $regPath -ErrorAction Stop | Out-Null
@@ -337,9 +337,8 @@ public static extern uint LsaFreeMemory(
                     Write-Warning "lsaNtsStatusToWinError: $lsaNtStatusToWinError"
                 }
 
-                [LSAUtil.LSAUtil+LSA_UNICODE_STRING]$lusSecretData = [LSAUtil.LSAUtil+LSA_UNICODE_STRING][System.Runtime.InteropServices.marshal]::PtrToStructure($privateData, [System.Type] [LSAUtil.LSAUtil+LSA_UNICODE_STRING])
-
                 Try {
+                    [LSAUtil.LSAUtil+LSA_UNICODE_STRING]$lusSecretData = [LSAUtil.LSAUtil+LSA_UNICODE_STRING][System.Runtime.InteropServices.marshal]::PtrToStructure($privateData, [System.Type] [LSAUtil.LSAUtil+LSA_UNICODE_STRING])
                     [string]$value = [System.Runtime.InteropServices.marshal]::PtrToStringAuto($lusSecretData.Buffer)
                     $value = $value.SubString(0, ($lusSecretData.Length / 2))
                 }
@@ -347,20 +346,19 @@ public static extern uint LsaFreeMemory(
                     $value = ""
                 }
 
-                $account = ""
+                # If the registry key is for a Windows service, get the service name and the name of the account it runs under
+                $service = New-Object PSObject
                 if ($key -match "^_SC_") {
-                    # Get Service Account
                     $serviceName = $key -Replace "^_SC_"
                     $service = Get-WmiObject -Class Win32_Service -Filter "name='$serviceName'"
-                    if ($service) { $account = $service.StartName }
                 }
 
                 # Return Object
                 New-Object PSObject -Property @{
-                    Name = $key
+                    KeyName = $key
                     Secret = $value
-                    Account = $Account
-                    ComputerName = $env:COMPUTERNAME
+                    ServiceAccount = $service.StartName
+                    ServiceName = $service.Name
                 }
             }
             else {
