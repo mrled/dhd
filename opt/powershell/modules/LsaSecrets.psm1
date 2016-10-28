@@ -188,6 +188,8 @@ function Get-TSLsaSecret {
             Break
         }
 
+        Enable-TSDuplicateToken
+
         # Create Temporary Registry Key
         $tempRegKeyName = "TempSecret"
         $tempRegPath = Join-Path $script:secretsRootPath $tempRegKeyName
