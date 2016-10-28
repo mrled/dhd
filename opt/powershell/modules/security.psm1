@@ -7,6 +7,7 @@ The Enable-TSDuplicateToken CmdLet duplicates the Access token of lsass and sets
 Enable-TSDuplicateToken
 .LINK
 http://www.truesec.com
+https://blogs.technet.microsoft.com/heyscriptingguy/2012/07/05/use-powershell-to-duplicate-process-tokens-via-pinvoke/
 .NOTES
 Goude 2012, TreuSec
 #>
@@ -93,12 +94,16 @@ public static extern IntPtr GetCurrentProcess();
 "@
 
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal( [Security.Principal.WindowsIdentity]::GetCurrent())
-    if($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -ne $true) {
+    if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -ne $true) {
         Write-Warning "Run the Command as an Administrator"
         Break
     }
 
-    Add-Type -MemberDefinition $signature -Name AdjPriv -Namespace AdjPriv
+    # NOTE: This cmdlet will fail if you're already done an Add-Type with the same Name and Namespace arguments...
+    # we do -ErrorAction SilentlyContinue to work around this, but note that if you actually change the $signature
+    # you'll have to close and reopen Powershell
+    Add-Type -MemberDefinition $signature -Name AdjPriv -Namespace AdjPriv -ErrorAction SilentlyContinue
+
     $adjPriv = [AdjPriv.AdjPriv]
     [long]$luid = 0
 
@@ -115,7 +120,7 @@ public static extern IntPtr GetCurrentProcess();
     $tokenPrivileges = New-Object AdjPriv.AdjPriv+TOKEN_PRIVILEGES
     $retVal = $adjPriv::AdjustTokenPrivileges($htoken, $false, [ref]$tokPriv1Luid, 12, [IntPtr]::Zero, [IntPtr]::Zero)
 
-    if(-not($retVal)) {
+    if (-not($retVal)) {
         [System.Runtime.InteropServices.marshal]::GetLastWin32Error()
         Break
     }
@@ -128,9 +133,19 @@ public static extern IntPtr GetCurrentProcess();
     $retVal = $adjPriv::DuplicateToken($hlsasstoken, 2, [ref]$dulicateTokenHandle)
 
     $retval = $adjPriv::SetThreadToken([IntPtr]::Zero, $dulicateTokenHandle)
-    if(-not($retVal)) {
+    if (-not($retVal)) {
         [System.Runtime.InteropServices.marshal]::GetLastWin32Error()
     }
+}
+
+<#
+.description
+List possible LSA secrets
+#>
+function Get-TSLsaSecretNames {
+    [CmdletBinding()] Param()
+    $secretsRootPath = "HKLM:\SECURITY\Policy\Secrets"
+    Get-ChildItem $secretsRootPath | Select-Object -ExpandProperty Name | Split-Path -Leaf
 }
 
 <#
@@ -139,7 +154,7 @@ Displays LSA Secrets from local computer.
 .DESCRIPTION
 Extracts LSA secrets from HKLM:\\SECURITY\Policy\Secrets\ on a local computer. The CmdLet must be run with elevated permissions, in 32-bit mode and requires permissions to the security key in HKLM.
 .PARAMETER Key
-Name of Key to Extract. if the parameter is not used, all secrets will be displayed. (See names of keys in HKLM:\SECURITY\Policy\Secrets\)
+Name of Key to Extract. if the parameter is not used, all secrets will be displayed. (See names of keys in HKLM:\SECURITY\Policy\Secrets\, or use the Get-TSLsaSecretNames function)
 .EXAMPLE
 Enable-TSDuplicateToken
 Get-TSLsaSecret
@@ -148,36 +163,34 @@ Enable-TSDuplicateToken
 Get-TSLsaSecret -Key KeyName
 .LINK
 http://www.truesec.com
+https://blogs.technet.microsoft.com/heyscriptingguy/2012/07/06/use-powershell-to-decrypt-lsa-secrets-from-the-registry/
 .NOTES
 Goude 2012, TreuSec
 #>
 function Get-TSLsaSecret {
     [CmdletBinding()] param(
-        [Parameter(Position=0, ValueFromPipeLine=$true)] [Alias("RegKey")] [string[]]$RegistryKey
+        [Parameter(Position=0, ValueFromPipeLine=$true)] [Alias("RegKey")] [string[]] $RegistryKey = (Get-TSLsaSecretNames)
     )
 
     Begin {
         # Check if User is Elevated
         $currentPrincipal = New-Object Security.Principal.WindowsPrincipal( [Security.Principal.WindowsIdentity]::GetCurrent())
-        if($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -ne $true) {
+        if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -ne $true) {
             Write-Warning "Run the Command as an Administrator"
             Break
         }
 
+        $secretsRootPath = "HKLM:\SECURITY\Policy\Secrets"
+
         # Check if Script is run in a 32-bit Environment by checking a Pointer Size
-        if([System.IntPtr]::Size -eq 8) {
+        if ([System.IntPtr]::Size -eq 8) {
             Write-Warning "Run PowerShell in 32-bit mode"
             Break
         }
 
-        # Check if RegKey is specified
-        if([string]::IsNullOrEmpty($registryKey)) {
-            [string[]]$registryKey = (Split-Path (Get-ChildItem HKLM:\SECURITY\Policy\Secrets | Select -ExpandProperty Name) -Leaf)
-        }
-
         # Create Temporary Registry Key
         $tempRegKeyName = "TempSecret"
-        $tempRegPath = "HKLM:\SECURITY\Policy\Secrets\$tempRegKeyName"
+        $tempRegPath = Join-Path $secretsRootPath $tempRegKeyName
         # $tempRegPath = "HKCU:\Temp\$tempRegKeyName" # <-- this doesn't appear to work... I guess it has to be somewhere in HKLM ?
         mkdir -Force $tempRegPath | Out-Null
 
@@ -261,7 +274,7 @@ public static extern uint LsaFreeMemory(
 
     Process{
         foreach($key in $RegistryKey) {
-            $regPath = "HKLM:\\SECURITY\Policy\Secrets\" + $key
+            $regPath = Join-Path $secretsRootPath $key
             if (Test-Path $regPath) {
                 Try {
                     Get-ChildItem $regPath -ErrorAction Stop | Out-Null
@@ -273,17 +286,15 @@ public static extern uint LsaFreeMemory(
 
                 if (Test-Path $regPath) {
                     # Copy Key
-                    "CurrVal","OldVal","OupdTime","CupdTime","SecDesc" | ForEach-Object {
-                        $copyFrom = "HKLM:\SECURITY\Policy\Secrets\" + $key + "\" + $_
-                        $copyTo = Join-Path $tempRegPath $_
-
-                        if( -not(Test-Path $copyTo) ) {
-                          mkdir $copyTo | Out-Null
-                        }
-                        $item = Get-ItemProperty $copyFrom
-                        Set-ItemProperty -Path $copyTo -Name '(default)' -Value $item.'(default)'
+                    foreach ($subKeyName in @("CurrVal","OldVal","OupdTime","CupdTime","SecDesc")) {
+                        $copyFrom = Join-Path $regPath $subKeyName
+                        $copyTo = Join-Path $tempRegPath $subKeyName
+                        mkdir -Force $copyTo | Out-Null
+                        $properties = Get-ItemProperty $copyFrom
+                        Set-ItemProperty -Path $copyTo -Name '(default)' -Value $properties.'(default)'
                     }
                 }
+
                 # Attributes
                 $objectAttributes = New-Object LSAUtil.LSAUtil+LSA_OBJECT_ATTRIBUTES
                 $objectAttributes.Length = 0
@@ -309,7 +320,7 @@ public static extern uint LsaFreeMemory(
                 [LSAUtil.LSAUtil+LSA_AccessPolicy]$access = [LSAUtil.LSAUtil+LSA_AccessPolicy]::POLICY_GET_PRIVATE_INFORMATION
                 $lsaOpenPolicyHandle = [LSAUtil.LSAUtil]::LSAOpenPolicy([ref]$localSystem, [ref]$objectAttributes, $access, [ref]$lsaPolicyHandle)
 
-                if($lsaOpenPolicyHandle -ne 0) {
+                if ($lsaOpenPolicyHandle -ne 0) {
                     Write-Warning "lsaOpenPolicyHandle Windows Error Code: $lsaOpenPolicyHandle"
                     Continue
                 }
@@ -322,12 +333,11 @@ public static extern uint LsaFreeMemory(
 
                 $lsaNtStatusToWinError = [LSAUtil.LSAUtil]::LsaNtStatusToWinError($ntsResult)
 
-                if($lsaNtStatusToWinError -ne 0) {
+                if ($lsaNtStatusToWinError -ne 0) {
                     Write-Warning "lsaNtsStatusToWinError: $lsaNtStatusToWinError"
                 }
 
-                [LSAUtil.LSAUtil+LSA_UNICODE_STRING]$lusSecretData =
-                [LSAUtil.LSAUtil+LSA_UNICODE_STRING][System.Runtime.InteropServices.marshal]::PtrToStructure($privateData, [System.Type] [LSAUtil.LSAUtil+LSA_UNICODE_STRING])
+                [LSAUtil.LSAUtil+LSA_UNICODE_STRING]$lusSecretData = [LSAUtil.LSAUtil+LSA_UNICODE_STRING][System.Runtime.InteropServices.marshal]::PtrToStructure($privateData, [System.Type] [LSAUtil.LSAUtil+LSA_UNICODE_STRING])
 
                 Try {
                     [string]$value = [System.Runtime.InteropServices.marshal]::PtrToStringAuto($lusSecretData.Buffer)
@@ -337,28 +347,21 @@ public static extern uint LsaFreeMemory(
                     $value = ""
                 }
 
-                if($key -match "^_SC_") {
+                $account = ""
+                if ($key -match "^_SC_") {
                     # Get Service Account
                     $serviceName = $key -Replace "^_SC_"
-                    Try {
-                        # Get Service Account
-                        $service = Get-WmiObject -Query "SELECT StartName FROM Win32_Service WHERE Name = '$serviceName'" -ErrorAction Stop
-                        $account = $service.StartName
-                    }
-                    Catch {
-                        $account = ""
-                    }
-                }
-                else {
-                    $account = ""
+                    $service = Get-WmiObject -Class Win32_Service -Filter "name='$serviceName'"
+                    if ($service) { $account = $service.StartName }
                 }
 
                 # Return Object
                 New-Object PSObject -Property @{
-                    Name = $key;
-                    Secret = $value;
+                    Name = $key
+                    Secret = $value
                     Account = $Account
-                } | Select-Object Name, Account, Secret, @{Name="ComputerName";Expression={$env:COMPUTERNAME}}
+                    ComputerName = $env:COMPUTERNAME
+                }
             }
             else {
                 Write-Error -Message "Path not found: $regPath" -Category ObjectNotFound
@@ -366,7 +369,7 @@ public static extern uint LsaFreeMemory(
         }
     }
     end {
-        if(Test-Path $tempRegPath) {
+        if (Test-Path $tempRegPath) {
             Remove-Item -Path $tempRegPath -Recurse -Force
         }
     }
