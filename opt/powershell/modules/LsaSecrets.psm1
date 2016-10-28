@@ -2,17 +2,16 @@
 $script:secretsRootPath = "HKLM:\SECURITY\Policy\Secrets"
 
 <#
-.SYNOPSIS
+.synopsis
 Duplicates the Access token of lsass and sets it in the current process thread.
-.DESCRIPTION
+.description
 The Enable-TSDuplicateToken CmdLet duplicates the Access token of lsass and sets it in the current process thread. The CmdLet must be run with elevated permissions.
-.EXAMPLE
-Enable-TSDuplicateToken
-.LINK
+.link
 http://www.truesec.com
+.link
 https://blogs.technet.microsoft.com/heyscriptingguy/2012/07/05/use-powershell-to-duplicate-process-tokens-via-pinvoke/
-.NOTES
-Goude 2012, TreuSec
+.notes
+Original version copyright Goude 2012, TrueSec
 #>
 function Enable-TSDuplicateToken {
     [CmdletBinding()] param()
@@ -151,23 +150,19 @@ function Get-TSLsaSecretNames {
 }
 
 <#
-.SYNOPSIS
+.synopsis
 Displays LSA Secrets from local computer.
-.DESCRIPTION
-Extracts LSA secrets from HKLM:\\SECURITY\Policy\Secrets\ on a local computer. The CmdLet must be run with elevated permissions, in 32-bit mode and requires permissions to the security key in HKLM.
-.PARAMETER Key
-Name of Key to Extract. if the parameter is not used, all secrets will be displayed. (See names of keys in HKLM:\SECURITY\Policy\Secrets\, or use the Get-TSLsaSecretNames function)
-.EXAMPLE
-Enable-TSDuplicateToken
-Get-TSLsaSecret
-.EXAMPLE
-Enable-TSDuplicateToken
-Get-TSLsaSecret -Key KeyName
-.LINK
+.description
+Extracts LSA secrets from HKLM:\\SECURITY\Policy\Secrets\ on a local computer. The CmdLet must be run with elevated permissions and requires permissions to the security key in HKLM.
+.parameter Key
+Name of Key to Extract. If the parameter is not used, all secrets will be displayed. (See names of keys in HKLM:\SECURITY\Policy\Secrets\, or use the Get-TSLsaSecretNames function)
+.link
 http://www.truesec.com
+.link
 https://blogs.technet.microsoft.com/heyscriptingguy/2012/07/06/use-powershell-to-decrypt-lsa-secrets-from-the-registry/
-.NOTES
-Goude 2012, TreuSec
+.notes
+The documentation for the original version of this function claims that x86 Powershell is required, but I have been able to get secrets using 64-bit Powershell as well? I have removed the check for 32-bit Powershell, but if you're having trouble try starting a 32-bit session.
+Original version copyright Goude 2012, TrueSec
 #>
 function Get-TSLsaSecret {
     [CmdletBinding()] param(
@@ -175,19 +170,6 @@ function Get-TSLsaSecret {
     )
 
     Begin {
-        # Check if User is Elevated
-        $currentPrincipal = New-Object Security.Principal.WindowsPrincipal( [Security.Principal.WindowsIdentity]::GetCurrent())
-        if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -ne $true) {
-            Write-Warning "Run the Command as an Administrator"
-            Break
-        }
-
-        # Check if Script is run in a 32-bit Environment by checking a Pointer Size
-        if ([System.IntPtr]::Size -eq 8) {
-            Write-Warning "Run PowerShell in 32-bit mode"
-            Break
-        }
-
         Enable-TSDuplicateToken
 
         # Create Temporary Registry Key
@@ -357,7 +339,7 @@ public static extern uint LsaFreeMemory(
 
                 # Return Object
                 New-Object PSObject -Property @{
-                    KeyName = $key
+                    RegistryKeyName = $key
                     Secret = $value
                     ServiceAccount = $service.StartName
                     ServiceName = $service.Name
