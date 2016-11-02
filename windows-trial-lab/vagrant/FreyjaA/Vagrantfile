@@ -12,10 +12,8 @@ thisVagrantfileDir = File.dirname(__FILE__)
 commonScriptsDir = "#{thisVagrantfileDir}/../../scripts"
 
 Vagrant.configure("2") do |config|
-    #config.vm.define "FreyjaA " + DateTime.now.strftime("%Y-%m-%d-%H-%M-%S")
-    config.vm.define "FreyjaA-2016-01-08"
-    #config.vm.box = "wintriallab-windows_10_x86"
-    config.vm.box = "wintriallab-windows_81_x86"
+    config.vm.define "FreyjaA-2016-11-02"
+    config.vm.box = "wintriallab-windows_10_x86"
     config.vm.communicator = "winrm"
 
     # Admin user name and password
@@ -25,8 +23,12 @@ Vagrant.configure("2") do |config|
     config.vm.guest = :windows
     config.windows.halt_timeout = 15
 
-    #config.vm.network :forwarded_port, guest: 3389, host: 33891, id: "rdp", auto_correct: true
-    config.vm.network :public_network
+    # One of the VPNs I have to use will only work with a bridged connection
+    # However, Vagrant apparently doesn't like this, so unless you do :adapter=>1 it will create a second adapter
+    # More investigation is required... the :adapter=>1 line hasn't been tested yet
+    # For now: require switching to bridged connection manually after 'vagrant up'
+    #config.vm.network :public_network
+    #config.vm.network :public_network, :adapter=>1, type:"dhcp", :bridge=>'Ethernet'
 
     config.vm.provider :virtualbox do |v, override|
         #v.gui = true
@@ -46,8 +48,9 @@ Vagrant.configure("2") do |config|
     end
     config.vm.synced_folder ".", "/vagrant", disabled: true
     config.vm.synced_folder "./synced", "/vagrant", create: true
+    config.vm.synced_folder "#{ENV['USERPROFILE']}\\Documents\\VMShare", "/VMShare", create: true
     FileUtils.cp "#{commonScriptsDir}/wintriallab-postinstall.psm1", "./synced/wintriallab-postinstall.psm1"
-    FileUtils.cp "./provision-dlpvpns.ps1", "./synced/provision-dlpvpns.ps1"
+    FileUtils.cp "#{commonScriptsDir}/freyja-provisioner.ps1", "./synced/freyja-provisioner.ps1"
 
-    config.vm.provision "shell", inline: "C:/vagrant/provision-dlpvpns.ps1"
+    config.vm.provision "shell", inline: "C:/vagrant/freyja-provisioner.ps1"
 end
