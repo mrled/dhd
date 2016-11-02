@@ -12,6 +12,11 @@ PREREQUISITES:
 - packer
 - vagrant 1.7.4
 - FOR NOW: the winrm-fs vagrant plugin - vagrant plugin install winrm-fs. This should come with the next Vagrant release tho. See: https://github.com/mitchellh/vagrant/issues/6060#issuecomment-130319797
+.example
+.\buildlab.ps1 -baseConfigName windows_10_x86 -BuildPacker -force
+.\buildlab.ps1 -baseConfigName windows_10_x86 -AddToVagrant -force
+cd vagrant\FreyjaA
+vagrant up
 #>
 [cmdletbinding()] param(
     [parameter(mandatory=$true,ParameterSetName="BuildPacker")] 
