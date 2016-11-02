@@ -25,7 +25,7 @@ PREREQUISITES:
     [parameter(mandatory=$true,ParameterSetName="ShowConfig")]   [switch] $ShowConfig,
 
     #[string] $baseOutDir = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\iso\wintriallab"),
-    [string] $baseOutDir = "E:\Micah\iso\wintriallab",
+    [string] $baseOutDir = "$env:USERPROFILE\Documents\WinTrialLab",
     [string] $tempDirOverride,
     [string] $tag,
     [switch] $SkipSyntaxcheck,
