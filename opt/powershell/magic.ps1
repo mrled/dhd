@@ -147,7 +147,8 @@ function Install-DhdRepository {
     Invoke-PathExecutable "git.exe clone https://github.com/mrled/dhd $env:USERPROFILE\.dhd" -Verbose
 }
 
-Set-ExecPolUnrestricted
+# I think this has to have already happened before this script would even run?
+# Set-ExecPolUnrestricted
 
 #### Tasks that require administrative privileges:
 #
