@@ -5,6 +5,10 @@ Set up a new Windows machine
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/powershell/magic.ps1 | Invoke-Expression
 
 Must be run from an administrative prompt, unless Chocolatey and everything we install from it is already present
+.example
+Invoke-WebRequest -Headers @{"Cache-Control"="no-cache"} -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/powershell/magic.ps1 | Invoke-Expression
+
+When testing, run this way to prevent Invoke-WebRequest from caching the response
 #>
 
 $ErrorActionPreference = "Stop"
@@ -34,6 +38,30 @@ function Invoke-MagicStep {
     }
 }
 
+function Update-EnvironmentPath {
+    [CmdletBinding()] Param()
+    $machinePath = [Environment]::GetEnvironmentVariable("PATH", "Machine") -split ";"
+    $userPath = [Environment]::GetEnvironmentVariable("PATH", "User") -split ";"
+    $processPath = [Environment]::GetEnvironmentVariable("PATH", "Process") -split ";"
+    $env:PATH = ($machinePath + $userPath + $processPath | Select-Object -Unique) -join ";"
+}
+
+<#
+.description
+Wrap calls to external executables so that we can update the %PATH% first
+#>
+function Invoke-PathExecutable {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$True)] [String] $commandLine
+    )
+    Update-EnvironmentPath
+    Write-Verbose "Running command line: '$commandLine'"
+    Invoke-Expression $commandLine
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command line '$commandLine' exited with code '$LASTEXITCODE'"
+    }
+}
+
 <#
 .description
 Determine
@@ -42,6 +70,7 @@ function Test-CommandInPath {
     [CmdletBinding()] Param(
         [Parameter(Mandatory=$true)] $commandName
     )
+    Update-EnvironmentPath
     foreach ($path in ($env:path -split ';' | Sort-Object -Unique)) {
         $pathToTest = "$path\$commandName"
         if (Test-Path $pathToTest) {
@@ -96,8 +125,7 @@ function Install-ChocolateyPackage {
     [CmdletBinding()] Param(
         [Parameter(Mandatory=$true)] [String[]] $packageName
     )
-    choco.exe install $packageName
-    refreshenv
+    Invoke-PathExecutable "choco.exe install $packageName"
 }
 
 function Install-Chocolatey {
@@ -105,11 +133,18 @@ function Install-Chocolatey {
 }
 
 function Configure-Chocolatey {
-    choco.exe feature enable --name=allowGlobalConfirmation --yes
+    Invoke-PathExecutable "choco.exe feature enable --name=allowGlobalConfirmation --yes"
 }
 
 function Install-PsGet {
     (New-Object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | Invoke-Expression
+}
+
+function Install-DhdRepository {
+    if (Test-Path $env:USERPROFILE\.dhd) {
+        Remove-Item -Force -Recurse $env:USERPROFILE\.dhd
+    }
+    Invoke-PathExecutable "git.exe clone https://github.com/mrled/dhd $env:USERPROFILE\.dhd" -Verbose
 }
 
 Set-ExecPolUnrestricted
@@ -120,7 +155,6 @@ Invoke-MagicStep "install chocolatey" {Install-Chocolatey} (-not (Test-CommandIn
 Invoke-MagicStep "configure chocolatey" {Configure-Chocolatey}
 Invoke-MagicStep "install git" {Install-ChocolateyPackage git.install} (-not (Test-CommandInPath git.exe))
 Invoke-MagicStep "install conemu" {Install-ChocolateyPackage conemu} (-not (Test-Path "${env:ProgramFiles}\ConEmu\ConEmu.exe"))
-# NOTE: refreshenv won't reload PATH for some reason? so if this has been installed and you wanna re-run magic.ps1, open a new window
 Invoke-MagicStep "install less" {Install-ChocolateyPackage less} (-not (Test-CommandInPath less.exe))
 Invoke-MagicStep "install vim" {Install-ChocolateyPackage vim} (-not (Test-CommandInPath vim.exe))
 Invoke-MagicStep "install openssh" {Install-ChocolateyPackage win32-openssh} (-not (Test-CommandInPath ssh.exe))
@@ -130,7 +164,7 @@ Invoke-MagicStep "install 7zip" {Install-ChocolateyPackage 7zip} (-not (Test-Com
 #### Remaining tasks do not require admin privs
 #
 Invoke-MagicStep "install psget" {Install-PsGet} (-not (Get-Module -ListAvailable PsGet)) 
-Invoke-MagicStep "checkout dhd" {git.exe checkout https://github.com/mrled/dhd.git $Home\.dhd} (-not (Test-Path $Home\.dhd)) 
+Invoke-MagicStep "clone dhd" {Install-DhdRepository} (-not (Test-Path $env:USERPROFILE\.dhd\.git)) 
 Invoke-MagicStep "install conemu config" {Install-ConEmuConfiguration}
 Invoke-MagicStep "install powershell profile" {Install-PowershellProfile}
 Invoke-MagicStep "invoke powershell profile" {Invoke-PowershellProfile}
