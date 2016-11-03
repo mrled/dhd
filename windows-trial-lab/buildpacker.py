@@ -14,8 +14,6 @@ verbose = False
 
 
 # TODO: use logging module?
-# TODO: normalize all user paths
-# TODO: re-add tagging
 
 
 def strace():
@@ -101,11 +99,8 @@ def addvagrantbox(vagrantboxname, packedboxpath, force, whatif):
     packedboxdir = os.path.dirname(packedboxpath)
     packedboxname = os.path.basename(packedboxpath)
 
-    # cli = ['vagrant', 'box', 'add', '--force' if force else '', '--name', vagrantboxname, packedboxname]
-    cli = "vagrant.exe box add {} --name {} {}".format(
-        '--force' if force else '',
-        vagrantboxname,
-        packedboxname)
+    forcearg = '--force' if force else ''
+    cli = "vagrant.exe box add {} --name {} {}".format(forcearg, vagrantboxname, packedboxname)
 
     verboseprint("Running command:\n    {}".format(cli))
     if whatif:
@@ -116,8 +111,8 @@ def addvagrantbox(vagrantboxname, packedboxpath, force, whatif):
 
 def main(*args, **kwargs):
     parser = argparse.ArgumentParser(
-            description="Windows Trial Lab: build trial Vagrant boxes.",
-            epilog="NOTE: requires packer 0.8.6 or higher and vagrant 1.8 or higher. EXAMPLE: buildlab --baseconfigname windows_10_x86; cd vagrant/FreyjaA; vagrant up")
+        description="Windows Trial Lab: build trial Vagrant boxes.",
+        epilog="NOTE: requires packer 0.8.6 or higher and vagrant 1.8 or higher. EXAMPLE: buildlab --baseconfigname windows_10_x86; cd vagrant/FreyjaA; vagrant up")
 
     parser.add_argument(
         "baseconfigname", action='store',
@@ -127,7 +122,7 @@ def main(*args, **kwargs):
         "--base-out-dir", "-o", action='store', default="~/Documents/WinTrialLab",
         help="The base output directory, where Packer does its work and saves its final output. (NOT the VM directory, which is a setting in VirtualBox.)")
     parser.add_argument(
-        "--action", "-a", action='store', default="all", choices=['all','packer','vagrant'],
+        "--action", "-a", action='store', default="all", choices=['all', 'packer', 'vagrant'],
         help="The action to perform. By default, build with packer and add to vagrant.")
     parser.add_argument(
         "--whatif", "-w", action='store_true',
@@ -164,6 +159,7 @@ def main(*args, **kwargs):
         buildpacker(packerfile, packeroutdir, force=parsed.force, whatif=parsed.whatif)
     if 'vagrant' in actions:
         addvagrantbox(fullconfigname, packedboxpath, force=parsed.force, whatif=parsed.whatif)
+
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
