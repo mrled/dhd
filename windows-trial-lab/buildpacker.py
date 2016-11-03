@@ -101,10 +101,14 @@ def addvagrantbox(vagrantboxname, packedboxpath, force, whatif):
     packedboxdir = os.path.dirname(packedboxpath)
     packedboxname = os.path.basename(packedboxpath)
 
-    cli = ['vagrant', 'box', 'add', '--force' if force else '', '--name', vagrantboxname, packedboxname]
+    # cli = ['vagrant', 'box', 'add', '--force' if force else '', '--name', vagrantboxname, packedboxname]
+    cli = "vagrant.exe box add {} --name {} {}".format(
+        '--force' if force else '',
+        vagrantboxname,
+        packedboxname)
 
+    verboseprint("Running command:\n    {}".format(cli))
     if whatif:
-        print("addvagrantbox: WHATIF: would have run command:\n    {}".format(cli))
         return
     else:
         subprocess.check_call(cli, cwd=packedboxdir)
@@ -118,17 +122,19 @@ def main(*args, **kwargs):
     parser.add_argument(
         "baseconfigname", action='store',
         help="The name of one of the subdirs of this directory, like windows_81_x86")
+
     parser.add_argument(
         "--base-out-dir", "-o", action='store', default="~/Documents/WinTrialLab",
         help="The base output directory, where Packer does its work and saves its final output. (NOT the VM directory, which is a setting in VirtualBox.)")
-
+    parser.add_argument(
+        "--action", "-a", action='store', default="all", choices=['all','packer','vagrant'],
+        help="The action to perform. By default, build with packer and add to vagrant.")
     parser.add_argument(
         "--whatif", "-w", action='store_true',
         help="Do not perform any actions, only say what would have been done")
     parser.add_argument(
         "--force", "-f", action='store_true',
         help="Force continue, even if old output directories already exist")
-
     parser.add_argument(
         "--debug", "-d", action='store_true',
         help="Print debug and verbose messages")
@@ -144,14 +150,20 @@ def main(*args, **kwargs):
         global verbose
         verbose = True
 
+    if parsed.action == "all":
+        actions = ['packer', 'vagrant']
+    else:
+        actions = [parsed.action]
 
     fullconfigname = "wintriallab-{}".format(parsed.baseconfigname)
     packeroutdir = os.path.join(resolvepath(parsed.base_out_dir), fullconfigname)
     packerfile = os.path.join(scriptdir, 'packer', parsed.baseconfigname, '{}.packerfile.json'.format(parsed.baseconfigname))
-    packedboxpath = os.path.join(packeroutdir, '{}_virtualbox.box'.format(fullconfigname))
+    packedboxpath = os.path.join(packeroutdir, '{}_virtualbox.box'.format(parsed.baseconfigname))
 
-    buildpacker(packerfile, packeroutdir, force=parsed.force, whatif=parsed.whatif)
-    addvagrantbox(fullconfigname, packedboxpath, force=parsed.force, whatif=parsed.whatif)
+    if 'packer' in actions:
+        buildpacker(packerfile, packeroutdir, force=parsed.force, whatif=parsed.whatif)
+    if 'vagrant' in actions:
+        addvagrantbox(fullconfigname, packedboxpath, force=parsed.force, whatif=parsed.whatif)
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
