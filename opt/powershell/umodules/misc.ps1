@@ -1231,10 +1231,10 @@ function Set-Clipboard {
 set-alias Out-Clipboard Set-Clipboard
 
 function Test-PowershellSyntax {
-    [cmdletbinding(DefaultParameterSetName='FromText')]
+    [cmdletbinding(DefaultParameterSetName='FromFile')]
     param(
-        [parameter(mandatory=$true,ParameterSetName='FromText')] [string] $text,
-        [parameter(mandatory=$true,ParameterSetName='FromFile')] [string] $fileName,
+        [parameter(mandatory=$true, Position=0, ValueFromPipeline=$true, ParameterSetName='FromText')] [string] $text,
+        [parameter(mandatory=$true, Position=0, ParameterSetName='FromFile')] [string] $fileName,
         [switch] $ThrowOnFailure
     )
     $tokens = @()
