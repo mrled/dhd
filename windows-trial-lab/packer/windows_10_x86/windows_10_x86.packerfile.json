@@ -1,6 +1,9 @@
 {
   "variables": {
-    "output_directory": "packer-output"
+    "output_directory": "packer-output",
+    "boxname": "wintriallab_windows_10_x86",
+    "description": "Windows Trial Lab: Windows 10 x86",
+    "versionbase": "1.0"
   },
   "builders": [
     {
@@ -49,8 +52,16 @@
     {
       "type": "vagrant",
       "keep_input_artifact": false,
-      "output": "{{user `output_directory`}}/windows_10_x86_{{.Provider}}.box",
+      "output": "{{user `output_directory`}}/windows_10_x86.{{.Provider}}.box",
       "vagrantfile_template": "vagrantfile-windows_10_x86.template"
+    },
+    {
+      "type": "checksum",
+      "checksum_types": "sha1"
+    },
+    {
+      "type": "shell-local",
+      "inline": ["../../scripts/caryatid/__main__.py --box-name {{user `boxname`}} --description {{user `description`}} --version-base {{user `versionbase`}}"]
     }
   ]
 }

@@ -153,7 +153,7 @@ def main(*args, **kwargs):
     fullconfigname = "wintriallab-{}".format(parsed.baseconfigname)
     packeroutdir = os.path.join(resolvepath(parsed.base_out_dir), fullconfigname)
     packerfile = os.path.join(scriptdir, 'packer', parsed.baseconfigname, '{}.packerfile.json'.format(parsed.baseconfigname))
-    packedboxpath = os.path.join(packeroutdir, '{}_virtualbox.box'.format(parsed.baseconfigname))
+    packedboxpath = os.path.join(packeroutdir, '{}.virtualbox.box'.format(parsed.baseconfigname))
 
     if 'packer' in actions:
         buildpacker(packerfile, packeroutdir, force=parsed.force, whatif=parsed.whatif)
