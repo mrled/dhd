@@ -121,7 +121,7 @@ if [ $STY ]; then
     # $STY looks like 123123.camelot; just grab the text name and ignore the number:
     session_name=${STY#*.} 
     screen_window_hardstatus="${USER}@${HOSTNAME} <${session_name}>"
-    echo -ne "\e]2;${screen_window_hardstatus}\007"
+    # /bin/echo -ne "\e]2;${screen_window_hardstatus}\007"
 fi
 
 alias scrl="screen -list"
