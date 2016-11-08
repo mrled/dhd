@@ -1660,10 +1660,12 @@ such as:
 - StartUp / CommonStartUp: the startup folder for my user / all users
 ... and lots more. This makes a hashtable from that, so it's easier to access
 #>
-$SpecialFolders = New-Object PSObject
-foreach ($sf in [system.Enum]::GetValues([System.Environment+SpecialFolder])) {
-    $sfpath = [Environment]::GetFolderPath($sf)
-    add-member -inputobject $SpecialFolders -membertype NoteProperty -name $sf -value $sfpath -force
+if ($osType -match "Windows") {
+    $SpecialFolders = New-Object PSObject
+    foreach ($sf in [system.Enum]::GetValues([System.Environment+SpecialFolder])) {
+        $sfpath = [Environment]::GetFolderPath($sf)
+        add-member -inputobject $SpecialFolders -membertype NoteProperty -name $sf -value $sfpath -force
+    }
 }
 
 <#

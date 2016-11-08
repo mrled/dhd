@@ -1,5 +1,7 @@
 # -*- mode: powershell -*-
 
+. $PSScriptRoot/../opt/powershell/profile.d/os.ps1
+
 if (-not $profile) {
     # This can happen in a remote session, for example
     $profile = New-Object PSObject -Property @{
@@ -14,8 +16,13 @@ write-host ""; Show-SquareWindowsLogo; write-host ""
 
 $hostname=[System.Net.Dns]::GetHostName()
 
-$Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-$SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if ($osType -match "Windows") {
+    $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+    $SoyAdmin= $Me.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+elseif ($osType -match "Unix") {
+    $SoyAdmin = (id -u) -eq 0
+}
 
 # $profile is actually a PS object. $profile|get-member shows other NoteProperty entries that may be of interest
 # After this line you can do $profile.DHDProfile to get the path to this file.
@@ -49,8 +56,8 @@ $PossibleModulePaths = @(
     "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
     "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows Azure\PowerShell\Azure"
     "${env:ProgramFiles(x86)}\Microsoft SQL Server\110\Tools\PowerShell\Modules"
-    "$home\.dhd\opt\powershell\modules"
-    "$home\Documents\WindowsPowerShell\Modules"
+    "$home/.dhd/opt/powershell/modules"
+    "$home/Documents/WindowsPowerShell/Modules"
 )
 foreach ($pmp in $PossibleModulePaths) {
     if (test-path $pmp) { $env:PSModulePath += ";$pmp" }

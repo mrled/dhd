@@ -1,3 +1,5 @@
+. $PSScriptRoot/os.ps1
+
 function AsciiWriteHostWrapper {
     param(
         [parameter(Position=0)] [string] $message = "",
@@ -88,9 +90,9 @@ function Show-CurvyWindowsLogo {
     write-host ''
     write-host -nonewline -foreground red  '       ,-~ ~-,' ; write-host -foreground green       ' ,_~ ~-,'
     write-host -nonewline -foreground red  '      /     /'  ; write-host -foreground green      ' /     / '
-    write-host -nonewline -foreground red  '     /,- -,/'   ; write-host -foreground green     ' /,- -,/  ' -nonewline; write-host "  Powershell $($psversiontable.PSVersion.ToString())"
+    write-host -nonewline -foreground red  '     /,- -,/'   ; write-host -foreground green     ' /,- -,/  ' -nonewline; write-host "  Powershell $powershellVersion"
     write-host -nonewline -foreground blue '    ,-~ ~-,'    ; write-host -foreground yellow   ' ,_~ ~-,   ' 
-    write-host -nonewline -foreground blue '   /     /'     ; write-host -foreground yellow  ' /     /    ' -nonewline; write-host "  $([System.Environment]::OSVersion.VersionString)"
+    write-host -nonewline -foreground blue '   /     /'     ; write-host -foreground yellow  ' /     /    ' -nonewline; write-host "  $osVersion"
     write-host -nonewline -foreground blue '  /,- -,/'      ; write-host -foreground yellow ' /,- -,/     '
     write-host ''
 }
@@ -98,8 +100,8 @@ function Show-CurvyWindowsLogo {
 <#
 function Show-SquareWindowsLogo {
     $spaces = '     '
-    $pv = "  Powershell $($psversiontable.PSVersion.ToString())"
-    $wv = "  $([System.Environment]::OSVersion.VersionString)"
+    $pv = "  Powershell $powershellVersion"
+    $wv = "  $osVersion"
     write-host -nonewline ' '; write-host -nonewline -background red  $spaces; write-host -background green  $spaces
     write-host -nonewline ' '; write-host -nonewline -background red  $spaces; write-host -background green  $spaces -nonewline; write-host $pv
     write-host -nonewline ' '; write-host -nonewline -background blue $spaces; write-host -background yellow $spaces -nonewline; write-host $wv
@@ -109,8 +111,8 @@ function Show-SquareWindowsLogo {
 
 function Show-SquareWindowsLogo {
     $spaces = '     '
-    $pv = "  Powershell $($psversiontable.PSVersion.ToString())"
-    $wv = "  $([System.Environment]::OSVersion.VersionString)"
+    $pv = "  Powershell $powershellVersion"
+    $wv = "  $osVersion"
     whw ' '; whw -b red  $spaces; whw -b green  $spaces ;             newline
     whw ' '; whw -b red  $spaces; whw -b green  $spaces ; whw "$pv" ; newline
     whw ' '; whw -b blue $spaces; whw -b yellow $spaces ; whw "$wv" ; newline
