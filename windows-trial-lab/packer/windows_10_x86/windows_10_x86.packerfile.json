@@ -1,9 +1,12 @@
 {
   "variables": {
     "output_directory": "packer-output",
-    "boxname": "wintriallab_windows_10_x86",
+    "boxname": "wintriallab_win10_32",
+    "version": "1.0.{{isodate "20060102150405"}}",
+    "filename": "{{user `boxname`}}_{{user `version`}}_{{.Provider}}.box",
+    "output_path": "{{user `output_directory`}}/{{user `filename`}}",
     "description": "Windows Trial Lab: Windows 10 x86",
-    "versionbase": "1.0"
+    "scpuri": ""
   },
   "builders": [
     {
@@ -41,27 +44,21 @@
     }
   ],
   "provisioners": [
-
     {
       "type": "powershell",
       "inline": ["A:\\provisioner-postinstall.ps1 -Verbose"]
     }
-
   ],
   "post-processors": [
     {
       "type": "vagrant",
       "keep_input_artifact": false,
-      "output": "{{user `output_directory`}}/windows_10_x86.{{.Provider}}.box",
+      "output": "{{user `output_path`}}",
       "vagrantfile_template": "vagrantfile-windows_10_x86.template"
     },
     {
-      "type": "checksum",
-      "checksum_types": "sha1"
-    },
-    {
       "type": "shell-local",
-      "inline": ["../../scripts/caryatid/__main__.py --box-name {{user `boxname`}} --description {{user `description`}} --version-base {{user `versionbase`}}"]
+      "inline": ["../../scripts/caryatid/__main__.py {{user `boxname`}} {{user `description`}} {{user `version`}} {{user `output_path`}} {{user `scpuri`}}"]
     }
   ]
 }
