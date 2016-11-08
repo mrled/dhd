@@ -1,4 +1,6 @@
 "*":
+  core:
+    telemetryConsent: "no"
   editor:
     fontSize: 11
     scrollPastEnd: true
