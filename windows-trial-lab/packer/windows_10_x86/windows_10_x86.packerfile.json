@@ -1,12 +1,13 @@
 {
   "variables": {
+    "caryatidpath": "",
     "output_directory": "packer-output",
     "boxname": "wintriallab_win10_32",
-    "version": "1.0.{{isodate "20060102150405"}}",
+    "version": "1.0.{{isotime \"20060102150405\"}}",
     "filename": "{{user `boxname`}}_{{user `version`}}_{{.Provider}}.box",
     "output_path": "{{user `output_directory`}}/{{user `filename`}}",
     "description": "Windows Trial Lab: Windows 10 x86",
-    "scpuri": ""
+    "caryatid_destination": ""
   },
   "builders": [
     {
@@ -58,7 +59,7 @@
     },
     {
       "type": "shell-local",
-      "inline": ["../../scripts/caryatid/__main__.py {{user `boxname`}} {{user `description`}} {{user `version`}} {{user `output_path`}} {{user `scpuri`}}"]
+      "inline": ["{{user `caryatidpath`}} {{user `boxname`}} {{user `description`}} {{user `version`}} {{.Provider}} {{user `output_path`}} file {{user `destinationdir`}}"]
     }
   ]
 }
