@@ -58,17 +58,20 @@ def buildpacker(packerfile, outdir, force=False, whatif=False):
         os.makedirs(outdir, exist_ok=True)
 
     logdir = os.path.join(outdir, "packer_log")
+    cachedir = os.path.join(outdir, "packer_cache")
     packerdir = os.path.dirname(packerfile)
 
     oldoutputs = glob.glob("{}/output-*".format(packerdir))
     if len(oldoutputs) > 0:
-        if force:
-            for oldoutput in oldoutputs:
+        for oldoutput in oldoutputs:
+            if force:
                 shutil.rmtree(oldoutput)
-        else:
-            raise Exception("A packer output directory exists at '{}'".format(oldoutput))
+            else:
+                raise Exception("A packer output directory exists at '{}'".format(oldoutput))
 
-    cli = 'packer.exe build -var output_directory="{}" {}'.format(outdir, packerfile)
+    caryatidpath = resolvepath("~/Documents/caryatid")
+    caryatiddestination = resolvepath("D:\\Micah\\Vagrant")
+    cli = 'packer.exe build -var output_directory="{}" -var caryatidpath="{}" -var caryatid_destination="{}" {}'.format(outdir, caryatidpath, caryatiddestination, packerfile)
 
     # NOTE: Packer gives a very weird error if you do not COPY the entire environment
     # When I was setting env to be just a dictionary with the PACKER_* variables I needed,
@@ -76,9 +79,11 @@ def buildpacker(packerfile, outdir, force=False, whatif=False):
     # Failed to initialize build 'virtualbox-iso': error initializing builder 'virtualbox-iso': Unrecognized remote plugin message: Error starting plugin server: Couldn't bind plugin TCP listener
     # Once I copied the entire environment, it was fine. I have no idea why.
     env = os.environ
+    env['PACKER_CACHE_DIR'] = cachedir
     env['PACKER_DEBUG'] = '1'
     env['PACKER_LOG'] = '1'
     env['PACKER_LOG_PATH'] = logdir
+    env['CHECKPOINT_DISABLE'] = '1'
 
     verboseprint("Running command:\n    {}\n  from directory: {}\n  with environment:\n    {}".format(cli, packerdir, env))
     if whatif:
