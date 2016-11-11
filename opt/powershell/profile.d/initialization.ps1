@@ -43,13 +43,14 @@ function Setup-SystemPath {
     )
 
     $possibleProgramFilesPaths  = @(
-        'Git\cmd'
-        'PuTTY'
         '7-zip'
-        'Nmap'
-        'LLVM\bin'
+        'Git\cmd'
         'GNU\GnuPG'
+        'LLVM\bin'
         'Microsoft Visual Studio*\VC\bin'
+        'Nmap'
+        'PuTTY'
+        'Sublime Text 3'
     )
     $possiblePaths += @($possibleProgramFilesPaths |% { Get-ProgramFilesChild $_ })
 

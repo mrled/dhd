@@ -59,16 +59,16 @@ function Get-JobStateColor {
 # Used to set things like prompt suffix and tab title prefix
 $CliContextClues = @{
     Admin = @{
-        TitlePrefix = $HammerAndSickleChar
-        PromptSuffix = { write-host " $HammerAndSickleChar " -nonewline -foregroundcolor red -backgroundcolor yellow }
+        TitlePrefix = $SpecialCharacters.HammerSickle
+        PromptSuffix = { write-host " $($SpecialCharacters.HammerSickle) " -nonewline -foregroundcolor red -backgroundcolor yellow }
     }
     Default = @{
-        TitlePrefix = $LambdaChar
-        PromptSuffix = { Write-Host "$LambdaChar" -nonewline -foreground White }
+        TitlePrefix = $SpecialCharacters.Lambda
+        PromptSuffix = { Write-Host "$($SpecialCharacters.Lambda)" -nonewline -foreground White }
     }
     VisualStudio = @{
-        TitlePrefix = $VisualStudioChar
-        PromptSuffix = { write-host " $VisualStudioChar " -nonewline -foregroundcolor White -backgroundcolor Magenta }
+        TitlePrefix = $SpecialCharacters.VisualStudio
+        PromptSuffix = { write-host " $($SpecialCharacters.VisualStudio) " -nonewline -foregroundcolor White -backgroundcolor Magenta }
     }
 }
 

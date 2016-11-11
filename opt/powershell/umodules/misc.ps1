@@ -1,15 +1,33 @@
-# [char]955     λ (GREEK LETTER LAMBDA)
-# [char]9773    ☭ (HAMMER AND SICKLE)
-# [char]42479   ꗯ (VAI SYLLABLE GBE)
-# [char]1003    ϫ (COPTIC SMALL LETTER GANGIA)
-# [char]187     » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
-# [char]7       beeps @ u
-$LambdaChar = "$([char]955)"
-$DoublePromptChar = [char]187
-$HammerAndSickleChar = "$([char]9773)"
-$VisualStudioChar = "$([char]42479)"
-$BeepChar = @([char]7)
+#### Miscellaneous / Everything ####
 
+## Special Objects
+
+# The System.Environment+SpecialFolders enum has a lot of really useful stuff such as: 
+# - StartMenu / CommonStartMenu: the start menu folder for my user / all users
+# - StartUp / CommonStartUp: the startup folder for my user / all users
+# ... and lots more. This makes a hashtable from that, so it's easier to access
+if ($osType -match "Windows") {
+    $SpecialFolders = New-Object PSObject
+    foreach ($sf in [system.Enum]::GetValues([System.Environment+SpecialFolder])) {
+        $sfpath = [Environment]::GetFolderPath($sf)
+        add-member -inputobject $SpecialFolders -membertype NoteProperty -name $sf -value $sfpath -force
+    }
+}
+
+# Make an object analogous to $profile but for the start menu
+$StartMenu = New-Object PSObject -Property @{
+    CurrentUser = "${env:AppData}\Microsoft\Windows\Start Menu\"
+    AllUsers = "${env:ProgramData}\Microsoft\Windows\Start Menu\"
+}
+Add-Member -Force -InputObject $StartMenu -MemberType ScriptMethod -Name ToString -Value {$this.CurrentUser}
+
+$SpecialCharacters = New-Object PSObject -Property @{
+    Beep         = [char]7      # beeps @ u
+    DoublePrompt = [char]187    # » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
+    Lambda       = [char]955    # λ (GREEK LETTER LAMBDA)
+    HammerSickle = [char]9773   # ☭ (HAMMER AND SICKLE)
+    VisualStudio = [char]42479  # ꗯ (VAI SYLLABLE GBE)
+}
 
 <#
 .description
@@ -56,30 +74,6 @@ function omg {
     write-host "wtf $($cli.arguments)"
 }
 
-<#
-.synopsis
-Echo and execute a single expression
-#>
-function Echoexec-Expression {
-    [cmdletbinding()] param(
-        [parameter(Position=0, ValueFromRemainingArguments=$true)] $arguments
-    )
-    $cli = Parse-Commandline $arguments
-    write-host "Echoexec-Expression: $($cli.commandline)"
-    $cli.scriptblock.invoke()
-}
-set-alias echoexec echoexec-expression
-
-function Export-ConemuConfig {
-    param(
-        [parameter(mandatory=$true)] [string] $filename,
-        [switch] $force
-    )
-    $regKey = "HKCU\Software\ConEmu\.Vanilla"
-    $call = 'reg export $regKey "{0}"' -f "$filename"
-    if ($force) { $call += " /y" }
-    Invoke-Expression $call
-}
 if (test-path $env:ProgramFiles\ConEmu) {
     set-alias ConEmu64 $env:ProgramFiles\ConEmu\ConEmu64.exe
     set-alias Rename-ConEmuTab $env:ProgramFiles\ConEmu\ConEmu\RenameTab.cmd
@@ -221,63 +215,6 @@ function Invoke-ProcessAndWait {
     }
 }
 
-# This works. Caveat: Emacs is iffy for some reason. 
-# You can 'elevate-process emacs \somefile.txt' just fine
-# You can 'elevate-process notepad "\somefile with spaces.txt"'
-# But if you 'elevate-process emacs "\somefile with spaces.txt"', Emacs will fail
-# I am not sure why. 
-
-# TODO: This should be rewritten based on http://poshcode.org/3158
-#       However, use In-CliXml and Out-CliXml instead of shitty temporary files
-function Elevate-Process {
-    param(
-        $process,
-        [string]$arguments = $args
-    )
-    $psi = new-object System.Diagnostics.ProcessStartInfo $process;
-    $psi.Arguments = $arguments;
-    $psi.Verb = "runas";
-    $psi.WorkingDirectory = get-location;
-    $started = [System.Diagnostics.Process]::Start($psi);
-}
-set-alias sudo elevate-process
-
-function gcollect {
-    [GC]::Collect()
-}
-
-$emacsbin = "$Home\opt\emacs-23.4\bin" # this is going to change every time I upgrade Emacs or whatever, ugh
-if (test-path $emacsbin) {
-    $emacsclient = "$emacsbin\emacsclientw.exe"
-    $emacsclient_quoted = '"' + $emacsclient + '"' # unixy programs can't deal with backslashes/spaces, so
-    $runemacs = "$emacsbin\runemacs.exe"
-    set-alias emacsclient $emacsclient
-    set-alias runemacs $runemacs
-    function emacs {
-        # If there's already an Emacs session, start emacsclient.exe and connect to it. 
-        # If not, start runemacs.exe instead. 
-        # No bullshit with two separate Win7 taskbar icons, no persistent DOS window. 
-        param(
-            [string]$filename
-        )
-        emacsclient -na $runemacs "$filename"
-    }
-    set-alias e emacs
-}
-
-function Show-ScriptContents {
-    param(
-        [paramater(mandatory=$true)] [string] $commandName
-    )
-    $contents = @()
-    foreach ($c in (get-command $commaneName)) {
-        if ($c.path) {
-            $contents += $c.path
-        }
-    }
-    return $contents
-}
-
 function Get-RelativePath
 {
     # Return a relative path to a file. Only works if the basepath is in the fullpath. 
@@ -290,13 +227,6 @@ function Get-RelativePath
     return [system.io.path]::GetFullPath($fullpath).SubString([system.io.path]::GetFullPath($basepath).Length + 1)
 }
 
-
-# mklink isn't an exe - it's a cmd.exe builtin! what the fuck. 
-# also note that you cannot do this without elevating the prompt first lolololololol
-function mklink {
-    cmd /c mklink $args
-}
-
 function Generate-Password {
     param([int]$length=8)
     # From: http://ronalddameron.blogspot.com/2009/09/two-lines-of-powershell-random.html
@@ -306,28 +236,16 @@ function Generate-Password {
 set-alias pwgen generate-password
 
 function ConvertTo-Base64($string) {
-   $bytes  = [System.Text.Encoding]::UTF8.GetBytes($string);
-   $encoded = [System.Convert]::ToBase64String($bytes); 
-
-   return $encoded;
+   $bytes  = [System.Text.Encoding]::UTF8.GetBytes($string)
+   [System.Convert]::ToBase64String($bytes)
 }
 function ConvertFrom-Base64($string) {
-   $bytes  = [System.Convert]::FromBase64String($string);
-   $decoded = [System.Text.Encoding]::UTF8.GetString($bytes); 
-
-   return $decoded;
+   $bytes  = [System.Convert]::FromBase64String($string)
+   [System.Text.Encoding]::UTF8.GetString($bytes)
 }
 
 function llm {
     get-childitem $args | sort-object -property lastwritetime
-}
-function lse {
-    param(
-        [string] $path = "."
-    )
-    $items = get-childitem -include $path -Recurse -Force -ErrorAction SilentlyContinue 
-    $enc = $items | Where-Object {$_.Attributes -ge "Encrypted"} 
-    $enc.FullName
 }
 
 function .. { cd .. }
@@ -356,22 +274,6 @@ function vless {
     }
 }
 set-alias vl vless
-
-$sublpath = "${env:ProgramFiles}\Sublime Text 3\sublime_text.exe"
-
-if (test-path $sublpath) {
-    function subl {
-        [cmdletbinding()]
-        param(  
-            [Parameter(position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)] [string[]] $file
-        )
-        process {
-            foreach($f in $file) {
-                start-process $sublpath -argumentlist "`"$f`""
-            }
-        }
-    }
-}
 
 # You want this to be separated with forward slashes so that it works
 # from the Git (bash) command line and cmd and Powershell etc.
@@ -410,27 +312,6 @@ function Compare-GitObjectsOnGitHub {
 set-alias github-diff Compare-GitObjectsOnGitHub
 
 function Get-MagicNumber {
-    param(
-        [parameter(mandatory=$true)] [string[]] $filePath,
-        [int] $bytes = 2
-    )
-    $maxBytes = $bytes - 1
-    $ret = @()
-    foreach ($fp in $filePath) {
-        $MagicNumberContainer = new-object PSObject
-        $fullName = (get-item $fp).fullname
-        $firstBytes = [System.IO.File]::ReadAllBytes($fullName)[0..$maxBytes]
-        $firstBytesHex = $firstBytes |% { "0x{0:X0}" -f $_ }
-
-        $MagicNumberContainer | Add-Member -MemberType NoteProperty -Name FullName -Value $fp 
-        $MagicNumberContainer | Add-Member -MemberType NoteProperty -Name FirstBytes -Value $firstBytes
-        $MagicNumberContainer | Add-Member -MemberType NoteProperty -Name FirstBytesHex -Value $firstBytesHex
-        $ret += @($MagicNumberContainer)
-    }
-    return $MagicNumberContainer
-}
-
-function Get-MagicNumberEx {
     [CmdletBinding()] Param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)] [String[]] $filePath,
         [Int] $bytes = 2
@@ -466,14 +347,6 @@ function Get-Profiles {
     return $results
 }
 set-alias gpro Get-Profiles
-
-function whoami {
-    $me.identity.name
-}
-function id {
-    $output = "" + $me.identity.name + "(" + $me.identity.user.value + ")"
-    $output
-}
 
 # Make output of get-command better (more like Unix) for interactive use. 
 # NOTE: For aliases, the processing function calls the show function again - this is recursive!
@@ -619,12 +492,7 @@ function touch {
 if (test-path alias:man) { del alias:man }
 function man {
     foreach ($a in $args) {
-        if (get-module PSCX) {
-            get-help $a -full | & "$Pscx:Home\Apps\less.exe"
-        }
-        else {
-            get-help $a -full | less
-        }
+        get-help $a -full | less
     }
 }
 <#
@@ -650,35 +518,15 @@ function Get-Syntax {
     }
 }
 set-alias syntax get-syntax 
-if (test-path alias:help) { del alias:help }
-set-alias help get-help
-if (test-path function:help) { del function:help } # PSCX has one of these
-if (test-path function:get-help) { del function:get-help } # PSCX has one of these
 
-# Set-LocationEx from PSCX let's you move back/forward in your location stack with these:
-#     Set-LocationEx -
-#     Set-LocationEx +
-# Calling just Set-LocationEx displays the stack
-if (test-path alias:pwd) { del alias:pwd }
-if (test-path alias:cd) { del alias:cd }
-if (get-module pscx) {
-    function pwd { Set-LocationEx | select -last 5 }
-    function cd {
-        param(
-            [parameter(position=0, valuefrompipeline=$true)] $location = $home
-        )
-        Set-LocationEx $location
-    }
+function Set-LocationMrl {
+    param(
+        [parameter(position=0, valuefrompipeline=$true)] $location = $home
+    )
+    Set-Location $location
 }
-else {
-    function pwd { Get-Location }
-    function cd {
-        param(
-            [parameter(position=0, valuefrompipeline=$true)] $location = $home
-        )
-        Set-Location $location
-    }
-}
+if (Test-Path Alias:\cd) { Remove-Item Alias:\cd }
+Set-Alias cd Set-LocationMrl -Force
 
 function Send-Notification {
     # We use start-job so that the function can return right away, but also sleep for $seconds
@@ -769,67 +617,6 @@ function New-MRLShortcut {
     }
 }
 
-$startmenu="$env:appdata\Microsoft\Windows\Start Menu"
-
-# seperating file/dir hard/soft links, because they're different in windows
-# i wanted to autodetect the target so you didn't have to care, but then you 
-# couldn't make hard/soft links that point to a nonexistent file. 
-# note that this does not apply to shortcuts
-# also, softlinks require admin privs (...wtf)
-# finally, note that you have to `remove-item -recurse -force` to delete a junction
-# and that this does in fact ONLY delete the hardlink not the target, or the files in the target.
-# future ideas: http://stackoverflow.com/questions/2311105/test-in-powershell-code-if-a-folder-is-a-junction-point
-function Create-Link {
-    param(
-        [Parameter(ParameterSetName='shortcut',Mandatory=$true)] [alias("c")] [switch]$shortcut, 
-        [Parameter(ParameterSetName='shortcut')] [string]$arguments = $null, 
-        #[Parameter(ParameterSetName='shortcut')] [alias("f")] [switch]$force, 
-        [Parameter(ParameterSetName='fhardlink',Mandatory=$true)] [alias("h")] [switch]$fhardlink, 
-        [Parameter(ParameterSetName='fsoftlink',Mandatory=$true)] [alias("s")] [switch]$fsoftlink, 
-        [Parameter(ParameterSetName='dhardlink',Mandatory=$true)] [alias("j")] [switch]$dhardlink, 
-        [Parameter(ParameterSetName='dsoftlink',Mandatory=$true)] [alias("d")] [switch]$dsoftlink, 
-        [Parameter(Mandatory=$true)] [string]$target,
-        [Parameter(Mandatory=$true)] [string]$source
-    )
-    if (test-path $source) {
-        write-error "Filename $source already exists." #cannot overwrite - what if it's not a link?
-        return $null
-    }
-    switch ($pscmdlet.ParameterSetName) {
-        "shortcut" { 
-            $a = @{filename = $source
-                   target = $target
-                   arguments = $arguments
-                   force = $force 
-            }
-            New-MRLShortcut @a 
-        }
-        "fhardlink" {
-            start-process "cmd.exe" -ArgumentList "/c mklink /h $source $target" -wait -NoNewWindow
-        }
-        "fsoftlink" {
-            start-process "cmd.exe" -ArgumentList "/c mklink $source $target" -verb "runAs" -wait
-        }
-        "dhardlink" {
-            start-process "cmd.exe" -ArgumentList "/c mklink /j $source $target" -NoNewWindow -wait
-        }
-        "dsoftlink" {
-            start-process "cmd.exe" -ArgumentList "/c mklink /d $source $target" -verb "runAs" -wait
-        }
-    }
-}
-
-function EfsEncrypt-File {
-    param (
-        [alias("r")] [switch]$recurse
-    )
-    foreach ($a in $args) {
-        foreach ($f in get-childitem $a) {
-            $f.Encrypt()
-        }
-    }
-}
-
 function reimport-module {
     param([parameter(mandatory=$true)] [string] $moduleName)
     $module = get-module $moduleName
@@ -872,10 +659,6 @@ function Get-WinEnvironmentVariable {
     }
 }
 set-alias getenv Get-WinEnvironmentVariable
-
-function Get-SystemPath {
-    ($env:path).split(";")
-}
 
 # http://social.msdn.microsoft.com/Forums/vstudio/en-US/630ed1d9-73f1-4cc0-bc84-04f29cffc13b/
 function Set-FileAssociation {
@@ -1112,41 +895,8 @@ function Generate-SparkLine {
 }
 set-alias spark Generate-SparkLine
 
-$StartMenu = New-Object PSObject
-Add-Member -Force -InputObject $StartMenu -MemberType NoteProperty -Name CurrentUser -Value "${env:AppData}\Microsoft\Windows\Start Menu\"
-Add-Member -Force -InputObject $StartMenu -MemberType NoteProperty -Name AllUsers -Value "${env:ProgramData}\Microsoft\Windows\Start Menu\"
-
 set-alias getmo Get-Module
 set-alias rmmo Remove-Module
-
-function Get-Clipboard {
-    [cmdletbinding()]
-    param(
-        [switch] $AsArray
-    ) 
-    Add-Type -Assembly PresentationCore
-    $clipboardText = [Windows.Clipboard]::GetText()
-    if ($AsArray) {
-        $clipboardText = $clipboardText -replace "`r",'' -split "`n"
-    }
-    return $clipboardText
-}
-function Set-ClipboardFucked {
-    [cmdletbinding()]
-    param(
-        [string] $text,
-        [switch] $Append
-    )
-    throw "This is broken right now actualy"
-    Add-Type -AssemblyName 'System.Windows.Forms'
-    $str = $input | Out-String
-    if (-not $Append) {
-        [Windows.Forms.Clipboard]::Clear()
-    }
-    if ($str) {
-        [Windows.Forms.Clipboard]::SetText($str)
-    }
-}
 
 # from: http://andyarismendi.blogspot.com/2013/04/out-clipboard-cmdlet.html
 function Set-Clipboard {
@@ -1285,23 +1035,6 @@ function Show-ErrorReport {
     $doExit = $false
     $reportString = "ERROR Report: No errors`n"
 
-    #$allErrors = $global:error.ToArray() + $script:error.ToArray() + $local.error.ToArray()
-
-    <#
-    foreach ($schope in "global","script","local") {
-        $scopedErrorVar = get-variable -scope $scope -name error
-        $scopedErrorArray = @()
-        if ($scopedErrorVar.count) { 
-            $scopedErrorArray = $scopedErrorVar.ToArray()
-        }
-        foreach ($e in $scopedErrorArray) {
-            if ($e.Scope -match $scope) { 
-                write-verbose "Scope of '$scope' already exists for "
-            }
-        }
-    }
-    #>
-
     if ($error.count -or $LASTEXITCODE) {
         $errorSummary = "`$LASTEXITCODE=$LastExitCode, `$Error.count=$($Error.count)"
         $reportString = "ERROR Report: $errorSummary`n`n"
@@ -1375,23 +1108,6 @@ function Get-ErrorType {
     return "${errNamespace}.${errName}"
 }
 
-set-alias gj Get-Job
-set-alias jobs Get-Job
-set-alias recj Receive-Job
-set-alias rj Receive-Job
-set-alias rmj Remove-Job
-set-alias resj Resume-Job
-set-alias sj Start-Job
-set-alias stopj Stop-Job
-set-alias susj Suspend-Job
-set-alias wj Wait-Job
-# Job-related TODOs: 
-# - Show in prompt if I have un-received jobs
-# - Show im prompt complete/incomplete status of jobs 
-# - Function to get output from all completed jobs
-# - Maybe wrap receive-job to get all available output by default? 
-
-
 function Format-XML {
     Param (
         [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)] [System.Array] $xml
@@ -1456,7 +1172,6 @@ function Start-BatchFile {
     # we use "<NUL" to prevent that fucking "Terminate batch job? Y/N" prompt
     cmd.exe "/c $batchFile $batchArgs <NUL"
 }
-
 set-alias bat Start-BatchFile 
 
 
@@ -1612,21 +1327,6 @@ set-alias Fucking-Extract Extract-FuckingArchive
 set-alias fex Extract-FuckingArchive
 
 <#
-The System.Environment+SpecialFolders enum has a lot of really useful stuff 
-such as: 
-- StartMenu / CommonStartMenu: the start menu folder for my user / all users
-- StartUp / CommonStartUp: the startup folder for my user / all users
-... and lots more. This makes a hashtable from that, so it's easier to access
-#>
-if ($osType -match "Windows") {
-    $SpecialFolders = New-Object PSObject
-    foreach ($sf in [system.Enum]::GetValues([System.Environment+SpecialFolder])) {
-        $sfpath = [Environment]::GetFolderPath($sf)
-        add-member -inputobject $SpecialFolders -membertype NoteProperty -name $sf -value $sfpath -force
-    }
-}
-
-<#
 .synopsis 
 Send data over the network
 
@@ -1735,34 +1435,6 @@ function Get-AvailableExceptionsList {
         }
     }
     return $RelevantExceptions
-}
-
-<#
-.description
-'docker-machine env <name>' returns some Bash export functions. Translate these to Powershell.
-#>
-function Parse-DockerMachineEnv {
-    [CmdletBinding()] param(
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)] [String] $env
-    )
-    process {
-        if ($env -match "^\s*#") {} #comment
-        elseif ($env -match "^\s*export (?<name>[a-zA-Z0-9_]+)\=`"(?<value>.*)`"") {
-            Set-WinEnvironmentVariable -name $matches.name -value $matches.value #-verbose:$verbose
-        }
-        else {
-            throw "I don't know how to parse this input"
-        }
-    }
-}
-
-function Apply-DockerMachineEnv {
-    [CmdletBinding()] param(
-        [Parameter(Mandatory=$true)] [String] $machineName
-    )
-    $env = docker-machine env "$machineName"
-    $env | Parse-DockerMachineEnv
-    $env
 }
 
 <#
