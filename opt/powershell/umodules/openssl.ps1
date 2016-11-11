@@ -1,24 +1,11 @@
-$possibleOpenSSL = @(
-    "${env:programfiles}\OpenSSL-Win64\bin\openssl.exe"
-    "${env:programfiles(x86)}\Git\bin\openssl.exe"
-    'C:\STRAWBERRY\C\BIN\openssl.exe'
-)
-foreach ($o in $possibleOpenSSL) {
-    if (test-path $o) {
-        set-alias OpenSslExe $o
-        $env:OPENSSL_CONF="$Home\.dhd\opt\win32\openssl.cnf"
-        break
-    }
-}
-
 function Invoke-OpenSSL {
     [cmdletbinding()]
     param(
         [string[]] $argumentList = @(),
         [switch] $Passthru
     )
-    $OpenSslPath = (gcm OpenSslExe |? {$_.commandtype -eq 'Alias'}).definition
-    $sslProc = Invoke-ProcessAndWait -Passthru -RedirectStandardError -RedirectStandardOutput -command $OpenSslPath -argumentList $argumentList
+    $env:OPENSSL_CONF="$Home\.dhd\opt\win32\openssl.cnf"
+    $sslProc = Invoke-ProcessAndWait -Passthru -RedirectStandardError -RedirectStandardOutput -command 'OpenSSL.exe' -argumentList $argumentList
 
     $stdout = $sslProc.StandardOutput.ReadToEnd()
     $stderr = $sslProc.StandardError.ReadToEnd()

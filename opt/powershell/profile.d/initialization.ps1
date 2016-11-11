@@ -49,6 +49,7 @@ function Setup-SystemPath {
         'GNU\GnuPG'
         'LLVM\bin'
         'Microsoft Visual Studio*\VC\bin'
+        'OpenSSL\bin'
         'Nmap'
         'PuTTY'
         'Sublime Text 3'
