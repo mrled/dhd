@@ -35,6 +35,7 @@ function Setup-SystemPath {
         "${env:SystemDrive}:\Python3*"
         "${env:SystemDrive}:\Python3*\Scripts"
         "${env:SystemDrive}:\Tools\Ruby*\bin"
+        "${env:SystemDrive}:\Tools\Go\bin"
         "${env:SystemDrive}:\Perl64"
         "${env:ChocolateyInstall}\bin"
         "$Home\.dhd\opt\powershell\bin"

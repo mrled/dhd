@@ -1455,3 +1455,15 @@ function Get-ServiceAccountName {
         ServiceAccount = $wmiObj.StartName
     }
 }
+
+## golang
+if (Get-CommandInExecutablePath "go") {
+    if (-not $env:GOROOT) {
+        $env:GOROOT = Resolve-Path ((Split-Path -Parent (Get-CommandInExecutablePath "go")) + "/..")
+    }
+    if (-not $env:GOPATH) {
+        $env:GOPATH = "$Home\Documents\Go"
+    }
+    Add-ExecutablePathDirectory -path "$env:GOROOT\bin"
+    Add-ExecutablePathDirectory -path "$env:GOPATH\bin"
+}
