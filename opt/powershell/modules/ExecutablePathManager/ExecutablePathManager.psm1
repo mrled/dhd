@@ -25,7 +25,7 @@ function Add-ExecutablePathDirectory {
 
     # Filter out the new path from the existing PATH
     # In case the new path is already there, doing this wil make sure that we append or prepend properly
-    $newPath = Get-SystemPath |? {$_ -NotMatch [RegEx]::Escape($path)}
+    $newPath = Get-ExecutablePath |? {$_ -NotMatch [RegEx]::Escape($path)}
     if ($PsCmdlet.ParameterSetName -match "append") {
         $newPath = $newPath + @($path)
     }
