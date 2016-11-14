@@ -60,35 +60,8 @@ if ($goCommand) {
     Add-ExecutablePathDirectory -path "$env:GOPATH\bin"
 }
 
-<#
-.description
-Parse a command line
-Return an object that has the command line as an array of arguments, as a string representing the command line, and as a runnable scriptblock 
-Intended to be used as plumbing for other commands
-.parameter arguments
-The arguments (include $0) to parse
-.example
-Parse-CommandLine New-Item -ItemType File -Value "C:\test.txt"
-Returns ...
-#>
-function Parse-Commandline {
-    [cmdletbinding()] param(
-        [parameter(Position=0, ValueFromRemainingArguments=$true)] $arguments
-    )
-    # The point of this is to make sure that things which came in as one argument are represented that way
-    # It's not perfect but it gets the job done in 90% of cases
-    $argumentString = ($arguments |% { 
-        if ($_ -match ' ') { "`"$_`"" }
-        else { "$_" }
-    }) -join " "
-    $ooProps = @{
-        Arguments = $arguments
-        CommandLine = $argumentString
-        Scriptblock = [Scriptblock]::Create($argumentString)
-    }
-    $outObject = New-Object PSObject -property $ooProps
-    return $outObject
-}
+
+#### Functions
 
 <#
 .synopsis 
@@ -101,8 +74,7 @@ function omg {
     [cmdletbinding()] param(
         [parameter(Position=0, ValueFromRemainingArguments=$true)] $arguments
     )
-    $cli = Parse-Commandline $arguments
-    write-host "wtf $($cli.arguments)"
+    Write-Host "wtf $arguments"
 }
 
 if (test-path $env:ProgramFiles\ConEmu) {
@@ -148,41 +120,6 @@ function Import-PuttySession {
 function conkeror {
     $xulrunnerbin = $home + "\opt\xulrunner\xulrunner.exe"
     & $xulrunnerbin  "$home\opt\src\conkeror\application.ini" $args
-}
-
-<#
-.synopsis
-Import a PFX certificate
-.description 
-Sets the PersistKeySet flag, which means that you can actually use the fuckin cert later on
-(Unlike, say, I dunno, the first-party Import-PfxCertificate function.)
-#>
-function Import-MrlX509Certificate {
-    param(
-        [parameter(mandatory=$true)] [string] $Path,
-        [parameter(mandatory=$true)] [string] $pfxPassword,
-        [string] $StoreLocation = "CurrentUser",
-        [string] $StoreName = "My",
-        [switch] $exportable,
-        [switch] $protected
-    )
-    $path = resolve-path $path
-
-    $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
-    if ($exportable) {
-        $flags = $flags -bxor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
-    }
-    if ($protected) {
-        $flags = $flags -bxor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserProtected
-    }
-
-    $pfx = new-object System.Security.Cryptography.X509Certificates.X509Certificate2
-    $pfx.import($Path, $pfxPassword, $flags)
-
-    $store = new-object System.Security.Cryptography.X509Certificates.X509Store($StoreName, $StoreLocation)
-    $store.open('MaxAllowed')
-    $store.add($pfx)
-    $store.close()
 }
 
 
@@ -246,17 +183,6 @@ function Invoke-ProcessAndWait {
     }
 }
 
-function Get-RelativePath
-{
-    # Return a relative path to a file. Only works if the basepath is in the fullpath. 
-    param(
-        [parameter(mandatory=$true)] [string] $fullpath,
-        [parameter(mandatory=$true)] [string] $basepath
-    )
-    #$relpath = [system.io.path]::GetFullPath($fullpath).SubString([system.io.path]::GetFullPath($basepath).Length + 1)
-    #return $relpath
-    return [system.io.path]::GetFullPath($fullpath).SubString([system.io.path]::GetFullPath($basepath).Length + 1)
-}
 
 function Generate-Password {
     param([int]$length=8)
@@ -280,16 +206,14 @@ function llm {
 }
 
 function .. { cd .. }
+function ... { cd ../.. }
+function .... { cd ../../.. }
 
-
-
-#### SUBLIME TEXT and LESS
 
 if (test-path alias:more) { del alias:more }
 if (test-path function:more) { del function:more }
 if (test-path alias:l) { del alias:l }
 set-alias l less
-$env:LESS = "-iRC"
 
 function vless {
     # Adapted from vim/macros/less.bat. Assumes vim is in path though.
@@ -313,12 +237,13 @@ set-alias gpl Get-GitPrettyLog
 function Compare-GitObjectsOnGitHub {
     param(
         [parameter(mandatory=$true)] [string] $CommitA,
-        [parameter(mandatory=$true)] [string] $CommitB
+        [parameter(mandatory=$true)] [string] $CommitB,
+        [string] $remoteName = "origin"
     )
     $remotes = git remote -v
     foreach ($r in $remotes) {
         $name,$address,$direction = $r -split "\s+"
-        if (($name -eq "origin") -and ($direction -eq "(fetch)")) {
+        if (($name -eq $remoteName) -and ($direction -eq "(fetch)")) {
             $remote = $address -replace "^git\@github\.com:","" -replace "\.git$",""
             break
         }
@@ -475,25 +400,6 @@ set-alias wh display-allcommands
 # }
 
 
-function head {
-    param(
-        [int]$n=10,
-        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
-    )
-    foreach ($file in $args) {
-        get-content $file | select-object -first $n
-    }
-}
-function tail {
-    param(
-        [int]$n=10,
-        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
-    )
-    foreach ($file in $args) {
-        get-content $file | select-object -last $n
-    }
-}
-
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
 if (test-path alias:touch) {del alias:touch}
 function touch {
@@ -511,7 +417,7 @@ function touch {
 if (test-path alias:man) { del alias:man }
 function man {
     foreach ($a in $args) {
-        get-help $a -full | less
+        get-help $a -full | less.bat
     }
 }
 <#
@@ -988,100 +894,53 @@ function Decrypt-SecureString {
     return $decryptedString
 }
 
-function Wrap-Text {
-    [cmdletbinding()] 
-    param(
-        [parameter(mandatory=$true)] [string] $text,
-        [parameter(mandatory=$true)] [int] $width,
-        [int] $indentSpaces = 0
-    )
-    $width = $width -1
-    if ($indentSpaces -ge $width) {
-        throw "`$indentSpaces must be smaller than `$width"
-    }
-    $indent = " " * $indentSpaces
-    $output = ""
-    $ctr=0
-    foreach ($line in ($text -split "`n")) {
-        $ctr+=1
-        #write-host -foreground cyan "${ctr}: $line"
-
-        $finished = $false
-        while (-not $finished) {
-            $line = "$indent$line"
-            if ($line.length -gt $width) {
-                $output += $line.substring(0,$width)
-                $output += "`n"
-                $line = $line.substring($width)
-            }
-            else {
-                $output += $line
-                $output += "`n"
-                $finished = $true
-            }
-        }
-
-        if ($output[-1] -ne "`n") {
-            $output += "`n"
-        }
-    }
-    return $output
-}
-
 function Show-ErrorReport {
     [cmdletbinding()]
     param(
-        [switch] $ExitIfErrors
+        [switch] $ExitIfErrors,
+        [Array] $errorList = $Error,
+        [Int] $exitCode = $LASTEXITCODE
     )
-    write-verbose "`$error.count = $($error.count)"
-    write-verbose "`$LASTEXITCODE = $LastExitCode"    
 
-    if ($Host -and $Host.UI -and $Host.UI.RawUI) {
-        $wrapWidth = $Host.UI.RawUI.Buffersize.Width
+    function WrapText {
+        param($text, $width, $indentSpaces)
+        $width = $width -1
+        $indent = " " * $indentSpaces
+        foreach ($line in ($text -split "`n")) {
+            while ($line.length -gt $width) {
+                $line = "$indent$line"
+                Write-Output $line.substring(0,$width)
+                $line = $line.substring($width)
+            }
+            Write-Output "$indent$line"
+        }
     }
-    else {
-        $wrapWidth = 9999
-    }
 
-    $doExit = $false
-    $reportString = "ERROR Report: No errors`n"
-
-    if ($error.count -or $LASTEXITCODE) {
-        $errorSummary = "`$LASTEXITCODE=$LastExitCode, `$Error.count=$($Error.count)"
-        $reportString = "ERROR Report: $errorSummary`n`n"
-
-        for ($i= $error.count -1; $i -ge 0; $i -= 1) {
-            write-verbose "Processing error $i"
-            $e = $error[$i]
-
-            $errorDetails  = "PS `$Error[$i]: `n"
+    $wrapWidth = if ($Host -and $Host.UI -and $Host.UI.RawUI -and ($Host.UI.RawUI.Buffersize.Width -gt 0)) {$Host.UI.RawUI.Buffersize.Width} else {9999}
+    if ($errorList.count -or $exitCode) {
+        Write-Output "ERROR Report: `$LASTEXITCODE=$exitCode, `$Error.count=$($Error.count)"
+        for ($i= $errorList.count -1; $i -ge 0; $i -= 1) {
+            $e = $errorList[$i]
+            $errorDetails  = "`$Error[$i]: `n"
             $indentCount = 4
 
-            # $error can contain at least 2 kinda of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
+            # $error can contain at least 2 kind of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
             # The information we need is found in the ErrorRecord objects, so unwrap them here if necessary
-            if ($e.PSObject.Properties['ErrorRecord']) { # This looks weird but it makes it work with strict mode
-                $e = $e.ErrorRecord
-            }
+            if ($e.PSObject.Properties['ErrorRecord']) {$e = $e.ErrorRecord}
 
-            $errorDetails += Wrap-Text -text $e.ToString() -width $wrapWidth -indent $indentCount
-            if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
-
+            $errorDetails += WrapText -text $e.ToString() -width $wrapWidth -indentSpaces $indentCount
             if ($e.ScriptStackTrace) {
-                $errorDetails += wrap-text -text $e.ScriptStackTrace -width $wrapWidth -indent $indentCount
                 if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
+                $errorDetails += WrapText -text $e.ScriptStackTrace -width $wrapWidth -indentSpaces $indentCount
             }
-
-            $reportString += $errorDetails
-        }
-
-        if ($ExitIfErrors) { 
-            $doExit = $true
-            $reportString += "Exiting with returncode 1...`n" 
+            Write-Output $errorDetails
         }
     }
+    else {
+        Write-Output "ERROR Report: No errors"
+    }
 
-    write-output "----`n$reportString----"
-    if ($doExit) { 
+    if ($ExitIfErrors -and ($errorList -or $exitCode)) {
         exit 1
     }
 }
@@ -1095,25 +954,13 @@ set-alias clerr Clear-Error
 
 function Get-ErrorType {
     [CmdletBinding()] Param(
-        $errorObject
+        $errorObject = $Error[0]
     )
-
     if (-not $errorObject) {
-        if ($Error[0]) {
-            $errorObject = $Error[0]
-        }
-        else {
-            throw "No object passed as -errorObject, and `$Error is empty"
-        }
+        throw "No object passed as -errorObject, and `$Error is empty"
     }
 
-    if ($errorObject.Exception) {
-        $exception = $errorObject.Exception
-    }
-    else {
-        $exception = $errorObject
-    }
-
+    $exception = if ($errorObject.Exception) {$errorObject.Exception} else {$errorObject}
     $errNamespace = $exception.GetType().Namespace
     $errName = $exception.GetType().Name
     return "${errNamespace}.${errName}"
