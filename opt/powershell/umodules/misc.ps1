@@ -29,6 +29,37 @@ $SpecialCharacters = New-Object PSObject -Property @{
     VisualStudio = [char]42479  # ꗯ (VAI SYLLABLE GBE)
 }
 
+## Configuring other applications / etc
+$plink = Get-ProgramFilesChild "PuTTY/plink.exe"
+if ($plink) { $env:GIT_SSH = $plink }
+
+# You want this to be separated with forward slashes so that it works
+# from the Git (bash) command line and cmd and Powershell etc.
+$env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
+
+# You'll want to turn off colors for git diffs - `git config --global color.diff false` - b/c git colors are ANSI escapes and 
+# Vim doesn't understand those (at least not out of the box)
+$vimCommand = Get-CommandInExecutablePath "vim"
+if ($vimCommand) {
+    $vimMsysPath = $vimCommand -replace "^(.)\:\\",'\$1\' -replace "\\","/"
+    $env:GIT_PAGER = '"{0}" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -' -f $vimMsysPath
+}
+
+$env:LESS = "-iRC"
+
+# golang
+$goCommand = Get-CommandInExecutablePath "go"
+if ($goCommand) {
+    if (-not $env:GOROOT) {
+        $env:GOROOT = Resolve-Path ((Split-Path -Parent $goCommand) + "/..") | Select -Expand Path
+    }
+    if (-not $env:GOPATH) {
+        $env:GOPATH = "$Home\Documents\Go"
+    }
+    Add-ExecutablePathDirectory -path "$env:GOROOT\bin"
+    Add-ExecutablePathDirectory -path "$env:GOPATH\bin"
+}
+
 <#
 .description
 Parse a command line
@@ -274,18 +305,6 @@ function vless {
     }
 }
 set-alias vl vless
-
-# You want this to be separated with forward slashes so that it works
-# from the Git (bash) command line and cmd and Powershell etc.
-$env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
-
-# You'll want to turn off colors for git diffs - `git config --global color.diff false` - b/c git colors are ANSI escapes and 
-# Vim doesn't understand those (at least not out of the box)
-$vimCommand = Get-CommandInExecutablePath "vim"
-if ($vimCommand) {
-    $vimMsysPath = $vimCommand -replace "^(.)\:\\",'\$1\' -replace "\\","/"
-    $env:GIT_PAGER = '"{0}" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -' -f $vimMsysPath
-}
 
 function Get-GitPrettyLog {
     git log --oneline --all --graph --decorate $args
@@ -783,14 +802,6 @@ function uploadid {
     "",$keydata | plink -pw "$sshPass" $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
 
-
-$possiblePlink = @(
-    "${env:ProgramFiles}\putty\plink.exe"
-    "${env:ProgramFiles(x86)}\putty\plink.exe"
-)
-foreach ($pp in $possiblePlink) {
-    if (test-path $pp) { $env:GIT_SSH = $pp; break; }
-}
 
 $bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
 if (test-path $bvssh) {
@@ -1454,16 +1465,4 @@ function Get-ServiceAccountName {
         DisplayName = $service.DisplayName
         ServiceAccount = $wmiObj.StartName
     }
-}
-
-## golang
-if (Get-CommandInExecutablePath "go") {
-    if (-not $env:GOROOT) {
-        $env:GOROOT = Resolve-Path ((Split-Path -Parent (Get-CommandInExecutablePath "go")) + "/..")
-    }
-    if (-not $env:GOPATH) {
-        $env:GOPATH = "$Home\Documents\Go"
-    }
-    Add-ExecutablePathDirectory -path "$env:GOROOT\bin"
-    Add-ExecutablePathDirectory -path "$env:GOPATH\bin"
 }
