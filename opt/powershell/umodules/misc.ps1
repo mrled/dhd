@@ -919,29 +919,26 @@ function Show-ErrorReport {
     $wrapWidth = if ($Host -and $Host.UI -and $Host.UI.RawUI -and ($Host.UI.RawUI.Buffersize.Width -gt 0)) {$Host.UI.RawUI.Buffersize.Width} else {9999}
     if ($errorList.count -or $exitCode) {
         Write-Output "ERROR Report: `$LASTEXITCODE=$exitCode, `$Error.count=$($Error.count)"
-        for ($i= $errorList.count -1; $i -ge 0; $i -= 1) {
-            $e = $errorList[$i]
-            $errorDetails  = "`$Error[$i]: `n"
-            $indentCount = 4
+        for ($i=$errorList.count -1; $i -ge 0; $i-=1) {
+            $err = $errorList[$i]
+            Write-Output "`$Error[$i]:"
 
             # $error can contain at least 2 kind of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
             # The information we need is found in the ErrorRecord objects, so unwrap them here if necessary
-            if ($e.PSObject.Properties['ErrorRecord']) {$e = $e.ErrorRecord}
+            if ($err.PSObject.Properties['ErrorRecord']) {$err = $err.ErrorRecord}
 
-            $errorDetails += WrapText -text $e.ToString() -width $wrapWidth -indentSpaces $indentCount
-            if ($e.ScriptStackTrace) {
-                if ($errorDetails[-1] -ne "`n") { $errorDetails += "`n" }
-                $errorDetails += WrapText -text $e.ScriptStackTrace -width $wrapWidth -indentSpaces $indentCount
+            WrapText -text $err.ToString() -width $wrapWidth -indentSpaces 4
+
+            if ($err.ScriptStackTrace) {
+                WrapText -text $err.ScriptStackTrace -width $wrapWidth -indentSpaces 8
             }
-            Write-Output $errorDetails
+        }
+        if ($ExitIfErrors) {
+            exit 1
         }
     }
     else {
         Write-Output "ERROR Report: No errors"
-    }
-
-    if ($ExitIfErrors -and ($errorList -or $exitCode)) {
-        exit 1
     }
 }
 set-alias err Show-ErrorReport
