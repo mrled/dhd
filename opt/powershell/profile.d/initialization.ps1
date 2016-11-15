@@ -22,58 +22,61 @@ function Setup-PythonRegistryKeys {
 }
 
 function Setup-SystemPath {
-    <#
-    Some notes about this: 
-    - You want Git to be very high in the path list, because it can work around the stupid rebase.exe problem
-      (http://stackoverflow.com/questions/18502999/git-extensions-win32-error-487-couldnt-reserve-space-for-cygwins-heap-win32)
-    #>
+    # Define potential PATH elements in the order you want them to appear in the final PATH
+    # Remember that the Machine PATH is prepended to this list
+    # Note that relative paths are parsed as if they are a subdirectory of %ProgramFiles% or %ProgramFiles(x86)%
     $possiblePaths = @(
-        "${env:SystemDrive}:\ProgramData\Chocolatey\bin"
-        "${env:SystemDrive}:\Tools\mingw64\bin"
-        "${env:SystemDrive}:\Tools\Python3*"
-        "${env:SystemDrive}:\Tools\Python3*\Scripts"
-        "${env:SystemDrive}:\Python3*"
-        "${env:SystemDrive}:\Python3*\Scripts"
-        "${env:SystemDrive}:\Tools\Ruby*\bin"
-        "${env:SystemDrive}:\Tools\Go\bin"
-        "${env:SystemDrive}:\Perl64"
+        # Important things that must come first
+        'vim\vim*'
+        'vim\vim*\macros'
         "${env:ChocolateyInstall}\bin"
-        "$Home\.dhd\opt\powershell\bin"
-        "$Home\opt\bin"
-        "$Home\AppData\Roaming\npm"
-    )
+        "${env:SystemDrive}\ProgramData\Chocolatey\bin"
 
-    $possibleProgramFilesPaths  = @(
+        # Everything else should go in alphabetical order grouped by type
+        "${env:SystemDrive}\Perl64"
+        "${env:SystemDrive}\Python3*"
+        "${env:SystemDrive}\Python3*\Scripts"
+        "${env:SystemDrive}\Tools\Go\bin"
+        "${env:SystemDrive}\Tools\mingw64\bin"
+        "${env:SystemDrive}\Tools\Python3*"
+        "${env:SystemDrive}\Tools\Python3*\Scripts"
+        "${env:SystemDrive}\Tools\Ruby*\bin"
+        "$Home\.dhd\opt\powershell\bin"
+        "$Home\AppData\Roaming\npm"
+        "$Home\opt\bin"
         '7-zip'
+        'ConEmu'
+        'ConEmu\ConEmu'
         'Git\cmd'
         'GNU\GnuPG'
         'LLVM\bin'
         'Microsoft Visual Studio*\VC\bin'
+        'MSBuild\*\Bin'
         'OpenSSL\bin'
         'Nmap'
         'PuTTY'
         'Sublime Text 3'
     )
-    $possiblePaths += @($possibleProgramFilesPaths |% { Get-ProgramFilesChild $_ })
 
-    # If there's any directory in the existing paths, might as well test for it
-    $possiblePaths += [Environment]::GetEnvironmentVariable("PATH", "Machine") -split ';'
-    $possiblePaths += [Environment]::GetEnvironmentVariable("PATH", "User") -split ';'
-    $possiblePaths += [Environment]::GetEnvironmentVariable("PATH", "Process") -split ';'
+    # Set the "User" PATH - that is, the PATH for future processed launched by this same user - first
+    # Might as well test for existing User and Process PATH values as well
+    # No reason to check the "Machine" PATH here, because we are going to set the "User" PATH to this value, and the "Machine" PATH is prepended to that at process start time anyway
+    $possibleUserPaths = @(
+        $possiblePaths
+        [Environment]::GetEnvironmentVariable("PATH", "User") -split ';'
+        [Environment]::GetEnvironmentVariable("PATH", "Process") -split ';'
+    )
+    $resolvedUserPaths = Resolve-PotentialExecutablePathList $possibleUserPaths
+    Set-ExecutablePath -path ($resolvedUserPaths -join ';') -target User      # Persist PATH changes so that future processes see them
 
-    # .description
-    # Take an array of paths, which may contain wildcards, and resolve and return the first one that exists on the filesystem
-    function Get-PathIfExists {
-        Param([Parameter(Mandatory=$True)] [String[]] $path)
-        $path |% {if (Test-Path $_) {return Resolve-Path $_ | Select -Last 1 -Expand Path}}
-    }
-
-    $existingPaths = @()
-    $possiblePaths |% {if ($_) {Get-PathIfExists $_}} | Sort-Object -Unique |% {if ($_) {$existingPaths+=@($_)}}
-
-    $path = $existingPaths -join ';'
-    Set-ExecutablePath -path $path -target User      # Persist PATH changes so that future processes see them
-    Set-ExecutablePath -path $path -target Process   # Update this process's PATH, so that we can use the new locations immediately
+    # Now we set the "Process" PATH - that is, the PATH for the rest of the lifetime of this process.
+    # Prepend the "Machine" PATH here too, so we don't lose something important that might be set there and we pick up any changes that may have happened since our current process launched
+    $possibleProcessPaths = @(
+        [Environment]::GetEnvironmentVariable("PATH", "Machine") -split ';'
+        $possibleUserPaths
+    )
+    $resolvedProcessPaths = Resolve-PotentialExecutablePathList $possibleProcessPaths
+    Set-ExecutablePath -path ($resolvedProcessPaths -join ';') -target Process   # Update this process's PATH, so that we can use the new locations immediately
 }
 
 function Setup-Environment {

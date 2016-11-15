@@ -108,3 +108,25 @@ function Get-CommandInExecutablePath {
         }
     }
 }
+
+<#
+.description
+Take an array representing potential elements of the PATH and return only those which exist. Relative paths will be treated as if they are relative to either %ProgramFiles% or %ProgramFiles(x86)%. Paths may contain wildcards; if performing Get-Item on a path with a wildcard returns in more than one result, only the last result is used, as a naive way to deal with versions (e.g. if C:\Python3* is passed, and C:\Python34 and C:\Python35 exist, this function will return only C:\Python35.)
+#>
+function Resolve-PotentialExecutablePathList {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$True)] [String[]] [AllowEmptyString()] $potentialPathList
+    )
+    # Resolve relative paths as if they were children of Program Files
+    $rootedPaths = $potentialPathList |?{$_} |% {if (-not [System.IO.Path]::IsPathRooted("$_")) {Get-ProgramFilesChild $_|Select -Expand FullName} else {$_}}
+
+    # Get unique paths in a case-insensitive way (unlike "Select-Object -Unique", unfortunately)
+    $uniquePaths = @()
+    $rootedPaths |?{$_} |% {if ($uniquePaths -NotContains $_) {$uniquePaths+=@($_)}}
+
+    # Take an array of paths, which may contain wildcards, and resolve and return FileSystemInfo objects representing each item that exists. 
+    # If a path contains wildcards, only add the last item
+    $existingPaths = $uniquePaths |? {if (Test-Path $_) {Get-Item $_ | Select -Last 1 -ExpandProperty FullName}}
+
+    return $existingPaths
+}
