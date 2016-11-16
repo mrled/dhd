@@ -6,12 +6,10 @@
 # - StartMenu / CommonStartMenu: the start menu folder for my user / all users
 # - StartUp / CommonStartUp: the startup folder for my user / all users
 # ... and lots more. This makes a hashtable from that, so it's easier to access
-if ($osType -match "Windows") {
-    $SpecialFolders = New-Object PSObject
-    foreach ($sf in [system.Enum]::GetValues([System.Environment+SpecialFolder])) {
-        $sfpath = [Environment]::GetFolderPath($sf)
-        add-member -inputobject $SpecialFolders -membertype NoteProperty -name $sf -value $sfpath -force
-    }
+$SpecialFolders = New-Object PSObject
+foreach ($sf in [system.Enum]::GetValues([System.Environment+SpecialFolder])) {
+    $sfpath = [Environment]::GetFolderPath($sf)
+    add-member -inputobject $SpecialFolders -membertype NoteProperty -name $sf -value $sfpath -force
 }
 
 # Make an object analogous to $profile but for the start menu
