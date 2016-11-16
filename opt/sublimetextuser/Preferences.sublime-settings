@@ -1,7 +1,7 @@
 {
 	"caret_style": "wide",
 	"color_scheme": "Packages/Color Scheme - Default/Eiffel.tmTheme",
-	"font_size": 9,
+	"font_size": 10,
 	"ignored_packages":
 	[
 		"GitGutter",

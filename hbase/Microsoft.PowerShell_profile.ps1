@@ -1,7 +1,3 @@
-# -*- mode: powershell -*-
-
-. $PSScriptRoot/../opt/powershell/profile.d/os.ps1
-
 if (-not $profile) {
     # This can happen in a remote session, for example
     $profile = New-Object PSObject -Property @{
@@ -11,10 +7,7 @@ if (-not $profile) {
 }
 
 Add-Member -InputObject $profile -MemberType NoteProperty -Name "ProfileD" -Value "$home\.dhd\opt\powershell\profile.d" -Force
-. "$($profile.ProfileD)\asciiart.ps1"
-write-host ""; Show-SquareWindowsLogo; write-host ""
 
-$hostname=[System.Net.Dns]::GetHostName()
 
 if ($osType -match "Windows") {
     $Me = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -37,72 +30,51 @@ $ErrorActionPreference = "stop"
 
 <# Modules explanation:
 
-1.  I rely on some external modules like PSCX, PSReadline, and others.
+1.  I rely on some external modules like PSCX, PSReadline, and others
     a.  I need Chocolatey for lots of things, but in particular: PsGet
     b.  I need PsGet for at least PSReadline
     c.  I need PSReadline because duh
-2.  I have my own modules in .dhd/opt/powershell/modules. 
-    These are totally self-contained.
-3.  I have "uModules" in .dhd/opt/powershell/umodules. 
-    These are actually just scripts that I dot-source. 
-    They might grown into large real modules later, or they might stay tiny.
-    They should also be completely self-contained.
-4.  I have configuration stuff in .dhd/opt/powershell/profile.d.
-    Stuff in that directory is loaded in a specific order, and
-    may depend on other modules or profile.d files. 
+2.  I have my own modules in .dhd/opt/powershell/modules.
+    These are totally self-contained
+3.  I have other scripts in .dhd/opt/powershell/profile.d
+    Stuff in that directory should not rely on being loaded in any specific order
 #>
 
 $PossibleModulePaths = @(
     "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
     "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows Azure\PowerShell\Azure"
     "${env:ProgramFiles(x86)}\Microsoft SQL Server\110\Tools\PowerShell\Modules"
-    "$home/.dhd/opt/powershell/modules"
-    "$home/Documents/WindowsPowerShell/Modules"
+    "$home\.dhd\opt\powershell\modules"
+    "$home\Documents\WindowsPowerShell\Modules"
 )
 foreach ($pmp in $PossibleModulePaths) {
     if (test-path $pmp) { $env:PSModulePath += ";$pmp" }
 }
 
 $modules = @(
-    'IPConfiguration'
-    'uPackageManager'
+    # Third party modules:
+    'PsGet'
+    'posh-git'
+
+    # My modules
     'PSWindowsUpdate'
-    'Aliases-MRL'
     'ExecutablePathManager'
+    'AsciiArt'
 )
 Import-Module -Name $modules
 
-# If these modules don't exist, don't throw an error
-try {
-    $errorActionPreferenceCache = $ErrorActionPreference
-    $errorCache = $error.ToArray()
-    import-module PsGet
-    import-module posh-git
+Show-AsciiSquareWindowsLogo
 
-    # Add-Member -force -inputObject $profile -MemberType NoteProperty -Name PSCXPreferences -Value "$($profile.DHDPath)\opt\powershell\Pscx.UserPreferences.ps1"
-    #import-module PSCX -args $profile.PSCXPreferences # Do I even use any of these functions?
-    #import-module PSCX
-}
-catch {}
-finally {
-    $error.clear()
-    $error.AddRange($errorCache)
-    $errorActionPreference = $errorActionPreferenceCache
-}
+Get-ChildItem $profile.ProfileD |% { . $_.FullName }
 
-gci ~/.dhd/opt/powershell/umodules |% { . $_.fullname }
-
-# override some default display values for objects, this feature ruelz
 # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
-# so import the module before adding that format file so my format file overrides their bullshit
+# so if you're going to use that module, import it first so my format file overrides their bullshit
 Add-Member -force -inputObject $profile -MemberType NoteProperty -Name MrlFormat -Value "$($profile.DHDPath)\opt\powershell\mrl.format.ps1xml"
-update-formatdata -prependpath $profile.MrlFormat
+Update-FormatData -prependpath $profile.MrlFormat
 
-. "$($profile.ProfileD)\initialization.ps1"
-. "$($profile.ProfileD)\prompt.ps1"
+Set-UserPrompt
 
-set-alias hist get-history
-
-import-module PSReadline # you have to define the prompt & do history stuff before importing this
+# Must set the prompt before importing this module or it'll puke
+Import-Module PSReadline 
 Set-PSReadlineOption -EditMode Emacs
 Set-PSReadlineOption -HistorySaveStyle SaveIncrementally

@@ -73,21 +73,13 @@ $CliContextClues = @{
 }
 
 function Get-CliContextClue {
-    if ($CliContextClues['Override']) {
-        return $CliContextClues[$Override]
-    }
-    elseif ($VisualStudioDirectories |? {"$pwd".StartsWith($_)}) {
-        return $CliContextClues['VisualStudio']
-    }
-    elseif ($SoyAdmin) {
+    if ($SoyAdmin) {
         return $CliContextClues['Admin']
     }
     else {
         return $CliContextClues['Default']
     }
 }
-
-set-alias ConEmuC "${env:ConEmuBaseDir}\ConEmuC.exe"
 
 function Set-ConEmuTabTitleForCliContext {
     [cmdletbinding()] param(
@@ -118,7 +110,7 @@ $colorPrompt = {
     $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
     write-host " E:$($error.count):$lastExitDisplay" -nonewline -foreground $ecolor
 
-    Write-Host " $hostname" -nonewline -foregroundcolor Blue
+    Write-Host " $env:COMPUTERNAME" -nonewline -foregroundcolor Blue
 
     $jobs = get-job
     if ($jobs) { 
@@ -143,7 +135,7 @@ $colorPrompt = {
 $simplePrompt = {
     if ($SoyAdmin) { $lcop = "#" }
     else { $lcop = ">" }
-    return "$(get-date).Tostring('HH:mm:ss') $hostname $(Get-DisplayPath $pwd) PS$lcop "
+    return "$(get-date).Tostring('HH:mm:ss') $env:COMPUTERNAME $(Get-DisplayPath $pwd) PS$lcop "
 }
 
 $tinyPrompt = {
@@ -164,5 +156,3 @@ function Set-UserPrompt {
 
 $global:MicahPromptFunction = {}
 New-Item -Force -Path function:prompt -Value { $global:MicahPromptFunction.Invoke() } | out-null
-
-Set-UserPrompt

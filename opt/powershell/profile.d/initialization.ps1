@@ -41,18 +41,21 @@ function Setup-SystemPath {
         "${env:SystemDrive}\Tools\Python3*"
         "${env:SystemDrive}\Tools\Python3*\Scripts"
         "${env:SystemDrive}\Tools\Ruby*\bin"
+        "${env:AppData}\npm"
+        "${env:LocalAppData}\Pandoc"
         "$Home\.dhd\opt\powershell\bin"
-        "$Home\AppData\Roaming\npm"
         "$Home\opt\bin"
         '7-zip'
         'ConEmu'
         'ConEmu\ConEmu'
         'Git\cmd'
         'GNU\GnuPG'
+        'Graphviz*\bin'
         'LLVM\bin'
         'Microsoft Visual Studio*\VC\bin'
         'MSBuild\*\Bin'
         'OpenSSL\bin'
+        'Oracle\VirtualBox'
         'Nmap'
         'PuTTY'
         'Sublime Text 3'
@@ -101,7 +104,6 @@ function p {
 }
 
 function reinit {
-    . p
     Setup-SystemPath
     Setup-Environment
 }

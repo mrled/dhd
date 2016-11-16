@@ -728,7 +728,6 @@ if (test-path $bvssh) {
             [parameter(mandatory=$true)] [alias('r')] [string] $hostname,
             [string] $screenSession = "camelot"
         )
-        Rename-Tab $hostname
         Invoke-BitviseSsh $hostname '-cmd=scr'
     }
     set-alias scr Invoke-BitviseSshScreenSession
