@@ -597,7 +597,7 @@ function Set-FileAssociation {
         $drive = "HKCU"
     }
     elseif ($location.tolower() -eq "machine") {
-        if (-not $SoyAdmin) {
+        if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
             write-error "Cannot set associations for the whole machine unless running as administrator."
             return
         }
@@ -620,7 +620,7 @@ function Set-AssociationOpenCommand {
         $drive = "HKCU"
     }
     elseif ($location.tolower() -eq "machine") {
-        if (-not $SoyAdmin) {
+        if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
             write-error "Cannot set associations for the whole machine unless running as administrator."
             return
         }

@@ -73,7 +73,7 @@ $CliContextClues = @{
 }
 
 function Get-CliContextClue {
-    if ($SoyAdmin) {
+    if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
         return $CliContextClues['Admin']
     }
     else {
@@ -133,15 +133,15 @@ $colorPrompt = {
 
 # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
 $simplePrompt = {
-    if ($SoyAdmin) { $lcop = "#" }
+    if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { $lcop = "#" }
     else { $lcop = ">" }
     return "$(get-date).Tostring('HH:mm:ss') $env:COMPUTERNAME $(Get-DisplayPath $pwd) PS$lcop "
 }
 
 $tinyPrompt = {
-    if ($SoyAdmin) { $lcop = "#" }
+    if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { $lcop = "#" }
     else { $lcop = ">" }
-    write-host "$($me.Identity.Name) PS$lcop" -foreground Green -nonewline
+    write-host "$([Security.Principal.WindowsIdentity]::GetCurrent().Name) PS$lcop" -foreground Green -nonewline
     return " "
 }
 
