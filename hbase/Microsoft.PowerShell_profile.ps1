@@ -26,10 +26,14 @@ $PossibleModulePaths = @(
 )
 $PossibleModulePaths |% {if (Test-Path $_) {$env:PSModulePath += ";$_"}}
 
+$possibleModules = Get-Module -All
+foreach ($optionalModuleName in @("posh-git")) {
+    if ($optionalModuleName -in $possibleModules) { Import-Module $optionalModuleName }
+}
+
 $modules = @(
     # Third party modules:
     'PsGet'
-    'posh-git'
 
     # My modules
     'PSWindowsUpdate'
