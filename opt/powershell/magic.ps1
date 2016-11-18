@@ -110,14 +110,32 @@ function Install-ConEmuConfiguration {
     Copy-Item $Home\.dhd\opt\win32\ConEmu.xml $conEmuXmlPath
 }
 
+function Get-PowershellProfile {
+    [CmdletBinding()] Param()
+    $p = $Profile
+    if (-not $p) {
+        # This can happen when connecting to a remote computer using PSRemoting
+        # It's preferable to connect with a session configuration that enables the profile, but in case you dont have one, this function will still work. However, when connecting in the future, you'll have to manually dot-source your profile. Lol.
+        # See also http://stackoverflow.com/questions/2985032/powershell-remoting-profiles#14997258
+        $p = New-Object PSObject -Property @{
+            CurrentUserCurrentHost = "$Home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+        }
+        Add-Member -Force -InputObject $p -MemberType ScriptMethod -Name ToString -Value {$this.CurrentUserCurrentHost}
+        $global:Profile = $p
+    }
+    return $p
+}
+
 function Install-PowershellProfile {
-    mkdir -Force (Split-Path $Profile) | Out-Null
+    $profilePath = [string] (Get-PowershellProfile)
+    mkdir -Force (Split-Path $profilePath) | Out-Null
     $dhdProfile = "~/.dhd/hbase/Microsoft.Powershell_profile.win32.ps1"
-    copy "$Home\.dhd\hbase\Microsoft.Powershell_profile.win32.ps1" $Profile -Force
+    copy "$Home\.dhd\hbase\Microsoft.Powershell_profile.win32.ps1" $profilePath -Force
 }
 
 function Invoke-PowershellProfile {
-    . $Profile
+    $profilePath = [String] (Get-PowershellProfile)
+    . $profilePath
     reinit # from my initialization.ps1 file in .dhd
 }
 
@@ -147,6 +165,15 @@ function Install-DhdRepository {
     Invoke-PathExecutable "git.exe clone https://github.com/mrled/dhd $env:USERPROFILE\.dhd" -Verbose
 }
 
+# FUCK THIS THING
+function Remove-ServerManagerTask {
+    try {
+        # This only exists on Windows Server OSes
+        Disable-ScheduledTask -TaskName ServerManager
+    }
+    catch {}
+}
+
 # I think this has to have already happened before this script would even run?
 # Set-ExecPolUnrestricted
 
@@ -159,6 +186,7 @@ Invoke-MagicStep "install conemu" {Install-ChocolateyPackage conemu} (-not (Test
 Invoke-MagicStep "install less" {Install-ChocolateyPackage less} (-not (Test-CommandInPath less.exe))
 Invoke-MagicStep "install vim" {Install-ChocolateyPackage vim} (-not (Test-CommandInPath vim.exe))
 Invoke-MagicStep "install openssh" {Install-ChocolateyPackage win32-openssh} (-not (Test-CommandInPath ssh.exe))
+Invoke-MagicStep "fuck server manager" {Remove-ServerManagerTask}
 # TODO: fixme, this installer doesn't add 7z.exe to path
 Invoke-MagicStep "install 7zip" {Install-ChocolateyPackage 7zip} (-not (Test-CommandInPath 7z.exe))
 
