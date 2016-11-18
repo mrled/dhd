@@ -9,13 +9,13 @@ My Powershell profile
 
 $ErrorActionPreference = "Stop"
 
-$newProfileProperties = @{
+$MrledProfile = New-Object -TypeName PSObject -Property @{
+    DHDOpt = "$Home\.dhd\opt\powershell"
     ProfileD = "$Home\.dhd\opt\powershell\profile.d"
     MrlFormat = "$Home\.dhd\opt\powershell\mrl.format.ps1xml"
     DHDProfile = $MyInvocation.MyCommand.Path
     ConEmu =  "$env:AppData\ConEmu.xml"
 }
-Add-Member -NotePropertyMembers $newProfileProperties -InputObject $profile -Force
 
 $PossibleModulePaths = @(
     "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
@@ -44,11 +44,11 @@ Import-Module -Name $modules
 
 Show-AsciiSquareWindowsLogo
 
-Get-ChildItem $profile.ProfileD |% { . $_.FullName }
+Get-ChildItem $MrledProfile.ProfileD |% { . $_.FullName }
 
 # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
 # so if you're going to use that module, import it first so my format file overrides their bullshit
-Update-FormatData -Prependpath $profile.MrlFormat
+Update-FormatData -Prependpath $MrledProfile.MrlFormat
 
 Set-UserPrompt
 

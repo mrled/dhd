@@ -274,19 +274,16 @@ function Get-Profiles {
         [string] $containingPattern,
         [switch] $caseSensitive
     )
-    $profiles = gci -recurse $dhdbase\opt\powershell -include *.ps1,*.psm1
-    foreach ($p in $profile.AllUsersAllHosts,$profile.AllUsersCurrentHost,$profile.CurrentUserAllHosts,$profile.CurrentUserCurrentHost,$profile.dhd) {
-        if (test-path $p) { $profiles += @(get-item $p) }
-    }
+    $profiles = gci -recurse $MrledProfile.DHDProfile,$MrledProfile.DHDOpt -include *.ps1,*.psm1
+    @($Profile.AllUsersAllHosts,$Profile.AllUsersCurrentHost,$Profile.CurrentUserAllHosts,$Profile.CurrentUserCurrentHost) |% { if (Test-Path $_) {$profiles += @($_)} }
 
     if ($containingPattern) {
         write-verbose "Searching through results files for strings matching '$containingPattern'..."
-        $results = $profiles |? { $_ | sls -quiet -pattern $containingPattern -caseSensitive:$caseSensitive }
+        $profiles |? { $_ | sls -quiet -pattern $containingPattern -caseSensitive:$caseSensitive }
     }
     else {
-        $results = $profiles
+        $profiles
     }
-    return $results
 }
 set-alias gpro Get-Profiles
 
@@ -1305,5 +1302,65 @@ function Get-ServiceAccountName {
         ServiceName = $service.Name
         DisplayName = $service.DisplayName
         ServiceAccount = $wmiObj.StartName
+    }
+}
+
+<#
+.ForwardHelpTargetName Microsoft.PowerShell.Core\Enter-PSSession
+.ForwardHelpCategory Cmdlet
+#>
+function remote {
+    [CmdletBinding(HelpUri='http://go.microsoft.com/fwlink/?LinkID=135210', RemotingCapability='OwnedByCommand')]
+    param(
+        [Parameter(Mandatory=$true)] [Alias('Cn')] [ValidateNotNullOrEmpty()] [string] ${ComputerName},
+        [switch] ${EnableNetworkAccess},
+        [pscredential] [System.Management.Automation.CredentialAttribute()] ${Credential},
+        [ValidateRange(1, 65535)] [int] ${Port},
+        [switch] ${UseSSL},
+        [string] ${ConfigurationName},
+        [string] ${ApplicationName},
+        [ValidateNotNull()] [System.Management.Automation.Remoting.PSSessionOption] ${SessionOption},
+        [System.Management.Automation.Runspaces.AuthenticationMechanism] ${Authentication},
+        [string] ${CertificateThumbprint}
+    )
+    begin {
+        try {
+            $outBuffer = $null
+            if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
+                $PSBoundParameters['OutBuffer'] = 1
+            }
+
+            # We're going to get the remote session and load our local profile into it
+            $npssParams = @{}
+            $npssParams['ComputerName'] = $PSBoundParameters.ComputerName
+            foreach ($remoteParam in @('ApplicationName', 'Authentication', 'CertificateThumbprint', 'ConfigurationName', 'Credential', 'EnableNetworkAccess', 'Port', 'Sessionoption')) {
+                if ($PSBoundParameters[$remoteParam]) {
+                    $npssParams[$remoteParam] = $PSBoundParameters[$remoteParam]
+                }
+            }
+            $session = New-PSSession @npssParams
+            $PSBoundParameters['Session'] = $session
+
+            $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Core\Enter-PSSession', [System.Management.Automation.CommandTypes]::Cmdlet)
+            $scriptCmd = {& $wrappedCmd @PSBoundParameters }
+            $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
+            $steppablePipeline.Begin($PSCmdlet)
+        } catch {
+            throw
+        }
+    }
+    process {
+        try {
+            $steppablePipeline.Process($_)
+        } catch {
+            throw
+        }
+    }
+    end {
+        try {
+            $steppablePipeline.End()
+        } catch {
+            throw
+        }
     }
 }
