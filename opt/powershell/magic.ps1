@@ -176,7 +176,7 @@ function Install-DhdRepository {
 function Remove-ServerManagerTask {
     try {
         # This only exists on Windows Server OSes
-        Disable-ScheduledTask -TaskPath "\Microsoft\Windows\Server Manager\" -TaskName ServerManager
+        Disable-ScheduledTask -TaskPath "\Microsoft\Windows\Server Manager\" -TaskName ServerManager | Out-Null
     }
     catch {}
 }
