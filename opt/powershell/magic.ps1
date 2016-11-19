@@ -1,6 +1,8 @@
 <#
 .description
 Set up a new Windows machine
+.parameter workstation
+Install apps for workstation use as well
 .example
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/powershell/magic.ps1 | Invoke-Expression
 
@@ -10,6 +12,9 @@ Invoke-WebRequest -Headers @{"Cache-Control"="no-cache"} -UseBasicParsing https:
 
 When testing, run this way to prevent Invoke-WebRequest from caching the response
 #>
+[CmdletBinding()] Param(
+    [Switch] $workstation
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -117,11 +122,13 @@ function Get-PowershellProfile {
         # This can happen when connecting to a remote computer using PSRemoting
         # It's preferable to connect with a session configuration that enables the profile, but in case you dont have one, this function will still work. However, when connecting in the future, you'll have to manually dot-source your profile. Lol.
         # See also http://stackoverflow.com/questions/2985032/powershell-remoting-profiles#14997258
+        Write-Verbose "No `$Profile, emulating..."
         $p = New-Object PSObject -Property @{
             CurrentUserCurrentHost = "$Home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
         }
         Add-Member -Force -InputObject $p -MemberType ScriptMethod -Name ToString -Value {$this.CurrentUserCurrentHost}
         $global:Profile = $p
+        Write-Verbose "New `$Profile at $p"
     }
     return $p
 }
@@ -182,9 +189,9 @@ function Remove-ServerManagerTask {
 Invoke-MagicStep "install chocolatey" {Install-Chocolatey} (-not (Test-CommandInPath choco.exe))
 Invoke-MagicStep "configure chocolatey" {Configure-Chocolatey}
 Invoke-MagicStep "install git" {Install-ChocolateyPackage git.install} (-not (Test-CommandInPath git.exe))
-Invoke-MagicStep "install conemu" {Install-ChocolateyPackage conemu} (-not (Test-Path "${env:ProgramFiles}\ConEmu\ConEmu.exe"))
-Invoke-MagicStep "install less" {Install-ChocolateyPackage less} (-not (Test-CommandInPath less.exe))
-Invoke-MagicStep "install vim" {Install-ChocolateyPackage vim} (-not (Test-CommandInPath vim.exe))
+Invoke-MagicStep "install conemu" {Install-ChocolateyPackage conemu} ($workstation -and -not (Test-Path "${env:ProgramFiles}\ConEmu\ConEmu.exe"))
+Invoke-MagicStep "install less" {Install-ChocolateyPackage less} ($workstation -and -not (Test-CommandInPath less.exe))
+Invoke-MagicStep "install vim" {Install-ChocolateyPackage vim} ($workstation -and -not (Test-CommandInPath vim.exe))
 Invoke-MagicStep "install openssh" {Install-ChocolateyPackage win32-openssh} (-not (Test-CommandInPath ssh.exe))
 Invoke-MagicStep "fuck server manager" {Remove-ServerManagerTask}
 # TODO: fixme, this installer doesn't add 7z.exe to path
@@ -192,8 +199,8 @@ Invoke-MagicStep "install 7zip" {Install-ChocolateyPackage 7zip} (-not (Test-Com
 
 #### Remaining tasks do not require admin privs
 #
-Invoke-MagicStep "install psget" {Install-PsGet} (-not (Get-Module -ListAvailable PsGet)) 
+Invoke-MagicStep "install psget" {Install-PsGet} (-not (Get-Module -ListAvailable PsGet))
 Invoke-MagicStep "clone dhd" {Install-DhdRepository} (-not (Test-Path $env:USERPROFILE\.dhd\.git)) 
-Invoke-MagicStep "install conemu config" {Install-ConEmuConfiguration}
+Invoke-MagicStep "install conemu config" {Install-ConEmuConfiguration} ($workstation)
 Invoke-MagicStep "install powershell profile" {Install-PowershellProfile}
 Invoke-MagicStep "invoke powershell profile" {Invoke-PowershellProfile}
