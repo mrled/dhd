@@ -25,7 +25,7 @@ $SpecialCharacters = New-Object PSObject -Property @{
     Lambda       = [char]955    # λ (GREEK LETTER LAMBDA)
     HammerSickle = [char]9773   # ☭ (HAMMER AND SICKLE)
     VisualStudio = [char]42479  # ꗯ (VAI SYLLABLE GBE)
-}
+}   
 
 ## Configuring other applications / etc
 $plink = Get-ProgramFilesChild "PuTTY/plink.exe"
@@ -75,10 +75,6 @@ function omg {
     Write-Host "wtf $arguments"
 }
 
-if (test-path $env:ProgramFiles\ConEmu) {
-    set-alias ConEmu64 $env:ProgramFiles\ConEmu\ConEmu64.exe
-    set-alias Rename-ConEmuTab $env:ProgramFiles\ConEmu\ConEmu\RenameTab.cmd
-}
 function Set-WindowTitle {
     param(
         [parameter(mandatory=$true)] [string] $message
@@ -1364,3 +1360,18 @@ function remote {
         }
     }
 }
+
+function Set-ConEmuTabTitle {
+    [cmdletbinding()] param(
+        $title
+    )
+    if ($title) { $title = ":$title" }
+    $fullTitle = "$($SpecialCharacters.DoublePrompt)$title" -replace " ",'' 
+    $macro = "Rename(0,$fullTitle"
+    Write-Verbose "Running macro: $macro"
+    $out = conemuc /guimacro $macro
+    if ($out -ne "OK") {
+        throw "Failed to change tab title with error: $out"
+    }
+}
+Set-Alias Rename-Tab Set-ConEmuTabTitle
