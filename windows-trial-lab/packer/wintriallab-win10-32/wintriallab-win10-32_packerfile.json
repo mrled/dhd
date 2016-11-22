@@ -2,10 +2,8 @@
   "variables": {
     "caryatidpath": "",
     "output_directory": "packer-output",
-    "boxname": "wintriallab_win10_32",
+    "boxname": "wintriallab-win10-32",
     "version": "1.0.{{isotime \"20060102150405\"}}",
-    "filename": "{{user `boxname`}}_{{user `version`}}_{{.Provider}}.box",
-    "output_path": "{{user `output_directory`}}/{{user `filename`}}",
     "description": "Windows Trial Lab: Windows 10 x86",
     "caryatid_destination": ""
   },
@@ -54,12 +52,8 @@
     {
       "type": "vagrant",
       "keep_input_artifact": false,
-      "output": "{{user `output_path`}}",
-      "vagrantfile_template": "vagrantfile-windows_10_x86.template"
-    },
-    {
-      "type": "shell-local",
-      "inline": ["{{user `caryatidpath`}} {{user `boxname`}} {{user `description`}} {{user `version`}} {{.Provider}} {{user `output_path`}} file {{user `destinationdir`}}"]
+      "output": "{{user `output_directory`}}/{{user `boxname`}}_{{user `version`}}_{{.Provider}}.box",
+      "vagrantfile_template": "{{user `boxname`}}_vagrantfile.template"
     }
   ]
 }
