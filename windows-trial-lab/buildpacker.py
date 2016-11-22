@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import datetime
 import glob
 import os
 import shutil
@@ -100,14 +101,28 @@ def buildpacker(packerfile, outdir, force=False, whatif=False):
     verboseprint("Packed .box file: '{}'".format(boxes[0]))
 
 
+def add2caryatid(name, description, version, provider, artifact, backend, destination, extension=None):
+    """Add a box to a JSON catalog using Caryatid
+    This is a temporary hack until we can get shell-local (or something similar) working on Windows
+    """
+    import importlib.util
+    caryatidspec = importlib.util.spec_from_file_location("caryatid", resolvepath("~/Documents/caryatid/caryatid.py"))
+    caryatid = importlib.util.module_from_spec(caryatidspec)
+    caryatidspec.loader.exec_module(caryatid)
+    caryatid.addcopy(name, description, version, provider, artifact, destination)
+
+
 def addvagrantbox(vagrantboxname, packedboxpath, force, whatif):
+    """Add the box to vagrant directly
+    Note that doing it this way means that Vagrant doesn't know your box's version, and cannot upgrade it
+    """
     packedboxdir = os.path.dirname(packedboxpath)
     packedboxname = os.path.basename(packedboxpath)
 
     forcearg = '--force' if force else ''
     cli = "vagrant.exe box add {} --name {} {}".format(forcearg, vagrantboxname, packedboxname)
 
-    verboseprint("Running command:\n    {}".format(cli))
+    print("Running caryatid:\n    {}".format(cli))
     if whatif:
         return
     else:
@@ -127,7 +142,8 @@ def main(*args, **kwargs):
         "--base-out-dir", "-o", action='store', default="~/Documents/WinTrialLab",
         help="The base output directory, where Packer does its work and saves its final output. (NOT the VM directory, which is a setting in VirtualBox.)")
     parser.add_argument(
-        "--action", "-a", action='store', default="all", choices=['all', 'packer', 'vagrant'],
+        "--action", "-a", action='store', default="packercaryatid",
+        choices=['packer', 'vagrant', 'caryatid', 'packervagrant', 'packercaryatid'],
         help="The action to perform. By default, build with packer and add to vagrant.")
     parser.add_argument(
         "--whatif", "-w", action='store_true',
@@ -150,20 +166,35 @@ def main(*args, **kwargs):
         global verbose
         verbose = True
 
-    if parsed.action == "all":
+    if parsed.action == "packervagrant":
         actions = ['packer', 'vagrant']
+    elif parsed.action == "packercaryatid":
+        actions = ['packer', 'caryatid']
     else:
         actions = [parsed.action]
 
     fullconfigname = "wintriallab-{}".format(parsed.baseconfigname)
     packeroutdir = os.path.join(resolvepath(parsed.base_out_dir), fullconfigname)
-    packerfile = os.path.join(scriptdir, 'packer', parsed.baseconfigname, '{}.packerfile.json'.format(parsed.baseconfigname))
-    packedboxpath = os.path.join(packeroutdir, '{}.virtualbox.box'.format(parsed.baseconfigname))
+    packerfile = os.path.join(scriptdir, 'packer', parsed.baseconfigname, '{}_packerfile.json'.format(parsed.baseconfigname))
 
     if 'packer' in actions:
         buildpacker(packerfile, packeroutdir, force=parsed.force, whatif=parsed.whatif)
+
+    packedboxpath = glob.glob("{}/{}_*_virtualbox.box".format(packeroutdir, parsed.baseconfigname))[0]
+
     if 'vagrant' in actions:
         addvagrantbox(fullconfigname, packedboxpath, force=parsed.force, whatif=parsed.whatif)
+    if 'caryatid' in actions:
+        now = datetime.datetime.now()
+        add2caryatid(
+            'wintriallab-win10-32',
+            'Windows Trial Lab: Windows 10 32-bit',
+            # '1.{}.{}'.format(now.strftime('%Y%m%d'), now.strftime('%H%M%S')),
+            '1.0.{}'.format(now.strftime('%Y%m%d%H%M%S')),
+            'virtualbox',
+            packedboxpath,
+            'copy',
+            'E:\\Micah\\caryatid')
 
 
 if __name__ == '__main__':
