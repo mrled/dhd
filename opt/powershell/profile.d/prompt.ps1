@@ -114,3 +114,43 @@ function Set-UserPrompt {
     }
     New-Item -Force -Path Function:\prompt -Value $newPrompt | Out-Null
 }
+
+<#
+.description
+Useful in case one of those fucking color commands perma fucks with your background/foreground color. These are my preferences. Get the default values by launching Powershell -NoProfile and examining $Host.UI.RawUI and $Host.PrivateData
+#>
+function Set-ConsoleColors {
+    [CmdletBinding()] Param(
+        $BackgroundColor = 'Black',
+        $ForegroundColor = 'White',
+        $ErrorForegroundColor = 'Red',
+        $ErrorBackgroundColor = 'Black',
+        $WarningForegroundColor = 'Magenta',
+        $WarningBackgroundColor = 'Black',
+        $DebugForegroundColor = 'Yellow',
+        $DebugBackgroundColor = 'Black',
+        $VerboseForegroundColor = 'Green',
+        $VerboseBackgroundColor = 'Black',
+        $ProgressForegroundColor = 'DarkBlue',
+        $ProgressBackgroundColor = 'White'
+    )
+    $Host.UI.RawUI.BackgroundColor = $BackgroundColor
+    $Host.UI.RawUI.ForegroundColor = $ForegroundColor
+    $Host.PrivateData.ErrorForegroundColor = $ErrorForegroundColor
+    $Host.PrivateData.ErrorBackgroundColor = $ErrorBackgroundColor
+    $Host.PrivateData.WarningForegroundColor = $WarningForegroundColor
+    $Host.PrivateData.WarningBackgroundColor = $WarningBackgroundColor
+    $Host.PrivateData.DebugForegroundColor = $DebugForegroundColor
+    $Host.PrivateData.DebugBackgroundColor = $DebugBackgroundColor
+    $Host.PrivateData.VerboseForegroundColor = $VerboseForegroundColor
+    $Host.PrivateData.VerboseBackgroundColor = $VerboseBackgroundColor
+    $Host.PrivateData.ProgressForegroundColor = $ProgressForegroundColor
+    $Host.PrivateData.ProgressBackgroundColor = $ProgressBackgroundColor
+}
+
+function Test-ProgressBar {
+    for ($i = 0; $i -lt 100; $i+=20 ) {
+        Write-Progress -Activity "Test in progress" -Status "$i% Complete:" -PercentComplete $i
+        Start-Sleep 1
+    }
+}

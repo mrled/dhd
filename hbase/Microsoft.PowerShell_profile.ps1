@@ -51,6 +51,7 @@ Get-ChildItem $MrledProfile.ProfileD |% { . $_.FullName }
 Update-FormatData -Prependpath $MrledProfile.MrlFormat
 
 Set-UserPrompt
+Set-ConsoleColors
 
 # Must set the prompt before importing this module or it'll puke
 Import-Module PSReadline 
