@@ -96,6 +96,9 @@ function Setup-Environment {
 
     Set-WinEnvironmentVariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
     Set-WinEnvironmentVariable -name PythonPath -value "$Home\.dhd\opt\python" -targetlocation user,process
+
+    # Useful for lots of things... I think Emacs has prefered to have this at least in the past, and also Git won't look for $env:USERPROFILE at least as of 2017 (for when it looks for like your .ssh folder)
+    Set-WinEnvironmentVariable -name HOME -value $Home
 }
 
 # The closest I can get to my .b() bash function is dot-sourcing this function: `. p`
