@@ -9,7 +9,6 @@
 		"FuzzyFileNav",
 		"GitGutter",
 		"Kotlin",
-		"LineEndings",
 		"Mako",
 		"MarkdownEditing",
 		"Package Control",
@@ -19,7 +18,6 @@
 		"sublemacspro",
 		"SublimeREPL",
 		"Theme - Soda",
-		"View In Browser",
-		"WordCount"
+		"View In Browser"
 	]
 }
