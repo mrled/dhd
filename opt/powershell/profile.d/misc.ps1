@@ -28,19 +28,35 @@ $SpecialCharacters = New-Object PSObject -Property @{
 }   
 
 ## Configuring other applications / etc
-$plink = Get-ProgramFilesChild "PuTTY/plink.exe"
-if ($plink) { $env:GIT_SSH = $plink }
+$gitCommand = Get-CommandInExecutablePath "git"
+if ($gitCommand) {
 
-# You want this to be separated with forward slashes so that it works
-# from the Git (bash) command line and cmd and Powershell etc.
-$env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
+    # $plink = Get-ProgramFilesChild "PuTTY/plink.exe"
+    # Removing this means I can use ~/.ssh/config -- so long as a HOME environment variable is set
+    # if ($plink) { $env:GIT_SSH = $plink }
 
-# You'll want to turn off colors for git diffs - `git config --global color.diff false` - b/c git colors are ANSI escapes and 
-# Vim doesn't understand those (at least not out of the box)
-$vimCommand = Get-CommandInExecutablePath "vim"
-if ($vimCommand) {
-    $vimMsysPath = $vimCommand -replace "^(.)\:\\",'\$1\' -replace "\\","/"
-    $env:GIT_PAGER = '"{0}" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -' -f $vimMsysPath
+    # You want this to be separated with forward slashes so that it works
+    # from the Git (bash) command line and cmd and Powershell etc.
+    # $env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
+
+    $sublCommand = Get-CommandInExecutablePath "subl"
+    if ($sublCommand) {
+        $escapedSublCommand = $sublCommand -replace "\\","/"
+        git config --global core.editor "'$escapedSublCommand' -w" 
+    }
+
+    # Using vim like this as the Git Pager solves some inconsistencies and problems on Windows
+    # - Some versions of less that come commonly on Windows are buggy, and it's been hard to figure out the right one to use
+    #   For instance, the one that ships with either Chocolatey or Git (idk which) doesn't refresh the screen properly all the time, as of 2017
+    #   Many versions of less that are available for Windows do not display colors
+    # - Vim has build in support for syntax highlighting unified diffs - which is what "git diff" and "git show" return
+    #   Note that this means we turn *off* colors for git diffs if we find vim, because git colors are ANSI escapes and vim doesn't understand those
+    $vimCommand = Get-CommandInExecutablePath "vim"
+    if ($vimCommand) {
+        git config --global color.diff false
+        $vimMsysPath = $vimCommand -replace "^(.)\:\\",'\$1\' -replace "\\","/"
+        $env:GIT_PAGER = '"{0}" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -' -f $vimMsysPath
+    }
 }
 
 $env:LESS = "-iRC"
