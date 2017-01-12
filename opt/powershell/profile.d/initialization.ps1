@@ -43,8 +43,12 @@ function Setup-SystemPath {
         "${env:SystemDrive}\Tools\Ruby*\bin"
         "${env:AppData}\npm"
         "${env:LocalAppData}\Pandoc"
+
+        # NOTE: Should use $Home, which expands properly, NOT ~, which doesn't work with Resolve-PotentialExecutablePathList
+        "$Home\.dhd\opt\bin"
         "$Home\.dhd\opt\powershell\bin"
         "$Home\opt\bin"
+
         '7-zip'
         'ConEmu'
         'ConEmu\ConEmu'

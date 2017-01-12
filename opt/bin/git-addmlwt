@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# set -x
+
+# We rely on `git rev-parse --verify` being able to use a nonzero return code later in the script
+# set -e
+
+cmdname=`basename $0`
+
+usage() {
+    cat << ENDUSAGE
+$cmdname [-h|--help] <REMOTENAME> <BRANCHNAME>
+Add a managed linked working tree
+    -h: Print help and exit
+    REMOTENAME: the name of an existing git remote, such as "origin"
+    BRANCHNAME: the name of a remote branch, such as "master"
+
+Called a "managed" linked working tree because it makes some decisions for the user. Essentially, it creates linked working copies in the parent directory of the main working copy, creates a local branch named REMOTENAME-BRANCHNAME, and stores them in directories named after REMOTENAME and BRANCHNAME. For instance:
+
+    > cd \$HOME/repos/mains/myrepo
+    > git addmlwt REMOTE BRANCH
+    Preparing \$HOME/repos/mains/myrepo/../../REMOTE/BRANCH/myrepo (identifier myrepo)
+    HEAD is now at <COMMIT HASH> <COMMIT SHORT MESSAGE>
+    > git status
+    On branch REMOTE-BRANCH
+    Your branch is up-to-date with 'REMOTE/BRANCH'.
+
+Some notes:
+- In this example, "mains" is an arbitrary name; we do not rely on any particular name for this directory.
+- The 'REMOTE' remote must have already been added
+- The 'BRANCH' branch must exist on the 'REMOTE' remote
+- See also <https://git-scm.com/docs/git-worktree>
+ENDUSAGE
+}
+
+if [ $# -lt 2 ] || [ $# -gt 2 ]; then
+    echo -e "Wrong number of arguments: required 2 but found $#\n"
+    usage
+    exit
+fi
+
+remote=$1
+branch=$2
+
+# Ensure we can get $1 and $2 before setting this option, which will exit immediately on reference of an unbound variable
+set -u
+
+localbranch="$remote-$branch"
+root=`git rev-parse --show-toplevel`
+reponame=`basename $root`
+linkeddir="$root/../../$remote/$branch/$reponame"
+
+# If the branch doesn't exist, create it... (`git worktree add -b BRANCHNAME` will create the branch if it doesn't exist, but will fail if it does exist, so we just create it here if we need it)
+git rev-parse --verify --quiet $localbranch >/dev/null
+if [ $? -ne 0 ]; then
+    git branch --track $localbranch $remote/$branch
+fi
+
+# Create the final location of the linked worktree
+mkdir -p $linkeddir
+
+# Actually add the linked clone
+git worktree add $linkeddir $localbranch
