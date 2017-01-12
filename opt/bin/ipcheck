@@ -1,22 +1,28 @@
 #!/bin/sh
-# Mac OS X, check IP addresses
-# (GeekTool doesn't work with csh scripts?)
 
-echo "en0: wired:       `ifconfig en0|grep netmask|cut -d\  -f2`"
-echo "en1: wireless:    `ifconfig en1|grep netmask|cut -d\  -f2`"
+# Linux ifconfig example output:
+# lo        Link encap:Local Loopback                                             
+#           inet addr:127.0.0.1  Mask:255.0.0.0                                   
+#           UP LOOPBACK RUNNING  MTU:16436  Metric:1                              
+#           RX packets:0 errors:0 dropped:0 overruns:0 frame:0                    
+#           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0                  
+#           collisions:0 txqueuelen:0                                             
+#           RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)                                
+
+# macOS ifconfig example output:
+# en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+#     ether 14:10:9f:e0:eb:c9
+#     inet6 fe80::1610:9fff:fee0:ebc9%en0 prefixlen 64 scopeid 0x4
+#     inet X.X.X.X netmask 0xffffff00 broadcast 101.6.69.255
+#     nd6 options=1<PERFORMNUD>
+#     media: autoselect
+#     **status: active**
+
+interfaces=`ifconfig -a | grep '^[a-zA-Z0-9]' \ cut -d \  -f1`
+for if in $interfaces; do
+    echo $if
+    ifconfig $if | grep inet
+done
+
 echo "external IPv4:    `curl -s ipv4.icanhazip.com`"
 echo "external IPv6:    `curl -s ipv6.icanhazip.com`"
-#if [ "$1" == "e" ]; then
-#    echo "external ip:      `curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g'`"
-#fi
-
-
-
-
-# OLD junk
-#echo "en0, wired:    `ifconfig en0 | grep inet`"
-#echo "en1, wireless: `ifconfig en1 | grep inet`"
-#echo "en0: wired"; ipconfig getifaddr en0 | grep inet
-#echo "en1: wireless"; ipconfig getifaddr en1 | grep inet
-#echo "en0: wired"; ifconfig en0 | grep inet
-#echo "en1: wireless"; ifconfig en1 | grep inet
