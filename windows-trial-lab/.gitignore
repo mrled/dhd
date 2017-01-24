@@ -1,8 +1,0 @@
-.DS_Store
-/iso/*
-!/iso/README.md
-/output-*/
-/*.box
-/packer_cache/
-.vagrant/
-synced/
