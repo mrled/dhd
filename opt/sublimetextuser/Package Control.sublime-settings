@@ -6,6 +6,7 @@
 	"installed_packages":
 	[
 		"Anaconda",
+		"Emacs Pro Essentials",
 		"FuzzyFileNav",
 		"GitGutter",
 		"Kotlin",
@@ -16,7 +17,6 @@
 		"PowerShell",
 		"SideBarEnhancements",
 		"SingleTrailingNewLine",
-		"sublemacspro",
 		"SublimeREPL",
 		"Theme - Soda",
 		"TrailingSpaces",
