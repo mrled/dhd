@@ -63,6 +63,7 @@ function Setup-SystemPath {
         'Nmap'
         'PuTTY'
         'Sublime Text 3'
+         'WordNet\2.1\bin'
     )
 
     # Set the "User" PATH - that is, the PATH for future processed launched by this same user - first
