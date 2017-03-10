@@ -61,12 +61,13 @@ function Setup-SystemPath {
         'LLVM\bin'
         'Microsoft Visual Studio*\VC\bin'
         'MSBuild\*\Bin'
+        'NUnit*\bin'
         'OpenSSL\bin'
         'Oracle\VirtualBox'
         'Nmap'
         'PuTTY'
         'Sublime Text 3'
-         'WordNet\2.1\bin'
+        'WordNet\2.1\bin'
     )
 
     # Set the "User" PATH - that is, the PATH for future processed launched by this same user - first
