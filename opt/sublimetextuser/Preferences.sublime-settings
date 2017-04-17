@@ -4,8 +4,6 @@
 	"font_size": 10,
 	"ignored_packages":
 	[
-		"GitGutter",
-		"Markdown",
 		"Vintage"
 	],
 	"scroll_past_end": true,
