@@ -33,6 +33,13 @@ if type -P ruby >/dev/null; then
     unset usrdir sysdir
 fi
 
+# golang
+if [ -d "$HOME/opt/homebrew/opt/go" ]; then
+    export GOROOT="$HOME/opt/homebrew/opt/go/libexec"
+    export GOPATH="$HOME/Documents/Go"
+    export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
+fi
+
 umask 077
 
 cmd_ls="ls"
@@ -201,6 +208,11 @@ strip_comments() {
         #grep -v '^[:blank:]*#' $f | grep -v '^[:blank:]*$'
     done
 }
+
+if type -p diceware >/dev/null; then
+    alias dockerdir="mkdir -v `diceware --no-caps -d - -n 2`"
+    alias passphrase="diceware --no-caps -d ' ' -n 6"
+fi
 
 export PYTHONSTARTUP=~/.dhd/hbase/python.profile
 #export IPYTHONDIR=~/.dhd/hbase/ipython
