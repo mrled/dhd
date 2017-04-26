@@ -7,5 +7,8 @@
 
     // iOpener + Emacs Pro Essentials:
     {"keys": ["ctrl+x", "ctrl+f"], "command": "i_opener"},
-    {"keys": ["ctrl+o"], "command": "sbp_open_line"}
+    {"keys": ["ctrl+o"], "command": "sbp_open_line"},
+
+    // fucking Markdown overrides my Emacs keybindings
+    {"keys": ["alt+b"], "command": "sbp_move_word", "args": {"direction": -1}},
 ]
