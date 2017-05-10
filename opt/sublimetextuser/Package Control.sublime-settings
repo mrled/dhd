@@ -6,6 +6,8 @@
 	"installed_packages":
 	[
 		"Anaconda",
+		"ApacheConf.tmLanguage",
+		"Dockerfile Syntax Highlighting",
 		"Emacs Pro Essentials",
 		"GitGutter",
 		"iOpener",
