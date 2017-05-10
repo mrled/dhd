@@ -50,6 +50,7 @@ function Setup-SystemPath {
         "$Home\opt\bin"
 
         '7-zip'
+        'Amazon\AWSCLI'
         'ConEmu'
         'ConEmu\ConEmu'
         'Docker\Docker\Resources\bin'
