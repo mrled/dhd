@@ -34,6 +34,7 @@ ctr=0
 oneargval=default
 twoarg1=default
 twoarg2=default
+debug=/bin/false
 while [ $ctr -lt $# ]; do
     case "$1" in
         -h | --help )
@@ -45,6 +46,7 @@ while [ $ctr -lt $# ]; do
             set -x # Show each line before executing
             ctr=$((ctr+1))
             shift
+            debug=/bin/true
             ;;
         -1 | --one-argument )
             # An option that takes 1 argument: consume 2 arguments from $@
@@ -65,6 +67,7 @@ while [ $ctr -lt $# ]; do
     esac
 done
 
+if $debug; then echo "Debug mode enabled"; else echo "Debug mode disabled"; fi
 echo "Processed $ctr arguments"
 echo "oneargval = $oneargval, twoarg1 = $twoarg1, twoarg2 = $twoarg2"
 echo "All remaining positional arguments: $@"
