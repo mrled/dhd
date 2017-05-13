@@ -5,19 +5,18 @@ set -u  # Treat unset variables as errors
 
 usage() {
     cat << ENDUSAGE
-$0 [-h|--help]
+Usage: $0 [-h] [-d] [-1 arg1] [-2 arg1 arg2] [-e] [POSITIONALARGS...]
 A template for new POSIX shell scripts
     -h | --help: Print help and exit
     -d | --debug: show debug messages
     -1 | --one-argument: consume the next input argument
     -2 | --two-arguments: consume the next two input arguments
     -e | --exit-with-error: exit with an error
-    positional arguments: printed at the end
+    POSITIONALARGS: printed at the end
 
 **IN GENERAL, PLEASE DO NOT WRITE NEW SHELL SCRIPTS**
 Shell scripts are only appropriate if:
-- The script will only be run in a POSIX sh environment
-  (typically Unix, although possibly mingw)
+- The script will only be run in a POSIX sh environment (Unix, MinGW, etc)
 - The script can be written with no bashisms or other non-POSIX extensions
 - The script is less than one single solitary PgDn
 - The script deals heavily with shell issues
@@ -26,7 +25,7 @@ Shell scripts are only appropriate if:
 Some notes
 - Why no bashisms? Portability
   Under many circumstances, bash is not /bin/sh, and may not even be installed
-  For example: alpine linux and Ubuntu ship the Almquist shell (ash) as /bin/sh
+  For example: Alpine Linux and Ubuntu ship the Almquist shell (ash) as /bin/sh
   A script that requires bashisms is a script that should be rewritten in a
   more powerful and more readable programming language
 - 'set -o pipefile' is a bashism, and not a stanard POSIX option
@@ -39,8 +38,17 @@ Some notes
   See also http://cfajohnson.com/shell/cus-faq-2.html#Q11
 - Variable capitalization:
   Exported variables should be in all caps ('export VAR=value')
-  Script local variables should be in lower case
-  See also http://stackoverflow.com/questions/673055/correct-bash-and-shell-script-variable-capitalization
+  Script local variables should be in lower case ('var=value')
+  See also http://stackoverflow.com/questions/673055/
+- Rely on the PATH variable
+  Do not assume that binaries are necessarily inside /bin or /usr/bin
+  For instance, Alpine Linux has /bin/true and /bin/false, but macOS has
+  /usr/bin/true and /usr/bin/false
+- Refer to the POSIX documentation when writing scripts
+  Official shell documentation can be found here:
+  http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html
+  A more easily navigable set of links to this documentation can be found here:
+  http://shellhaters.org
 ENDUSAGE
 }
 
@@ -56,19 +64,27 @@ ctr=0
 oneargval=default
 twoarg1=default
 twoarg2=default
-debug=/bin/false
+debug=false
+
+if [ $# == 0 ]; then
+    # If we do not provide an argument, show help and exit with error
+    usage
+    exit 1
+fi
+
 while [ $ctr -lt $# ]; do
     case "$1" in
         -h | --help )
             usage
-            return
+            # If we pass the help argument intentionally, exit without error
+            exit 0
             ;;
         -d | --debug )
             # A bare option: consume only 1 argument from $@
             set -x # Show each line before executing
             ctr=$((ctr+1))
             shift
-            debug=/bin/true
+            debug=true
             ;;
         -1 | --one-argument )
             # An option that takes 1 argument: consume 2 arguments from $@
@@ -94,6 +110,17 @@ while [ $ctr -lt $# ]; do
 done
 
 if $debug; then echo "Debug mode enabled"; else echo "Debug mode disabled"; fi
-echo "Processed $ctr arguments"
+echo "Passed $# arguments; processed $ctr arguments"
 echo "oneargval = $oneargval, twoarg1 = $twoarg1, twoarg2 = $twoarg2"
-echo "All remaining positional arguments: $@"
+
+# NOTE: unless the $@ array is quoted in the for loop, sh will split quoted
+# arguments on spaces. For instance, say the script is called like this:
+#   script.sh "one" "two three"
+# If $@ is unquoted, the for loop will iterate THREE times, with the $arg
+# variable as "one", "two", and "three".
+# However, if "$@" is quoted, the loop will iterate TWO times, with the $arg
+# variable as "one" and "two three".
+echo "All remaining positional arguments:"
+for arg in "$@"; do
+    echo "- $arg"
+done
