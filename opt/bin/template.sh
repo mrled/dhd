@@ -46,9 +46,15 @@ Some notes
   /usr/bin/true and /usr/bin/false
 - Refer to the POSIX documentation when writing scripts
   Official shell documentation can be found here:
-  http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html
+  http://pubs.opengroup.org/onlinepubs/9699919799/
   A more easily navigable set of links to this documentation can be found here:
   http://shellhaters.org
+  That site also contains an embedded YouTube video of an excellent talk by
+  Ryan Tomayko:
+  https://www.youtube.com/watch?v=olH-9b3VJfs
+- Use ShellCheck to check for POSIX compitibility
+  https://www.shellcheck.net
+  https://github.com/koalaman/shellcheck
 ENDUSAGE
 }
 
@@ -66,13 +72,13 @@ twoarg1=default
 twoarg2=default
 debug=false
 
-if [ $# == 0 ]; then
+if test $# = 0; then
     # If we do not provide an argument, show help and exit with error
     usage
     exit 1
 fi
 
-while [ $ctr -lt $# ]; do
+while test $ctr -lt $#; do
     case "$1" in
         -h | --help )
             usage
