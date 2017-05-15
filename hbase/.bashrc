@@ -61,9 +61,6 @@ alias wcl="wc -l"
 
 alias omg="echo wtf"
 
-# TODO: not portable
-alias grep="grep --color=auto"
-
 alias .b='. ~/.bashrc'
 
 cmdavail "xscreensaver-command" && alias xslock="xscreensaver-command -lock"
