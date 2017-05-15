@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    cat << ENDUSAGE
+$0: Test whether a command is available on the system
+EXAMPLE: cmdavail emacs && EDITOR=emacs
+ENDUSAGE
+}
+
+if ! test $# == 1; then
+    usage
+    exit
+fi
+cmdname=$1
+command -v "$cmdname" 2>&1 >/dev/null

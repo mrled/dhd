@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    cat <<ENDUSAGE
+strcontains(): Test whether a string is contained in another string
+Usage: strcontains SUPERSTRING SUBSTRING
+    SUPERSTRING: A string
+    SUBSTRING: A string that might be contained in SUPERSTRING
+EXAMPLES
+> strcontains "abc" "ab" && echo TRUE || echo FALSE
+TRUE
+> strcontains "abc" "ba" && echo TRUE || echo FALSE
+FALSE
+ENDUSAGE
+}
+
+if test $# != 2; then
+    usage
+    exit
+fi
+
+superstring=$1
+substring=$2
+
+if test "${superstring#*$substring}" != "$superstring"; then
+    exit 0
+else
+    exit 1
+fi

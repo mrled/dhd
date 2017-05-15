@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    cat << ENDUSAGE
+Print the path, one item per line
+ENDUSAGE
+}
+
+if test $# -gt 0; then
+    usage
+    exit
+fi
+
+echo "$PATH" | tr ':' '\n' | grep -v '^$'

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    cat << ENDUSAGE
+$0: View a manual page without relying on the man command
+Usage: $0 /path/to/manpage
+This can view manpages on systems with a 'groff' command
+This might be useful on systems without a 'man' command, such as old versions
+of MinGW, or on systems where 'man' does not take a path argument.
+ENDUSAGE
+}
+
+if test $# != 1; then
+    usage
+    exit 1
+fi
+
+manpagepath=$1
+groff -Tascii -pet -mandoc -P-c "$manpagepath" | less -irs
