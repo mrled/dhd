@@ -1,6 +1,11 @@
 #!/bin/bash
 # .bashrc should contain ONLY statements that apply to interactive shells
 
+export MRL_BASHRC_GUARD=1
+if test -z "$MRL_PROFILE_GUARD"; then
+    . $HOME/.profile
+fi
+
 alias MRLLSCMD="$(command -v ls)"
 ls_args="-hF --color"
 

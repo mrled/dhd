@@ -6,6 +6,8 @@
 # 3. The .profile script should be compatible with any POSIX shell - do not use bashisms
 # 4. Where possible, place functions in separate files in a directory found in the $PATH rather than defining them in a shell startup script
 
+export MRL_PROFILE_GUARD=1
+
 umask 077
 
 # If set to a filename, log all debugging messages to that file
@@ -111,6 +113,6 @@ export FSEDIT=emacs
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 
-if test "$BASH_VERSION"; then
+if test -z "$MRL_BASHRC_GUARD" && test "$BASH_VERSION"; then
     . "$HOME/.bashrc"
 fi
