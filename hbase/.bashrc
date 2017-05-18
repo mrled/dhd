@@ -176,3 +176,9 @@ clearrformat="\[\e[00m\]"
 export PS1="${boldwhite}\t ${boldblue}\h${boldwhite}:${normalgreen}\W ${boldblue}${lcop} ${clearrformat}"
 
 unset lcop
+
+if test -d "$HOME/.bashrc.d"; then
+    for script in $(find "$HOME/.bashrc.d" -type f); do
+        . "$script"
+    done
+fi
