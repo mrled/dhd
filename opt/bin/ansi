@@ -1,0 +1,63 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    cat << ENDUSAGE
+Usage: $0 [<LAYER> <COLOR>|<MODE>]
+Easily color the terminal
+    -h | --help: Print help and exit
+    LAYER: One of fg (foreground) or bg (background)
+    COLOR: One of black, red, green, yellow, blue, magenta, cyan, or white
+    MODE:  One of bold, unbold, underline, ununderline, or reset
+           (reset will undo any settings)
+
+NOTES
+This has been tested on macOS and Linux
+It is unlikely to work as-is for all terminals ever created
+Information from
+http://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
+ENDUSAGE
+}
+
+tputargs=
+case $# in
+    1)
+        tpmode=
+        case "$1" in
+            bold) tpmode=bold;;
+            unbold) tpmode=dim;;
+            underline) tpmode=smul;;
+            ununderline) tpmode=rmul;;
+            reset) tpmode=sgr0;;
+            *) usage; exit;;
+        esac
+        tput "$tpmode"
+        ;;
+    2)
+        tplayer=
+        tpcolor=
+        case "$1" in
+            fg) tplayer=setaf;;
+            bg) tplayer=setab;;
+            *) usage; exit;;
+        esac
+        case "$2" in
+            black) tpcolor=0;;
+            red) tpcolor=1;;
+            green) tpcolor=2;;
+            yellow) tpcolor=3;;
+            blue) tpcolor=4;;
+            magenta) tpcolor=5;;
+            cyan) tpcolor=6;;
+            white) tpcolor=7;;
+            *) usage; exit;;
+        esac
+        tput "$tplayer" "$tpcolor"
+        ;;
+    *)
+        usage
+        exit
+        ;;
+esac
