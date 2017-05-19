@@ -159,6 +159,7 @@ export HISTFILESIZE="INFINITE"
 #   set completion-ignore-case on
 # in .inputrc for that.
 shopt -s nocaseglob
+# Fix some problems where lines wrap incorrectly
 shopt -s checkwinsize
 
 #### The prompt
@@ -167,8 +168,8 @@ shopt -s checkwinsize
 if test "$(id -u)" = 0; then lcop='#'; else lcop='>'; fi
 
 # Make sure that all of the non-printing characters in $PS1 are surrounded by
-# \[ and \] - otherwise you will get line wrapping problems
-# wrapping problems. mmmmkay?
+# \[ and \] - otherwise you will get line wrapping problems (even if the
+# checkwinsize option is enabled as above)
 boldwhite="\[\e[01;37m\]"
 boldblue="\[\e[01;34m\]"
 normalgreen="\[\e[00;32m\]"
