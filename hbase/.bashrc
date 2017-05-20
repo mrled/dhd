@@ -1,31 +1,49 @@
 #!/bin/bash
+
 # .bashrc should contain ONLY statements that apply to interactive shells
+# Bashisms are obviously appropriate here
+# However, do not rely on non-POSIX tools like ls or grep
+# An exception: when it's more helpful for an alias to fail than for it to be undefined
+# For instance, in the sshtel alias, an error message that 'ssh' is unavailable is more helpful than a message that 'sshtel' is unavailable
+# If possible, test for non-POSIX extensions before using in this file
+# If that's not possible, mark them in a comment
+# Also, this file may be sourced multiple times; all settings should be idempotent
 
 export MRL_BASHRC_GUARD=1
 if test -z "$MRL_PROFILE_GUARD"; then
     . $HOME/.profile
 fi
 
-alias MRLLSCMD="$(command -v ls)"
-ls_args="-hF --color"
+# These should be POSIX compatible; extensions are detected later
+lscmd=ls
+lsargs="-F"
+if ls --version 2>/dev/null | grep -q GNU; then
+    lsargs="$lsargs -H --color"
+elif ls -h -G >/dev/null 2>&1; then
+    lsargs="$lsarge -h -G"
+fi
+alias ls="$lscmd $lsargs"
+alias lsa='ls -a'
+alias lsl='ls -a -l'
+alias lsli='lsl -i' # lsl+inodes
+alias l1='ls -1'
+alias llm='lsl -r -t' # lsl+ sort by modified time (lastest at bottom)
 
+# System-specific enhancements
+# Ideally, don't rely on *too many* of these
 unames=$(uname -s)
 if strcontains "$unames" Cygwin; then
     export CYGWIN="binmode ntsec stty"
-elif strcontains "$unames" MSYS; then
-    ls_args="${ls_args} --color"
-elif strcontains "$unames" FreeBSD; then
-    ls_args="-hFG"
 elif test "$unames" = Darwin; then
-    ls_args="-hFG"
+
+    alias previewman='man -t "$@" | ps2pdf - - | open -g -f -a /Applications/Preview.app'
+
     # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
     alias switchx="osascript ~/.dhd/opt/ascript/x11-cmd-tab.ascript"
+
     # Launch QuickLook from the command line (^c will kill it and return to prompt)
     alias ql='qlmanage -p 2>/dev/null'
-    alias emacsclient="/Applications/Emacs.app/Contents/MacOS/bin/emacsclient"
-    pman() {
-        man -t "$@" | ps2pdf - - | open -g -f -a /Applications/Preview.app
-    }
+
     # fucking quarantine thing
     # could also turn it off completely:
     # defaults write com.apple.LaunchServices LSQuarantine -bool false
@@ -34,67 +52,43 @@ fi
 unset unames
 
 cmdavail 'ack-grep' && alias ack='ack-grep'
+df -h >/dev/null 2>&1 && alias df="df -h"
 alias ..="cd .."
 alias c=clear
-alias df="df -h"
 alias h=history
-alias m=more
-alias l=less
-alias zl=zless
-
-export LESS="-icdM"
-
-alias wh="type -a"
-alias dush='du -sh'
-
-alias psa="ps ax"
-alias psaj="ps axj"
-psaf() {
-    # (the second call to grep prevents this function from being returned as a hit)
-    psa | grep -i "$1" | grep -v "grep -i $1"
-}
-
-alias ls='MRLLSCMD $ls_args'
-alias lsa='MRLLSCMD $ls_args -a'
-alias lsl='MRLLSCMD $ls_args -al'
-alias lsli='MRLLSCMD $ls_args -ali' # lsl+inodes
-alias l1='MRLLSCMD $ls_args -1'
-alias llm='MRLLSCMD $ls_args -lart' # lsl+ sort by modified time (lastest at bottom)
-
-alias dmesg="dmesg|less"
 alias wcl="wc -l"
-
 alias omg="echo wtf"
-
-alias .b='. ~/.bashrc'
-
+alias .b='. ~/.profile; . ~/.bashrc'
 cmdavail "xscreensaver-command" && alias xslock="xscreensaver-command -lock"
-
-xttitle() {
-    echo -e "\e]2;""$1""\007"
-}
-alias xtt=xtermtitle
-
+alias xttitle='printf "\e]2;""$@""\007"'
 alias ddate="date +%Y%m%d"
 
-# screen stuff
+alias m=more
+alias l=less
+cmdavail zless && alias zl=zless
+export LESS="-icdMR"
 
-# Totally arbitrary default session name
-# Where I can, such as in "scr", this is pulled from this environment variable
-# Note however that in some places, such as .xsession-strumpwm, it's hard-coded to match this value
-export default_session_name="camelot"
+alias wh="type -a"  # type -a is a POSIX extension
+alias dush='du -sh' # du -h is a POSIX extension
 
-alias scrl="screen -list"
-alias scrw="screen -wipe"
+# Test for GNU grep
+if echo x | grep -q --color=auto x 2>/dev/null; then
+    grepcmd="grep --color=auto"
+    alias grep=$grepcmd
+fi
 
-##
-## Remote Commands
-##
+alias psa="ps -A"
+psaf() {
+    # (the second call to grep prevents this function from being returned as a hit)
+    psa | grep -i "$1" | grep -v "$grepcmd $1"
+}
 
-# this way it won't save ssh host keys to ~/.ssh/known_hosts
+# For my 'scr' command
+export SCR_DEFAULT_SESSION="camelot"
+
+# Aliases to make it easy to connect over ssh or scp WITHOUT CHECKING HOST KEYS
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-
 uploadid() {
     ssh "$@" 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys' < "$HOME/.ssh/id_rsa.pub"
 }
@@ -119,36 +113,9 @@ man() {
             man "$@"
 }
 
-# Mac metadata files: .DS_Store and ._Doomsday.mkv for example
-mmf() {
-    case $1 in
-        list)
-            find . -type f -name '._*'
-            find . -type f -name '.DS_Store';;
-        rm)
-            find . -type f -name '._*' -exec rm {} \;
-            find . -type f -name '.DS_Store' -exec rm {} \;
-            ;;
-    esac
-}
-
-bash_listens() {
+listens() {
     netstat -an | grep -E '((tcp)|(udp)).*LISTEN' | awk '{ print $1, "\t", $4 }' | sort
 }
-lsof_listens() {
-    lsof +M -iTCP -sTCP:LISTEN
-    lsof +M -iUDP
-}
-
-strip_comments() {
-    for file in "$@"; do
-        grep -v '^[ | ]*#' "$file" | grep -v '^[    | ]*$'
-    done
-}
-
-if cmdavail diceware; then
-    alias passphrase="diceware --no-caps -d ' ' -n 6"
-fi
 
 # Note that while these are commonplace, they are *not* POSIX
 export HISTSIZE="INFINITE"
@@ -167,9 +134,12 @@ shopt -s checkwinsize
 # lcop = last character of prompt
 if test "$(id -u)" = 0; then lcop='#'; else lcop='>'; fi
 
-# Make sure that all of the non-printing characters in $PS1 are surrounded by
-# \[ and \] - otherwise you will get line wrapping problems (even if the
-# checkwinsize option is enabled as above)
+# The ANSI escape sequences will work fine in a POSIX shell, in that the shell will pass them directly to the terminal
+# Different terminals support different escape sequences, however
+# However, bash (and probably any POSIX shell) will detect escape sequences as characters
+# This will cause line wrappoing problems when used in the prompt - the shell will think your prompt is longer than it is, meaning that commands will wrap the window early, and editing history can be tricky
+# This problem can occur in bash even if the checkwinsize option is enabled (as it is above)
+# There is a solution if the shell is based on GNU readline, which bash is: surround escape sequences in \[ \]
 boldwhite="\[\e[01;37m\]"
 boldblue="\[\e[01;34m\]"
 normalgreen="\[\e[00;32m\]"

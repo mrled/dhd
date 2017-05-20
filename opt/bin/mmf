@@ -1,0 +1,34 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    cat << ENDUSAGE
+Usage: $0 [-h] [-r]
+    -h: Show help and exit
+    -r: Remove the files after listing
+List Mac metadata files like .DS_Store or ._FILENAME
+ENDUSAGE
+}
+
+remove=
+case "$#" in
+    0) ;;
+    1)
+        case "$1" in
+            "-h") usage; exit;;
+            "-r") remove=1;;
+            *) usage; exit 1;;
+        esac
+        ;;
+    *) usage; exit 1;;
+esac
+
+IFS="
+"
+mmfs=$(find . -type f -name '._*'; find . -type f -name '.DS_Store')
+for mmf in $mmfs; do
+    echo "$mmf"
+    if test "$remove"; then rm "$mmf"; fi
+done

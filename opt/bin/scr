@@ -76,8 +76,8 @@ while test $actr -lt $#; do
 done
 
 if test -z "$sessionname"; then
-    if test "$default_session_name"; then
-        sessionname="$default_session_name"
+    if test "$SCR_DEFAULT_SESSION"; then
+        sessionname="$SCR_DEFAULT_SESSION"
     else
         sessionname="$fallbacksessionname"
     fi

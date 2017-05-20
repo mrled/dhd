@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    cat << ENDUSAGE
+Usage: $0 [-h] [FILE <FILE>...>]
+Strip comments from file(s) and return to stdout
+ENDUSAGE
+}
+
+test $# -gt 0 &&  $1 = "-h" && usage; exit
+
+for file in "$@"; do
+    grep -v '^[ | ]*#' "$file" | grep -v '^[    | ]*$'
+done
