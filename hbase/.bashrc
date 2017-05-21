@@ -2,17 +2,29 @@
 
 # .bashrc should contain ONLY statements that apply to interactive shells
 # Bashisms are obviously appropriate here
-# However, do not rely on non-POSIX tools like ls or grep
-# An exception: when it's more helpful for an alias to fail than for it to be undefined
-# For instance, in the sshtel alias, an error message that 'ssh' is unavailable is more helpful than a message that 'sshtel' is unavailable
+# Try not to rely on non-POSIX tools (like GNU grep), or that a given optional
+# package (like SSH) is installed.
+# An exception: when it's more helpful for a command to fail than for it to be
+# undefined
 # If possible, test for non-POSIX extensions before using in this file
-# If that's not possible, mark them in a comment
-# Also, this file may be sourced multiple times; all settings should be idempotent
+# This file may be sourced multiple times; all settings should be idempotent
 
 export MRL_BASHRC_GUARD=1
 if test -z "$MRL_PROFILE_GUARD"; then
     . $HOME/.profile
 fi
+
+# A pipeline with a failing command at the beginning will set #? to a failure even if later piped commands succeed
+set -o pipefail
+
+# glob filenames in a case-insensitive manner
+# NOT the same as tab-complete case insensitively - you must add
+#   set completion-ignore-case on
+# in .inputrc for that.
+shopt -s nocaseglob
+
+# Fix some problems where lines wrap incorrectly
+shopt -s checkwinsize
 
 # These should be POSIX compatible; extensions are detected later
 lscmd=ls
@@ -84,11 +96,12 @@ psaf() {
 }
 
 # For my 'scr' command
-export SCR_DEFAULT_SESSION="camelot"
+export SCR_DEFAULT_SESSION="megaframe"
 
 # Aliases to make it easy to connect over ssh or scp WITHOUT CHECKING HOST KEYS
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+
 uploadid() {
     ssh "$@" 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys' < "$HOME/.ssh/id_rsa.pub"
 }
@@ -113,40 +126,28 @@ man() {
             man "$@"
 }
 
-listens() {
-    netstat -an | grep -E '((tcp)|(udp)).*LISTEN' | awk '{ print $1, "\t", $4 }' | sort
-}
-
-# Note that while these are commonplace, they are *not* POSIX
+# Common, but not POSIX
 export HISTSIZE="INFINITE"
 export HISTFILESIZE="INFINITE"
 
-# glob filenames in a case-insensitive manner
-# NOT the same as tab-complete case insensitively - you must add
-#   set completion-ignore-case on
-# in .inputrc for that.
-shopt -s nocaseglob
-# Fix some problems where lines wrap incorrectly
-shopt -s checkwinsize
 
-#### The prompt
-
-# lcop = last character of prompt
-if test "$(id -u)" = 0; then lcop='#'; else lcop='>'; fi
-
-# The ANSI escape sequences will work fine in a POSIX shell, in that the shell will pass them directly to the terminal
-# Different terminals support different escape sequences, however
-# However, bash (and probably any POSIX shell) will detect escape sequences as characters
-# This will cause line wrappoing problems when used in the prompt - the shell will think your prompt is longer than it is, meaning that commands will wrap the window early, and editing history can be tricky
-# This problem can occur in bash even if the checkwinsize option is enabled (as it is above)
-# There is a solution if the shell is based on GNU readline, which bash is: surround escape sequences in \[ \]
-boldwhite="\[\e[01;37m\]"
-boldblue="\[\e[01;34m\]"
-normalgreen="\[\e[00;32m\]"
-clearrformat="\[\e[00m\]"
-export PS1="${boldwhite}\t ${boldblue}\h${boldwhite}:${normalgreen}\W ${boldblue}${lcop} ${clearrformat}"
-
-unset lcop
+# Prompt
+# NOTE: We rely on "checkwinsize" (set above) and my ansi command's '-b'
+# argument to fix line wrapping problems from escape sequences. Without those
+# fixes, bash would treat nonprintable ANSI color codes as printable characters
+# and would think that printed lines are longer than they actually are
+bashprompt() {
+    exitcode=$?
+    if test "$exitcode" -eq 0 || test -z "$exitcode"; then
+        lastcmd="$(ansi mode=reset fg=white)0"
+    else
+        lastcmd="$(ansi mode=reset fg=red)$exitcode"
+    fi
+    # lcop = last character of prompt
+    if test "$EUID" -eq 0; then lcop='#'; else lcop='>'; fi
+    export PS1="$(ansi -b mode=bold fg=white)\t ${lastcmd} $(ansi -b mode=bold fg=blue)\h:$(ansi -b mode=reset fg=green)\W $(ansi -b mode=bold fg=blue)${lcop} $(ansi -b mode=reset)"
+}
+export PROMPT_COMMAND=bashprompt
 
 if test -d "$HOME/.bashrc.d"; then
     for script in $(find "$HOME/.bashrc.d" -type f); do

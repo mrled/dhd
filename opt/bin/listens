@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+set -u
+
+usage() {
+    echo "${0}: Show information about services listening on TCP ports"
+}
+
+if test $# -ne 0; then
+    usage
+    exit 1
+fi
+
+netstat -an | grep -E '((tcp)|(udp)).*LISTEN' | awk '{ print $1, "\t", $4 }' | sort
