@@ -1,63 +1,106 @@
 #!/bin/sh
 
 set -e
+
+ANSIDBG=${ANSIDBG:-}
 set -u
 
 usage() {
-    cat << ENDUSAGE
-Usage: $0 [<LAYER> <COLOR>|<MODE>]
+    cat >&2 << ENDUSAGE
+Usage: $0 [-h] [-b] <SETTING [<SETTING>...]>
 Easily color the terminal
-    -h | --help: Print help and exit
-    LAYER: One of fg (foreground) or bg (background)
+    -h: Print help and exit
+    -b: Surround the ANSI codes with '\[' and '\]', which has a special meaning
+        only in the bash prompt, where it indicates that the non-printable
+        escapes should not be counted as characters that take up space on the
+        line
+    SETTING: A setting, of the form NAME=VALUE
+        NAME: one of "mode", "fg", or "bg"
+        VALUE: a value for the setting
+            if the setting is MODE, see MODE
+            if the setting is FG or BG, see COLOR
+    MODE:  One of bold, unbold, under, ununder, or reset
+           under/ununder will underline or un-underline respectively
+           reset will undo any settings
     COLOR: One of black, red, green, yellow, blue, magenta, cyan, or white
-    MODE:  One of bold, unbold, underline, ununderline, or reset
-           (reset will undo any settings)
-
+ENVIRONMENT:
+    \$ANSIDBG: If set, print debugging information
+EXAMPLES:
+> $0 mode=bold fg=green bg=white
+> $0 mode=reset
+> $0 -b mode=under fg=white bg=black
 NOTES
 This has been tested on macOS and Linux
 It is unlikely to work as-is for all terminals ever created
-Information from
+References:
+http://pubs.opengroup.org/onlinepubs/9699919799/utilities/tput.html
 http://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
 ENDUSAGE
 }
 
-tputargs=
-case $# in
-    1)
-        tpmode=
-        case "$1" in
-            bold) tpmode=bold;;
-            unbold) tpmode=dim;;
-            underline) tpmode=smul;;
-            ununderline) tpmode=rmul;;
-            reset) tpmode=sgr0;;
-            *) usage; exit;;
-        esac
-        tput "$tpmode"
-        ;;
-    2)
-        tplayer=
-        tpcolor=
-        case "$1" in
-            fg) tplayer=setaf;;
-            bg) tplayer=setab;;
-            *) usage; exit;;
-        esac
-        case "$2" in
-            black) tpcolor=0;;
-            red) tpcolor=1;;
-            green) tpcolor=2;;
-            yellow) tpcolor=3;;
-            blue) tpcolor=4;;
-            magenta) tpcolor=5;;
-            cyan) tpcolor=6;;
-            white) tpcolor=7;;
-            *) usage; exit;;
-        esac
-        tput "$tplayer" "$tpcolor"
-        ;;
-    *)
-        usage
-        exit
-        ;;
-esac
+dbgprintf() {
+    if test "$ANSIDBG"; then
+        printf >&2 "$@"
+    fi
+}
+
+color2code() {
+    if test $# -ne 1; then usage; exit 1; fi
+    case "$1" in
+        black)   printf 0;;
+        red)     printf 1;;
+        green)   printf 2;;
+        yellow)  printf 3;;
+        blue)    printf 4;;
+        magenta) printf 5;;
+        cyan)    printf 6;;
+        white)   printf 7;;
+
+        bold)    printf bold;;
+        unbold)  printf dim;;
+        under)   printf smul;;
+        ununder) printf rmul;;
+        reset)   printf sgr0;;
+        *)       usage; exit 1;;
+    esac
+}
+mode2operand() {
+    if test $# -ne 1; then usage; exit 1; fi
+    case "$1" in
+        mode) printf "";;
+        fg)   printf "setaf";;
+        bg)   printf "setab";;
+        *)    usage; exit 1;;
+    esac
+}
+
+dbgprintf "$$: $0 $*\n"
+
+if test $# -eq 0; then usage; exit 1; fi
+
+bashprompt=
+output=
+while test $# -gt 0; do
+    dbgprintf "  $$: Processing arg ${1}"
+    case "$1" in
+        -h) dbgprintf ", printing help...\n"; usage; exit 0;;
+        -b)
+            bashprompt=1
+            dbgprintf "\n"
+            shift;;
+        *)
+            name=${1%%=*}   # The part of the parameter after the =
+            value=${1##*=}  # The part of the parameter before the =
+            operand=$(mode2operand "$name")
+            code=$(color2code "$value")
+            dbgprintf ", $name=$value, \$(tput $operand $code)\n"
+            output="${output}$(tput $operand $code)"
+            shift;;
+    esac
+done
+
+if test "$bashprompt"; then
+    printf "\[$output\]"
+else
+    printf "$output"
+fi
