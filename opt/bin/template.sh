@@ -1,6 +1,9 @@
 #!/bin/sh
 
 set -e  # Exit immediately if a command files
+
+# Test whether these variables are set before set -u
+TEMPLATEDBG=${TEMPLATEDBG:-}
 set -u  # Treat unset variables as errors
 
 usage() {
@@ -58,6 +61,12 @@ Some notes
 ENDUSAGE
 }
 
+dbgecho() {
+    if test "$TEMPLATEDBG"; then
+        echo "$@"
+    fi
+}
+
 # Collect arguments:
 # Known flags are collected and acted on first, and any positional arguments
 # are kept to the end
@@ -66,11 +75,9 @@ ENDUSAGE
 # In the first case, 'positional' will be the only positional argument
 # In the second case, 'positional', '-1', and 'onething' are all treated as
 # positional arguments
-ctr=0
 oneargval=default
 twoarg1=default
 twoarg2=default
-debug=false
 
 if test $# = 0; then
     # If we do not provide an argument, show help and exit with error
@@ -78,7 +85,7 @@ if test $# = 0; then
     exit 1
 fi
 
-while test $ctr -lt $#; do
+while test $# -gt 0; do
     case "$1" in
         -h | --help )
             usage
@@ -88,21 +95,18 @@ while test $ctr -lt $#; do
         -d | --debug )
             # A bare option: consume only 1 argument from $@
             set -x # Show each line before executing
-            ctr=$((ctr+1))
             shift
-            debug=true
+            TEMPLATEDBG=1
             ;;
         -1 | --one-argument )
             # An option that takes 1 argument: consume 2 arguments from $@
             oneargval=$2
-            ctr=$((ctr+2))
             shift 2
             ;;
         -2 | --two-arguments )
             # An option that takes 2 arguments: consume 3 arguments from $@
             twoarg1=$2
             twoarg2=$3
-            ctr=$((ctr+3))
             shift 3
             ;;
         -e | --exit-with-error )
@@ -110,13 +114,16 @@ while test $ctr -lt $#; do
             exit 1
             ;;
         *)
-            ctr=$((ctr+1))
+            # NOTE: This will make arg splitting later harder.
+            echo "Positional argument: $1"
+            shift
             ;;
     esac
 done
 
-if $debug; then echo "Debug mode enabled"; else echo "Debug mode disabled"; fi
-echo "Passed $# arguments; processed $ctr arguments"
+if test $TEMPLATEDBG; then echo "Debug mode enabled"; else echo "Debug mode disabled"; fi
+dbgecho "Debug messages only get printed if debug mode is enabled"
+echo "Passed $# arguments"
 echo "oneargval = $oneargval, twoarg1 = $twoarg1, twoarg2 = $twoarg2"
 
 # NOTE: unless the $@ array is quoted in the for loop, sh will split quoted
@@ -126,7 +133,3 @@ echo "oneargval = $oneargval, twoarg1 = $twoarg1, twoarg2 = $twoarg2"
 # variable as "one", "two", and "three".
 # However, if "$@" is quoted, the loop will iterate TWO times, with the $arg
 # variable as "one" and "two three".
-echo "All remaining positional arguments:"
-for arg in "$@"; do
-    echo "- $arg"
-done
