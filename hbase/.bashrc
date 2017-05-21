@@ -51,7 +51,7 @@ elif test "$unames" = Darwin; then
     alias previewman='man -t "$@" | ps2pdf - - | open -g -f -a /Applications/Preview.app'
 
     # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
-    alias switchx="osascript ~/.dhd/opt/ascript/x11-cmd-tab.ascript"
+    alias switchx="osascript $HOME/.dhd/opt/ascript/x11-cmd-tab.ascript"
 
     # Launch QuickLook from the command line (^c will kill it and return to prompt)
     alias ql='qlmanage -p 2>/dev/null'
@@ -70,7 +70,7 @@ alias c=clear
 alias h=history
 alias wcl="wc -l"
 alias omg="echo wtf"
-alias .b='. ~/.profile; . ~/.bashrc'
+alias .b='. $HOME/.profile; . $HOME/.bashrc'
 cmdavail "xscreensaver-command" && alias xslock="xscreensaver-command -lock"
 alias xttitle='printf "\e]2;""$@""\007"'
 alias ddate="date +%Y%m%d"
@@ -103,7 +103,7 @@ alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 uploadid() {
-    ssh "$@" 'mkdir -p ~/.ssh && cat - >> ~/.ssh/authorized_keys' < "$HOME/.ssh/id_rsa.pub"
+    ssh "$@" 'mkdir -p $HOME/.ssh && cat - >> $HOME/.ssh/authorized_keys' < "$HOME/.ssh/id_rsa.pub"
 }
 
 alias canhazip='curl icanhazip.com'

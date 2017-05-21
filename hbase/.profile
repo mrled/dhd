@@ -100,7 +100,7 @@ if test -d "$HOMEBREWDIR/opt/go"; then
     export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 fi
 
-export PYTHONSTARTUP=~/.dhd/hbase/python.profile
+export PYTHONSTARTUP=$HOME/.dhd/hbase/python.profile
 
 pp="${PYTHONPATH}:${HOME}/.dhd/opt/python:${HOME}/opt/lib/python3.4/site-packages/"
 export PYTHONPATH=pathsetup pp
