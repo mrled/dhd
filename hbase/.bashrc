@@ -80,10 +80,11 @@ alias l=less
 cmdavail zless && alias zl=zless
 export LESS="-icdMR"
 
-alias wh="type -a"  # type -a is a POSIX extension
+alias wh="type -a"  # type -a is a bashism
 alias dush='du -sh' # du -h is a POSIX extension
 
-# Test for GNU grep
+# Test for a grep that supports --color=auto, which includes GNU, FreeBSD, and macOS greps
+grepcmd="grep"
 if echo x | grep -q --color=auto x 2>/dev/null; then
     grepcmd="grep --color=auto"
     alias grep=$grepcmd
@@ -92,7 +93,7 @@ fi
 alias psa="ps -A"
 psaf() {
     # (the second call to grep prevents this function from being returned as a hit)
-    psa | grep -i "$1" | grep -v "$grepcmd $1"
+    psa | grep -i "$1" | grep -v "$grepcmd -i $1"
 }
 
 # For my 'scr' command
