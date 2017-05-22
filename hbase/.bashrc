@@ -144,9 +144,14 @@ bashprompt() {
     else
         lastcmd="$(ansi mode=reset fg=red)$exitcode"
     fi
+
     # lcop = last character of prompt
+    # Use bash's $EUID variable to avoid having to shell out to 'id'
     if test "$EUID" -eq 0; then lcop='#'; else lcop='>'; fi
-    export PS1="$(ansi -b mode=bold fg=white)\t ${lastcmd} $(ansi -b mode=bold fg=blue)\h:$(ansi -b mode=reset fg=green)\W $(ansi -b mode=bold fg=blue)${lcop} $(ansi -b mode=reset)"
+
+    prompthostname="${PROMPT_HOSTNAME_OVERRIDE:-"$(ansi -b mode=bold fg=blue)\\h"}"
+
+    export PS1="$(ansi -b mode=bold fg=white)\t ${lastcmd} $prompthostname:$(ansi -b mode=reset fg=green)\W $(ansi -b mode=bold fg=blue)${lcop} $(ansi -b mode=reset)"
 }
 export PROMPT_COMMAND=bashprompt
 
