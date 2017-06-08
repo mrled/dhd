@@ -2,7 +2,7 @@
 
 ## Special Objects
 
-# The System.Environment+SpecialFolders enum has a lot of really useful stuff such as: 
+# The System.Environment+SpecialFolders enum has a lot of really useful stuff such as:
 # - StartMenu / CommonStartMenu: the start menu folder for my user / all users
 # - StartUp / CommonStartUp: the startup folder for my user / all users
 # ... and lots more. This makes a hashtable from that, so it's easier to access
@@ -25,7 +25,7 @@ $SpecialCharacters = New-Object PSObject -Property @{
     Lambda       = [char]955    # λ (GREEK LETTER LAMBDA)
     HammerSickle = [char]9773   # ☭ (HAMMER AND SICKLE)
     VisualStudio = [char]42479  # ꗯ (VAI SYLLABLE GBE)
-}   
+}
 
 ## Configuring other applications / etc
 $gitCommand = Get-CommandInExecutablePath "git"
@@ -42,7 +42,7 @@ if ($gitCommand) {
     $sublCommand = Get-CommandInExecutablePath "subl"
     if ($sublCommand) {
         $escapedSublCommand = $sublCommand -replace "\\","/"
-        git config --global core.editor "'$escapedSublCommand' -w" 
+        git config --global core.editor "'$escapedSublCommand' -w"
     }
 
     # Using vim like this as the Git Pager solves some inconsistencies and problems on Windows
@@ -78,10 +78,10 @@ if ($goCommand) {
 #### Functions
 
 <#
-.synopsis 
+.synopsis
 OH MY GOD
 .description
-Type a command, change your mind about it, move the cursor to the front of the line, type "omg ", and hit return. 
+Type a command, change your mind about it, move the cursor to the front of the line, type "omg ", and hit return.
 Blammo, it returns "wtf <the command line you typed>"
 #>
 function omg {
@@ -140,7 +140,7 @@ Start a process and wait for it to exit
 This is a workaround for a stupid idiot bug in start-process that only triggers sometimes.
 http://social.technet.microsoft.com/Forums/scriptcenter/en-US/37c1066e-b67f-4709-b195-aa2790216bd0
 https://connect.microsoft.com/PowerShell/feedback/details/520554/
-The bug has it return instantly even when -wait is passed to start-process, at least on Eric's local box. 
+The bug has it return instantly even when -wait is passed to start-process, at least on Eric's local box.
 When that happens, $process.ExitCode hasn't been populated, and won't be, even when the process does actually exit.
 System.Diagnostics.Process doesn't have that behavior, so that's what we're going to use instead
 #>
@@ -227,7 +227,7 @@ set-alias l less
 
 function vless {
     # Adapted from vim/macros/less.bat. Assumes vim is in path though.
-    [cmdletbinding()] 
+    [cmdletbinding()]
     param(
         [Parameter(Mandatory=$True,ValueFromPipeline=$True)] [string] $filename
     )
@@ -299,24 +299,24 @@ function Get-Profiles {
 }
 set-alias gpro Get-Profiles
 
-# Make output of get-command better (more like Unix) for interactive use. 
+# Make output of get-command better (more like Unix) for interactive use.
 # NOTE: For aliases, the processing function calls the show function again - this is recursive!
 # it's so if you have an alias chain like x->y->z->, where x and y are aliases
-# and z is a function, you'll get the whole relationship + the function definition as well. 
+# and z is a function, you'll get the whole relationship + the function definition as well.
 function Display-AllCommands {
     param(
         [alias("r","a","all")] [switch]$recurse,
         [int]$recursionlevel=0,
-        # weird syntax means that if the $recursionlevel isn't specified, 
+        # weird syntax means that if the $recursionlevel isn't specified,
         # $args[0] doesn't become $recursionlevel:
-        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
+        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args
     )
     if ($args.Count -le 0) {return}
     foreach ($a in $args) {
         $level = $recursionlevel
-        # This next line helps keep track if there is lots of output, but also clutters everything. Hmm. 
+        # This next line helps keep track if there is lots of output, but also clutters everything. Hmm.
         #if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
-        if ($level -gt 20) { 
+        if ($level -gt 20) {
             $errstr  = "Recursion is greater than 20 levels deep. Probably a circular set of aliases? "
             write-error $errstr
             return
@@ -342,18 +342,18 @@ function Display-AllCommands {
                             Display-AllCommands $c.Definition -recurse -recursionlevel $level
                         }
                     }
-                    "Application" { 
-                        write-output ($levelprefix + $c.Name + ": Executable at " + $c.Definition) 
+                    "Application" {
+                        write-output ($levelprefix + $c.Name + ": Executable at " + $c.Definition)
                     }
                     "Function" {
                         # TODO: don't display function definition unless I do -recurse
-                        # Can I still show just the parameters though? Hmm. 
+                        # Can I still show just the parameters though? Hmm.
                         write-output ($levelprefix + $c.Name + ": " + $c.CommandType)
                         $defstr = $c.Definition
-                        # $c.Definition is a string. 
+                        # $c.Definition is a string.
                         # - SOMETIMES, it begins w/ a new line. if so, chomp.
-                        # - SOMETIMES it ends w/ a new line too; chomp that. 
-                        # - Then, add the $levelprefix to the beginning of every line 
+                        # - SOMETIMES it ends w/ a new line too; chomp that.
+                        # - Then, add the $levelprefix to the beginning of every line
                         #   AND to the beginning of the whole string
                         # ending with a newline (chomp that too because write-host inserts one).
                         # additionally, insert the $functionprefix at the beginning of every line
@@ -361,7 +361,7 @@ function Display-AllCommands {
                         # I try to match both \n and \r\n because I've had it give me BOTH (lol)
 
                         $regex = [system.text.regularexpressions.regex]
-                        $reml = [System.Text.RegularExpressions.RegexOptions]::MultiLine 
+                        $reml = [System.Text.RegularExpressions.RegexOptions]::MultiLine
                         $re_firstnewline = new-object $regex ('\A\r?\n', $reml)
                         $re_lastnewline = new-object $regex ('\Z\r?\n', $reml)
                         $re_newline = new-object $regex ('\r?\n', $reml)
@@ -373,7 +373,7 @@ function Display-AllCommands {
                         $defstr = $re_newline.replace($defstr, [environment]::NewLine + $functionprefix)
                         $defstr = $re_stringbegin.replace($defstr, $functionprefix)
 
-                        write-output ($defstr) 
+                        write-output ($defstr)
                     }
                     default { write-output ($levelprefix + $c.Name + ": " + $c.CommandType) }
                 }
@@ -389,7 +389,7 @@ set-alias wh display-allcommands
 # - recursion.
 # remember that you have to dot-source this bitch
 # function Setup-TestForWh {
-#     set-alias ttt___ttt uuu___uuu 
+#     set-alias ttt___ttt uuu___uuu
 #     set-alias uuu___uuu vvv___vvv
 #     set-alias vvv___vvv WSManHTTPConfig #an exe file in system32 on x64 win7
 #     set-alias WSManHTTPConfig xxx___xxx
@@ -407,7 +407,7 @@ set-alias wh display-allcommands
 # }
 
 
-# by defaul, touch is aliased to set-filetime, which doesn't create new empty files. 
+# by defaul, touch is aliased to set-filetime, which doesn't create new empty files.
 if (test-path alias:touch) {del alias:touch}
 function touch {
     param([parameter(mandatory=$true)] [string[]] $file)
@@ -431,11 +431,11 @@ function man {
 .synopsis
 Get the syntax for a command
 .description
-If you do (Get-Help Something).Syntax, it will return just the syntax for the command. Yay. 
+If you do (Get-Help Something).Syntax, it will return just the syntax for the command. Yay.
 ... Unless it's a function without a documentation block. Then it returns an ugly SyntaxItem object.
-It's mostly the same thing, but if a PSObject is of type `MamlCommandHelpInfo#syntax`, then it 
+It's mostly the same thing, but if a PSObject is of type `MamlCommandHelpInfo#syntax`, then it
 displays is properly. All this does is check to see if the .Syntax object you get from Get-Help
-contains that type; if it doesn't, it adds it before returning it. 
+contains that type; if it doesn't, it adds it before returning it.
 #>
 function Get-Syntax {
     param(
@@ -449,7 +449,7 @@ function Get-Syntax {
         $cmdSyntax
     }
 }
-set-alias syntax get-syntax 
+set-alias syntax get-syntax
 
 function Set-LocationMrl {
     param(
@@ -474,21 +474,21 @@ function Send-Notification {
         )
 
         [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-        $objNotifyIcon = New-Object System.Windows.Forms.NotifyIcon 
+        $objNotifyIcon = New-Object System.Windows.Forms.NotifyIcon
         #systray icon - make this customizable too? It is required but that path doesn't look universal.
         $objNotifyIcon.Icon = "C:\Windows\Installer\{3156336D-8E44-3671-A6FE-AE51D3D6564E}\Icon_app.ico"
-        
+
         $objNotifyIcon.BalloonTipIcon = $icon  #in-balloon icon
         $objNotifyIcon.BalloonTipText = $message
         $objNotifyIcon.BalloonTipTitle = $title
-        
-        $objNotifyIcon.Visible = $True 
+
+        $objNotifyIcon.Visible = $True
         $objNotifyIcon.ShowBalloonTip($seconds * 1000)
         start-sleep $seconds
         $objNotifyIcon.Visible = $False
         $objNotifyIcon = $null
     }
-    $job = start-job -scriptblock $sb -argumentlist @args 
+    $job = start-job -scriptblock $sb -argumentlist @args
 
     #return $job #useful for debugging
 }
@@ -524,7 +524,7 @@ function New-MRLShortcut {
         $linkPath = "$pwd\$linkPath"
     }
     if (-not $linkPath.tolower().endswith(".lnk")) {
-        # required, or you'll get an error message and fail. 
+        # required, or you'll get an error message and fail.
         $linkPath = "$linkPath.lnk"
     }
     if ((test-path $linkPath) -and (-not $force.ispresent)) {
@@ -535,7 +535,7 @@ function New-MRLShortcut {
     $wshshell = New-Object -ComObject WScript.Shell
     $lnk = $wshshell.CreateShortcut($linkPath)
 
-    switch ($windowSylte) { 
+    switch ($windowSylte) {
         "Activate" { $lnk.WindowStyle = 1 }
         "Maximize" { $lnk.WindowStyle = 2 }
         "Minimize" { $lnk.WindowStyle = 7 }
@@ -578,7 +578,7 @@ function Set-WinEnvironmentVariable {
 }
 set-alias setenv Set-WinEnvironmentVariable
 # TODO: when getting multiple targets, it outputs an array of strings for the value
-#       honestly not sure what to do here. %PATH% is *concatenated*, but others are 
+#       honestly not sure what to do here. %PATH% is *concatenated*, but others are
 #       *replaced* when there's a user and a machine one. ?????
 function Get-WinEnvironmentVariable {
     param(
@@ -640,10 +640,10 @@ function Set-AssociationOpenCommand {
     set-itemproperty $key "(default)" $command
 }
 
-# a hack but it is a pain to remember how to do this every time ugh. 
+# a hack but it is a pain to remember how to do this every time ugh.
 function Initialize-PuttyRsaKey {
     param ([switch]$NoKeygen)
- 
+
     $sshdir = "$home\.ssh"
     $ppk = "$sshdir\id_rsa.ppk"
     $putty_pub = "$sshdir\id_rsa.ppub"
@@ -658,7 +658,7 @@ function Initialize-PuttyRsaKey {
             write-error ("None of these files may exist: $ppk, $putty_pub, $pub, and $privkey .")
             return
         }
-        
+
         write-host ("Make sure to save your key as $ppk and $putty_pub .")
         write-host ("Note that you should also export your key as an openssh key to $privkey .")
         start-process puttygen -wait
@@ -679,10 +679,10 @@ function Initialize-PuttyRsaKey {
     add-content -path $pub -value $newcontent
     write-host ("Your pubkey has been saved in openssh format to $pub.")
     # note: i don't echo it at the end because copy/pasting from Win terminals
-    # gives you linebreaks which don't work. C/O $pub from your editor instead. 
+    # gives you linebreaks which don't work. C/O $pub from your editor instead.
 }
 
-# By default, putty saves pub key files with linebreaks everywhere. Convert them to openssh format. 
+# By default, putty saves pub key files with linebreaks everywhere. Convert them to openssh format.
 function Convert-PuttyRsaPubKey {
     param ([string]$ppbfile)
     $pcontent = get-content $ppbfile
@@ -698,14 +698,14 @@ function Convert-PuttyRsaPubKey {
 function uploadid {
     param(
         [parameter(mandatory=$True)]  [alias("host")]  [string]  $hostname,
-        [string]  $keyfile="$home\.ssh\id_rsa.pub" 
+        [string]  $keyfile="$home\.ssh\id_rsa.pub"
     )
     $keydata = get-content $keyfile
     write-host "using keyfile $keyfile" -color green
     write-host "key data: $keydata" -color green
 
-    # if its in the putty format, fix it first. 
-    if ($keydata.startswith("---- BEGIN")) { 
+    # if its in the putty format, fix it first.
+    if ($keydata.startswith("---- BEGIN")) {
         $keydata = convert-puttypublickey $keyfile
     }
 
@@ -722,7 +722,7 @@ if (test-path $bvssh) {
     function Invoke-BitviseSsh {
         param(
             $bvExe = "stermc.exe",
-            [parameter(Position=0, ValueFromRemainingArguments=$true)] $args 
+            [parameter(Position=0, ValueFromRemainingArguments=$true)] $args
         )
         $bvArgs = $args
         $bvArgs+= @("-keypairFile=$Home\.ssh\id_rsa")
@@ -848,7 +848,7 @@ function Set-Clipboard {
             if ($do_file_copy) {
                 $file_list = New-Object -TypeName System.Collections.Specialized.StringCollection
                 $data | % {
-                    if ($_ -is [System.IO.FileInfo]) {[void]$file_list.Add($_.FullName)} 
+                    if ($_ -is [System.IO.FileInfo]) {[void]$file_list.Add($_.FullName)}
                     elseif ([IO.File]::Exists($_))    {[void]$file_list.Add($_)}
                 }
                 [System.Windows.Forms.Clipboard]::SetFileDropList($file_list)
@@ -972,13 +972,13 @@ function Get-ErrorType {
 function Format-XML {
     Param (
         [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)] [System.Array] $xml
-    ) 
+    )
     foreach ($xmlItem in $xml) {
-        $StringWriter = New-Object system.io.stringwriter 
-        $XmlWriter = New-Object system.xml.xmltextwriter($StringWriter) 
-        $XmlWriter.Formatting = [System.xml.formatting]::Indented 
-        $xmlItem.WriteContentTo($XmlWriter) 
-        $StringWriter.ToString() 
+        $StringWriter = New-Object system.io.stringwriter
+        $XmlWriter = New-Object system.xml.xmltextwriter($StringWriter)
+        $XmlWriter.Formatting = [System.xml.formatting]::Indented
+        $xmlItem.WriteContentTo($XmlWriter)
+        $StringWriter.ToString()
     }
 }
 
@@ -1022,8 +1022,8 @@ function In-CliXml {
 .synopsis
 Start a batch file
 .description
-Start a batch file, and prevent a stupid "Terminate batch job? Y/N" prompt if 
-you Ctrl-C the process. 
+Start a batch file, and prevent a stupid "Terminate batch job? Y/N" prompt if
+you Ctrl-C the process.
 #>
 function Start-BatchFile {
     [CmdletBinding()] Param(
@@ -1033,7 +1033,7 @@ function Start-BatchFile {
     # we use "<NUL" to prevent that fucking "Terminate batch job? Y/N" prompt
     cmd.exe "/c $batchFile $batchArgs <NUL"
 }
-set-alias bat Start-BatchFile 
+set-alias bat Start-BatchFile
 
 
 <#
@@ -1045,19 +1045,19 @@ Fucking extract an archive the right way:
 - Use 7z.exe to extract the archive to that temp dir
   - If the only item in the archive is a .tar file, unarchive that file as well
 - Make sure exactly one file ends up in $outDir:
-  - If there was only one item in the archive (after extracting the .tar file, 
+  - If there was only one item in the archive (after extracting the .tar file,
     if applicable), move it to $outDir
-  - If there was more than one item in the archive, rename the temp dir to 
+  - If there was more than one item in the archive, rename the temp dir to
     something sensible based on the archive name. (For example, if the archive
     name is SomeArchive.zip, rename the temp dir to SomeArchive)
 .parameter archive
 A list of archives to extract
 .parameter outDir
-The directory to extract the archives to. Defaults to the current working 
+The directory to extract the archives to. Defaults to the current working
 directory.
 .parameter force
-If there is an existing file/directory with the same name as one that would be 
-extracted, delete the existing item first. 
+If there is an existing file/directory with the same name as one that would be
+extracted, delete the existing item first.
 #>
 function Extract-FuckingArchive {
     [cmdletbinding()] param(
@@ -1072,7 +1072,7 @@ function Extract-FuckingArchive {
     .parameter archive
     An archive file
     .parameter outDir
-    The directory in which to create the temporary extraction dir 
+    The directory in which to create the temporary extraction dir
     .parameter noOutDir
     Instead of creating a temporary extraction dir, just use the archive's parent directory
     #>
@@ -1125,16 +1125,16 @@ function Extract-FuckingArchive {
         $archItem = get-item $arch
 
         # this is the name of the archive w/o its extension
-        # this will be used as the eventual directory name to extract to 
+        # this will be used as the eventual directory name to extract to
         $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($archItem.name)
 
         $exDir = fuckingExtractOneLayer -archive $archItem -outdir $outDirItem
         write-verbose "Using temporary extraction directory: $exDir"
         $exItems = gci $exDir
 
-        # If there is only one item in the archive, AND that item has an 
+        # If there is only one item in the archive, AND that item has an
         # extension in $secondLayerExtensions, extract that item too.
-        if (((gci $exDir).count -eq 1) -and  
+        if (((gci $exDir).count -eq 1) -and
             ($secondLayerExtensions |? { $exItems[0].name.endswith($_) }) )
         {
             $innerArchItem = $exItems[0]
@@ -1145,7 +1145,7 @@ function Extract-FuckingArchive {
             $exItems = gci $exDir
         }
 
-        # If there is only one item in the archive, we don't need the 
+        # If there is only one item in the archive, we don't need the
         # extraction directory - just move the item into the output dir
         if ($exItems.count -eq 1) {
             $outItem = $exItems[0]
@@ -1188,7 +1188,7 @@ set-alias Fucking-Extract Extract-FuckingArchive
 set-alias fex Extract-FuckingArchive
 
 <#
-.synopsis 
+.synopsis
 Send data over the network
 
 .description
@@ -1202,8 +1202,8 @@ Pipe in a HTTP request
 
 .example Send-NetworkData -Data 'GET / HTTP/1.0', '' -Computer www.powershellmagazine.com -Port 80 -Timeout 0:00:02
 Use the Data parameter to do the same but only wait 2 seconds for a response:
- 
-.example Send-NetworkData -Data "EHLO $Env:ComputerName", "QUIT" -Computer mail.example.com -Port 25 
+
+.example Send-NetworkData -Data "EHLO $Env:ComputerName", "QUIT" -Computer mail.example.com -Port 25
 Say hello to an SMTP server
 #>
 function Send-NetworkData {
@@ -1245,7 +1245,7 @@ function Send-NetworkData {
         do {
             try {
                 $ByteCount = $Stream.Read($Buffer, 0, $Buffer.Length)
-            } 
+            }
             catch [System.IO.IOException] {
                 $ByteCount = 0
             }
@@ -1258,11 +1258,11 @@ function Send-NetworkData {
         $Stream.Dispose()
         $Client.Dispose()
     }
-} 
+}
 
 <#
 .Description
-Retrieves all available Exceptions in the current session. Returns an array of strings which represent the exception type names. 
+Retrieves all available Exceptions in the current session. Returns an array of strings which represent the exception type names.
 .Notes
 Originally from: http://www.powershellmagazine.com/2011/09/14/custom-errors/
 #>
@@ -1273,24 +1273,24 @@ function Get-AvailableExceptionsList {
     $RelevantExceptions = @()
     foreach ($assembly in [AppDomain]::CurrentDomain.GetAssemblies()) {
         try {
-            $AllExceptions = $assembly.GetExportedTypes() -match 'Exception' -notmatch $irregulars 
+            $AllExceptions = $assembly.GetExportedTypes() -match 'Exception' -notmatch $irregulars
         }
         catch {
             write-verbose "Could not get exported types for assembly '$assembly'"
             continue
         }
         foreach ($exc in $AllExceptions) {
-            if (-not $exc.GetConstructors()) { 
+            if (-not $exc.GetConstructors()) {
                 write-verbose "No constructors for '$exc' in '$assembly'"
-                continue 
+                continue
             }
-            try { 
-                $TestException = New-Object $exc.FullName 
+            try {
+                $TestException = New-Object $exc.FullName
                 $TestError = New-Object Management.Automation.ErrorRecord $TestException,ErrorID,OpenError,Target
-            } 
+            }
             catch { # Tests failed, don't add this as a relevant exception
                 write-verbose "Could not create test exception/error for '$exc' in '$assembly'"
-                continue 
+                continue
             }
             $RelevantExceptions += $exc.FullName
         }
@@ -1382,7 +1382,7 @@ function Set-ConEmuTabTitle {
         $title
     )
     if ($title) { $title = ":$title" }
-    $fullTitle = "$($SpecialCharacters.DoublePrompt)$title" -replace " ",'' 
+    $fullTitle = "$($SpecialCharacters.DoublePrompt)$title" -replace " ",''
     $macro = "Rename(0,$fullTitle"
     Write-Verbose "Running macro: $macro"
     $out = conemuc /guimacro $macro
@@ -1400,7 +1400,7 @@ function Get-EdgeBrowserBookmark {
     $regKey = 'HKCU:\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\FavOrder\FavBarCache'
     $regItems = Get-Item "$regKey\*"
     foreach ($regItem in $regItems) {
-        
+
     }
 }
 
