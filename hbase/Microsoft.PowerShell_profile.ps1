@@ -32,10 +32,6 @@ foreach ($optionalModuleName in @("posh-git")) {
 }
 
 $modules = @(
-    # Third party modules:
-    'PsGet'
-
-    # My modules
     'PSWindowsUpdate'
     'ExecutablePathManager'
     'AsciiArt'
@@ -46,7 +42,7 @@ Show-AsciiSquareWindowsLogo
 
 Get-ChildItem $MrledProfile.ProfileD |% { . $_.FullName }
 
-# Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file, 
+# Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file,
 # so if you're going to use that module, import it first so my format file overrides their bullshit
 Update-FormatData -Prependpath $MrledProfile.MrlFormat
 
@@ -54,6 +50,6 @@ Set-UserPrompt
 Set-ConsoleColors
 
 # Must set the prompt before importing this module or it'll puke
-Import-Module PSReadline 
+Import-Module PSReadline
 Set-PSReadlineOption -EditMode Emacs
 Set-PSReadlineOption -HistorySaveStyle SaveIncrementally
