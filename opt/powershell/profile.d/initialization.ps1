@@ -63,6 +63,7 @@ function Setup-SystemPath {
         'Microsoft Visual Studio*\VC\bin'
         'MSBuild\*\Bin'
         'NUnit*\bin'
+        'OpenSSH'
         'OpenSSL\bin'
         'Oracle\VirtualBox'
         'Nmap'
