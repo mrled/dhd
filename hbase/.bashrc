@@ -132,6 +132,10 @@ export HISTSIZE="INFINITE"
 export HISTFILESIZE="INFINITE"
 
 
+# Bash completion
+if cmdavail aws && cmdavail aws_completer; then complete -C aws_completer aws; fi
+
+
 # Prompt
 # NOTE: We rely on "checkwinsize" (set above) and my ansi command's '-b'
 # argument to fix line wrapping problems from escape sequences. Without those
