@@ -59,6 +59,7 @@ function Setup-SystemPath {
         'Git\cmd'
         'GNU\GnuPG'
         'Graphviz*\bin'
+        'Kdiff3'
         'LLVM\bin'
         'Microsoft Visual Studio*\VC\bin'
         'MSBuild\*\Bin'
@@ -114,7 +115,7 @@ function Setup-Environment {
 
 # The closest I can get to my .b() bash function is dot-sourcing this function: `. p`
 function p {
-    . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1" 
+    . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1"
 }
 
 function reinit {
