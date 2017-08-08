@@ -66,8 +66,13 @@ function Set-UserPrompt {
         # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
         # doesn't play nice with other things. 
         Color = {
+            # If the console has been corrupted by e.g. running a command with color output and then pressing
+            # ctrl-c while it's printing a color, this reset will ensure the colors do not ruin subsequent lines in the console
+            [Console]::ResetColor()
+
             # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
             $Host.UI.RawUI.WindowTitle = $pwd
+
             Write-Host $(get-date -format HH:mm:ss) -nonewline -foregroundcolor White
             $eColor = if ($error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
             $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
@@ -88,6 +93,7 @@ function Set-UserPrompt {
             else {
                 Write-Host $SpecialCharacters.DoublePrompt -NoNewLine -ForegroundColor White
             }
+
             # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
             return " "
         }
@@ -134,6 +140,7 @@ function Set-ConsoleColors {
         $ProgressForegroundColor = 'DarkBlue',
         $ProgressBackgroundColor = 'White'
     )
+    [Console]::ResetColor()
     $Host.UI.RawUI.BackgroundColor = $BackgroundColor
     $Host.UI.RawUI.ForegroundColor = $ForegroundColor
     $Host.PrivateData.ErrorForegroundColor = $ErrorForegroundColor
