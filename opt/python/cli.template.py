@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+import pdb
 import subprocess
 import sys
 
@@ -12,9 +13,26 @@ scriptdir = os.path.dirname(os.path.realpath(__file__))
 
 # Helper functions
 
-def strace():
-    import pdb
-    pdb.set_trace()
+strace = pdb.set_trace
+
+
+def idb_excepthook(type, value, tb):
+    """Call an interactive debugger in post-mortem mode
+
+    If you do "sys.excepthook = idb_excepthook", then an interactive debugger
+    will be spawned at an unhandled exception
+    """
+    if hasattr(sys, 'ps1') or not sys.stderr.isatty():
+        # we are in interactive mode or we don't have a tty-like
+        # device, so we call the default hook
+        sys.__excepthook__(type, value, tb)
+    else:
+        import traceback
+        # we are NOT in interactive mode, print the exception...
+        traceback.print_exception(type, value, tb)
+        print
+        # ...then start the debugger in post-mortem mode.
+        pdb.pm()
 
 
 def resolvepath(path):
@@ -63,6 +81,7 @@ def main(*args, **kwargs):
         help="The object the command is working on")
     parsed = parser.parse_args()
     if parsed.debug:
+        sys.excepthook = idb_excepthook
         logging.root.setLevel(logging.DEBUG)
     whatever(parsed.directobject)
 
