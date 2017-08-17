@@ -135,7 +135,7 @@ export HISTFILESIZE="INFINITE"
 # on macOS, 'brew install bash-completion' is required
 test -e $HOMEBREWDIR/etc/bash_completion && source $HOMEBREWDIR/etc/bash_completion
 cmdavail doctl && source <(doctl completion bash)
-if cmdavail aws && cmdavail aws_completer; then complete -C aws_completer aws; fi
+cmdavail aws aws_completer && complete -C aws_completer aws
 
 # Prompt
 # NOTE: We rely on "checkwinsize" (set above) and my ansi command's '-b'

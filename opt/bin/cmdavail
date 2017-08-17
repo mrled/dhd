@@ -3,16 +3,35 @@
 set -e
 set -u
 
+thiscmd=$(basename "$0")
 usage() {
-    cat << ENDUSAGE
-$0: Test whether a command is available on the system
-EXAMPLE: cmdavail emacs && EDITOR=emacs
+    cat <<ENDUSAGE
+$thiscmd: Test whether a command is available on the system
+USAGE: $thiscmd COMMAND [COMMAND...]
+
+Returns an exit code of 0 if all commands passed are present, or 1 otherwise.
+
+EXAMPLES:
+Set the editor to emacs if the command exists:
+    cmdavail emacs && EDITOR=emacs
+Import AWS completion if both the aws and aws_completer commands exist:
+    cmdavail aws aws_completer && complete -C aws_completer aws
 ENDUSAGE
 }
 
-if ! test $# == 1; then
+if test $# -eq 0; then
     usage
-    exit
+    exit 1
 fi
-cmdname=$1
-command -v "$cmdname" 2>&1 >/dev/null
+
+failure=
+for cmdname in "$@"; do
+    if test "$cmdname" = "-h" || test "$cmdname" = "--help"; then
+        usage
+        exit
+    fi
+    if ! command -v "$cmdname" 2>&1 >/dev/null; then
+        exit 1
+    fi
+done
+exit 0
