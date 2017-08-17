@@ -66,19 +66,21 @@ ENDUSAGE
     echo "$outpath"
 }
 
-d=$PATH
-d="${d}:$HOME/opt/bin:$HOME/opt/sbin:$HOME/.dhd/opt/bin:$HOME/.dhd/opt/bash/bin"
-d="${d}:$HOME/opt/homebrew/bin:$HOME/opt/homebrew/sbin"
-d="${d}:/opt/homebrew/bin:/opt/homebrew/sbin"
-d="${d}:/usr/pkg/bin:/usr/pkg/sbin"
-d="${d}:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
-d="${d}:/c/WINDOWS:/c/WINDOWS/system32/Wbem:/c/WINDOWS/system32"
-d="${d}:/c/MinGW/bin:/c/MinGW/sbin:/c/MinGW/msys/1.0/bin:/c/MinGW/msys/1.0/sbin"
-d="${d}:$HOME/test path"
+# Order is important in $PATH; earlier entries are searched first
+tpath=
+tpath="${tpath}:${HOME}/opt/bin:${HOME}/opt/sbin:${HOME}/.dhd/opt/bin:${HOME}/.dhd/opt/bash/bin"
+tpath="${tpath}:${HOME}/opt/homebrew/bin:${HOME}/opt/homebrew/sbin"
+tpath="${tpath}:/opt/homebrew/bin:/opt/homebrew/sbin"
+tpath="${tpath}:/usr/pkg/bin:/usr/pkg/sbin"
+tpath="${tpath}:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
+tpath="${tpath}:/c/WINDOWS:/c/WINDOWS/system32/Wbem:/c/WINDOWS/system32"
+tpath="${tpath}:/c/MinGW/bin:/c/MinGW/sbin:/c/MinGW/msys/1.0/bin:/c/MinGW/msys/1.0/sbin"
+#tpath="${tpath}:$HOME/test spaces in path"
+tpath="${tpath}:${PATH}"
 
-PATH=$(pathsetup "$d")
+PATH=$(pathsetup "$tpath")
 export PATH
-unset d
+unset tpath
 
 if cmdavail brew; then
     # This is NOT a standard environment variable, for some reason
