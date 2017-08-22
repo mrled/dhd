@@ -161,10 +161,6 @@ function Configure-Chocolatey {
     Invoke-PathExecutable "choco.exe feature enable --name=allowGlobalConfirmation --yes"
 }
 
-function Install-PsGet {
-    (New-Object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | Invoke-Expression
-}
-
 function Install-DhdRepository {
     if (Test-Path $env:USERPROFILE\.dhd) {
         Remove-Item -Force -Recurse $env:USERPROFILE\.dhd
@@ -199,7 +195,6 @@ Invoke-MagicStep "install 7zip" {Install-ChocolateyPackage 7zip} (-not (Test-Com
 
 #### Remaining tasks do not require admin privs
 #
-Invoke-MagicStep "install psget" {Install-PsGet} (-not (Get-Module -ListAvailable PsGet))
 Invoke-MagicStep "clone dhd" {Install-DhdRepository} (-not (Test-Path $env:USERPROFILE\.dhd\.git)) 
 Invoke-MagicStep "install conemu config" {Install-ConEmuConfiguration} ($workstation)
 Invoke-MagicStep "install powershell profile" {Install-PowershellProfile}
