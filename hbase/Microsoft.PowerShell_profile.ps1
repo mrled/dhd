@@ -10,9 +10,9 @@ My Powershell profile
 $ErrorActionPreference = "Stop"
 
 $MrledProfile = New-Object -TypeName PSObject -Property @{
-    DHDOpt = "$Home\.dhd\opt\powershell"
-    ProfileD = "$Home\.dhd\opt\powershell\profile.d"
-    MrlFormat = "$Home\.dhd\opt\powershell\mrl.format.ps1xml"
+    DHDOpt = "$Home/.dhd/opt/powershell"
+    ProfileD = "$Home/.dhd/opt/powershell/profile.d"
+    MrlFormat = "$Home/.dhd/opt/powershell/mrl.format.ps1xml"
     DHDProfile = $MyInvocation.MyCommand.Path
     ConEmu =  "$env:AppData\ConEmu.xml"
 }
@@ -21,10 +21,10 @@ $PossibleModulePaths = @(
     "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
     "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows Azure\PowerShell\Azure"
     "${env:ProgramFiles(x86)}\Microsoft SQL Server\110\Tools\PowerShell\Modules"
-    "$home\.dhd\opt\powershell\modules"
-    "$home\Documents\WindowsPowerShell\Modules"
+    "$home/.dhd/opt/powershell/modules"
+    "$home/Documents/WindowsPowerShell/Modules"
 )
-$PossibleModulePaths |% {if (Test-Path $_) {$env:PSModulePath += ";$_"}}
+$PossibleModulePaths |% { if (Test-Path $_) { $env:PSModulePath = @($env:PSModulePath, $_) -join [System.IO.Path]::PathSeparator } }
 
 $possibleModules = Get-Module -All
 foreach ($optionalModuleName in @("posh-git")) {

@@ -56,15 +56,33 @@ function Get-JobStateColor {
     }
 }
 
+
 function Set-UserPrompt {
     [CmdletBinding(DefaultParameterSetName='BuiltIn')] param(
-        [Parameter(Position=0, ParameterSetName='BuiltIn')] [ValidateSet('Color','Simple','Tiny')] [String] $builtInPrompt = 'Color',
+        [Parameter(Position=0, ParameterSetName='BuiltIn')] [ValidateSet('Color','Simple','Tiny')] [String] $builtInPrompt,
         [Parameter(Position=0, Mandatory=$True, ParameterSetName='Custom')] [Scriptblock] $newPrompt
     )
 
+    $psCore = $PSVersionTable.Keys -Contains 'PSEdition' -and $PSVersionTable.PSEdition -eq "Core"
+    $psPlatform = {
+        if ($psCore) {
+            return $PsVersionTable.Platform
+        } else {
+            return "Windows"
+        }
+    }.Invoke()
+    $psAdmin = {
+        if ($psPlatform -eq "Windows") {
+            $principal = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+            return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        } else {
+            return ((id -u) -eq 0)
+        }
+    }.Invoke()
+
     $builtIns = @{
         # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
-        # doesn't play nice with other things. 
+        # doesn't play nice with other things.
         Color = {
             # If the console has been corrupted by e.g. running a command with color output and then pressing
             # ctrl-c while it's printing a color, this reset will ensure the colors do not ruin subsequent lines in the console
@@ -79,15 +97,15 @@ function Set-UserPrompt {
             write-host " E:$($error.count):$lastExitDisplay" -nonewline -foreground $ecolor
             Write-Host " $env:COMPUTERNAME" -nonewline -foregroundcolor Blue
             $jobs = get-job
-            if ($jobs) { 
-                write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State) 
+            if ($jobs) {
+                write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
             }
-            else { 
+            else {
                 write-host " J0" -nonewline -foreground White
             }
             Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
-            $SoyAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-            if ($SoyAdmin) {
+
+            if ($psAdmin) {
                 Write-Host " $($SpecialCharacters.HammerSickle) " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
             }
             else {
@@ -100,25 +118,33 @@ function Set-UserPrompt {
 
         # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
         Simple = {
-            $SoyAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-            $lcop = if ($SoyAdmin) {"#"} else {'>'}
+            $lcop = if ($psAdmin) {"#"} else {'>'}
             return "$((get-date).Tostring('HH:mm:ss')) $env:COMPUTERNAME $(Get-DisplayPath $pwd) PS$lcop "
         }
 
         # A very tiny prompt that at least differentiates based on color
         Tiny = {
-            if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { $lcop = "#" }
-            else { $lcop = ">" }
-            write-host "$([Security.Principal.WindowsIdentity]::GetCurrent().Name) PS$lcop" -foreground Green -nonewline
+            $lcop = if ($psAdmin) { "#" } else { ">" }
+            write-host "PS$lcop" -foreground Green -nonewline
             return " "
         }
     }
 
     if ($PsCmdlet.ParameterSetName -eq 'BuiltIn') {
-        Set-UserPrompt -newPrompt $builtIns[$builtInPrompt]
-        return
+        if (-not $builtInPrompt) {
+            # If a specific prompt name wasn't passed, set a default one
+            # Because of the double prompt bug under Core on non-Windows platforms, if we aren't running on Windows, we use the Simple prompt by default
+            if ($psPlatform -eq 'Windows') {
+                Set-UserPrompt -newPrompt $builtIns['Color']
+            } else {
+                Set-UserPrompt -newPrompt $builtIns['Simple']
+            }
+        } else {
+            Set-UserPrompt -newPrompt $builtIns[$builtInPrompt]
+        }
+    } else {
+        New-Item -Force -Path Function:\prompt -Value $newPrompt | Out-Null
     }
-    New-Item -Force -Path Function:\prompt -Value $newPrompt | Out-Null
 }
 
 <#
