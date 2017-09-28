@@ -1,0 +1,44 @@
+"*":
+  "advanced-open-file":
+    createDirectories: true
+    fuzzyMatch: true
+    helmDirSwitch: true
+  "atomic-emacs":
+    alwaysUseKillRing: true
+    yankFromClipboard: true
+  core:
+    autoHideMenuBar: true
+    telemetryConsent: "no"
+    themes: [
+      "one-light-ui"
+      "atom-light-syntax"
+    ]
+  "disable-keybindings":
+    prefixKeys: [
+      "ctrl-k"
+    ]
+  editor:
+    fontFamily: "Fira Code"
+    fontSize: 13
+    scrollPastEnd: true
+    showIndentGuide: true
+    softWrap: true
+    softWrapHangingIndent: 2
+    tabLength: 4
+    zoomFontWhenCtrlScrolling: false
+  "exception-reporting":
+    userId: "723290fd-632b-4613-a9f4-4e34adc11cde"
+  "highlight-line":
+    enableBackgroundColor: false
+  "highlight-selected":
+    hideHighlightOnSelectedWord: true
+    highlightBackground: true
+    ignoreCase: true
+  "package-sync":
+    createOnChange: true
+    forceOverwrite: true
+  welcome:
+    showOnStartup: false
+".powershell.source":
+  editor:
+    softWrapHangingIndent: 4

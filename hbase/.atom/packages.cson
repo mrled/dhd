@@ -1,0 +1,14 @@
+packages: [
+  "advanced-open-file"
+  "atom-ide-ui"
+  "atomic-emacs"
+  "disable-keybindings"
+  "highlight-line"
+  "highlight-selected"
+  "Hydrogen"
+  "language-docker"
+  "language-kotlin"
+  "language-powershell"
+  "minimap-highlight-selected"
+  "package-sync"
+]
