@@ -42,6 +42,7 @@ function Setup-SystemPath {
         "${env:SystemDrive}\Tools\Python3*\Scripts"
         "${env:SystemDrive}\Tools\Ruby*\bin"
         "${env:AppData}\npm"
+        "${env:LocalAppData}\atom\bin"
         "${env:LocalAppData}\Pandoc"
 
         # NOTE: Should use $Home, which expands properly, NOT ~, which doesn't work with Resolve-PotentialExecutablePathList
@@ -62,6 +63,7 @@ function Setup-SystemPath {
         'Kdiff3'
         'LLVM\bin'
         'Microsoft Visual Studio*\VC\bin'
+        'Microsoft VS Code\bin\code'
         'MSBuild\*\Bin'
         'NUnit*\bin'
         'OpenSSH'
@@ -71,6 +73,7 @@ function Setup-SystemPath {
         'PuTTY'
         'Sublime Text 3'
         'WordNet\2.1\bin'
+        'ZeroTier\One'
     )
 
     # Set the "User" PATH - that is, the PATH for future processed launched by this same user - first
