@@ -517,7 +517,7 @@ function New-MRLShortcut {
     $wshshell = New-Object -ComObject WScript.Shell
     $lnk = $wshshell.CreateShortcut($linkPath)
 
-    switch ($windowSylte) {
+    switch ($windowStyle) {
         "Activate" { $lnk.WindowStyle = 1 }
         "Maximize" { $lnk.WindowStyle = 2 }
         "Minimize" { $lnk.WindowStyle = 7 }

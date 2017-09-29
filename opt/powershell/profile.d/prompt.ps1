@@ -1,4 +1,4 @@
-﻿function Get-DisplayPath {
+function Get-DisplayPath {
     param(
         $path
     )
@@ -64,13 +64,7 @@ function Set-UserPrompt {
     )
 
     $psCore = $PSVersionTable.Keys -Contains 'PSEdition' -and $PSVersionTable.PSEdition -eq "Core"
-    $psPlatform = {
-        if ($psCore) {
-            return $PsVersionTable.Platform
-        } else {
-            return "Windows"
-        }
-    }.Invoke()
+    $psPlatform = if ($psCore) {$PsVersionTable.Platform} else {"Windows"}
     $psAdmin = {
         if ($psPlatform -eq "Windows") {
             $principal = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -79,7 +73,16 @@ function Set-UserPrompt {
             return ((id -u) -eq 0)
         }
     }.Invoke()
+    $psAdmin = `
+        if ($psPlatform -eq "Windows") {
+        [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent().IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        } else {
+            ((id -u) -eq 0)
+        }
+    $psHostname = if ($psPlatform -eq "Windows") { $env:COMPUTERNAME } else { hostname }
 
+    # Note that those builtins that need to access variables outside their own scope should be created in a closure
+    # e.g. NewBuiltin = { "$psPlatform > " }.GetNewClosure()
     $builtIns = @{
         # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
         # doesn't play nice with other things.
@@ -95,7 +98,45 @@ function Set-UserPrompt {
             $eColor = if ($error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
             $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
             write-host " E:$($error.count):$lastExitDisplay" -nonewline -foreground $ecolor
-            Write-Host " $env:COMPUTERNAME" -nonewline -foregroundcolor Blue
+            Write-Host " $psHostname" -nonewline -foregroundcolor Blue
+            $jobs = get-job
+            if ($jobs) {
+                write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
+            }
+            else {
+                write-host " J0" -nonewline -foreground White
+            }
+            Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
+
+            if ($psAdmin) {
+                Write-Host " $($SpecialCharacters.HammerSickle) " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
+            }
+            else {
+                Write-Host $SpecialCharacters.DoublePrompt -NoNewLine -ForegroundColor White
+            }
+
+            # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
+            return " "
+        }.GetNewClosure()
+
+        AnsiColor = {
+            $boldwhite="\[\e[01;37m\]"
+            $boldblue="\[\e[01;34m\]"
+            $normalgreen="\[\e[00;32m\]"
+            $clearrformat="\[\e[00m\]"
++export PS1="${boldwhite}\t ${boldblue}\h${boldwhite}:${normalgreen}\W ${boldblue}${lcop} ${clearrformat}"
+
+            # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
+            $Host.UI.RawUI.WindowTitle = $pwd
+
+
+            $timeStamp = get-date -format HH:mm:ss
+
+            Write-Host $() -nonewline -foregroundcolor White
+            $eColor = if ($error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
+            $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
+            write-host " E:$($error.count):$lastExitDisplay" -nonewline -foreground $ecolor
+            Write-Host " $psHostname" -nonewline -foregroundcolor Blue
             $jobs = get-job
             if ($jobs) {
                 write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
@@ -119,8 +160,8 @@ function Set-UserPrompt {
         # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
         Simple = {
             $lcop = if ($psAdmin) {"#"} else {'>'}
-            return "$((get-date).Tostring('HH:mm:ss')) $env:COMPUTERNAME $(Get-DisplayPath $pwd) PS$lcop "
-        }
+            return "$((get-date).Tostring('HH:mm:ss')) $psHostname $(Get-DisplayPath $pwd) PS$lcop "
+        }.GetNewClosure()
 
         # A very tiny prompt that at least differentiates based on color
         Tiny = {
