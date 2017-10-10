@@ -91,6 +91,10 @@ if test $# = 0; then
     exit 1
 fi
 
+# Our default obfuscation scheme is just to cat the input we receive
+obfuscate() { cat; }
+test_obfsc_string="I think I have made this script too complicated"
+
 while test $# -gt 0; do
     case "$1" in
         -h | --help )
@@ -119,6 +123,11 @@ while test $# -gt 0; do
             # When exiting for an error, use a value greater than zero
             exit 1
             ;;
+        -o | --obfuscate )
+            # Consume no other arguments, but enable rot13 obfuscation
+            obfuscate() { tr a-zA-Z n-za-mN-ZA-M; }
+            shift
+            ;;
         *)
             # You should process each positional argument as it comes in here.
             # It is tempting to collect them into a variable like $posargs, and
@@ -137,18 +146,31 @@ altargproc() {
     # NOTE: when processing arguments this way, make sure to quote "$@". Unless
     #       it is quoted, sh will split unquoted arguments on spaces.
     #       For instance, say the script is called like this:
-    #         altargproc "one" "two three"
+    #         altargproc "one" "two fuckin"
     #       If $@ is unquoted, the for loop will iterate THREE times, with the
-    #       $arg variable as "one", "two", and "three".
+    #       $arg variable as "one", "two", and "fuckin".
     #       However, if "$@" is quoted, the loop will iterate TWO times, with the
-    #       $arg variable as "one" and "two three".
+    #       $arg variable as "one" and "two fuckin".
     echo "Alternative argument processing example:"
     for arg in "$@"; do
         echo "- $arg banana"
     done
 }
 
+echo ""
 if test $TEMPLATEDBG; then echo "Debug mode enabled"; else echo "Debug mode disabled"; fi
 dbgecho "Debug messages only get printed if debug mode is enabled"
 echo "oneargval = $oneargval, twoarg1 = $twoarg1, twoarg2 = $twoarg2"
-altargproc "one" "two three"
+
+echo ""
+altargproc "one" "two fuckin" "three"
+
+echo ""
+echo "Sample string to obfuscate:"
+echo "$test_obfsc_string"
+echo "After obfuscation:"
+
+# Just a dumb example to show how you can use functions defined this way in the pipeline
+echo "$test_obfsc_string" |
+    obfuscate |
+    tee /dev/null
