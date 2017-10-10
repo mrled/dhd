@@ -1,0 +1,107 @@
+#!/bin/sh
+
+TARCRYPTDBG=${TARCRYPTDBG:-}
+
+set -e
+# set -u
+
+usage() {
+    cat <<ENDUSAGE
+tar and encrypt a file
+Usage: $0 [-h] [-d] [-z COMPRESSTYPE] DIRECTORY [OUTPUTFILE]
+
+ARGUMENTS:
+    -h: Print help and exit
+    -d: Show debugging information
+    -z: Specify compression
+        If not passed, do not compress
+        Can be "gz" or "bz2" to indicate gzip or bzip2 compression respectively
+    -r: Specify GPG recipient
+        A public key for this recipient must be in your GPG keyring
+    DIRECTORY:
+        A directory to tar and encrypt
+    OUTPUTFILE:
+        Where to save the encrypted tarball
+        If not set, it is named after the input directory, appended with
+        ".tar.gpg", ".tar.gz.gpg", etc depending on compression
+
+VARIABLES:
+    \$TARCRYPTDBG: If set, show debugging information regardless of -d
+ENDUSAGE
+}
+
+dbgecho() {
+    if test "$TARCRYPTDBG"; then
+        echo "$@"
+    fi
+}
+
+tarcrypt_compress() { cat; }
+tarballtype="tar"
+recipient=
+inputdir=
+outputfile=
+
+while test $# -gt 0; do
+    case "$1" in
+        -h | -help )
+            usage
+            exit 0
+            ;;
+        -d | -debug )
+            set -x  # Show each line before executing
+            TARCRYPTDBG=1
+            shift
+            ;;
+        -z | -compress )
+
+            case "$2" in
+                "gzip" | "gz" )
+                    tarcrypt_compress() { gzip; }
+                    tarballtype="tar.gz"
+                    ;;
+                "bzip2" | "bz2" )
+                    tarcrypt_compress() { bzip2; }
+                    tarballtype="tar.bz2"
+                    ;;
+                *) usage; exit 1;;
+            esac
+
+            shift 2
+            ;;
+        -r | -recipient )
+            recipient="$2"
+            shift 2
+            ;;
+        *)
+            if ! test "$inputdir"; then
+                inputdir="$1"
+            elif ! test "$outputfile"; then
+                outputfile="$1"
+            else
+                usage
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+if ! test "$inputdir"; then
+    echo "No input directory passed"
+    usage
+    exit 1
+fi
+if ! test "$recipient"; then
+    echo "No GPG recipient named"
+    usage
+    exit 1
+fi
+
+if ! test "$outputfile"; then
+    outputfile="${inputdir}.${tarballtype}.gpg"
+fi
+
+tar -c "$inputdir" |
+    tarcrypt_compress |
+    gpg --encrypt --recipient "$recipient" --output "$outputfile"
