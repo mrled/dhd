@@ -83,6 +83,10 @@ export LESS="-icdMR"
 alias wh="type -a"  # type -a is a bashism
 alias dush='du -sh' # du -h is a POSIX extension
 
+# This is dumb but I can never fucking remember that tcsh's rehash is bash's hash -r
+# I haven't used tcsh in over a decade jesus christ
+alias rehash='hash -r'
+
 # Test for a grep that supports --color=auto, which includes GNU, FreeBSD, and macOS greps
 grepcmd="grep"
 if echo x | grep -q --color=auto x 2>/dev/null; then
