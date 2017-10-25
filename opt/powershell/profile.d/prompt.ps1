@@ -27,14 +27,14 @@ function Get-JobStateColor {
     param(
         [string[]] $status
     )
-    $jobStateTable = @{ 
+    $jobStateTable = @{
         NeedsAttention = @('Blocked','Disconnected','Failed','Stopped','Stopping','Suspended','Suspending')
         InProgress = @('NotStarted','Running')
         Completed = @('Completed')
     }
-    $jobStateTable['All'] = $jobStateTable.Values | % {$_} 
+    $jobStateTable['All'] = $jobStateTable.Values | % {$_}
 
-    if ($status.length -eq 0) { 
+    if ($status.length -eq 0) {
         return 'DarkGray'
     }
     elseif ($status |? { $jobStateTable.All -notcontains $_ }) {
@@ -59,23 +59,14 @@ function Get-JobStateColor {
 
 function Set-UserPrompt {
     [CmdletBinding(DefaultParameterSetName='BuiltIn')] param(
-        [Parameter(Position=0, ParameterSetName='BuiltIn')] [ValidateSet('Color','Simple','Tiny')] [String] $builtInPrompt,
+        [Parameter(Position=0, Mandatory=$True, ParameterSetName='BuiltIn')] [String] $builtInPrompt,
         [Parameter(Position=0, Mandatory=$True, ParameterSetName='Custom')] [Scriptblock] $newPrompt
     )
 
     $psCore = $PSVersionTable.Keys -Contains 'PSEdition' -and $PSVersionTable.PSEdition -eq "Core"
     $psPlatform = if ($psCore) {$PsVersionTable.Platform} else {"Windows"}
-    $psAdmin = {
-        if ($psPlatform -eq "Windows") {
-            $principal = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-            return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-        } else {
-            return ((id -u) -eq 0)
-        }
-    }.Invoke()
-    $psAdmin = `
-        if ($psPlatform -eq "Windows") {
-        [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent().IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    $psAdmin = if ($psPlatform -eq "Windows") {
+        ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
         } else {
             ((id -u) -eq 0)
         }
@@ -84,6 +75,7 @@ function Set-UserPrompt {
     # Note that those builtins that need to access variables outside their own scope should be created in a closure
     # e.g. NewBuiltin = { "$psPlatform > " }.GetNewClosure()
     $builtIns = @{
+
         # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
         # doesn't play nice with other things.
         Color = {
@@ -120,19 +112,11 @@ function Set-UserPrompt {
         }.GetNewClosure()
 
         AnsiColor = {
-            $boldwhite="\[\e[01;37m\]"
-            $boldblue="\[\e[01;34m\]"
-            $normalgreen="\[\e[00;32m\]"
-            $clearrformat="\[\e[00m\]"
-+export PS1="${boldwhite}\t ${boldblue}\h${boldwhite}:${normalgreen}\W ${boldblue}${lcop} ${clearrformat}"
-
             # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
             $Host.UI.RawUI.WindowTitle = $pwd
 
-
             $timeStamp = get-date -format HH:mm:ss
-
-            Write-Host $() -nonewline -foregroundcolor White
+            Write-Host $timeStamp -nonewline -foregroundcolor White
             $eColor = if ($error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
             $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
             write-host " E:$($error.count):$lastExitDisplay" -nonewline -foreground $ecolor
@@ -155,7 +139,7 @@ function Set-UserPrompt {
 
             # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
             return " "
-        }
+        }.GetNewClosure()
 
         # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
         Simple = {
@@ -168,21 +152,11 @@ function Set-UserPrompt {
             $lcop = if ($psAdmin) { "#" } else { ">" }
             write-host "PS$lcop" -foreground Green -nonewline
             return " "
-        }
+        }.GetNewClosure()
     }
 
     if ($PsCmdlet.ParameterSetName -eq 'BuiltIn') {
-        if (-not $builtInPrompt) {
-            # If a specific prompt name wasn't passed, set a default one
-            # Because of the double prompt bug under Core on non-Windows platforms, if we aren't running on Windows, we use the Simple prompt by default
-            if ($psPlatform -eq 'Windows') {
-                Set-UserPrompt -newPrompt $builtIns['Color']
-            } else {
-                Set-UserPrompt -newPrompt $builtIns['Simple']
-            }
-        } else {
-            Set-UserPrompt -newPrompt $builtIns[$builtInPrompt]
-        }
+        Set-UserPrompt -newPrompt $builtIns[$builtInPrompt]
     } else {
         New-Item -Force -Path Function:\prompt -Value $newPrompt | Out-Null
     }

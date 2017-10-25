@@ -46,7 +46,7 @@ Get-ChildItem $MrledProfile.ProfileD |% { . $_.FullName }
 # so if you're going to use that module, import it first so my format file overrides their bullshit
 Update-FormatData -Prependpath $MrledProfile.MrlFormat
 
-Set-UserPrompt
+Set-UserPrompt -builtInPrompt Color
 Set-ConsoleColors
 
 # Must set the prompt before importing this module or it'll puke
