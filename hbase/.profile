@@ -105,10 +105,6 @@ fi
 
 export PYTHONSTARTUP=$HOME/.dhd/hbase/python.profile
 
-pp="${PYTHONPATH}:${HOME}/.dhd/opt/python:${HOME}/opt/lib/python3.4/site-packages/"
-export PYTHONPATH=pathsetup pp
-unset pp
-
 export EDITOR=emacs
 export VISUAL=emacs
 export FSEDIT=emacs
