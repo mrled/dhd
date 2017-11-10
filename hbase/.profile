@@ -68,6 +68,7 @@ ENDUSAGE
 
 # Order is important in $PATH; earlier entries are searched first
 tpath=
+tpath="${tpath}:${HOME}/opt/lib/miniconda3/bin"
 tpath="${tpath}:${HOME}/opt/bin:${HOME}/opt/sbin:${HOME}/.dhd/opt/bin:${HOME}/.dhd/opt/bash/bin"
 tpath="${tpath}:${HOME}/opt/homebrew/bin:${HOME}/opt/homebrew/sbin"
 tpath="${tpath}:/opt/homebrew/bin:/opt/homebrew/sbin"
