@@ -27,11 +27,11 @@ profdbglog "Starting shell at $(date)"
 pathsetup() {
     if test "$1" = "-h"; then
         cat <<ENDUSAGE
-pathsetup(): Set up a PATH-like variable
-Given a PATH-like variable, return a PATH-like variable that contains only
+pathsetup(): Set up a PATH-like string
+Given a PATH-like string, return a PATH-like string that contains only
 extant directories
-Usage: pathsetup PATHVAR
-    PATHVAR: A PATH-like variable - that is, a variable containing paths
+Usage: pathsetup PATHSTR
+    PATHSTR: A PATH-like string - that is, a string containing paths
              separated by colons
 EXAMPLES
 > pathsetup "/bin:/nonexistent:/sbin"
