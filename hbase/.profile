@@ -17,8 +17,8 @@ umask 077
 export PROFDBGLOG=
 # export PROFDBGLOG=$HOME/profiledbg.log
 profdbglog() {
-    if test $PROFDBGLOG; then
-        echo "$@" >> $PROFDBGLOG
+    if test "$PROFDBGLOG"; then
+        echo "$@" >> "$PROFDBGLOG"
     fi
 }
 profdbglog "Starting shell at $(date)"
