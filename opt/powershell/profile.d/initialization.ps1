@@ -31,6 +31,8 @@ function Setup-SystemPath {
         'vim\vim*\macros'
         "${env:ChocolateyInstall}\bin"
         "${env:SystemDrive}\ProgramData\Chocolatey\bin"
+        "${env:LocalAppData}\Continuum\miniconda3"
+        "${env:LocalAppData}\Continuum\miniconda3\Scripts"
 
         # Everything else should go in alphabetical order grouped by type
         "${env:SystemDrive}\Perl64"
@@ -69,6 +71,7 @@ function Setup-SystemPath {
         'OpenSSH'
         'OpenSSL\bin'
         'Oracle\VirtualBox'
+        'Powershell\*'
         'Nmap'
         'PuTTY'
         'Sublime Text 3'
