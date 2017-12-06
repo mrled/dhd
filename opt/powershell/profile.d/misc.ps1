@@ -60,6 +60,48 @@ if ($goCommand) {
 #### Functions
 
 <#
+.description
+Retrieve powershell platform (cross platform)
+#>
+function Get-PowershellPlatform {
+    [CmdletBinding()] Param()
+    if ($PSVersionTable.Keys -Contains 'Platform') {
+        return $PsVersionTable.Platform
+    } else {
+        # This value is what is returned by $PsVersionTabble.Platform on Powershell Core
+        return "Win32NT"
+    }
+}
+
+<#
+.description
+Test whether the current session has administrative privileges (cross platform)
+#>
+function Test-AdminRole {
+    [CmdletBinding()] Param()
+    if ((Get-PowershellPlatform) -eq "Win32NT") {
+        $identity = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+        $adminRole = [Security.Principal.WindowsBuiltInRole] "Administrator"
+        return $identity.IsInRole($adminRole)
+    } else {
+        return (id -u) -eq 0
+    }
+}
+
+<#
+.description
+Retrieve the current machine's hostname (cross platform)
+#>
+function Get-Hostname {
+    [CmdletBinding()] Param()
+    if ($env:COMPUTERNAME) {
+        return $env:COMPUTERNAME
+    } else {
+        return hostname
+    }
+}
+
+<#
 .synopsis
 OH MY GOD
 .description
@@ -586,7 +628,7 @@ function Set-FileAssociation {
         $drive = "HKCU"
     }
     elseif ($location.tolower() -eq "machine") {
-        if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        if (-not (Test-AdminRole)) {
             write-error "Cannot set associations for the whole machine unless running as administrator."
             return
         }
@@ -609,7 +651,7 @@ function Set-AssociationOpenCommand {
         $drive = "HKCU"
     }
     elseif ($location.tolower() -eq "machine") {
-        if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        if (-not (Test-AdminRole)) {
             write-error "Cannot set associations for the whole machine unless running as administrator."
             return
         }

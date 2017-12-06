@@ -63,17 +63,6 @@ function Set-UserPrompt {
         [Parameter(Position=0, Mandatory=$True, ParameterSetName='Custom')] [Scriptblock] $newPrompt
     )
 
-    $psCore = $PSVersionTable.Keys -Contains 'PSEdition' -and $PSVersionTable.PSEdition -eq "Core"
-    $psPlatform = if ($psCore) {$PsVersionTable.Platform} else {"Windows"}
-    $psAdmin = if ($psPlatform -eq "Windows") {
-        ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-        } else {
-            ((id -u) -eq 0)
-        }
-    $psHostname = if ($psPlatform -eq "Windows") { $env:COMPUTERNAME } else { hostname }
-
-    # Note that those builtins that need to access variables outside their own scope should be created in a closure
-    # e.g. NewBuiltin = { "$psPlatform > " }.GetNewClosure()
     $builtIns = @{
 
         # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
@@ -87,10 +76,10 @@ function Set-UserPrompt {
             $Host.UI.RawUI.WindowTitle = $pwd
 
             Write-Host $(get-date -format HH:mm:ss) -nonewline -foregroundcolor White
-            $eColor = if ($error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
+            $eColor = if ($global:Error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
             $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
-            write-host " E:$($error.count):$lastExitDisplay" -nonewline -foreground $ecolor
-            Write-Host " $psHostname" -nonewline -foregroundcolor Blue
+            write-host " E:$($global:Error.count):$lastExitDisplay" -nonewline -foreground $ecolor
+            Write-Host " $(Get-Hostname)" -nonewline -foregroundcolor Blue
             $jobs = get-job
             if ($jobs) {
                 write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
@@ -100,7 +89,7 @@ function Set-UserPrompt {
             }
             Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
 
-            if ($psAdmin) {
+            if (Test-AdminRole) {
                 Write-Host " $($SpecialCharacters.HammerSickle) " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
             }
             else {
@@ -109,7 +98,7 @@ function Set-UserPrompt {
 
             # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
             return " "
-        }.GetNewClosure()
+        }
 
         AnsiColor = {
             # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
@@ -117,10 +106,10 @@ function Set-UserPrompt {
 
             $timeStamp = get-date -format HH:mm:ss
             Write-Host $timeStamp -nonewline -foregroundcolor White
-            $eColor = if ($error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
+            $eColor = if ($global:Error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
             $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
-            write-host " E:$($error.count):$lastExitDisplay" -nonewline -foreground $ecolor
-            Write-Host " $psHostname" -nonewline -foregroundcolor Blue
+            write-host " E:$($global:Error.count):$lastExitDisplay" -nonewline -foreground $ecolor
+            Write-Host " $(Get-Hostname)" -nonewline -foregroundcolor Blue
             $jobs = get-job
             if ($jobs) {
                 write-host " J$($jobs.count)" -nonewline -foreground (Get-JobStateColor $jobs.State)
@@ -130,7 +119,7 @@ function Set-UserPrompt {
             }
             Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
 
-            if ($psAdmin) {
+            if (Test-AdminRole) {
                 Write-Host " $($SpecialCharacters.HammerSickle) " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
             }
             else {
@@ -139,20 +128,20 @@ function Set-UserPrompt {
 
             # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
             return " "
-        }.GetNewClosure()
+        }
 
         # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
         Simple = {
-            $lcop = if ($psAdmin) {"#"} else {'>'}
-            return "$((get-date).Tostring('HH:mm:ss')) $psHostname $(Get-DisplayPath $pwd) PS$lcop "
-        }.GetNewClosure()
+            $lcop = if (Test-AdminRole) {"#"} else {'>'}
+            return "$((get-date).Tostring('HH:mm:ss')) $(Get-Hostname) $(Get-DisplayPath $pwd) PS$lcop "
+        }
 
         # A very tiny prompt that at least differentiates based on color
         Tiny = {
-            $lcop = if ($psAdmin) { "#" } else { ">" }
+            $lcop = if (Test-AdminRole) { "#" } else { ">" }
             write-host "PS$lcop" -foreground Green -nonewline
             return " "
-        }.GetNewClosure()
+        }
     }
 
     if ($PsCmdlet.ParameterSetName -eq 'BuiltIn') {
