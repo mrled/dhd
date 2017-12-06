@@ -46,6 +46,7 @@ function Setup-SystemPath {
         "${env:AppData}\npm"
         "${env:LocalAppData}\atom\bin"
         "${env:LocalAppData}\Pandoc"
+        "${env:LocalAppData}\Keybase"
 
         # NOTE: Should use $Home, which expands properly, NOT ~, which doesn't work with Resolve-PotentialExecutablePathList
         "$Home\.dhd\opt\bin"
