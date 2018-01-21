@@ -151,30 +151,31 @@ cmdavail aws aws_completer && complete -C aws_completer aws
 # 1. checkwinsize (set above)
 # 2. wrapping sequences of non-printable characters in \[ and \]
 # My `ansi` script is supposed to handle #2, but unfortunately that isn't
-# working the way I expected, so I had to resort to `tput` here.
+# working the way I expected, so I had to resort to adding the wrapper
+# characters myself below.
 bashprompt() {
 
     # Reset any previous settings, in case last output did not
-    init="\[$(tput sgr0)\]"
+    init="\[$(ansi mode=reset)\]"
 
     dateraw='\t'
-    date="\[$(tput bold; tput setaf 7)\]$dateraw\[$(tput sgr0)\]"
+    date="\[$(ansi mode=bold fg=white)\]$dateraw\[$(ansi mode=reset)\]"
 
     exitcoderaw=$?
     if test "$exitcoderaw" -eq 0 || test -z "$exitcoderaw"; then
         # Covers a case where no command has been previously executed
         exitcoderaw=0
-        exitcodecolor=7
+        exitcodecolor="green"
     else
-        exitcodecolor=1
+        exitcodecolor="red"
     fi
-    exitcode="\[$(tput setaf "$exitcodecolor")\]$exitcoderaw\[$(tput sgr0)\]"
+    exitcode="\[$(ansi color="$exitcodecolor")\]$exitcoderaw\[$(ansi mode=reset)\]"
 
     hostnameraw="${PROMPT_HOSTNAME_OVERRIDE:-"\\h"}"
-    hostname="\[$(tput bold; tput setaf 4)\]$hostnameraw\[$(tput sgr0)\]"
+    hostname="\[$(ansi mode=bold fg=blue)\]$hostnameraw\[$(ansi mode=reset)\]"
 
     workdirraw='\W'
-    workdir="\[$(tput setaf 2)\]$workdirraw\[$(tput sgr0)\]"
+    workdir="\[$(ansi fg=green)\]$workdirraw\[$(ansi mode=reset)\]"
 
     # lcop = last character of prompt
     # Use bash's $EUID variable to avoid having to shell out to 'id'
@@ -182,7 +183,7 @@ bashprompt() {
     if test "$EUID" -eq 0; then
         lcopraw='#'
     fi
-    lcop="\[$(tput bold; tput setaf 4)\]$lcopraw\[$(tput sgr0)\]"
+    lcop="\[$(ansi mode=bold fg=blue)\]$lcopraw\[$(ansi mode=reset)\]"
 
     export PS1="${init}${date} ${exitcode} ${hostname}:${workdir} ${lcop} "
 }
