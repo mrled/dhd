@@ -5,15 +5,21 @@ set -e
 ANSIDBG=${ANSIDBG:-}
 set -u
 
-usage() {
-    cat >&2 << ENDUSAGE
-Usage: $0 [-h] [-b] <SETTING [<SETTING>...]>
-Easily color the terminal
+# $0 is the full path to the script; $base0 is just the name of the script
+base0=$(basename $0)
+
+usage_msg=$(cat <<ENDUSAGE
+NAME
+    $base0 -- easily color the terminal
+
+SYNOPSIS
+    $base0 [-h] [-b] <SETTING [<SETTING>...]>
+
+ARGUMENTS
     -h: Print help and exit
-    -b: Surround the ANSI codes with '\[' and '\]', which has a special meaning
-        only in the bash prompt, where it indicates that the non-printable
-        escapes should not be counted as characters that take up space on the
-        line
+    -b: Surround the ANSI codes with '\[' and '\]'
+        See the BASH PROMT section for more details
+        NOTE: THIS IS BROKEN CURRENTLY, SEE THE BUGS SECTION
     SETTING: A setting, of the form NAME=VALUE
         NAME: one of "mode", "fg", or "bg"
         VALUE: a value for the setting
@@ -23,19 +29,44 @@ Easily color the terminal
            under/ununder will underline or un-underline respectively
            reset will undo any settings
     COLOR: One of black, red, green, yellow, blue, magenta, cyan, or white
-ENVIRONMENT:
+
+BASH PROMPT
+    NOTE: UNFORTUNATELY, THIS IS NOT WORKING AND I AM NOT SURE WHY
+
+    The bash prompt keeps track of its length, in characters, in order to
+    propertly wrap text if the command line being entered gets too long.
+    Unfortunately, it does so indiscriminately - even non-printable characters,
+    which by definition do not take up space on the line, are counted by
+    default. To work around this, sequences of non-printable characters can be
+    wrapped in backslash-open-bracket and backslash-close-bracket (\[ and \]).
+
+    Note that this is only the case within the bash *prompt*; any other use of
+    non-printable characters in bash does not require this, and the \[ and \]
+    sequences are printed literally in any other context.
+
+ENVIRONMENT
     \$ANSIDBG: If set, print debugging information
-EXAMPLES:
-> $0 mode=bold fg=green bg=white
-> $0 mode=reset
-> $0 -b mode=under fg=white bg=black
+
+EXAMPLES
+    > $base0 mode=bold fg=green bg=white
+    > $base0 mode=reset
+    > $base0 -b mode=under fg=white bg=black
+
+BUGS
+    The bash prompt wrapper isn't working, and I don't know why.
+
 NOTES
-This has been tested on macOS and Linux
-It is unlikely to work as-is for all terminals ever created
-References:
-http://pubs.opengroup.org/onlinepubs/9699919799/utilities/tput.html
-http://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
+    This has been tested on macOS and Linux
+    It is unlikely to work as-is for all terminals ever created
+    References:
+    http://pubs.opengroup.org/onlinepubs/9699919799/utilities/tput.html
+    http://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
+    http://tldp.org/HOWTO/Bash-Prompt-HOWTO/nonprintingchars.html
 ENDUSAGE
+)
+
+usage() {
+    echo "$usage_msg" | less
 }
 
 dbgprintf() {
@@ -74,6 +105,7 @@ mode2operand() {
     esac
 }
 
+# Use $0 instead of $base0 for debugging
 dbgprintf "$$: $0 $*\n"
 
 if test $# -eq 0; then usage; exit 1; fi
