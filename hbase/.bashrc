@@ -142,27 +142,16 @@ cmdavail doctl && source <(doctl completion bash)
 cmdavail aws aws_completer && complete -C aws_completer aws
 
 # Prompt
-# NOTE: We rely on "checkwinsize" (set above) and my ansi command's '-b'
-# argument to fix line wrapping problems from escape sequences. Without those
-# fixes, bash would treat nonprintable ANSI color codes as printable characters
-# and would think that printed lines are longer than they actually are
-bashprompt_OLD() {
-    exitcode=$?
-    if test "$exitcode" -eq 0 || test -z "$exitcode"; then
-        lastcmd="$(ansi mode=reset fg=white)0"
-    else
-        lastcmd="$(ansi mode=reset fg=red)$exitcode"
-    fi
-
-    # lcop = last character of prompt
-    # Use bash's $EUID variable to avoid having to shell out to 'id'
-    if test "$EUID" -eq 0; then lcop='#'; else lcop='>'; fi
-
-    prompthostname="${PROMPT_HOSTNAME_OVERRIDE:-"$(ansi -b mode=bold fg=blue)\\h"}"
-
-    export PS1="$(ansi -b mode=bold fg=white)\t ${lastcmd} $prompthostname:$(ansi -b mode=reset fg=green)\W $(ansi -b mode=bold fg=blue)${lcop} $(ansi -b mode=reset)"
-}
-
+# NOTE: The bash prompt keeps track of its length, in characters, in order to
+# propertly wrap text if the command line being entered gets too long.
+# Unfortunately, it does so indiscriminately - even non-printable characters,
+# which by definition do not take up space on the line, are counted by
+# default.
+# Working around this problem requires two components:
+# 1. checkwinsize (set above)
+# 2. wrapping sequences of non-printable characters in \[ and \]
+# My `ansi` script is supposed to handle #2, but unfortunately that isn't
+# working the way I expected, so I had to resort to `tput` here.
 bashprompt() {
 
     # Reset any previous settings, in case last output did not
