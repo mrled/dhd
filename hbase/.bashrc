@@ -146,7 +146,7 @@ cmdavail aws aws_completer && complete -C aws_completer aws
 # argument to fix line wrapping problems from escape sequences. Without those
 # fixes, bash would treat nonprintable ANSI color codes as printable characters
 # and would think that printed lines are longer than they actually are
-bashprompt() {
+bashprompt_OLD() {
     exitcode=$?
     if test "$exitcode" -eq 0 || test -z "$exitcode"; then
         lastcmd="$(ansi mode=reset fg=white)0"
@@ -161,6 +161,41 @@ bashprompt() {
     prompthostname="${PROMPT_HOSTNAME_OVERRIDE:-"$(ansi -b mode=bold fg=blue)\\h"}"
 
     export PS1="$(ansi -b mode=bold fg=white)\t ${lastcmd} $prompthostname:$(ansi -b mode=reset fg=green)\W $(ansi -b mode=bold fg=blue)${lcop} $(ansi -b mode=reset)"
+}
+
+bashprompt() {
+
+    # Reset any previous settings, in case last output did not
+    init="\[$(tput sgr0)\]"
+
+    dateraw='\t'
+    date="\[$(tput bold; tput setaf 7)\]$dateraw\[$(tput sgr0)\]"
+
+    exitcoderaw=$?
+    if test "$exitcoderaw" -eq 0 || test -z "$exitcoderaw"; then
+        # Covers a case where no command has been previously executed
+        exitcoderaw=0
+        exitcodecolor=7
+    else
+        exitcodecolor=1
+    fi
+    exitcode="\[$(tput setaf "$exitcodecolor")\]$exitcoderaw\[$(tput sgr0)\]"
+
+    hostnameraw="${PROMPT_HOSTNAME_OVERRIDE:-"\\h"}"
+    hostname="\[$(tput bold; tput setaf 4)\]$hostnameraw\[$(tput sgr0)\]"
+
+    workdirraw='\W'
+    workdir="\[$(tput setaf 2)\]$workdirraw\[$(tput sgr0)\]"
+
+    # lcop = last character of prompt
+    # Use bash's $EUID variable to avoid having to shell out to 'id'
+    lcopraw='>'
+    if test "$EUID" -eq 0; then
+        lcopraw='#'
+    fi
+    lcop="\[$(tput bold; tput setaf 4)\]$lcopraw\[$(tput sgr0)\]"
+
+    export PS1="${init}${date} ${exitcode} ${hostname}:${workdir} ${lcop} "
 }
 export PROMPT_COMMAND=bashprompt
 
