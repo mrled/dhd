@@ -154,10 +154,10 @@ choco install Microsoft-Windows-Subsystem-Linux --source=windowsfeatures
 choco install ConEmu
 choco install Firefox
 choco install Gpg4win
+choco install GoogleChrome
 choco install SublimeText3
 choco install VisualStudioCode
 choco install 7zip
-choco install chrome
 choco install docker-for-windows
 choco install git --params '"/GitOnlyOnPath"'
 choco install greenshot
