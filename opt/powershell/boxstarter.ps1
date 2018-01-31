@@ -80,7 +80,6 @@ Disable-UAC
 # Windows settings
 Disable-BingSearch
 Disable-GameBarTips
-Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
 Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force
 
 # Privacy: Let apps use my advertising ID: Disable
