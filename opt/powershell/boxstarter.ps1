@@ -10,7 +10,7 @@ PS> Set-ExecutionPolicy Bypass -Scope Process -Force
 PS> iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 PS> choco install boxstarter -y
 PS> Get-Module -ListAvailable -Name "Boxstarter*" | Import-Module
-PS> Install-BoxstarterPackage -DisableReboots -PackageName https://github.com/mrled/dhd/blob/master/opt/windows-workstation/boxstarter.ps1
+PS> Install-BoxstarterPackage -DisableReboots -PackageName https://github.com/mrled/dhd/blob/master/opt/powershell/boxstarter.ps1
 
 Uses Chocolatey to install Boxstarter, then applies this Boxstarter configuration script
 
@@ -21,7 +21,7 @@ PS>
 PS> Set-ExecutionPolicy Bypass -Scope Process -Force
 PS> . { iwr -useb http://boxstarter.org/bootstrapper.ps1 } | iex
 PS> Get-Boxstarter -Force
-PS> Install-BoxstarterPackage -DisableRebootsd -PackageName https://github.com/mrled/dhd/blob/master/opt/windows-workstation/boxstarter.ps1
+PS> Install-BoxstarterPackage -DisableRebootsd -PackageName https://github.com/mrled/dhd/blob/master/opt/powershell/boxstarter.ps1
 
 Installs Boxstarter the official way, over unencrypted HTTP. YOLO.
 
