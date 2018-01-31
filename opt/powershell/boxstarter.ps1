@@ -25,6 +25,7 @@ PS> Install-BoxstarterPackage -DisableRebootsd -PackageName https://github.com/m
 Installs Boxstarter the official way, over unencrypted HTTP. YOLO.
 
 .notes
+
 When exploring new systems, these might be helpful:
     # List all installed programs
     Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall* | sort -property DisplayName | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate |Format-Table -AutoSize
@@ -34,6 +35,11 @@ When exploring new systems, these might be helpful:
 See also:
 - https://gist.github.com/jessfraz/7c319b046daa101a4aaef937a20ff41f
 - https://gist.github.com/NickCraver/7ebf9efbfd0c3eab72e9
+
+To do items:
+- Keybase
+- Associate metapad with text files
+- Start menu customization
 
 #>
 [CmdletBinding()] Param()
@@ -135,14 +141,24 @@ choco install Microsoft-Hyper-V-All -source windowsFeatures
 choco install Microsoft-Windows-Subsystem-Linux -source windowsfeatures
 
 # Applications
+choco install ConEmu
+choco install Firefox
+choco install Gpg4win
+choco install SublimeText3
+choco install VisualStudioCode
 choco install 7zip
 choco install chrome
-choco install ConEmu
 choco install docker-for-windows
-choco install Firefox
-choco install git -params '"/GitOnlyOnPath"'
+choco install git --params '"/GitOnlyOnPath"'
+choco install greenshot
 choco install less
-choco install openssh -params '"/SSHServerFeature /SSHAgentFeature "'
+choco install metapad
+choco install openssh --params '"/SSHServerFeature /SSHAgentFeature "'
+choco install powershell-core
+choco install putty
+choco install python2
+choco install python3
+choco install slack
 choco install sysinternals
 choco install vim
 
