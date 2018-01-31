@@ -6,9 +6,9 @@ Set up Windows workstations with Boxstarter
 PS>
 PS> Write-Host -Message "Applying this Boxstarter configuration securely"
 PS>
-PS> Set-ExecutionPolicy Bypass -Scope Process -Force;
+PS> Set-ExecutionPolicy Bypass -Scope Process -Force
 PS> iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-PS> choco install boxstarter
+PS> choco install boxstarter -y
 PS> Get-Module -ListAvailable -Name "Boxstarter*" | Import-Module
 PS> Install-BoxstarterPackage -DisableReboots -PackageName https://github.com/mrled/dhd/blob/master/opt/windows-workstation/boxstarter.ps1
 
@@ -18,6 +18,7 @@ Uses Chocolatey to install Boxstarter, then applies this Boxstarter configuratio
 PS>
 PS> Write-Host -Message "Applying this Boxstarter configuration insecurely, because Boxstarter is amateur hour"
 PS>
+PS> Set-ExecutionPolicy Bypass -Scope Process -Force
 PS> . { iwr -useb http://boxstarter.org/bootstrapper.ps1 } | iex
 PS> Get-Boxstarter -Force
 PS> Install-BoxstarterPackage -DisableRebootsd -PackageName https://github.com/mrled/dhd/blob/master/opt/windows-workstation/boxstarter.ps1
@@ -53,7 +54,7 @@ $ErrorActionPreference = "Stop"
 .synopsis
 Set a registry value, creating any requisite parent key(s)
 #>
-function Set-RegistryItemPropertyProperty {
+function Set-RegistryItemProperty {
     [CmdletBinding()] Param(
         [Parameter(Mandatory)] [string] $Path,
         [Parameter(Mandatory)] [string] $Name,
@@ -103,22 +104,26 @@ Set-RegistryItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\E
 Set-RegistryItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name LaunchTo -Type DWord -Value 1
 
 # Expand Explorer's navigation pane to the current folder
-Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneExpandToCurrentFolder -Value 1
+Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneExpandToCurrentFolder -Type DWord -Value 1
 
 # Show all folders in Explorer's navigation pane
-Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneShowAllFolders -Value 1
+Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneShowAllFolders -Type DWord -Value 1
 
 # Show Explorer status bar
-Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowStatusBar -Value 1
+Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowStatusBar -Type DWord -Value 1
 
 # Disable sharing wizard
-Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name SharingWizardOn -Value 0
+Set-RegistryItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name SharingWizardOn -Type DWord -Value 0
 
 # Turn off People in Taskbar
-Set-RegistryItemProperty -Path HKCU:SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People -Name PeopleBand -Type DWord -Value 0
+Set-RegistryItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People -Name PeopleBand -Type DWord -Value 0
 
 # Do not hide system tray icons
-Set-RegistryItemProperty -Path HKCU:SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name EnableAutoTray -Type DWord -Value 0
+Set-RegistryItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name EnableAutoTray -Type DWord -Value 0
+
+# Set CapsLock to Ctrl
+$layoutBytes = ([byte[]] @(0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x1d,0x00,0x3a,0x00,0x00,0x00,0x00,0x00))
+Set-RegistryItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Keyboard Layout" -Name "Scancode Map" -Type Binary -Value $layoutBytes
 
 
 # Uninstall default crap
