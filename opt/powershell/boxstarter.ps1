@@ -4,26 +4,32 @@ Set up Windows workstations with Boxstarter
 
 .example
 PS>
-PS> Write-Host -Message "Applying this Boxstarter configuration securely"
+PS> Write-Host -Message "Installing Boxstarter via Chocolatey"
 PS>
 PS> Set-ExecutionPolicy Bypass -Scope Process -Force
 PS> iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 PS> choco install boxstarter -y
 PS> Get-Module -ListAvailable -Name "Boxstarter*" | Import-Module
-PS> Install-BoxstarterPackage -DisableReboots -PackageName https://github.com/mrled/dhd/blob/master/opt/powershell/boxstarter.ps1
 
-Uses Chocolatey to install Boxstarter, then applies this Boxstarter configuration script
+Uses Chocolatey to install Boxstarter.
 
 .example
 PS>
-PS> Write-Host -Message "Applying this Boxstarter configuration insecurely, because Boxstarter is amateur hour"
+PS> Write-Host -Message "Installing Boxstarter via the official, insecure way, because Boxstarter is amateur hour"
 PS>
 PS> Set-ExecutionPolicy Bypass -Scope Process -Force
 PS> . { iwr -useb http://boxstarter.org/bootstrapper.ps1 } | iex
 PS> Get-Boxstarter -Force
-PS> Install-BoxstarterPackage -DisableRebootsd -PackageName https://github.com/mrled/dhd/blob/master/opt/powershell/boxstarter.ps1
 
 Installs Boxstarter the official way, over unencrypted HTTP. YOLO.
+
+.example
+PS>
+PS> Write-Host -Message "Applying the Boxstarter configuration, once Boxstarter itself is installed"
+PS>
+PS> Install-BoxstarterPackage -DisableReboots -PackageName https://raw.githubusercontent.com/mrled/dhd/master/opt/powershell/boxstarter.ps1
+
+Once Boxstarter has been installed and the module(s) imported, run this command to apply this Boxstarter configuration
 
 .notes
 
