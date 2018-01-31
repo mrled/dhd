@@ -147,8 +147,8 @@ Set-RegistryItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Keyboard 
 choco feature enable ---name=allowGlobalConfirmation --yes
 
 # Windows features
-choco install Microsoft-Hyper-V-All -source windowsFeatures
-choco install Microsoft-Windows-Subsystem-Linux -source windowsfeatures
+choco install Microsoft-Hyper-V-All --source=windowsFeatures
+choco install Microsoft-Windows-Subsystem-Linux --source=windowsfeatures
 
 # Applications
 choco install ConEmu
