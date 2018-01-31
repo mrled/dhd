@@ -171,6 +171,7 @@ choco install python3
 choco install slack
 choco install sysinternals
 choco install vim
+refreshenv
 
 # User settings
 git clone https://github.com/mrled/dhd $env:USERPROFILE\.dhd
