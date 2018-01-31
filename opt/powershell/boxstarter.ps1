@@ -65,7 +65,7 @@ function Set-RegistryItemProperty {
         [Parameter(Mandatory)] [string] $Path,
         [Parameter(Mandatory)] [string] $Name,
         [Parameter(Mandatory)] [string] $Type,
-        [Parameter(Mandatory)] [string] $Value
+        [Parameter(Mandatory)] $Value
     )
     if (-not (Test-Path  -Path $Path)) {
         New-Item -Path $Path | Out-Null
