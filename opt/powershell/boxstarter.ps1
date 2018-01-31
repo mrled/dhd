@@ -174,11 +174,17 @@ choco install vim
 refreshenv
 
 # User settings
-git clone https://github.com/mrled/dhd $env:USERPROFILE\.dhd
-mkdir -Path $("$env:USERPROFILE\Documents\WindowsPowerShell", "$env:USERPROFILE\Documents\Powershell")
-Copy-Item -Path $env:USERPROFILE\.dhd\hbase\Microsoft.Powershell_profile.win32.ps1 -Destination "$env:USERPROFILE\Documents\WindowsPowerShell\profile.ps1"
-Copy-Item -Path $env:USERPROFILE\.dhd\hbase\Microsoft.Powershell_profile.win32.ps1 -Destination "$env:USERPROFILE\Documents\Powershell\profile.ps1"
-Copy-Item -Path $env:USERPROFILE\.dhd\opt\win32\ConEmu.xml -Destination $env:AppData\ConEmu.xml
+if (Test-Path -Path $env:USERPROFILE\.dhd) {
+    Push-Location -Path $env:USERPROFILE\.dhd
+    git pull
+    Pop-Location
+} else {
+    git clone https://github.com/mrled/dhd $env:USERPROFILE\.dhd
+}
+mkdir -Force -Path $("$env:USERPROFILE\Documents\WindowsPowerShell", "$env:USERPROFILE\Documents\Powershell")
+Copy-Item -Force -Path $env:USERPROFILE\.dhd\hbase\Microsoft.Powershell_profile.win32.ps1 -Destination "$env:USERPROFILE\Documents\WindowsPowerShell\profile.ps1"
+Copy-Item -Force -Path $env:USERPROFILE\.dhd\hbase\Microsoft.Powershell_profile.win32.ps1 -Destination "$env:USERPROFILE\Documents\Powershell\profile.ps1"
+Copy-Item -Force -Path $env:USERPROFILE\.dhd\opt\win32\ConEmu.xml -Destination $env:AppData\ConEmu.xml
 . $env:USERPROFILE\Documents\Powershell\profile.ps1
 Setup-SystemPath
 Setup-Environment
