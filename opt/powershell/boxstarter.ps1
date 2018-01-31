@@ -144,7 +144,7 @@ Set-RegistryItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Keyboard 
 # Get-AppxPackage *Twitter* | Remove-AppxPackage
 
 # Chocolatey configuration
-choco feature enable ---name=allowGlobalConfirmation --yes
+choco feature enable --name=allowGlobalConfirmation --yes
 
 # Windows features
 choco install Microsoft-Hyper-V-All --source=windowsFeatures
