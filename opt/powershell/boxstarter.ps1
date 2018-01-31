@@ -151,26 +151,26 @@ choco install Microsoft-Hyper-V-All --source=windowsFeatures
 choco install Microsoft-Windows-Subsystem-Linux --source=windowsfeatures
 
 # Applications
-choco install ConEmu
-choco install Firefox
-choco install Gpg4win
-choco install GoogleChrome
-choco install SublimeText3
-choco install VisualStudioCode
-choco install 7zip
-choco install docker-for-windows
-choco install git --params '"/GitOnlyOnPath"'
-choco install greenshot
-choco install less
-choco install metapad
-choco install openssh --params '"/SSHServerFeature /SSHAgentFeature "'
-choco install powershell-core
-choco install putty
-choco install python2
-choco install python3
-choco install slack
-choco install sysinternals
-choco install vim
+choco upgrade ConEmu
+choco upgrade Firefox
+choco upgrade Gpg4win
+choco upgrade GoogleChrome
+choco upgrade SublimeText3
+choco upgrade VisualStudioCode
+choco upgrade 7zip
+choco upgrade docker-for-windows
+choco upgrade git --params '"/GitOnlyOnPath"'
+choco upgrade greenshot
+choco upgrade less
+choco upgrade metapad
+choco upgrade openssh --params '"/SSHServerFeature /SSHAgentFeature "'
+choco upgrade powershell-core
+choco upgrade putty
+choco upgrade python2
+choco upgrade python3
+choco upgrade slack
+choco upgrade sysinternals
+choco upgrade vim
 refreshenv
 
 # User settings
