@@ -75,6 +75,9 @@ function Set-UserPrompt {
             # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
             $Host.UI.RawUI.WindowTitle = $pwd
 
+            # Wrap our writes in comments so that we can copy/paste entire lines, including the prompt
+            Write-Host '<# ' -NoNewLine -ForegroundColor DarkGray
+
             Write-Host $(get-date -format HH:mm:ss) -nonewline -foregroundcolor White
             $eColor = if ($global:Error -or $LASTEXITCODE) { "Red" } else { "DarkGray" }
             $lastExitDisplay = if ("$LASTEXITCODE") { $LASTEXITCODE } else { "0" }
@@ -95,6 +98,9 @@ function Set-UserPrompt {
             else {
                 Write-Host $SpecialCharacters.DoublePrompt -NoNewLine -ForegroundColor White
             }
+
+            # Close our comment
+            Write-Host ' #>' -NoNewLine -ForegroundColor DarkGray
 
             # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
             return " "
