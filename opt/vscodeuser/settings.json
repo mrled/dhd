@@ -1,7 +1,31 @@
-// Place your settings in this file to overwrite the default settings
 {
-	"editor.insertSpaces": true,
-	"editor.tabSize": 4,
-    "editor.wrappingColumn": 0,
-    "editor.wrappingIndent": "indent"
+  "window.zoomLevel": 0,"editor.fontSize": 13
+  ,"editor.fontLigatures": true
+  ,"editor.fontFamily": "Fira Code, Consolas, monospace"
+  ,"editor.fontWeight": "500"
+  ,"editor.renderWhitespace": "boundary"
+  ,"editor.renderControlCharacters": true
+  ,"editor.wrappingIndent": "indent"
+  ,"extensions.autoUpdate": false
+  ,"files.trimTrailingWhitespace": true
+  ,"files.exclude":{
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/._*": true,
+    "*.js.map": true,
+    "node_modules": true,
+    "**/*.js": { "when": "$(basename).ts"}
+  }
+  ,"python.pythonPath": "C:/Python36/python.exe"
+  ,"workbench.colorTheme": "Quiet Light"
+  ,"window.restoreWindows": "all"
+  ,"workbench.startupEditor": "none"
+  ,
+  "workbench.tips.enabled": true,
+  "workbench.panel.location": "right",
+  "extensions.ignoreRecommendations": true,
+  "explorer.confirmDelete": false
 }
