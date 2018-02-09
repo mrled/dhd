@@ -179,16 +179,19 @@ function Set-ConsoleColors {
     [Console]::ResetColor()
     $Host.UI.RawUI.BackgroundColor = $BackgroundColor
     $Host.UI.RawUI.ForegroundColor = $ForegroundColor
-    $Host.PrivateData.ErrorForegroundColor = $ErrorForegroundColor
-    $Host.PrivateData.ErrorBackgroundColor = $ErrorBackgroundColor
-    $Host.PrivateData.WarningForegroundColor = $WarningForegroundColor
-    $Host.PrivateData.WarningBackgroundColor = $WarningBackgroundColor
-    $Host.PrivateData.DebugForegroundColor = $DebugForegroundColor
-    $Host.PrivateData.DebugBackgroundColor = $DebugBackgroundColor
-    $Host.PrivateData.VerboseForegroundColor = $VerboseForegroundColor
-    $Host.PrivateData.VerboseBackgroundColor = $VerboseBackgroundColor
-    $Host.PrivateData.ProgressForegroundColor = $ProgressForegroundColor
-    $Host.PrivateData.ProgressBackgroundColor = $ProgressBackgroundColor
+    # $Host.PrivateData appears to exist in the Windows console, but not the VS Code console
+    if ($Host.PrivateData) {
+        $Host.PrivateData.ErrorForegroundColor = $ErrorForegroundColor
+        $Host.PrivateData.ErrorBackgroundColor = $ErrorBackgroundColor
+        $Host.PrivateData.WarningForegroundColor = $WarningForegroundColor
+        $Host.PrivateData.WarningBackgroundColor = $WarningBackgroundColor
+        $Host.PrivateData.DebugForegroundColor = $DebugForegroundColor
+        $Host.PrivateData.DebugBackgroundColor = $DebugBackgroundColor
+        $Host.PrivateData.VerboseForegroundColor = $VerboseForegroundColor
+        $Host.PrivateData.VerboseBackgroundColor = $VerboseBackgroundColor
+        $Host.PrivateData.ProgressForegroundColor = $ProgressForegroundColor
+        $Host.PrivateData.ProgressBackgroundColor = $ProgressBackgroundColor
+    }
 }
 
 function Test-ProgressBar {
