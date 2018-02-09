@@ -39,6 +39,13 @@ if ($gitCommand) {
         $vimMsysPath = $vimCommand -replace "^(.)\:\\",'\$1\' -replace "\\","/"
         $env:GIT_PAGER = '"{0}" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -' -f $vimMsysPath
     }
+
+    # For some reason, on some machines, I have to set GIT_SSH or else Git won't work with any SSH remote
+    # I have tested this with Microsoft's OpenSSH port, and it works great, so let's just use that
+    $sshCommand = Get-CommandInExecutablePath "ssh"
+    if ($sshCommand) {
+        $env:GIT_SSH = $sshCommand
+    }
 }
 
 $env:LESS = "-iRC"
