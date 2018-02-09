@@ -45,8 +45,22 @@ See also:
 
 To do items:
 - Keybase
-- Associate metapad with text files
 - Start menu customization
+- Task bar customization
+- Auto configure Sublime Text, VS Code, and Atom, including installing extensions etc
+- Desktop background
+- Metapad customization
+    - Associate metapad with text files
+    - Uses registry by default, but if metapad.ini is in same directory as metapad.exe it'll use that instead
+    - Which means I'll need to install it to somewhere in $USERPROFILE and then symlink its config file to dhd
+- Firefox configuration
+    - Enable sync?
+    - about:config settings are NOT synced even if sync is enabled... how to deal with those?
+- Chrome configuration
+    - ENable sync?
+    - Check whether under-the-hood Chrome changes are synced
+- Future
+    - I'd honestly prefer that this be Powershell DSC, so that I could make all modifications by applying this configuration.
 
 #>
 [CmdletBinding()] Param()
@@ -151,25 +165,32 @@ choco install Microsoft-Hyper-V-All --source=windowsFeatures
 choco install Microsoft-Windows-Subsystem-Linux --source=windowsfeatures
 
 # Applications
+choco upgrade 7zip
 choco upgrade ConEmu
 choco upgrade Firefox
-choco upgrade Gpg4win
 choco upgrade GoogleChrome
 choco upgrade SublimeText3
 choco upgrade VisualStudioCode
-choco upgrade 7zip
+choco upgrade bind-toolsonly
+choco upgrade curl
 choco upgrade docker-for-windows
 choco upgrade git --params '"/GitOnlyOnPath"'
+choco upgrade golang
+choco upgrade gpg4win-vanilla
 choco upgrade greenshot
 choco upgrade less
+choco upgrade mRemoteNG
 choco upgrade metapad
 choco upgrade openssh --params '"/SSHServerFeature /SSHAgentFeature "'
+choco upgrade packer
 choco upgrade powershell-core
+choco upgrade pt
 choco upgrade putty
 choco upgrade python2
 choco upgrade python3
 choco upgrade slack
 choco upgrade sysinternals
+choco upgrade vagrant
 choco upgrade vim
 refreshenv
 
