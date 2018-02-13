@@ -176,22 +176,33 @@ function Set-ConsoleColors {
         $ProgressForegroundColor = 'DarkBlue',
         $ProgressBackgroundColor = 'White'
     )
+
+    function ConditionallySetProperty {
+        Param(
+            [Parameter(Mandatory)] $object,
+            [Parameter(Mandatory)] $propertyName,
+            [Parameter(Mandatory)] $propertyValue
+        )
+        if (($object | Get-Member | Select-Object -ExpandProperty Name) -Contains $propertyName) {
+            $object.$propertyName = $propertyValue
+        }
+    }
+
     [Console]::ResetColor()
+
     $Host.UI.RawUI.BackgroundColor = $BackgroundColor
     $Host.UI.RawUI.ForegroundColor = $ForegroundColor
-    # $Host.PrivateData appears to exist in the Windows console, but not the VS Code console
-    if ($Host.PrivateData) {
-        $Host.PrivateData.ErrorForegroundColor = $ErrorForegroundColor
-        $Host.PrivateData.ErrorBackgroundColor = $ErrorBackgroundColor
-        $Host.PrivateData.WarningForegroundColor = $WarningForegroundColor
-        $Host.PrivateData.WarningBackgroundColor = $WarningBackgroundColor
-        $Host.PrivateData.DebugForegroundColor = $DebugForegroundColor
-        $Host.PrivateData.DebugBackgroundColor = $DebugBackgroundColor
-        $Host.PrivateData.VerboseForegroundColor = $VerboseForegroundColor
-        $Host.PrivateData.VerboseBackgroundColor = $VerboseBackgroundColor
-        $Host.PrivateData.ProgressForegroundColor = $ProgressForegroundColor
-        $Host.PrivateData.ProgressBackgroundColor = $ProgressBackgroundColor
-    }
+
+    ConditionallySetProperty -object $Host.PrivateData -propertyName ErrorForegroundColor -propertyValue $ErrorForegroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName ErrorBackgroundColor -propertyValue $ErrorBackgroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName WarningForegroundColor -propertyValue $WarningForegroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName WarningBackgroundColor -propertyValue $WarningBackgroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName DebugForegroundColor -propertyValue $DebugForegroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName DebugBackgroundColor -propertyValue $DebugBackgroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName VerboseForegroundColor -propertyValue $VerboseForegroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName VerboseBackgroundColor -propertyValue $VerboseBackgroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName ProgressForegroundColor -propertyValue $ProgressForegroundColor
+    ConditionallySetProperty -object $Host.PrivateData -propertyName ProgressBackgroundColor -propertyValue $ProgressBackgroundColor
 }
 
 function Test-ProgressBar {
