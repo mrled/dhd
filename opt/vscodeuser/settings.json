@@ -19,13 +19,11 @@
     "node_modules": true,
     "**/*.js": { "when": "$(basename).ts"}
   }
-  ,"python.pythonPath": "C:/Python36/python.exe"
-  ,"workbench.colorTheme": "Quiet Light"
-  ,"window.restoreWindows": "all"
+  ,"python.pythonPath": "C:/Python36/python.exe","window.restoreWindows": "all"
   ,"workbench.startupEditor": "none"
-  ,
-  "workbench.tips.enabled": true,
-  "workbench.panel.location": "right",
-  "extensions.ignoreRecommendations": true,
-  "explorer.confirmDelete": false
+  ,"powershell.integratedConsole.showOnStartup": false
+  ,"workbench.tips.enabled": true
+  ,"extensions.ignoreRecommendations": true
+  ,"explorer.confirmDelete": false
+  ,"terminal.integrated.shell.windows": "C:\\Windows\\sysnative\\WindowsPowerShell\\v1.0\\powershell.exe"
 }
