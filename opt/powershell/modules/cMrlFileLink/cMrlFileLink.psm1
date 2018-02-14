@@ -26,12 +26,12 @@ Manage shortcuts
             $linkParent = Split-Path -LiteralPath $this.LinkPath
             New-Item -Type Directory -Force -Path $linkParent | Out-Null
             if (Test-Path -LiteralPath $this.LinkPath) {
-                Remove-Item -Force -LiteralPath $this.LinkPath
+                $this.RemovePossibleSymbolicLink($this.LinkPath)
             }
             New-Item -ItemType SymbolicLink -Path $this.LinkPath -Target $this.LinkTarget
         } elseif ($this.Ensure -eq [Ensure]::Absent -and (Test-Path -LiteralPath $this.LinkPath)) {
             Write-Verbose -Message "Deleting the file $($this.LinkPath)"
-            Remove-Item -LiteralPath $this.LinkPath -Force
+            $this.RemovePossibleSymbolicLink($this.LinkPath)
         }
     }
 
@@ -72,10 +72,38 @@ Manage shortcuts
         $item = Get-Item -LiteralPath $this.LinkPath
         $itemPropertyNames = Get-Member -InputObject $item | Select-Object -ExpandProperty Name
         if ($itemPropertyNames -Contains 'LinkType' -and $item.LinkType -eq 'SymbolicLink') {
-            if ($itemPropertyNames -contains 'Target' -and $item.Target -eq $this.LinkTarget) {
+            if ($item.Target -eq $this.LinkTarget) {
                 return $true
             }
         }
         return $false
+    }
+
+    <#
+    .synopsis
+    Remove a file, even if it is a symlink
+    .description
+    This is a pain in the ass in Powershell, for some fucking reason
+    See also:
+     - https://stackoverflow.com/questions/44059885/powershell-remove-junction
+     - https://github.com/PowerShell/PowerShell/issues/621
+    #>
+    [void] RemovePossibleSymbolicLink($FilePath) {
+        $removeItemError = $null
+        $sysIoDirDeleteError = $null
+        try {
+            Remove-Item -LiteralPath $FilePath -Force
+        } catch [System.ComponentModel.Win32Exception] {
+            $removeItemError = $_
+            try {
+                [System.IO.Directory]::Delete($FilePath, $true)
+                $removeItemError = $null
+            } catch {
+                $sysIoDirDeleteError = $_
+            }
+        }
+        if ($removeItemError -or $sysIoDirDeleteError) {
+            throw "Could not remove file at '$FilePath'. Tried as regular file but got error $($removeItemError.ToString()); tried as directory or junction point but got error $($sysIoDirDeleteError.ToString())"
+        }
     }
 }
