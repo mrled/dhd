@@ -6,6 +6,7 @@
 	"installed_packages":
 	[
 		"Anaconda",
+		"ApacheConf",
 		"Bind Zone files",
 		"Dockerfile Syntax Highlighting",
 		"Emacs Pro Essentials",
@@ -21,10 +22,8 @@
 		"SingleTrailingNewLine",
 		"SublimeREPL",
 		"Theme - Soda",
-		"TOML",
 		"TrailingSpaces",
 		"TypeScript",
-		"View In Browser",
-		"ApacheConf"
+		"View In Browser"
 	]
 }
