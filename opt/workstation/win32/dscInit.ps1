@@ -43,6 +43,25 @@ function New-TemporaryDirectory {
     New-Item -ItemType Directory -Path $newTempDirPath
 }
 
+function Invoke-DscConfiguration {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory)] [string] $Name,
+        [hashtable] $Parameters = @{}
+    )
+
+    $dscWorkDir = New-TemporaryDirectory
+    $Parameters.OutputPath = $dscWorkDir.FullName
+    Write-Verbose -Message "Using working directory at $($dscWorkDir.FullName)"
+
+    try {
+        & "$Name" @Parameters
+        Start-DscConfiguration -Path $dscWorkDir -Wait -Force
+    } finally {
+        # Clean up the working directory because it may contain an unencrypted credential
+        Remove-Item -Recurse -Force -Path $dscWorkDir
+    }
+}
+
 ## Apply DSC Configuration
 
 $LocalhostConfigData = @{
@@ -54,9 +73,6 @@ $LocalhostConfigData = @{
         }
     )
 }
-
-$dscWorkDir = New-TemporaryDirectory
-Write-Verbose -Message "Using working directory at $($dscWorkDir.FullName)"
 
 # I hate how DSC deals with $env:PsModulePath
 # It needs all DSC modules to reside in the _machine_ PsModulePath environment variable
@@ -70,16 +86,7 @@ if ($machinePsModulePath -NotContains $dhdPsModulePath) {
 
 . $PSScriptRoot\dscConfiguration.ps1
 
-$dhdConfigParams = @{
-    OutputPath = $dscWorkDir
+Invoke-DscConfiguration -Name DhdConfig -Parameters @{
     Credential = $UserCredential
     ConfigurationData = $LocalhostConfigData
-}
-
-try {
-    DhdConfig @dhdConfigParams
-    Start-DscConfiguration -Path $dscWorkDir -Wait -Force
-} finally {
-    # Clean up the working directory because it contains an unencrypted credential
-    Remove-Item -Recurse -Force -Path $dscWorkDir
 }
