@@ -5,6 +5,11 @@ Configure a new Windows workstation the way I like it
 Initialize a new Windows workstation
 .parameter UserCredential
 The credential for the user to configure
+.parameter TestRemote
+Normally, this script will try to determine if it's being run from inside a checked-out dhd repository or not.
+If it is, then it uses relative paths to find items in dhd that it depends on.
+If it is not, then it downloads the latest code from the dhd master branch to a temporary directory.
+This switch bypasses that check, forcing it to download the latest from GitHub.
 .example
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 Must be run from an administrative prompt
@@ -22,16 +27,17 @@ Must be run from an administrative prompt
    you'll have to use `Receive-Job` instead
 #>
 [CmdletBinding()] Param(
-    [Parameter(Mandatory)] [PSCredential] $UserCredential
+    [Parameter(Mandatory)] [PSCredential] $UserCredential,
+    [switch] $TestRemote
 )
 
-<#
-Development notes:
-- Cannot use $PSScriptRoot, because this script is executed directly from the weeb
-- Cannot include DSC configuration blocks because of the Import-DscResource dynamic keyword
-#>
-
 $ErrorActionPreference = "Stop"
+
+
+## Globals I'll use later
+
+$DhdZipUri = "https://github.com/mrled/dhd/archive/master.zip"
+$RequiredDscModules = @('xHyper-V', 'cChoco')
 
 
 ## Helper Functions
@@ -63,6 +69,59 @@ function Invoke-DscConfiguration {
     }
 }
 
+<#
+.synopsis
+Add or clear a location from the local machine's PSModulePath environment variable
+.parameter Location
+A location to ensure exists in the path
+.parameter Clear
+If passed, rather than ensuring the location exists in the path, ensure it is cleared from it
+.notes
+I hate how DSC deals with $env:PsModulePath
+It needs all DSC modules to reside in the _machine_ PsModulePath environment variable
+Whatever
+#>
+function Set-LocationInMachinePsModulePath {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory)] [string] $Location,
+        [switch] $Clear
+    )
+    $currentValue = [Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
+    $currentValueSplit = $currentValue -Split ';'
+    $Location = Resolve-Path -LiteralPath $Location | Select-Object -ExpandProperty Path
+
+    if ($currentValueSplit -NotContains $Location -And -Not $Clear) {
+        Write-Verbose -Message "Setting Machine PSModulePath environment variable to include '$Location'"
+        [Environment]::SetEnvironmentVariable("PSModulePath", "$currentValue;$Location", "Machine")
+    } elseif ($currentValueSplit -Contains $Location -And $Clear) {
+        Write-Verbose -Message "Removing '$Location' from Machine PSModulePath environment variable"
+        $newValue = ($currentValueSplit | Foreach-Object -Process { if ($_ -ne $Location) {$_} }) -Join ";"
+        [Environment]::SetEnvironmentVariable("PSModulePath", $newValue, "Machine")
+    } else {
+        Write-Verbose -Message "Nothign to change"
+    }
+}
+
+
+## Get dhd
+
+if ($TestRemote -Or -Not $PSScriptRoot) {
+    Write-Verbose -Message "Downloading dhd from '$DhdZipUri'..."
+    # If we aren't running this script from a local filesystem, assume we need to download and install dhd
+    $dhdTemp = New-TemporaryDirectory
+    $dhdTempZip = "$dhdTemp\dhd-temp.zip"
+    Invoke-WebRequest -Uri $DhdZipUri -OutFile $dhdTempZip
+    Expand-Archive -LiteralPath $dhdTempZip -DestinationPath $dhdTemp
+    # We rely on the fact that GitHub zipfiles contain a single subdir with all repo items inside
+    $dhdLocation = Get-ChildItem -Directory -LiteralPath $dhdTemp | Select-Object -ExpandProperty FullName
+    $deleteDhdLocation = $true
+} else {
+    Write-Verbose -Message "Using on-disk dhd..."
+    $dhdLocation = Resolve-Path -LiteralPath $PSScriptRoot\..\..\..\ | Select-Object -ExpandProperty Path
+    $deleteDhdLocation = $false
+}
+Write-Verbose "Using dhd at location '$dhdLocation'"
+
 
 ## Install DSC prerequisites
 
@@ -74,44 +133,46 @@ if ('NuGet' -notin (Get-PackageProvider | Select-Object -ExpandProperty Name)) {
 if ('PSGallery' -notin (Get-PSRepository | Where-Object -Property InstallationPolicy -eq 'Trusted')) {
     Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 }
-foreach ($module in @('xHyper-V', 'cChoco')) {
+foreach ($module in $RequiredDscModules) {
     if (-not (Get-Module -ListAvailable -Name $module)) {
         Install-Module -Name $module
     }
 }
 
-# I hate how DSC deals with $env:PsModulePath
-# It needs all DSC modules to reside in the _machine_ PsModulePath environment variable
-# Whatever
-# This will need to be adjusted later to pull the modules down so it works like magic from the web
-$dhdPsModulePath = "$env:USERPROFILE\.dhd\opt\powershell\modules"
-$machinePsModulePath = [Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
-if ($machinePsModulePath -NotContains $dhdPsModulePath) {
-    [Environment]::SetEnvironmentVariable("PSModulePath", "$machinePsModulePath;$dhdPsModulePath", "Machine")
-}
-
 
 ## Apply DSC Configuration
 
-$LocalhostConfigData = @{
-    AllNodes = @(
-        @{
-            NodeName = "localhost"
-            PSDscAllowPlainTextPassword = $true
-            PSDscAllowDomainUser = $true
-        }
-    )
-}
+try {
+    Set-LocationInMachinePsModulePath -Location $dhdLocation\opt\powershell\modules
 
-. $PSScriptRoot\dscConfiguration.ps1
+    $LocalhostConfigData = @{
+        AllNodes = @(
+            @{
+                NodeName = "localhost"
+                PSDscAllowPlainTextPassword = $true
+                PSDscAllowDomainUser = $true
+            }
+        )
+    }
 
-Invoke-DscConfiguration -Name InstallSoftware
-Invoke-DscConfiguration -Name MachineSettingsConfig
-Invoke-DscConfiguration -Name DhdConfig -Parameters @{
-    Credential = $UserCredential
-    ConfigurationData = $LocalhostConfigData
-}
-Invoke-DscConfiguration -Name UserRegistrySettingsConfig -Parameters @{
-    Credential = $UserCredential
-    ConfigurationData = $LocalhostConfigData
+    . $PSScriptRoot\dscConfiguration.ps1
+
+    Invoke-DscConfiguration -Name InstallSoftware
+    Invoke-DscConfiguration -Name MachineSettingsConfig
+    Invoke-DscConfiguration -Name DhdConfig -Parameters @{
+        Credential = $UserCredential
+        ConfigurationData = $LocalhostConfigData
+    }
+    Invoke-DscConfiguration -Name UserRegistrySettingsConfig -Parameters @{
+        Credential = $UserCredential
+        ConfigurationData = $LocalhostConfigData
+    }
+} finally {
+    # We don't want our module path to stick around in the _machine_'s module path
+    Set-LocationInMachinePsModulePath -Location $dhdLocation\opt\powershell\modules -Clear
+
+    # If we put dhd in a temp location, don't leave copies of it around
+    if ($deleteDhdLocation) {
+        Remove-Item -Recurse -Force -LiteralPath $dhdLocation
+    }
 }
