@@ -26,4 +26,10 @@
   ,"extensions.ignoreRecommendations": true
   ,"explorer.confirmDelete": false
   ,"terminal.integrated.shell.windows": "C:\\Windows\\sysnative\\WindowsPowerShell\\v1.0\\powershell.exe"
+  ,"markdownlint.config": {
+    "MD006": false
+    ,"MD007": false
+    ,"MD013": false
+    ,"MD030": false
+  }
 }
