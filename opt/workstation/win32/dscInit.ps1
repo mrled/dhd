@@ -10,6 +10,8 @@ Normally, this script will try to determine if it's being run from inside a chec
 If it is, then it uses relative paths to find items in dhd that it depends on.
 If it is not, then it downloads the latest code from the dhd master branch to a temporary directory.
 This switch bypasses that check, forcing it to download the latest from GitHub.
+.parameter CalledFromSelf
+Internal use only. Used to prevent an infinite loop.
 .example
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 Must be run from an administrative prompt
@@ -31,7 +33,8 @@ When testing, run this way to prevent Invoke-WebRequest from caching the respons
 #>
 [CmdletBinding()] Param(
     [Parameter(Mandatory)] [PSCredential] $UserCredential,
-    [switch] $TestRemote
+    [switch] $TestRemote,
+    [switch] $CalledFromSelf
 )
 
 $ErrorActionPreference = "Stop"
@@ -109,6 +112,9 @@ function Set-LocationInMachinePsModulePath {
 ## Get dhd
 
 if ($TestRemote -Or -Not $PSScriptRoot) {
+    if ($CalledFromSelf) {
+        throw "Looks like we might be in an infinite loop, ejecting..."
+    }
     Write-Verbose -Message "Downloading dhd from '$DhdZipUri'..."
     # If we aren't running this script from a local filesystem, assume we need to download and install dhd
     $dhdTemp = New-TemporaryDirectory
@@ -117,11 +123,12 @@ if ($TestRemote -Or -Not $PSScriptRoot) {
     Expand-Archive -LiteralPath $dhdTempZip -DestinationPath $dhdTemp
     # We rely on the fact that GitHub zipfiles contain a single subdir with all repo items inside
     $dhdLocation = Get-ChildItem -Directory -LiteralPath $dhdTemp | Select-Object -ExpandProperty FullName
-    $deleteDhdLocation = $true
+    & "$dhdLocation\opt\workstations\windows\dscInit.ps1" -Verbose -CalledFromSelf -UserCredential (Get-Credential)
+    return
 } else {
     Write-Verbose -Message "Using on-disk dhd..."
     $dhdLocation = Resolve-Path -LiteralPath $PSScriptRoot\..\..\..\ | Select-Object -ExpandProperty Path
-    $deleteDhdLocation = $false
+    $dhdTemp = $false
 }
 Write-Verbose "Using dhd at location '$dhdLocation'"
 
@@ -175,7 +182,7 @@ try {
     Set-LocationInMachinePsModulePath -Location $dhdLocation\opt\powershell\modules -Clear
 
     # If we put dhd in a temp location, don't leave copies of it around
-    if ($deleteDhdLocation) {
-        Remove-Item -Recurse -Force -LiteralPath $dhdLocation
+    if ($dhdTemp) {
+        Remove-Item -Recurse -Force -LiteralPath $dhdTemp
     }
 }
