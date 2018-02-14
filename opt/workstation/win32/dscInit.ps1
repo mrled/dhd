@@ -123,7 +123,7 @@ if ($TestRemote -Or -Not $PSScriptRoot) {
     Expand-Archive -LiteralPath $dhdTempZip -DestinationPath $dhdTemp
     # We rely on the fact that GitHub zipfiles contain a single subdir with all repo items inside
     $dhdLocation = Get-ChildItem -Directory -LiteralPath $dhdTemp | Select-Object -ExpandProperty FullName
-    & "$dhdLocation\opt\workstations\windows\dscInit.ps1" -Verbose -CalledFromSelf -UserCredential (Get-Credential)
+    & "$dhdLocation\opt\workstation\win32\dscInit.ps1" -Verbose -CalledFromSelf -UserCredential (Get-Credential)
     return
 } else {
     Write-Verbose -Message "Using on-disk dhd..."
