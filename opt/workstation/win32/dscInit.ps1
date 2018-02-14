@@ -66,6 +66,8 @@ function Invoke-DscConfiguration {
 
 ## Install DSC prerequisites
 
+Set-ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
+
 if ('NuGet' -notin (Get-PackageProvider | Select-Object -ExpandProperty Name)) {
     Install-PackageProvider -Name NuGet -Force
 }

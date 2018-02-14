@@ -43,6 +43,18 @@ Configuration InstallSoftware {
             DependsOn = "[Script]AddChocoBinToMachinePath"
         }
 
+        # NOTE: Client OSes cannot use WindowsFeature DSC resources, so we are resigned to this
+        cChocoPackageInstaller "InstallHyperV" {
+            Name = "Microsoft-Hyper-V-All"
+            Source = "windowsFeatures"
+            DependsOn = '[cChocoInstaller]InstallChoco'
+        }
+        cChocoPackageInstaller "InstallWindowsSubsystemForLinux" {
+            Name = "Microsoft-Windows-Subsystem-Linux"
+            Source = "windowsFeatures"
+            DependsOn = '[cChocoInstaller]InstallChoco'
+        }
+
         # Packages with no parameters, alphabetical order
         cChocoPackageInstallerSet "ChocoInstallPackages" {
             Name = @(
@@ -94,6 +106,7 @@ Configuration DhdConfig {
     param(
         [string[]] $ComputerName = "localhost",
         [string] $UserProfile = "${env:USERPROFILE}",
+        [string] $DhdPath = "$UserProfile\.dhd",
         [string] $AppData = "${env:AppData}",
         [string] $VsCodePath = "${env:ProgramFiles}\Microsoft VS Code\bin\code.cmd",
         [Parameter(Mandatory)] [PSCredential] $Credential
@@ -104,37 +117,65 @@ Configuration DhdConfig {
 
     Node $ComputerName {
 
+        Script CheckOutDhd {
+            GetScript = { return @{ Result = "" } }
+            TestScript = {
+                Test-Path -LiteralPath "$Using:DhdPath\.git"
+            }
+            SetScript = {
+                git clone "https://github.com/mrled/dhd" "$Using:DhdPath"
+            }
+            PsDscRunAsCredential = $Credential
+        }
+
+        # TODO: Fix error when this is uncommented:
+        #   PowerShell DSC resource MSFT_ScriptResource  failed to execute Set-TargetResource functionality with error message: Exception setting "BackgroundColor": "A command that prompts the user failed because the host program or the command type does not support user interaction. Try a host program that supports user interaction, such as the Windows PowerShell Console or Windows PowerShell ISE, and remove prompt-related commands from command types that do not support user interaction, such as Windows PowerShell workflows."
+        # Script InitialSetupPathAndEnv {
+        #     GetScript = { return @{ Result = "" } }
+        #     TestScript = { return $false }
+        #     SetScript = {
+        #         . "$Using:DhdPath\hbase\Microsoft.PowerShell_profile.ps1"
+        #         Setup-SystemPath
+        #         Setup-Environment
+        #     }
+        #     PsDscRunAsCredential = $Credential
+        # }
+
         File EnableWindowsPowershellProfile {
             DestinationPath = "$UserProfile\Documents\WindowsPowershell\profile.ps1"
-            SourcePath = "$UserProfile\.dhd\hbase\Microsoft.PowerShell_profile.win32.ps1"
+            SourcePath = "$DhdPath\hbase\Microsoft.PowerShell_profile.win32.ps1"
             Ensure = "Present"
             Type = "File"
             Credential = $Credential
             Checksum = "SHA-512"
             Force = $true
             MatchSource = $true
+            PsDscRunAsCredential = $Credential
         }
         File EnablePowershellCoreProfile {
             DestinationPath = "$UserProfile\Documents\Powershell\profile.ps1"
-            SourcePath = "$UserProfile\.dhd\hbase\Microsoft.PowerShell_profile.win32.ps1"
+            SourcePath = "$DhdPath\hbase\Microsoft.PowerShell_profile.win32.ps1"
             Ensure = "Present"
             Type = "File"
             Credential = $Credential
             Checksum = "SHA-512"
             Force = $true
             MatchSource = $true
+            PsDscRunAsCredential = $Credential
         }
 
         cMrlFileLink SymlinkKnownHosts {
             LinkPath = "$UserProfile\.ssh\known_hosts"
-            LinkTarget = "$UserProfile\.dhd\hbase\known_hosts"
+            LinkTarget = "$DhdPath\hbase\known_hosts"
             Ensure = "Present"
+            PsDscRunAsCredential = $Credential
         }
 
         cMrlFileLink SymlinkVsCodeConfig {
             LinkPath = "$AppData\Code\User"
-            LinkTarget = "$UserProfile\.dhd\opt\vscodeuser"
+            LinkTarget = "$DhdPath\opt\vscodeuser"
             Ensure = "Present"
+            PsDscRunAsCredential = $Credential
         }
 
         Script InstallVsCodePackages {
@@ -150,12 +191,14 @@ Configuration DhdConfig {
                     }
                 }
             }
+            PsDscRunAsCredential = $Credential
         }
 
         cMrlFileLink "Symlink ConEmu configuration" {
             LinkPath = "$AppData\ConEmu.xml"
-            LinkTarget = "$UserProfile\.dhd\opt\win32\ConEmu.xml"
+            LinkTarget = "$DhdPath\opt\win32\ConEmu.xml"
             Ensure = "Present"
+            PsDscRunAsCredential = $Credential
         }
 
         # This will save the list to the extensions.txt file, ready to be checked in to Git
@@ -165,7 +208,7 @@ Configuration DhdConfig {
             GetScript = { return @{ Result = "" } }
             TestScript = { return $false }
             SetScript = {
-                $extensionsTxtPath = "$using:UserProfile\.dhd\opt\vscodeuser\extensions.txt"
+                $extensionsTxtPath = "$using:DhdPath\opt\vscodeuser\extensions.txt"
                 $extensions = & $using:VsCodePath --list-extensions
 
                 # The following approach has two advantage over the much simpler Out-File:
@@ -183,12 +226,14 @@ Configuration DhdConfig {
                 }
                 $outStream.Close()
             }
+            PsDscRunAsCredential = $Credential
         }
 
         cMrlFileLink SymlinkSublimeConfig {
             LinkPath = "$AppData\Sublime Text 3\Packages\User"
-            LinkTarget = "$UserProfile\.dhd\opt\sublimetextuser"
+            LinkTarget = "$DhdPath\opt\sublimetextuser"
             Ensure = "Present"
+            PsDscRunAsCredential = $Credential
         }
 
         # On first startup, Package Control will then run and install all my packages, nice
@@ -203,6 +248,7 @@ Configuration DhdConfig {
                 New-Item -Type Directory -Force -Path $(Split-Path -LiteralPath $pkgPath) | Out-Null
                 Invoke-WebRequest -Uri $pkgUri -OutFile $pkgPath
             }
+            PsDscRunAsCredential = $Credential
         }
 
     }
@@ -223,66 +269,77 @@ Configuration UserRegistrySettingsConfig {
             ValueName = "Enabled"
             ValueData = 0
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "DisableBingSearchResultsInStartMenu" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
             ValueName = "BingSearchEnabled"
             ValueData = 0
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "ShowHiddenFiles" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             ValueName = "Hidden"
             ValueData = 1
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "ShowFileExtensions" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             ValueName = "HideFileExt"
             ValueData = 0
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "SetExplorerHomeScreenToThisPc" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             ValueName = "LaunchTo"
             ValueData = 1  # Default value: 2
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "ExpandExplorerNavigationPaneToCurrentFolder" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             ValueName = "NavPaneExpandToCurrentFolder"
             ValueData = 1
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "ShowAllFoldersInExplorerNavigationPane" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             ValueName = "NavPaneShowAllFolders"
             ValueData = 1
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "ShowExplorerStatusBar" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             ValueName = "ShowStatusBar"
             ValueData = 1
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "DisableSharingWizard" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             ValueName = "SharingWizardOn"
             ValueData = 0
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "DisablePeopleInTaskbar" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"
             ValueName = "PeopleBand"
             ValueData = 0
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
         Registry "NeverHideSystemTrayIcons" {
             Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer"
             ValueName = "EnableAutoTray"
             ValueData = 0
             ValueType = "Dword"
+            PsDscRunAsCredential = $Credential
         }
 
     }
