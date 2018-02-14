@@ -5,7 +5,6 @@
 	"font_size": 10,
 	"ignored_packages":
 	[
-		"Package Control",
 		"Vintage"
 	],
 	"scroll_past_end": true,

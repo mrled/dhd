@@ -2,12 +2,10 @@
 	"bootstrapped": true,
 	"in_process_packages":
 	[
-		"Package Control"
 	],
 	"installed_packages":
 	[
 		"Anaconda",
-		"ApacheConf.tmLanguage",
 		"Bind Zone files",
 		"Dockerfile Syntax Highlighting",
 		"Emacs Pro Essentials",
@@ -26,6 +24,7 @@
 		"TOML",
 		"TrailingSpaces",
 		"TypeScript",
-		"View In Browser"
+		"View In Browser",
+		"ApacheConf"
 	]
 }
