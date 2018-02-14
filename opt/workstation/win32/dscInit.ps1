@@ -33,6 +33,7 @@ Development notes:
 
 $ErrorActionPreference = "Stop"
 
+
 ## Helper Functions
 
 function New-TemporaryDirectory {
@@ -62,16 +63,19 @@ function Invoke-DscConfiguration {
     }
 }
 
-## Apply DSC Configuration
 
-$LocalhostConfigData = @{
-    AllNodes = @(
-        @{
-            NodeName = "localhost"
-            PSDscAllowPlainTextPassword = $true
-            PSDscAllowDomainUser = $true
-        }
-    )
+## Install DSC prerequisites
+
+if ('NuGet' -notin (Get-PackageProvider | Select-Object -ExpandProperty Name)) {
+    Install-PackageProvider -Name NuGet -Force
+}
+if ('PSGallery' -notin (Get-PSRepository | Where-Object -Property InstallationPolicy -eq 'Trusted')) {
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+}
+foreach ($module in @('xHyper-V', 'cChoco')) {
+    if (-not (Get-Module -ListAvailable -Name $module)) {
+        Install-Module -Name $module
+    }
 }
 
 # I hate how DSC deals with $env:PsModulePath
@@ -84,8 +88,23 @@ if ($machinePsModulePath -NotContains $dhdPsModulePath) {
     [Environment]::SetEnvironmentVariable("PSModulePath", "$machinePsModulePath;$dhdPsModulePath", "Machine")
 }
 
+
+## Apply DSC Configuration
+
+$LocalhostConfigData = @{
+    AllNodes = @(
+        @{
+            NodeName = "localhost"
+            PSDscAllowPlainTextPassword = $true
+            PSDscAllowDomainUser = $true
+        }
+    )
+}
+
 . $PSScriptRoot\dscConfiguration.ps1
 
+Invoke-DscConfiguration -Name InstallSoftware
+Invoke-DscConfiguration -Name MachineSettingsConfig
 Invoke-DscConfiguration -Name DhdConfig -Parameters @{
     Credential = $UserCredential
     ConfigurationData = $LocalhostConfigData
@@ -94,4 +113,3 @@ Invoke-DscConfiguration -Name UserRegistrySettingsConfig -Parameters @{
     Credential = $UserCredential
     ConfigurationData = $LocalhostConfigData
 }
-Invoke-DscConfiguration -Name MachineSettingsConfig -Parameters @{}

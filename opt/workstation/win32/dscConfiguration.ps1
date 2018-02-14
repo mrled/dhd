@@ -3,11 +3,93 @@
 DSC configuration for configuring a new workstation the way I prefer
 #>
 
-<#
-Enable debugging crap.
-Not useful once everything is fully automated, but they're annoying the fuck out of me when I'm RDPing to the server all the time during debugging.
-Note that this *should not* do anything that requires a restart, since we call it with `Start-DscConfiguration -Wait`
-#>
+Configuration InstallSoftware {
+    Param(
+        [string[]] $ComputerName = "localhost",
+        [string] $ChocoInstallDir = $(Join-Path -Path ${env:ProgramData} -ChildPath "Chocolatey")
+    )
+
+    Import-DscResource -ModuleName PSDesiredStateConfiguration
+    Import-DscResource -ModuleName cChoco
+
+    Node $ComputerName {
+
+        cChocoInstaller "InstallChoco" {
+            # It seems like this should add $ChocoInstallDir\bin to PATH, but it doesn't appear to do so at the Machine level
+            InstallDir = $ChocoInstallDir
+        }
+        Script "AddChocoBinToMachinePath" {
+            GetScript = { return @{ Result = "" } }
+            TestScript = {
+                [Environment]::GetEnvironmentVariable("Path", "Machine") -split ';' -contains "$Using:ChocoInstallDir\bin"
+            }
+            SetScript = {
+                $path = [Environment]::GetEnvironmentVariable("Path", "Machine") + [System.IO.Path]::PathSeparator + "$Using:ChocoInstallDir\bin"
+                [Environment]::SetEnvironmentVariable("Path", $path, "Machine")
+            }
+        }
+
+        # This module is in development but not yet released
+        # cChocoFeature "Configure Chocolatey to never require confirmation" {
+        #     FeatureName = "allowGlobalConfirmation"
+        #     Ensure = "Present"
+        # }
+        Script "Configure Chocolatey to never require confirmation" {
+            GetScript = { return @{ Result = "" } }
+            TestScript = { return $false }
+            SetScript = {
+                choco feature enable --name=allowGlobalConfirmation --yes
+            }
+            DependsOn = "[Script]AddChocoBinToMachinePath"
+        }
+
+        # Packages with no parameters, alphabetical order
+        cChocoPackageInstallerSet "ChocoInstallPackages" {
+            Name = @(
+                '7zip'
+                'ConEmu'
+                'Firefox'
+                'GoogleChrome'
+                'SublimeText3'
+                'VisualStudioCode'
+                'bind-toolsonly'
+                'curl'
+                'docker-for-windows'
+                'golang'
+                'gpg4win-vanilla'
+                'greenshot'
+                'less'
+                'mRemoteNG'
+                'metapad'
+                'packer'
+                'powershell-core'
+                'pt'
+                'putty'
+                'python2'
+                'python3'
+                'slack'
+                'sysinternals'
+                'vagrant'
+                'vim'
+            )
+            DependsOn = '[cChocoInstaller]InstallChoco'
+        }
+
+        # Packages with parameters, alphabetical order
+        cChocoPackageInstaller "ChocoInstallGit" {
+            Name = 'git'
+            Params = "/GitOnlyOnPath"
+            DependsOn = '[cChocoInstaller]InstallChoco'
+        }
+        cChocoPackageInstaller "ChocoInstallOpenSSH" {
+            Name = 'openssh'
+            Params = "/SSHServerFeature /SSHAgentFeature"
+            DependsOn = '[cChocoInstaller]InstallChoco'
+        }
+
+    }
+}
+
 Configuration DhdConfig {
     param(
         [string[]] $ComputerName = "localhost",
