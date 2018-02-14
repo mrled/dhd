@@ -165,8 +165,23 @@ Configuration DhdConfig {
             GetScript = { return @{ Result = "" } }
             TestScript = { return $false }
             SetScript = {
-                $extensionsTxtPath = "$using:AppData\Code\User\extensions.txt"
-                & $using:VsCodePath --list-extensions | Out-File -LiteralPath $extensionsTxtPath -Encoding utf8
+                $extensionsTxtPath = "$using:UserProfile\.dhd\opt\vscodeuser\extensions.txt"
+                $extensions = & $using:VsCodePath --list-extensions
+
+                # The following approach has two advantage over the much simpler Out-File:
+                # 1. It uses only LF, not CRLF, for newlines
+                # 2. It does not emit a UTF Byte Order Mark (BOM) at the beginning of the file
+                # Both of these advantages are particularly helpful when working across operating systems
+
+                if (Test-Path -LiteralPath $extensionsTxtPath) {
+                    Remove-Item -LiteralPath $extensionsTxtPath
+                }
+                $outStream = New-Object -TypeName System.IO.StreamWriter -ArgumentList @($extensionsTxtPath, [Text.Encoding]::UTF8)
+                $outStream.NewLine = "`n"
+                foreach ($line in $extensions) {
+                    $outStream.WriteLine($line)
+                }
+                $outStream.Close()
             }
         }
 
