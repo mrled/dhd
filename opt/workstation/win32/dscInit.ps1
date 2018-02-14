@@ -13,6 +13,9 @@ This switch bypasses that check, forcing it to download the latest from GitHub.
 .example
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 Must be run from an administrative prompt
+.example
+Invoke-WebRequest -Headers @{"Cache-Control"="no-cache"} -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
+When testing, run this way to prevent Invoke-WebRequest from caching the response
 .notes
 1. WinRM has to be enabled, via `Enable-PSRemoting -SkipNetworkCheck -Force`
 2. WSMan has to have a large-ish MaxEnvelopeSize setting, via e.g.
@@ -155,7 +158,7 @@ try {
         )
     }
 
-    . $PSScriptRoot\dscConfiguration.ps1
+    . $dhdLocation\opt\workstation\win32\dscConfiguration.ps1
 
     Invoke-DscConfiguration -Name InstallSoftware
     Invoke-DscConfiguration -Name MachineSettingsConfig
