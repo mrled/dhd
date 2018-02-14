@@ -15,6 +15,7 @@ Configuration DhdConfig {
     )
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
+    Import-DscResource -ModuleName cMrlFileLink
 
     Node $ComputerName {
 
@@ -39,27 +40,10 @@ Configuration DhdConfig {
             MatchSource = $true
         }
 
-        Script "SymlinkKnownHosts" {
-            GetScript = { return @{ Result = "" } }
-            TestScript = {
-                if (-not (Test-Path -Path $env:USERPROFILE\.ssh)) {
-                    return $false
-                }
-                $item = Get-Item -Path $env:USERPROFILE\.ssh
-                if ((Get-Member -InputObject $item | Select-Object -ExpandProperty Name) -Contains 'LinkType') {
-                    if ($item.LinkType -eq 'SymbolicLink') {
-                        return $true
-                    }
-                }
-                return $false
-            }
-            SetScript = {
-                New-Item -Type Directory -Force -Path $env:USERPROFILE\.ssh | Out-Null
-                if (Test-Path -Path $env:USERPROFILE\.ssh\known_hosts) {
-                    Remove-Item -Force -Path $env:USERPROFILE\.ssh\known_hosts
-                }
-                cmd /c mklink $env:USERPROFILE\.ssh\known_hosts $env:USERPROFILE\.dhd\hbase\known_hosts
-            }
+        cMrlFileLink SymlinkKnownHosts {
+            LinkPath = "$env:USERPROFILE\.ssh\known_hosts"
+            LinkTarget = "$env:USERPROFILE\.dhd\hbase\known_hosts"
+            Ensure = "Present"
         }
 
     }

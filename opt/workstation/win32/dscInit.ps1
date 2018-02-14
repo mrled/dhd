@@ -8,6 +8,18 @@ The credential for the user to configure
 .example
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 Must be run from an administrative prompt
+.notes
+1. WinRM has to be enabled, via `Enable-PSRemoting -SkipNetworkCheck -Force`
+2. WSMan has to have a large-ish MaxEnvelopeSize setting, via e.g.
+  `Set-Item WSMan:\localhost\MaxEnvelopeSizekb 2048`
+3. Because ~*~FUCKING WINDOWS~*~ if you have ANY network connection profile set to "Public",
+   the above command will fail. See:
+   `Get-NetConnectionProfile`
+   `Set-NetConnectionProfile -NetworkCategory Private -Name YourConnectionName`
+   Feel free to set them back to "Public" when you're done
+4. It's possible to run DSC configs without admin access if you're providing a WinRM credential,
+   as we do here. However, `Get-DscConfigurationStatus` won't work;
+   you'll have to use `Receive-Job` instead
 #>
 [CmdletBinding()] Param(
     [Parameter(Mandatory)] [PSCredential] $UserCredential
@@ -44,6 +56,17 @@ $LocalhostConfigData = @{
 }
 
 $dscWorkDir = New-TemporaryDirectory
+Write-Verbose -Message "Using working directory at $($dscWorkDir.FullName)"
+
+# I hate how DSC deals with $env:PsModulePath
+# It needs all DSC modules to reside in the _machine_ PsModulePath environment variable
+# Whatever
+# This will need to be adjusted later to pull the modules down so it works like magic from the web
+$dhdPsModulePath = "$env:USERPROFILE\.dhd\opt\powershell\modules"
+$machinePsModulePath = [Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
+if ($machinePsModulePath -NotContains $dhdPsModulePath) {
+    [Environment]::SetEnvironmentVariable("PSModulePath", "$machinePsModulePath;$dhdPsModulePath", "Machine")
+}
 
 . $PSScriptRoot\dscConfiguration.ps1
 
@@ -55,7 +78,7 @@ $dhdConfigParams = @{
 
 try {
     DhdConfig @dhdConfigParams
-    Start-DscConfiguration -Path $dscWorkDir
+    Start-DscConfiguration -Path $dscWorkDir -Wait -Force
 } finally {
     # Clean up the working directory because it contains an unencrypted credential
     Remove-Item -Recurse -Force -Path $dscWorkDir
