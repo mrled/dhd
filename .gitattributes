@@ -1,0 +1,4 @@
+# Disable autocrlf for this repo, no matter what the user has defined in their ~/.gitconfig
+# https://stackoverflow.com/questions/9933004/how-to-to-disable-git-end-of-line-crlf-to-lf-across-all-clones-machines
+# Jesus fucking CHRIST will there ever be a year when we can forget about fucking line endings? This is *horseshit*
+* -text
