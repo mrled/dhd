@@ -90,3 +90,8 @@ Invoke-DscConfiguration -Name DhdConfig -Parameters @{
     Credential = $UserCredential
     ConfigurationData = $LocalhostConfigData
 }
+Invoke-DscConfiguration -Name UserRegistrySettingsConfig -Parameters @{
+    Credential = $UserCredential
+    ConfigurationData = $LocalhostConfigData
+}
+Invoke-DscConfiguration -Name MachineSettingsConfig -Parameters @{}
