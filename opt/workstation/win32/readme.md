@@ -2,7 +2,7 @@
 
 Use DSC to set up a new Windows workstation.
 
-Ultimately, this will replace my `magic.ps1` and `boxstarter.ps1` scripts.
+See help for `dscInit.ps1` for how to use it.
 
 ## Exploring new systems
 
@@ -21,7 +21,6 @@ When exploring new systems, these might be helpful:
 
 ## TO DO
 
- -  Make installable via a one-liner!
  -  What to do about reboots?
      -  On first application of my config, I will probably usually want to reboot when prompted and then start configuration again
      -  On subsequent applications of my config, I will probably not want to reboot, as I'll be in the middle of something
