@@ -70,6 +70,12 @@ Configuration DhdConfig {
             }
         }
 
+        cMrlFileLink "Symlink ConEmu configuration" {
+            LinkPath = "$AppData\ConEmu.xml"
+            LinkTarget = "$UserProfile\.dhd\opt\win32\ConEmu.xml"
+            Ensure = "Present"
+        }
+
         # This will save the list to the extensions.txt file, ready to be checked in to Git
         # Not useful for new boxes, only useful when we apply this DSC config to boxes I've been using
         # Does not commit this to Git, you have to do that yourself
