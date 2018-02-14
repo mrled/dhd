@@ -1,4 +1,4 @@
-﻿chrislajoie.vscode-modelines
+chrislajoie.vscode-modelines
 DavidAnson.vscode-markdownlint
 eg2.tslint
 lfs.vscode-emacs-friendly
