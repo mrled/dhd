@@ -3,16 +3,12 @@ enum Ensure {
     Present
 }
 
-<#
-Manage shortcuts
-#>
 [DscResource()] class cMrlFileLink {
-    # Fully qualified path to the shortcut file
-    # Note that the extension *must* end in .lnk, or we throw an error
+    # Fully qualified path to the link file
     [DscProperty(Key)]
     [string] $LinkPath
 
-    # Fully qualified path to the shortcut target
+    # Fully qualified path to the link target
     [DscProperty(Mandatory)]
     [string] $LinkTarget
 
@@ -47,7 +43,7 @@ Manage shortcuts
 
     [cMrlFileLink] Get() {
         $this.ValidateProperties()
-        if ($this.TestShortcut()) {
+        if ($this.TestLink()) {
             $this.Ensure = [Ensure]::Present
         } else {
             $this.Ensure = [Ensure]::Absent
