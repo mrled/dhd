@@ -1,26 +1,5 @@
 # Initialization stuff doesn't need to happen very often, and it might be slow ish maybe
 
-<#
-.notes
-This function is necessary for "superpack" installers of Python modules
-They're fuckin dumb and they only look in HKCU not HKLM
-See also: http://stackoverflow.com/q/3008509/868206
-UPDATE 2016-11-11: is this still necessary? This may be a relic of the past at this point...
-#>
-function Setup-PythonRegistryKeys {
-    param(
-        [switch] $force
-    )
-    $hkcuPath = "HKCU:\SOFTWARE\Python"
-    $hklmPath = "HKLM:\Software\Python"
-
-    if (test-path $hklmPath) {
-        if ($force -or -not (test-path $hkcuPath)) {
-            copy-item -recurse $hklmPath $hkcuPath -force:$force
-        }
-    }
-}
-
 function Setup-SystemPath {
     # Define potential PATH elements in the order you want them to appear in the final PATH
     # Remember that the Machine PATH is prepended to this list
