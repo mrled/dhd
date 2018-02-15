@@ -81,9 +81,6 @@ function Setup-SystemPath {
 }
 
 function Setup-Environment {
-    # Term is important for things like less.exe, sometimes
-    Set-WinEnvironmentVariable -name "TERM" -value "xterm" -targetlocation user,process
-
     Set-FileAssociation .el txtfile
     Set-FileAssociation .nfo txtfile "text/plain"
     Set-FileAssociation .mdwn txtfile "text/plain"
@@ -91,12 +88,6 @@ function Setup-Environment {
     Set-FileAssociation .md txtfile "text/plain"
     Set-FileAssociation .text txtfile "text/plain"
     Set-FileAssociation .mkd txtfile "text/plain"
-
-    Set-WinEnvironmentVariable -name PYTHONSTARTUP -value "$home\.dhd\hbase\python.profile" -targetlocation user,process
-    Set-WinEnvironmentVariable -name PythonPath -value "$Home\.dhd\opt\python" -targetlocation user,process
-
-    # Useful for lots of things... I think Emacs has prefered to have this at least in the past, and also Git won't look for $env:USERPROFILE at least as of 2017 (for when it looks for like your .ssh folder)
-    Set-WinEnvironmentVariable -name HOME -value $Home -targetlocation user,process
 }
 
 # The closest I can get to my .b() bash function is dot-sourcing this function: `. p`

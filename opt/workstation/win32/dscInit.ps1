@@ -199,7 +199,7 @@ try {
         Credential = $UserCredential
         ConfigurationData = $LocalhostConfigData
     }
-    Invoke-DscConfiguration -Name UserRegistrySettingsConfig -Parameters @{
+    Invoke-DscConfiguration -Name UserSettingsConfig -Parameters @{
         Credential = $UserCredential
         ConfigurationData = $LocalhostConfigData
     }

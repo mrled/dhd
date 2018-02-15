@@ -595,34 +595,6 @@ function reimport-module {
 }
 set-alias reimport reimport-module
 
-# todo : could mimic set-variable options as closely aspossible
-function Set-WinEnvironmentVariable {
-    [CmdletBinding()] param(
-        [parameter(mandatory=$true)] [string] $Name,
-        [string] $Value = "",
-        [validateset("Machine","User","Process")] [string[]] $TargetLocation = "Process"
-    )
-    foreach ($target in $TargetLocation) {
-        Write-Verbose "Setting '$Name' = '$Value' in '$target' scope"
-        [Environment]::SetEnvironmentVariable($Name, $Value, $target)
-    }
-}
-set-alias setenv Set-WinEnvironmentVariable
-# TODO: when getting multiple targets, it outputs an array of strings for the value
-#       honestly not sure what to do here. %PATH% is *concatenated*, but others are
-#       *replaced* when there's a user and a machine one. ?????
-function Get-WinEnvironmentVariable {
-    param(
-        [parameter(mandatory=$true)] [string] $Name,
-        [validateset("Machine","User","Process")] [string[]] $TargetLocation = @("Machine","User","Process")
-    )
-    $out = ""
-    foreach ($target in $TargetLocation) {
-        ([Environment]::GetEnvironmentVariable($Name, $target))
-    }
-}
-set-alias getenv Get-WinEnvironmentVariable
-
 # http://social.msdn.microsoft.com/Forums/vstudio/en-US/630ed1d9-73f1-4cc0-bc84-04f29cffc13b/
 function Set-FileAssociation {
     param(

@@ -114,6 +114,7 @@ Configuration DhdConfig {
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName cMrlFileLink
+    Import-DscResource -ModuleName cMrlUserEnvironment
 
     Node $ComputerName {
 
@@ -251,16 +252,30 @@ Configuration DhdConfig {
             PsDscRunAsCredential = $Credential
         }
 
+        cMrlUserEnvironment "SetPythonStartupEnvVar" {
+            Name = "PYTHONSTARTUP"
+            Value = "$DhdPath\hbase\python.profile"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Present"
+        }
+        cMrlUserEnvironment "SetPythonPathEnvVar" {
+            Name = "PythonPath"
+            Value = "$DhdPath\opt\pythopn"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Present"
+        }
+
     }
 }
 
-Configuration UserRegistrySettingsConfig {
+Configuration UserSettingsConfig {
     param(
         [string[]] $ComputerName = "localhost",
         [Parameter(Mandatory)] [PSCredential] $Credential
     )
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
+    Import-DscResource -ModuleName cMrlUserEnvironment
 
     Node $ComputerName {
 
@@ -340,6 +355,22 @@ Configuration UserRegistrySettingsConfig {
             ValueData = 0
             ValueType = "Dword"
             PsDscRunAsCredential = $Credential
+        }
+
+        # Important for things like less.exe, sometimes
+        cMrlUserEnvironment "SetTermEnvVar" {
+            Name = "TERM"
+            Value = "xterm"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Present"
+        }
+
+        # I think this is less necessary recently, but some unix software does still use this
+        cMrlUserEnvironment "SetHomeEnvVar" {
+            Name = "HOME"
+            Value = "$env:USERPROFILE"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Present"
         }
 
     }
