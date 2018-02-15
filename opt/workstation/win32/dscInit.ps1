@@ -1,3 +1,7 @@
+#Requires -Version 5
+#Requires -PSEdition Desktop
+#Requires -RunAsAdministrator
+
 <#
 .synopsis
 Configure a new Windows workstation the way I like it
@@ -18,18 +22,6 @@ Must be run from an administrative prompt
 .example
 Invoke-WebRequest -Headers @{"Cache-Control"="no-cache"} -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 When testing, run this way to prevent Invoke-WebRequest from caching the response
-.notes
-1. WinRM has to be enabled, via `Enable-PSRemoting -SkipNetworkCheck -Force`
-2. WSMan has to have a large-ish MaxEnvelopeSize setting, via e.g.
-  `Set-Item WSMan:\localhost\MaxEnvelopeSizekb 2048`
-3. Because ~*~FUCKING WINDOWS~*~ if you have ANY network connection profile set to "Public",
-   the above command will fail. See:
-   `Get-NetConnectionProfile`
-   `Set-NetConnectionProfile -NetworkCategory Private -Name YourConnectionName`
-   Feel free to set them back to "Public" when you're done
-4. It's possible to run DSC configs without admin access if you're providing a WinRM credential,
-   as we do here. However, `Get-DscConfigurationStatus` won't work;
-   you'll have to use `Receive-Job` instead
 #>
 [CmdletBinding()] Param(
     [Parameter(Mandatory)] [PSCredential] $UserCredential,
@@ -44,6 +36,7 @@ $ErrorActionPreference = "Stop"
 
 $DhdZipUri = "https://github.com/mrled/dhd/archive/master.zip"
 $RequiredDscModules = @('xHyper-V', 'cChoco')
+$MinimumMaxEnvelopeSize = 2048
 
 
 ## Helper Functions
@@ -106,6 +99,39 @@ function Set-LocationInMachinePsModulePath {
     } else {
         Write-Verbose -Message "Nothign to change"
     }
+}
+
+function Test-WinRmEnabled {
+    [CmdletBinding()] Param()
+    try {
+        Invoke-Command -ComputerName localhost -ScriptBlock { Write-Output "WinRM is enabled" }
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+
+## Apply necessary Windows changes
+
+# Enable Powershell Remoting / WinRM
+if (-not (Test-WinRmEnabled)) {
+    Enable-PSRemoting -SkipNetworkCheck -Force
+}
+
+# Make sure that the configured MaxEnvelopeSize is big enough. By default, it isn't. Of course.
+$currentMaxEnvSize = Get-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb | Select-Object -ExpandProperty Value
+if ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize) {
+    # Because ~*~FUCKING WINDOWS~*~ if you have ANY network connection profile set to "Public", you cannot set MaxEnvelopeSizekb. What.
+    $publicNetConnProfs = Get-NetConnectionProfile -NetworkCategory Public
+    try {
+        Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Private
+        Set-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb -Value 2048
+    } finally {
+        # After setting MaxEnvelopeSizekb, you can set them back to Public and everything will still work fine
+        Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Public
+    }
+
 }
 
 
