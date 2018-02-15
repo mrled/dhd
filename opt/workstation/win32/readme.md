@@ -2,11 +2,35 @@
 
 Use DSC to set up a new Windows workstation.
 
-See help for `dscInit.ps1` for how to use it.
+This is a replacement for my short-lived Boxstarter script.
+
+Install via a one-liner like:
+
+    iwr -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | iex
+
+- Run from an elevated prompt
+- It will prompt for a credential - this should be the credential for your user account, so that DSC can set user-specific registry settings etc
+
+## How this works
+
+You probably don't wanna use this directly unless you are literally me.
+
+That said, it might be interesting to see how it works.
+
+1. I use `dscInit.ps1` in this directory as a front-end, script that can be curlbashed from an elevated Powershell 5.x prompt
+2. Manages all work that has to be done before DSC, which I'm trying to keep as minimal as possible
+3. It calls the DSC configuration in `dscConfiguration.ps1` in this directory
+4. I wrote some custom DSC resources in ../../powershell/modules which are used as well
+
+The goal is something that works like Boxstarter, but is more secure (Boxstarter curlbashes over unencrypted HTTP) and more modular. Over time, I may break out pieces of the DSC configuration into multiple files. Also, some parts of the configuration might be useful on non-workstation machines, so it may be worth breaking them out so they can be composed anywhere.
+
+I also like how DSC contains complexity. DSC resources do have kind of a lot of code in them, but they're a really nice containment/abstraction around that code.
+
+In the future, I am planning to apply my configurations on a schedule, to manage drift.
 
 ## Exploring new systems
 
-When exploring new systems, these might be helpful:
+When exploring new systems, particularly new Windows versions or OEM crapware, it may be useful to see installed programs so that they can be removed.
 
     # List all installed programs
     Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall* | sort -property DisplayName | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table -AutoSize
