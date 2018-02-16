@@ -204,10 +204,3 @@ function Set-ConsoleColors {
     ConditionallySetProperty -object $Host.PrivateData -propertyName ProgressForegroundColor -propertyValue $ProgressForegroundColor
     ConditionallySetProperty -object $Host.PrivateData -propertyName ProgressBackgroundColor -propertyValue $ProgressBackgroundColor
 }
-
-function Test-ProgressBar {
-    for ($i = 0; $i -lt 100; $i+=20 ) {
-        Write-Progress -Activity "Test in progress" -Status "$i% Complete:" -PercentComplete $i
-        Start-Sleep 1
-    }
-}

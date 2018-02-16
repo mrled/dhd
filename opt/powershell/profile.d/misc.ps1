@@ -307,25 +307,6 @@ function Get-MagicNumber {
     }
 }
 
-function Get-Profiles {
-    [cmdletbinding()]
-    param(
-        [string] $containingPattern,
-        [switch] $caseSensitive
-    )
-    $profiles = gci -recurse $MrledProfile.DHDProfile,$MrledProfile.DHDOpt -include *.ps1,*.psm1
-    @($Profile.AllUsersAllHosts,$Profile.AllUsersCurrentHost,$Profile.CurrentUserAllHosts,$Profile.CurrentUserCurrentHost) |% { if (Test-Path $_) {$profiles += @($_)} }
-
-    if ($containingPattern) {
-        write-verbose "Searching through results files for strings matching '$containingPattern'..."
-        $profiles |? { $_ | sls -quiet -pattern $containingPattern -caseSensitive:$caseSensitive }
-    }
-    else {
-        $profiles
-    }
-}
-set-alias gpro Get-Profiles
-
 # Make output of get-command better (more like Unix) for interactive use.
 # NOTE: For aliases, the processing function calls the show function again - this is recursive!
 # it's so if you have an alias chain like x->y->z->, where x and y are aliases
@@ -409,30 +390,6 @@ function Display-AllCommands {
     }
 }
 set-alias wh display-allcommands
-
-# demonstration:
-# - a much-too-complex string of aliases to aliases to aliases...
-# - what happens when there's more than one command for a given string.
-# - recursion.
-# remember that you have to dot-source this bitch
-# function Setup-TestForWh {
-#     set-alias ttt___ttt uuu___uuu
-#     set-alias uuu___uuu vvv___vvv
-#     set-alias vvv___vvv WSManHTTPConfig #an exe file in system32 on x64 win7
-#     set-alias WSManHTTPConfig xxx___xxx
-#     set-alias xxx___xxx get-authenticodesignature #existing cmdlet
-#     set-alias get-authenticodesignature zzz___zzz
-#     set-alias zzz___zzz create-shortcut
-#     function ttt___ttt { echo "functiontest" }
-#     function xxx___xxx { echo "functiontest" }
-#     function ttt___ttt { echo "functiontest" }
-#     function ttt___ttt { echo "functiontest" }
-#     function WSManHTTPConfig { echo "hurr's a function"; cmd.exe }
-#     function get-authenticodesignature { echo "functest"; get-content C:\boot.ini; echo "ZUHH" }
-#     set-alias aaa___aaa bbb___bbb #recursive
-#     set-alias bbb___bbb aaa___aaa #recursive
-# }
-
 
 # by defaul, touch is aliased to set-filetime, which doesn't create new empty files.
 if (test-path alias:touch) {del alias:touch}
@@ -787,7 +744,6 @@ function Format-XML {
         $StringWriter.ToString()
     }
 }
-set-alias PrettyPrint-XML Format-XML
 
 <#
 .synopsis

@@ -135,7 +135,7 @@ Configuration DhdConfig {
         #     GetScript = { return @{ Result = "" } }
         #     TestScript = { return $false }
         #     SetScript = {
-        #         . "$Using:DhdPath\hbase\Microsoft.PowerShell_profile.ps1"
+        #         . "$Using:DhdPath\hbase\profile.ps1"
         #         Setup-SystemPath
         #         Setup-Environment
         #     }
@@ -144,7 +144,7 @@ Configuration DhdConfig {
 
         File EnableWindowsPowershellProfile {
             DestinationPath = "$UserProfile\Documents\WindowsPowershell\profile.ps1"
-            SourcePath = "$DhdPath\hbase\Microsoft.PowerShell_profile.win32.ps1"
+            SourcePath = "$DhdPath\hbase\profile.win32.ps1"
             Ensure = "Present"
             Type = "File"
             Credential = $Credential
@@ -155,7 +155,7 @@ Configuration DhdConfig {
         }
         File EnablePowershellCoreProfile {
             DestinationPath = "$UserProfile\Documents\Powershell\profile.ps1"
-            SourcePath = "$DhdPath\hbase\Microsoft.PowerShell_profile.win32.ps1"
+            SourcePath = "$DhdPath\hbase\profile.win32.ps1"
             Ensure = "Present"
             Type = "File"
             Credential = $Credential
