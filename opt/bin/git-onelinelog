@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -x
+set -e
+
+git log --oneline --all --graph --decorate $args

@@ -225,13 +225,13 @@ function Invoke-ProcessAndWait {
 }
 
 
-function Generate-Password {
+function New-Password {
     param([int]$length=8)
     # From: http://ronalddameron.blogspot.com/2009/09/two-lines-of-powershell-random.html
     $null = [Reflection.Assembly]::LoadWithPartialName("System.Web")
     [System.Web.Security.Membership]::GeneratePassword($length,2)  # 8 bytes long
 }
-set-alias pwgen generate-password
+Set-Alias -Name pwgen -Value New-Password
 
 function ConvertTo-Base64($string) {
    $bytes  = [System.Text.Encoding]::UTF8.GetBytes($string)
@@ -271,10 +271,6 @@ function vless {
 }
 set-alias vl vless
 
-function Get-GitPrettyLog {
-    git log --oneline --all --graph --decorate $args
-}
-set-alias gpl Get-GitPrettyLog
 function Compare-GitObjectsOnGitHub {
     param(
         [parameter(mandatory=$true)] [string] $CommitA,
@@ -643,48 +639,6 @@ function Set-AssociationOpenCommand {
     set-itemproperty $key "(default)" $command
 }
 
-# a hack but it is a pain to remember how to do this every time ugh.
-function Initialize-PuttyRsaKey {
-    param ([switch]$NoKeygen)
-
-    $sshdir = "$home\.ssh"
-    $ppk = "$sshdir\id_rsa.ppk"
-    $putty_pub = "$sshdir\id_rsa.ppub"
-    $pub = "$sshdir\id_rsa.pub"
-    $privkey = "$sshdir\id_rsa"
-
-    write-host "NOTE: This will only work with RSA keys: `n-$privkey, `n-$putty_pub, `n-$ppk, `n-$pub"
-
-    mkdir -f $sshdir > $null
-    if (-not $NoKeygen.IsPresent) {
-        if ((test-path $ppk) -or (test-path $putty_pub) -or (test-path $ppk) -or (test-path $privkey)) {
-            write-error ("None of these files may exist: $ppk, $putty_pub, $pub, and $privkey .")
-            return
-        }
-
-        write-host ("Make sure to save your key as $ppk and $putty_pub .")
-        write-host ("Note that you should also export your key as an openssh key to $privkey .")
-        start-process puttygen -wait
-    }
-    if (-not (test-path $ppk) -or -not (test-path $putty_pub) -or -not (test-path $privkey)) {
-        write-error ("You must save your files as $ppk, $putty_pub, and $privkey .")
-        return
-    }
-
-    $pageantlnk_path = "$startmenu\Programs\Startup\pageant.lnk"
-    $pageantlnk = create-shortcut($pageantlnk_path)
-    $pageantlnk.TargetPath = (get-command pageant).Definition
-    $pageantlnk.Arguments = $ppk
-    $pageantlnk.Save()
-    & (gcm $pageantlnk_path).definition
-
-    $newcontent = Convert-PuttyRsaPubKey($putty_pub)
-    add-content -path $pub -value $newcontent
-    write-host ("Your pubkey has been saved in openssh format to $pub.")
-    # note: i don't echo it at the end because copy/pasting from Win terminals
-    # gives you linebreaks which don't work. C/O $pub from your editor instead.
-}
-
 # By default, putty saves pub key files with linebreaks everywhere. Convert them to openssh format.
 function Convert-PuttyRsaPubKey {
     param ([string]$ppbfile)
@@ -717,109 +671,6 @@ function uploadid {
     $sshPass = Decrypt-SecureString $secureSshPass
     "",$keydata | plink -pw "$sshPass" $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
 }
-
-
-$bvssh = "${env:ProgramFiles(x86)}\Bitvise SSH Client"
-if (test-path $bvssh) {
-
-    function Invoke-BitviseSsh {
-        param(
-            $bvExe = "stermc.exe",
-            [parameter(Position=0, ValueFromRemainingArguments=$true)] $args
-        )
-        $bvArgs = $args
-        $bvArgs+= @("-keypairFile=$Home\.ssh\id_rsa")
-        $bvArgs+= @("-hostKeyFile=$Home\.dhd\hbase\known_hosts")
-        start-process -wait -nonewwindow $bvssh\$bvExe -argumentList $bvArgs
-    }
-
-    function Invoke-BitviseSshScreenSession {
-        param(
-            [parameter(mandatory=$true)] [alias('r')] [string] $hostname,
-            [string] $screenSession = "camelot"
-        )
-        Invoke-BitviseSsh $hostname '-cmd=scr'
-    }
-    set-alias scr Invoke-BitviseSshScreenSession
-
-    function Start-SSHTunnel {
-        param(
-            [string] $serverName = "mrled@willow.younix.us"
-        )
-        Invoke-BitviseSsh -bvExe stnlc.exe -proxyFwding=y -proxyListPort=2001 $serverName
-    }
-
-    function Get-BitviseKnownHosts {
-        [cmdletbinding()]
-        param(
-            [string] $hostname
-        )
-        $HostKeysReg = get-item hkcu:\Software\Bitvise\HostKeys
-        $HostKeys = @{}
-        foreach ($entry in ($HostKeysReg.GetValueNames() |where {$_.StartsWith("HostKey2_")} )) {
-            write-debug $entry
-
-            $fingerprint = ($entry -split '_')[3][0..31] -join ""
-            write-verbose "Fingerprint: $fingerprint"
-
-            $fullValue = $HostKeysReg.GetValue($entry)
-            $relevantValue = $fullValue[6..($fullValue.length -1)]
-
-            $postHostnamePattern = 0,0,0,22
-
-            $foundIt = $false
-            for ($i = 0; $i -lt $relevantValue.Length; $i += 1) {
-                for ($j = 0; $j -lt $postHostnamePattern.length; $j += 1) {
-                    if (-not ($relevantValue[$i + $j] -eq $postHostnamePattern[$j])) {
-                        $foundIt = $false
-                        break
-                    }
-                    $foundIt = $true
-                }
-                if ($foundIt) {
-                    $postHostnameIndex = $i
-                    break
-                }
-            }
-            if (-not $postHostnameIndex) {
-                throw "Failed to find the end of the hostname after searching through $i positions"
-            }
-            $binHostname = $relevantValue[0..($postHostnameIndex - 1)]
-            write-verbose ($binHostname -join ",")
-            $asciiHostname = (New-Object System.Text.ASCIIEncoding).GetString($binHostname)
-            write-verbose "Hostname: $asciiHostname"
-            $HostKeys.$asciiHostname = $fingerprint
-        }
-
-        if ($hostname -and $hostKeys.$hostname) {
-            return @{ $hostname = $hostKeys.$hostname }
-        }
-        elseif ($hostname) {
-            throw "No host key for hostname $hostname"
-        }
-        else {
-            return $hostKeys
-        }
-    }
-}
-
-# http://pastie.org/2867807
-function Generate-SparkLine {
-    #$ticks = @(' ', [char]9601, [char]9602, [char]9603, [char]9604, [char]9605, [char]9606, [char]9607, [char]9608)
-    $ticks = @([char]9601, [char]9602, [char]9603, [char]9604, [char]9605, [char]9606, [char]9607, [char]9608)
-
-    $minmax = $args | measure -min -max
-    $range = $minmax.Maximum - $minmax.Minimum
-    $scale = $ticks.length - 1
-    $output = @()
-
-    foreach ($x in $args) {
-       $output += $ticks[([Math]::round((($x - $minmax.Minimum) / $range) * $scale))]
-    }
-
-    return [String]::join('', $output)
-}
-set-alias spark Generate-SparkLine
 
 set-alias getmo Get-Module
 set-alias rmmo Remove-Module
@@ -984,42 +835,7 @@ function Format-XML {
         $StringWriter.ToString()
     }
 }
-
 set-alias PrettyPrint-XML Format-XML
-
-<#
-.SYNOPSIS
-Creates an XML-based representation of an object or objects and outputs it as a string.
-
-.DESCRIPTION
-The Out-Clixml cmdlet creates an XML-based representation of an object or objects and outputs it as a string. This cmdlet is similar to Export-CliXml except it doesn't output to a file.
-From: http://poshcode.org/3770
-
-.PARAMETER Depth
-Specifies how many levels of contained objects are included in the XML representation. The default value is 2 because the default value of Export-CliXml is 2.
-
-.PARAMETER InputObject
-Specifies the object to be converted. Enter a variable that contains the objects, or type a command or expression that gets the objects. You can also pipe objects to Out-Clixml.
-
-.INPUTS
-System.Management.Automation.PSObject
-
-You can pipe any object to Out-CliXml.
-#>
-function Out-CliXml {
-    [CmdletBinding()] Param (
-        [Parameter(ValueFromPipeline = $True, Mandatory = $True)] [PSObject] $InputObject,
-        [ValidateRange(1, [Int32]::MaxValue)] [Int32] $Depth = 2
-    )
-    [System.Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
-}
-
-function In-CliXml {
-    [CmdletBinding()] Param (
-        [Parameter(ValueFromPipeline = $True, Mandatory = $True)] [String] $InputXml
-    )
-    [System.Management.Automation.PSSerializer]::Deserialize($InputXml)
-}
 
 <#
 .synopsis
@@ -1394,24 +1210,3 @@ function Set-ConEmuTabTitle {
     }
 }
 Set-Alias Rename-Tab Set-ConEmuTabTitle
-
-# Edge bullshit
-# Based on information from: https://gyorgybalassy.wordpress.com/2015/12/21/favorites-and-bookmarklets-in-microsoft-edge/
-
-function Get-EdgeBrowserBookmark {
-    [CmdletBinding()] Param()
-    $regKey = 'HKCU:\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\FavOrder\FavBarCache'
-    $regItems = Get-Item "$regKey\*"
-    foreach ($regItem in $regItems) {
-
-    }
-}
-
-function Set-EdgeBrowserBookmark {
-    [CmdletBinding()] Param(
-        [Parameter(Mandatory=$True)] [String] $name,
-        [Parameter(Mandatory=$True)] [String] $newUrl
-    )
-    $bkmk = Get-EdgeBrowserBookmark |? -Property Name -eq $name
-    # if ($bkmk.)
-}
