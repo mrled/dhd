@@ -80,16 +80,6 @@ function Setup-SystemPath {
     Set-ExecutablePath -path ($resolvedProcessPaths -join ';') -target Process   # Update this process's PATH, so that we can use the new locations immediately
 }
 
-function Setup-Environment {
-    Set-FileAssociation .el txtfile
-    Set-FileAssociation .nfo txtfile "text/plain"
-    Set-FileAssociation .mdwn txtfile "text/plain"
-    Set-FileAssociation .markdown txtfile "text/plain"
-    Set-FileAssociation .md txtfile "text/plain"
-    Set-FileAssociation .text txtfile "text/plain"
-    Set-FileAssociation .mkd txtfile "text/plain"
-}
-
 # The closest I can get to my .b() bash function is dot-sourcing this function: `. p`
 function p {
     . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1"
@@ -97,5 +87,4 @@ function p {
 
 function reinit {
     Setup-SystemPath
-    Setup-Environment
 }

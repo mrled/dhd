@@ -591,54 +591,6 @@ function reimport-module {
 }
 set-alias reimport reimport-module
 
-# http://social.msdn.microsoft.com/Forums/vstudio/en-US/630ed1d9-73f1-4cc0-bc84-04f29cffc13b/
-function Set-FileAssociation {
-    param(
-        [parameter(mandatory=$true)] [string] $extension,
-        [parameter(mandatory=$true)] [string] $association,
-        [string] $contentType,
-        [validateset("User","Machine")] $location = "User"
-    )
-    if ($location.tolower() -eq "user") {
-        $drive = "HKCU"
-    }
-    elseif ($location.tolower() -eq "machine") {
-        if (-not (Test-AdminRole)) {
-            write-error "Cannot set associations for the whole machine unless running as administrator."
-            return
-        }
-        $drive = "HKLM"
-    }
-    $key = "$($drive):\Software\Classes\$extension"
-    if (-not (test-path $key)) {
-        new-item -force $key | out-null
-    }
-    set-itemproperty $key "(default)" $association
-    set-itemproperty $key "Content Type" $contentType
-}
-function Set-AssociationOpenCommand {
-    param(
-        [parameter(mandatory=$true)] [string] $association,
-        [parameter(mandatory=$true)] [string] $command,
-        [validateset("User","Machine")] $location = "User"
-    )
-    if ($location.tolower() -eq "user") {
-        $drive = "HKCU"
-    }
-    elseif ($location.tolower() -eq "machine") {
-        if (-not (Test-AdminRole)) {
-            write-error "Cannot set associations for the whole machine unless running as administrator."
-            return
-        }
-        $drive = "HKLM"
-    }
-    $key = "$($drive):\Software\Classes\$association\shell\open\command"
-    if (-not (test-path $key)) {
-        new-item -force $key | out-null
-    }
-    set-itemproperty $key "(default)" $command
-}
-
 # By default, putty saves pub key files with linebreaks everywhere. Convert them to openssh format.
 function Convert-PuttyRsaPubKey {
     param ([string]$ppbfile)
