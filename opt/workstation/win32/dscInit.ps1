@@ -36,7 +36,7 @@ $ErrorActionPreference = "Stop"
 
 $DhdZipUri = "https://github.com/mrled/dhd/archive/master.zip"
 $RequiredDscModules = @('xHyper-V', 'cChoco')
-$MinimumMaxEnvelopeSize = 2048
+$MinimumMaxEnvelopeSize = 8192
 
 
 ## Helper Functions
@@ -114,24 +114,22 @@ function Test-WinRmEnabled {
 
 ## Apply necessary Windows changes
 
-# Enable Powershell Remoting / WinRM
-if (-not (Test-WinRmEnabled)) {
-    Enable-PSRemoting -SkipNetworkCheck -Force
-}
-
-# Make sure that the configured MaxEnvelopeSize is big enough. By default, it isn't. Of course.
+$publicNetConnProfs = Get-NetConnectionProfile -NetworkCategory Public
 $currentMaxEnvSize = Get-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb | Select-Object -ExpandProperty Value
-if ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize) {
-    # Because ~*~FUCKING WINDOWS~*~ if you have ANY network connection profile set to "Public", you cannot set MaxEnvelopeSizekb. What.
-    $publicNetConnProfs = Get-NetConnectionProfile -NetworkCategory Public
+if (-not (Test-WinRmEnabled) -or ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize)) {
     try {
+        # Because ~*~FUCKING WINDOWS~*~ if you have ANY network connection profile set to "Public",
+        # you cannot set MaxEnvelopeSizekb or enable PSRemoting. What.
         Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Private
-        Set-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb -Value 2048
+        if (-not (Test-WinRmEnabled)) {
+            Enable-PSRemoting -SkipNetworkProfileCheck -Force
+        }
+        if ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize) {
+            Set-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb -Value 2048
+        }
     } finally {
-        # After setting MaxEnvelopeSizekb, you can set them back to Public and everything will still work fine
         Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Public
     }
-
 }
 
 
