@@ -1026,25 +1026,6 @@ function Get-AvailableExceptionsList {
 }
 
 <#
-.description
-Return the name of the service account a particular service runs under
-.notes
-See the LsaSecrets module for information on stealing the service account password from the LSA secrets store
-#>
-function Get-ServiceAccountName {
-    [CmdletBinding()] Param(
-        [Parameter(Mandatory=$true)] $serviceName
-    )
-    $wmiObj = Get-WmiObject -Class Win32_Service -Filter "name='$serviceName'"
-    $service = Get-Service $serviceName
-    New-Object PSObject -Property @{
-        ServiceName = $service.Name
-        DisplayName = $service.DisplayName
-        ServiceAccount = $wmiObj.StartName
-    }
-}
-
-<#
 .ForwardHelpTargetName Microsoft.PowerShell.Core\Enter-PSSession
 .ForwardHelpCategory Cmdlet
 #>
