@@ -271,27 +271,6 @@ function vless {
 }
 set-alias vl vless
 
-function Compare-GitObjectsOnGitHub {
-    param(
-        [parameter(mandatory=$true)] [string] $CommitA,
-        [parameter(mandatory=$true)] [string] $CommitB,
-        [string] $remoteName = "origin"
-    )
-    $remotes = git remote -v
-    foreach ($r in $remotes) {
-        $name,$address,$direction = $r -split "\s+"
-        if (($name -eq $remoteName) -and ($direction -eq "(fetch)")) {
-            $remote = $address -replace "^git\@github\.com:","" -replace "\.git$",""
-            break
-        }
-    }
-    if (-not $remote) {
-        throw "Couldn't find remote, probably because this is a dumb hack???? Yah."
-    }
-    start "https://github.com/$remote/compare/$CommitA...$CommitB"
-}
-set-alias github-diff Compare-GitObjectsOnGitHub
-
 function Get-MagicNumber {
     [CmdletBinding()] Param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)] [String[]] $filePath,

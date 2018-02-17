@@ -1,0 +1,62 @@
+#!/bin/sh
+
+set -e
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat << ENDUSAGE
+$cmdname [-h|--help] <COMMIT1> <COMMIT2> [REMOTENAME]
+Find the URL for comparing items on GitHub
+    -h: Print help and exit
+    COMMIT1:    The left side of the comparison
+    COMMIT2:    The right side of the comparison
+    REMOTENAME: Optional name of the remote that points to GitHub
+                If not present, assume 'origin'
+Example:
+    shell> git hubcompare 888c45fab648b5486ea26a8aadf84f5675ae2a09 ec3f060c8157ec7cd467a3103f903699641b7efd
+    https://github.com/mrled/dhd/compare/888c45fab648b5486ea26a8aadf84f5675ae2a09...ec3f060c8157ec7cd467a3103f903699641b7efd
+ENDUSAGE
+}
+
+if test "$1" = "-h" || test "$1" = "--help"; then
+    usage
+    exit
+fi
+
+if test $# -lt 2 || test $# -gt 3; then
+    echo -e "Wrong number of arguments: found $#\n"
+    usage
+    exit 1
+fi
+
+commit1="$1"
+commit2="$2"
+remote="${3:-origin}"
+
+ghpath=
+while read remoteline; do
+    # Example line of $remoteline:
+    #   origin	git@github.com:mrled/dhd.git (fetch)
+    # Note that between 'origin' and 'git@' is a tab literal,
+    # but between 'dhd.git' and '(fetch)' is a spae
+    direction="${remoteline##* }"
+    name_uri="${remoteline%% *}"
+    name="${name_uri%%	*}"
+    uri="${name_uri##*	}"
+    # echo "direction: '$direction'"
+    # echo "name_uri: '$name_uri'"
+    # echo "name: '$name'"
+    # echo "uri: '$uri'"
+    if test "$name" = "$remote" && test "$direction" = "(fetch)"; then
+        ghpath=$(echo $uri | sed 's/^git\@github\.com\://' | sed 's/\.git$//')
+        # echo "ghpath: '$ghpath'"
+        break
+    fi
+done << EOF
+$(git remote -v)
+EOF
+if test -z "$ghpath"; then
+    echo "Couldn't find remote, probably because this is a dumb hack???? Yah."
+fi
+echo "https://github.com/${ghpath}/compare/${commit1}...${commit2}"
