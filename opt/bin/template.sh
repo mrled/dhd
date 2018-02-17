@@ -6,9 +6,11 @@ set -e  # Exit immediately if a command files
 TEMPLATEDBG=${TEMPLATEDBG:-}
 set -u  # Treat unset variables as errors
 
+cmdname=`basename "$0"`
+
 usage() {
     cat <<ENDUSAGE
-Usage: $0 [-h] [-d] [-1 arg1] [-2 arg1 arg2] [-e] [POSITIONALARGS...]
+Usage: $cmdname [-h] [-d] [-1 arg1] [-2 arg1 arg2] [-e] [POSITIONALARGS...]
 A template for new POSIX shell scripts
 
 ARGUMENTS
