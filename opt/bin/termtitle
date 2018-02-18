@@ -1,8 +1,6 @@
 #!/bin/sh
 set -eu
 
-
-
 usage() {
     echo <<EOF
 Usage: $cmdname <TITLE>
@@ -15,4 +13,4 @@ if test $# -ne 1; then
     exit 1
 fi
 
-echo -n -e "\033]0;$1\007"
+printf "\033]0;$1\007"
