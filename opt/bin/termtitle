@@ -1,16 +1,20 @@
 #!/bin/sh
-set -eu
+set -e
+
+cmdname=`basename "$0"`
 
 usage() {
-    echo <<EOF
+    cat <<EOF
 Usage: $cmdname <TITLE>
 Set the title of the current tab in macOS Terminal.app
 EOF
 }
 
-if test $# -ne 1; then
+if test "$1" = "-h" || test "$1" = "--help"; then
     usage
-    exit 1
+    exit
 fi
 
-printf "\033]0;$1\007"
+title="${@:-Terminal}"
+
+printf "\033]0;$title\007"
