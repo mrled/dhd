@@ -97,13 +97,22 @@ Find the location of a command in the PATH
 #>
 function Get-CommandInExecutablePath {
     [CmdletBinding()] Param(
-        [Parameter(Mandatory=$True)] $commandName
+        [Parameter(Mandatory=$True)] $CommandName,
+        [ValidateSet('Backslash', 'Doublebackslash', 'Slash')] $PathType = 'Backslash'
     )
     $pathExt = ($env:PATHEXT -split ';') + '' # Add an empty extension in case the command has no extension or the extension was passed
     foreach ($path in (Get-ExecutablePath)) {
         foreach ($ext in $pathExt) {
-            if (Test-Path "$path\${commandName}${ext}") {
-                return "$path\${commandName}${ext}"
+            $testPath = "${path}\${CommandName}${ext}"
+            if (Test-Path -LiteralPath $testPath) {
+                $fullPath = Get-Item -LiteralPath $testPath | Select-Object -ExpandProperty FullName
+                switch ($PathType) {
+                    'Backslash' { }
+                    'DoubleBackslash' { $fullPath = $fullPath -replace "\\","\\"; break; }
+                    'Slash' { $fullPath = $fullPath -replace "\\","/"; break; }
+                    default { throw "No such PathType: '$PathType'" }
+                }
+                return $fullPath
             }
         }
     }
@@ -124,7 +133,7 @@ function Resolve-PotentialExecutablePathList {
     $uniquePaths = @()
     $rootedPaths |?{$_} |% {if ($uniquePaths -NotContains $_) {$uniquePaths+=@($_)}}
 
-    # Take an array of paths, which may contain wildcards, and resolve and return FileSystemInfo objects representing each item that exists. 
+    # Take an array of paths, which may contain wildcards, and resolve and return FileSystemInfo objects representing each item that exists.
     # If a path contains wildcards, only add the last item
     $existingPaths = $uniquePaths |? {if (Test-Path $_) {Get-Item $_ | Select -Last 1 -ExpandProperty FullName}}
 
