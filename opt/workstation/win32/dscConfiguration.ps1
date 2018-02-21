@@ -62,6 +62,7 @@ Configuration InstallSoftware {
                 'ConEmu'
                 'Firefox'
                 'GoogleChrome'
+                'Less'
                 'SublimeText3'
                 'VisualStudioCode'
                 'bind-toolsonly'
@@ -70,7 +71,6 @@ Configuration InstallSoftware {
                 'golang'
                 'gpg4win-vanilla'
                 'greenshot'
-                'less'
                 'mRemoteNG'
                 'metapad'
                 'packer'
@@ -366,10 +366,69 @@ Configuration UserSettingsConfig {
             Ensure = "Present"
         }
 
+        # Less command-line arguments
+        # -i: Ignore case in searches that do not contain uppercase.
+        # -R: Output "raw" control characters.
+        # -c: Repaint by clearing rather than scrolling.
+        # -F: Quit if entire file fits on first screen. (Don't use with -c, lol)
+        cMrlUserEnvironment "SetLessEnvVar" {
+            Name = "LESS"
+            Value = "-iRc"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Present"
+        }
+
         # I think this is less necessary recently, but some unix software does still use this
         cMrlUserEnvironment "SetHomeEnvVar" {
             Name = "HOME"
             Value = "$env:USERPROFILE"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Present"
+        }
+
+        # By default, 'git branch' commands are piped to a pager, which is annoying
+        Script "GitDisablePagerForBranchCommand" {
+            GetScript  = { return @{ Result = "" } }
+            TestScript = { return $(git config --global --get pager.branch) -eq "false" }
+            SetScript  = { git config --global pager.branch false }
+            PsDscRunAsCredential = $Credential
+        }
+
+        # Requires subl.exe to be in $env:PATH
+        Script "GitConfigureSublimeTextAsEditor" {
+            GetScript  = { return @{ Result = "" } }
+            TestScript = { return $(git config --global --get core.editor) -eq "subl.exe -w" }
+            SetScript  = { git config --global core.editor "subl.exe -w" }
+            PsDscRunAsCredential = $Credential
+        }
+
+        # As of 20180221, the "Less" Chocolatey package is version 529
+        # - No problems refreshing screen
+        # - Displays colors from ANSI escape sequences properly
+        # - It's much faster than relying on vim's less.vim package
+        # Requires less.exe to be in $env:PATH
+        Script "GitConfigureLessPager" {
+            GetScript  = { return @{ Result = "" } }
+            TestScript = { return $(git config --global --get core.pager) -eq "less.exe" }
+            SetScript  = { git config --global core.pager "less.exe" }
+            PsDscRunAsCredential = $Credential
+        }
+
+        # If we have an ssh.exe in the path, assume it's Microsoft's OpenSSH port
+        # - Lets us use ~/.ssh/config, ~/.ssh/id_* keys, etc
+        # - Tested and works well
+        # Requires ssh.exe to be in $env:PATH
+        Script "GitConfigureSsh" {
+            GetScript  = { return @{ Result = "" } }
+            TestScript = { return $(git config --global --get core.sshCommand) -eq "ssh.exe" }
+            SetScript  = { git config --global core.sshCommand "ssh.exe" }
+            PsDscRunAsCredential = $Credential
+        }
+
+        # I don't remember if this gets set by default?
+        cMrlUserEnvironment "SetGoPathEnvVar" {
+            Name = "GOPATH"
+            Value = "$env:USERPROFILE\Documents\Go"
             PsDscRunAsCredential = $Credential
             Ensure = "Present"
         }

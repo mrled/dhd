@@ -9,54 +9,6 @@ $SpecialCharacters = New-Object PSObject -Property @{
     VisualStudio = [char]42479  # ꗯ (VAI SYLLABLE GBE)
 }
 
-## Configuring other applications / etc
-if (Get-CommandInExecutablePath -CommandName "git") {
-
-    $sublCommand = Get-CommandInExecutablePath -CommandName "subl" -PathType DoubleBackslash
-    if ($sublCommand) {
-        git config --global core.editor "'$sublCommand' -w"
-    }
-
-    # As of 20180221, the "Less" Chocolatey package is version 529
-    # - No problems refreshing screen
-    # - Displays colors from ANSI escape sequences properly
-    # - It's much faster than relying on vim's less.vim package
-    $lessExe = Get-CommandInExecutablePath -CommandName "less.exe" -PathType DoubleBackslash
-    if ($lessExe) {
-        git config --global core.pager "'$lessExe'"
-    }
-
-    # If we have an ssh.exe in the path, assume it's Microsoft's OpenSSH port
-    # - Lets us use ~/.ssh/config, ~/.ssh/id_* keys, etc
-    # - Tested and works well
-    $sshCommand = Get-CommandInExecutablePath -CommandName "ssh" -PathType DoubleBackslash
-    if ($sshCommand) {
-        git config --global core.sshCommand "'$sshCommand'"
-    }
-}
-
-# Less command-line arguments
-# -i: Ignore case in searches that do not contain uppercase.
-# -R: Output "raw" control characters.
-# -c: Repaint by clearing rather than scrolling.
-# -F: Quit if entire file fits on first screen.
-#     (Don't use with -c, lol)
-$env:LESS = "-iRc"
-
-# golang
-$goCommand = Get-CommandInExecutablePath -CommandName "go"
-if ($goCommand) {
-    if (-not $env:GOROOT) {
-        $env:GOROOT = Resolve-Path ((Split-Path -Parent $goCommand) + "/..") | Select -Expand Path
-    }
-    if (-not $env:GOPATH) {
-        $env:GOPATH = "$Home\Documents\Go"
-    }
-    Add-ExecutablePathDirectory -path "$env:GOROOT\bin"
-    Add-ExecutablePathDirectory -path "$env:GOPATH\bin"
-}
-
-
 #### Functions
 
 <#
