@@ -17,12 +17,16 @@ function Setup-SystemPath {
         "${env:SystemDrive}\Perl64"
         "${env:SystemDrive}\Python3*"
         "${env:SystemDrive}\Python3*\Scripts"
+        "${env:SystemDrive}\Python2*"
+        "${env:SystemDrive}\Python2*\Scripts"
         "${env:SystemDrive}\Tools\Go\bin"
         "${env:SystemDrive}\Tools\mingw64\bin"
         "${env:SystemDrive}\Tools\Python3*"
         "${env:SystemDrive}\Tools\Python3*\Scripts"
         "${env:SystemDrive}\Tools\Ruby*\bin"
         "${env:AppData}\npm"
+        "${env:AppData}\Python\Python3*\Scripts"
+        "${env:AppData}\Python\Python2*\Scripts"
         "${env:LocalAppData}\atom\bin"
         "${env:LocalAppData}\Pandoc"
         "${env:LocalAppData}\Keybase"
@@ -82,7 +86,7 @@ function Setup-SystemPath {
 
 # The closest I can get to my .b() bash function is dot-sourcing this function: `. p`
 function p {
-    . "$Home\.dhd\hbase\Microsoft.PowerShell_profile.ps1"
+    . "$Home\.dhd\hbase\profile.ps1"
 }
 
 function reinit {
