@@ -9,6 +9,7 @@ ms-mssql.mssql
 ms-python.python
 ms-vscode.csharp
 ms-vscode.PowerShell
+msazurermtools.azurerm-vscode-tools
 PeterJausovec.vscode-docker
 rebornix.Ruby
 selbh.keyboard-scroll
