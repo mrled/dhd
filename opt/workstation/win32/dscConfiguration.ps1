@@ -81,6 +81,7 @@ Configuration InstallSoftware {
                 'python3'
                 'slack'
                 'sysinternals'
+                'trid'
                 'vagrant'
                 'vim'
             )
