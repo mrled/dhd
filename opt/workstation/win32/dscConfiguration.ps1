@@ -145,24 +145,20 @@ Configuration DhdConfig {
 
         File EnableWindowsPowershellProfile {
             DestinationPath = "$UserProfile\Documents\WindowsPowershell\profile.ps1"
-            SourcePath = "$DhdPath\hbase\profile.win32.ps1"
+            Contents = ". $Home\.dhd\hbase\profile.ps1"
             Ensure = "Present"
-            Type = "File"
             Credential = $Credential
             Checksum = "SHA-512"
             Force = $true
-            MatchSource = $true
             PsDscRunAsCredential = $Credential
         }
         File EnablePowershellCoreProfile {
             DestinationPath = "$UserProfile\Documents\Powershell\profile.ps1"
-            SourcePath = "$DhdPath\hbase\profile.win32.ps1"
+            Contents = ". $Home\.dhd\hbase\profile.ps1"
             Ensure = "Present"
-            Type = "File"
             Credential = $Credential
             Checksum = "SHA-512"
             Force = $true
-            MatchSource = $true
             PsDscRunAsCredential = $Credential
         }
 
