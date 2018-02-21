@@ -10,48 +10,41 @@ $SpecialCharacters = New-Object PSObject -Property @{
 }
 
 ## Configuring other applications / etc
-$gitCommand = Get-CommandInExecutablePath "git"
-if ($gitCommand) {
+if (Get-CommandInExecutablePath -CommandName "git") {
 
-    # $plink = Get-ProgramFilesChild "PuTTY/plink.exe"
-    # Removing this means I can use ~/.ssh/config -- so long as a HOME environment variable is set
-    # if ($plink) { $env:GIT_SSH = $plink }
-
-    # You want this to be separated with forward slashes so that it works
-    # from the Git (bash) command line and cmd and Powershell etc.
-    # $env:GIT_EDITOR = "$env:SystemRoot\system32\notepad.exe" -replace "\\","/"
-
-    $sublCommand = Get-CommandInExecutablePath "subl"
+    $sublCommand = Get-CommandInExecutablePath -CommandName "subl" -PathType DoubleBackslash
     if ($sublCommand) {
-        $escapedSublCommand = $sublCommand -replace "\\","/"
-        git config --global core.editor "'$escapedSublCommand' -w"
+        git config --global core.editor "'$sublCommand' -w"
     }
 
-    # Using vim like this as the Git Pager solves some inconsistencies and problems on Windows
-    # - Some versions of less that come commonly on Windows are buggy, and it's been hard to figure out the right one to use
-    #   For instance, the one that ships with either Chocolatey or Git (idk which) doesn't refresh the screen properly all the time, as of 2017
-    #   Many versions of less that are available for Windows do not display colors
-    # - Vim has build in support for syntax highlighting unified diffs - which is what "git diff" and "git show" return
-    #   Note that this means we turn *off* colors for git diffs if we find vim, because git colors are ANSI escapes and vim doesn't understand those
-    $vimCommand = Get-CommandInExecutablePath "vim"
-    if ($vimCommand) {
-        git config --global color.diff false
-        $vimMsysPath = $vimCommand -replace "^(.)\:\\",'\$1\' -replace "\\","/"
-        $env:GIT_PAGER = '"{0}" --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -' -f $vimMsysPath
+    # As of 20180221, the "Less" Chocolatey package is version 529
+    # - No problems refreshing screen
+    # - Displays colors from ANSI escape sequences properly
+    # - It's much faster than relying on vim's less.vim package
+    $lessExe = Get-CommandInExecutablePath -CommandName "less.exe" -PathType DoubleBackslash
+    if ($lessExe) {
+        git config --global core.pager "'$lessExe'"
     }
 
-    # For some reason, on some machines, I have to set GIT_SSH or else Git won't work with any SSH remote
-    # I have tested this with Microsoft's OpenSSH port, and it works great, so let's just use that
-    $sshCommand = Get-CommandInExecutablePath "ssh"
+    # If we have an ssh.exe in the path, assume it's Microsoft's OpenSSH port
+    # - Lets us use ~/.ssh/config, ~/.ssh/id_* keys, etc
+    # - Tested and works well
+    $sshCommand = Get-CommandInExecutablePath -CommandName "ssh" -PathType DoubleBackslash
     if ($sshCommand) {
-        $env:GIT_SSH = $sshCommand
+        git config --global core.sshCommand "'$sshCommand'"
     }
 }
 
-$env:LESS = "-iRC"
+# Less command-line arguments
+# -i: Ignore case in searches that do not contain uppercase.
+# -R: Output "raw" control characters.
+# -c: Repaint by clearing rather than scrolling.
+# -F: Quit if entire file fits on first screen.
+#     (Don't use with -c, lol)
+$env:LESS = "-iRc"
 
 # golang
-$goCommand = Get-CommandInExecutablePath "go"
+$goCommand = Get-CommandInExecutablePath -CommandName "go"
 if ($goCommand) {
     if (-not $env:GOROOT) {
         $env:GOROOT = Resolve-Path ((Split-Path -Parent $goCommand) + "/..") | Select -Expand Path
