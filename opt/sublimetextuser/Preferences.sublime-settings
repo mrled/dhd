@@ -2,7 +2,7 @@
 	"caret_style": "wide",
 	"color_scheme": "Packages/User/Hallowweekend.tmTheme",
 	"draw_white_space": "all",
-	"font_size": 10,
+	"font_size": 11,
 	"ignored_packages":
 	[
 		"Vintage"
@@ -10,7 +10,7 @@
 	"scroll_past_end": true,
 	"show_encoding": true,
 	"tab_size": 4,
-	"theme": "Soda Light.sublime-theme",
+	"theme": "Soda Dark 3.sublime-theme",
 	"translate_tabs_to_spaces": true,
 	"typescript_plugin_tsc_version": "1.7.3",
 	"word_wrap": true
