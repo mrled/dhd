@@ -74,6 +74,7 @@ Configuration InstallSoftware {
                 'mRemoteNG'
                 'metapad'
                 'packer'
+                'pandoc'
                 'powershell-core'
                 'pt'
                 'putty'
