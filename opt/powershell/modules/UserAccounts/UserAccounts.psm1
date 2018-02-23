@@ -50,6 +50,6 @@ function Get-ServiceAccountName {
 }
 
 # privileges are stored in:
-# HKLM:\SECURITY\Policy\Accounts\<ACCOUNTSID>\Privilgs
+# HKLM:\SECURITY\Policy\Accounts\<ACCOUNTSID>\Privilges
 # However, this is not accessible unless you fuck with the security settings of HKLM:\SECURITY
 # (I think I did this with the LsaSecrets module. Lol.)
