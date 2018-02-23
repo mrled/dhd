@@ -9,7 +9,7 @@
 # If possible, test for non-POSIX extensions before using in this file
 # This file may be sourced multiple times; all settings should be idempotent
 
-export MRL_BASHRC_GUARD=1
+MRL_BASHRC_GUARD=1
 if test -z "$MRL_PROFILE_GUARD"; then
     . $HOME/.profile
 fi

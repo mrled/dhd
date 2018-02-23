@@ -6,7 +6,7 @@
 # 3. The .profile script should be compatible with any POSIX shell - do not use bashisms
 # 4. Where possible, place functions in separate files in a directory found in the $PATH rather than defining them in a shell startup script
 
-export MRL_PROFILE_GUARD=1
+MRL_PROFILE_GUARD=1
 
 umask 077
 
