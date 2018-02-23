@@ -73,6 +73,7 @@ Configuration InstallSoftware {
                 'greenshot'
                 'mRemoteNG'
                 'metapad'
+                'nodejs'
                 'packer'
                 'pandoc'
                 'powershell-core'
