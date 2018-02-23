@@ -1,3 +1,0 @@
-- hosts: ovpnserver
-  roles:
-  - openvpn-server

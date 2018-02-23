@@ -1,6 +1,0 @@
-[homerouter]
-192.168.254.107
-#agassiz.home.micahrl.com
-
-[all:vars]
-ansible_user = root

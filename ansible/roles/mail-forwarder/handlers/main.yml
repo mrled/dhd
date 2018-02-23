@@ -1,8 +1,0 @@
-- name: restart-postfix
-  service: name=postfix state=restarted
-- name: reload-postfix
-  command: postfix reload
-- name: newaliases
-  command: newaliases 
-  notify: 
-  - reload-postfix
