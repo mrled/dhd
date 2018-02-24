@@ -2,9 +2,11 @@
 .synopsis
 My Powershell profile
 .notes
-- Copy .dhd\hbase\profile.win32.ps1 to $profile
-- That file will dot-source this file
-- This file will load required third party modules, required modules in .dhd/opt/powershell/modules, and finally other scripts in .dhd/opt/powershell/profile.d
+- `Out-File -InputObject ". $Home/.dhd/hbase/profile.ps1" -LiteralPath $profile`
+- Then your profile will dot-source
+- This file will load required third party modules,
+  any required modules in .dhd/opt/powershell/modules,
+  and finally other scripts in .dhd/opt/powershell/profile.d
 #>
 
 $ErrorActionPreference = "Stop"
