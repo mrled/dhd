@@ -26,6 +26,10 @@ shopt -s nocaseglob
 # Fix some problems where lines wrap incorrectly
 shopt -s checkwinsize
 
+# When writing the history file, append this session's commands to the file
+# (By default, it will overwrite the history file with commands from this session)
+shopt -s histappend
+
 # These should be POSIX compatible; extensions are detected later
 lscmd=ls
 lsargs="-F"
@@ -131,9 +135,15 @@ man() {
             man "$@"
 }
 
-# Common, but not POSIX
+# The number of lines to save to _memory_ in a history list
 export HISTSIZE="INFINITE"
-export HISTFILESIZE="INFINITE"
+# The number of lines to save to _disk_ in a history list
+# Formerly INFINITE, set to finite value to prevent secrets from persisting forever
+export HISTFILESIZE="5000"
+# If a command starts with a space, do not save it in history
+export HISTCONTROL="ignorespace"
+# Add a timestamp to the history command
+export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
 
 # Completion settings
 # on macOS, 'brew install bash-completion' is required
@@ -166,6 +176,9 @@ ansi_fg_magenta=$(ansi fg=magenta)
 bashprompt() {
     # Gather the exit code first, in case something resets it
     exitcoderaw="$?"
+
+    # Save the shell's history
+    history -a
 
     # Reset any previous settings, in case last output did not
     init="\[${ansi_reset}\]"
