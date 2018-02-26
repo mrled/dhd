@@ -101,23 +101,24 @@ function Convert-OpenSSLPemToPfx {
     param(
         [parameter(mandatory=$true)] [string] $certFile,
         [string] $keyFile = ((resolve-path $certFile).path -replace '(\.pem$)|(\.crt$)|(\.cert$)','.key'),
-        $pfxPassword,
+        [SecureString] $pfxPassword,
         [string] $outfile = ((resolve-path $certFile).path -replace '(\.pem$)|(\.crt$)|(\.cert$)','.pfx'),
         [string] $displayname = ((split-path -leaf $certFile) -replace '(\.pem$)|(\.crt$)|(\.cert$)','')
     )
     if (-not $pfxPassword) {
-        $securePfxPassword = read-host "Enter a password for the PFX file" -AsSecureString
-        $pfxPassword = Decrypt-SecureString $securePfxPassword
+        $pfxPassword = read-host "Enter a password for the PFX file" -AsSecureString
     }
+    $decryptedPass = (New-Object -TypeName PSCredential -ArgumentList $("ignored", $pfxPassword)).GetNetworkCredential().Password
     $certFile = resolve-path $certFile
     $arguments = @("pkcs12", "-export", "-out", "`"$outfile`"", "-in", "`"$certfile`"",
-        "-name", "`"$displayname`"", "-passout", "`"pass:$pfxPassword`"")
+        "-name", "`"$displayname`"", "-passout", "`"pass:$decryptedPass`"")
     if ($keyFile) {
         $keyFile = resolve-path $keyFile
         $arguments += @("-inkey", "`"$keyFile`"")
     }
     Invoke-OpenSsl -argumentList $arguments
 }
+
 function Convert-OpenSSLPfxToPem {
     param(
         [parameter(mandatory=$true)] [string] $pfxfile,
@@ -125,6 +126,7 @@ function Convert-OpenSSLPfxToPem {
     )
     Invoke-OpenSsl -argumentList @("pkcs12", "-in", "`"$pfxfile`"", "-out", "`"$outfile`"", "-nodes")
 }
+
 function Get-OpenSSLThumbprint {
     param(
         [parameter(mandatory=$true)] [string] $pemFile
