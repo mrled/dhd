@@ -38,3 +38,39 @@ function Show-ObjectProperties {
     Write-Host -ForegroundColor Green -Object "`r`nObject members:"
     $outMembers | Format-Table -Property Name, MemberType, ValueType, Value
 }
+
+<#
+.DESCRIPTION
+Retrieves all available Exceptions in the current session. Returns an array of strings which represent the exception type names.
+
+.NOTES
+Originally from: http://www.powershellmagazine.com/2011/09/14/custom-errors/
+#>
+function Get-AvailableExceptionsList {
+    [CmdletBinding()] Param()
+    $irregulars = 'Dispose|OperationAborted|Unhandled|ThreadAbort|ThreadStart|TypeInitialization'
+    foreach ($assembly in [AppDomain]::CurrentDomain.GetAssemblies()) {
+        try {
+            $AllExceptions = $assembly.GetExportedTypes() -match 'Exception' -notmatch $irregulars
+        }
+        catch {
+            Write-Verbose -Message "Could not get exported types for assembly '$assembly'"
+            continue
+        }
+        foreach ($exc in $AllExceptions) {
+            if (-not $exc.GetConstructors()) {
+                Write-Verbose -Message "No constructors for '$exc' in '$assembly'"
+                continue
+            }
+            try {
+                $TestException = New-Object -TypeName $exc.FullName
+                $TestError = New-Object -TypeName Management.Automation.ErrorRecord -ArgumentList $($TestException, 'ErrorID', 'OpenError', 'Target')
+            } catch {
+                # Tests failed, don't add this as a relevant exception
+                Write-Verbose -Message "Could not create test exception/error for '$exc' in '$assembly'"
+                continue
+            }
+            Write-Output $exc.FullName
+        }
+    }
+}

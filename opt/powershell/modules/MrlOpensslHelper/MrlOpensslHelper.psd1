@@ -1,16 +1,18 @@
 @{
-    RootModule = 'MrlDebugging.psm1'
+    RootModule = 'MrlOpensslHelper.psm1'
     ModuleVersion = '0.0.1'
-    GUID = 'efccfb84-5d5c-4a4f-b3b1-ffb6c86585b4'
+    GUID = '0424f249-5c1e-4fe9-9efb-e3ec9518eb97'
     Author = 'Micah R Ledbetter'
     CompanyName = ''
     Copyright = '(c) 2018 Micah R Ledbetter. All rights reserved.'
-    Description = 'Powershell debugging helpers'
-    PowerShellVersion = '5.0'
+    Description = 'OpenSSL helper functions'
+    PowerShellVersion = '3.0'
 
     FunctionsToExport = @(
-        'Get-AvailableExceptionsList'
-        'Show-ObjectProperties'
+        'Convert-OpenSSLPemToPfx'
+        'Convert-OpenSSLPfxToPem'
+        'Get-OpenSSLThumbprint'
+        'Invoke-OpenSSL'
     )
     CmdletsToExport = @()
     VariablesToExport = @()

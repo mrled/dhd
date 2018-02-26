@@ -74,101 +74,10 @@ function Set-WindowTitle {
     $Host.UI.RawUI.WindowTitle = $message
 }
 
-function Get-PuttySession {
-    $regKey = "HKCU:\Software\SimonTatham\PuTTY\Sessions"
-    ls $regKey |% { $_.Name -replace "HKEY_CURRENT_USER\\Software\\SimonTatham\\PuTTY\\Sessions\\","" }
-}
-
-# These functions are useful because the default colors are far too dark (blue especially)
-# And I hate having to click around in the fucking thing just to fucking get the fucking colors so I can fucking see them again.
-function Export-PuttySession {
-    param(
-        [parameter(mandatory=$true)] [string] $filename,
-        [string] $sessionName = "Default%20Settings",
-        [switch] $force
-    )
-    $regKey = "HKCU\Software\SimonTatham\PuTTY\Sessions\$sessionName"
-    $call = 'reg export $regKey "{0}"' -f "$filename"
-    if ($force) { $call += " /y" }
-    Invoke-Expression $call
-}
-
-function Import-PuttySession {
-    param(
-        [parameter(mandatory=$true)] [string] $fileName,
-        [switch] $force
-    )
-    $call = 'reg import "{0}"' -f "$fileName"
-    if ($force) { $call += " /y" }
-    Invoke-Expression $call
-}
-
 function conkeror {
     $xulrunnerbin = $home + "\opt\xulrunner\xulrunner.exe"
     & $xulrunnerbin  "$home\opt\src\conkeror\application.ini" $args
 }
-
-
-<#
-.synopsis
-Start a process and wait for it to exit
-.notes
-This is a workaround for a stupid idiot bug in start-process that only triggers sometimes.
-http://social.technet.microsoft.com/Forums/scriptcenter/en-US/37c1066e-b67f-4709-b195-aa2790216bd0
-https://connect.microsoft.com/PowerShell/feedback/details/520554/
-The bug has it return instantly even when -wait is passed to start-process, at least on Eric's local box.
-When that happens, $process.ExitCode hasn't been populated, and won't be, even when the process does actually exit.
-System.Diagnostics.Process doesn't have that behavior, so that's what we're going to use instead
-#>
-function Invoke-ProcessAndWait {
-    [cmdletbinding(DefaultParameterSetName="CheckExitCode")]
-    param(
-        [parameter(mandatory=$true)] [string] $command,
-        [string[]] $argumentList,
-        [switch] $RedirectStandardError,
-        [switch] $RedirectStandardOutput,
-        [parameter(ParameterSetName="Passthru")] [switch] $Passthru,
-        [parameter(ParameterSetName="CheckExitCode")] [switch] $CheckExitCode
-    )
-    write-verbose "Running Invoke-ProcessAndWait in verbose mode. WARNING: this may show sensitive commandline arguments (passwords, connection strings) and should only be used in development!"
-    write-verbose "Running '$command' with arguments '$argumentList'"
-    $process = New-Object System.Diagnostics.Process
-    $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
-    $process.StartInfo.FileName = $command
-
-    #$process.StartInfo.RedirectStandardError = $RedirectStandardError
-    #if ($ShowStandardOutput) {
-    if ($RedirectStandardOutput) {
-        $process.StartInfo.RedirectStandardOutput = $true
-    }
-    if ($RedirectStandardError) {
-        $process.StartInfo.RedirectStandardError = $true
-    }
-    $process.StartInfo.UseShellExecute = $false # AKA don't run in a new window
-    $process.StartInfo.Arguments = $argumentList
-    $process.Start() | Out-Null
-<#
-    if ($RedirectStandardOutput) {
-        $line = $process.StandardOutput.ReadLine()
-        while ($line -ne $null) {
-            Write-Host $line
-            $line = $process.StandardOutput.ReadLine()
-        }
-    }
-#>
-    $process.WaitForExit()
-    write-verbose "Process exited with exit code $($process.ExitCode)"
-    if ($PSCmdlet.ParameterSetName -eq "CheckExitCode") {
-        if ($process.ExitCode -ne 0) {
-            write-verbose "Command $command with arguments '$argumentList' exited with code $($process.ExitCode)"
-            throw "Command '$command' with $($argumentList.count) arguments exited with code $($process.ExitCode)"
-        }
-    }
-    else {
-        return $process
-    }
-}
-
 
 function New-Password {
     param([int]$length=8)
@@ -472,38 +381,7 @@ function reimport-module {
 }
 set-alias reimport reimport-module
 
-# By default, putty saves pub key files with linebreaks everywhere. Convert them to openssh format.
-function Convert-PuttyRsaPubKey {
-    param ([string]$ppbfile)
-    $pcontent = get-content $ppbfile
-    $newcontent = "ssh-rsa "
-    for ($i=2; $i -lt $pcontent.count -1; $i++) {
-        $newcontent += $pcontent[$i]
-    }
-    $comment = $pcontent[1].split("`"")[1]
-    $newcontent += " $comment"
-    return $newcontent
-}
 
-function uploadid {
-    param(
-        [parameter(mandatory=$True)]  [alias("host")]  [string]  $hostname,
-        [string]  $keyfile="$home\.ssh\id_rsa.pub"
-    )
-    $keydata = get-content $keyfile
-    write-host "using keyfile $keyfile" -color green
-    write-host "key data: $keydata" -color green
-
-    # if its in the putty format, fix it first.
-    if ($keydata.startswith("---- BEGIN")) {
-        $keydata = convert-puttypublickey $keyfile
-    }
-
-    $akeys = "~/.ssh/authorized_keys"
-    $secureSshPass = read-host -AsSecureString "Password for $hostname"
-    $sshPass = Decrypt-SecureString $secureSshPass
-    "",$keydata | plink -pw "$sshPass" $hostname "mkdir -p ~/.ssh && cat - >> $akeys && chmod 700 ~/.ssh && chmod 600 $akeys"
-}
 
 set-alias getmo Get-Module
 set-alias rmmo Remove-Module
@@ -909,44 +787,6 @@ function Send-NetworkData {
         $Stream.Dispose()
         $Client.Dispose()
     }
-}
-
-<#
-.Description
-Retrieves all available Exceptions in the current session. Returns an array of strings which represent the exception type names.
-.Notes
-Originally from: http://www.powershellmagazine.com/2011/09/14/custom-errors/
-#>
-function Get-AvailableExceptionsList {
-    [CmdletBinding()]
-    param()
-    $irregulars = 'Dispose|OperationAborted|Unhandled|ThreadAbort|ThreadStart|TypeInitialization'
-    $RelevantExceptions = @()
-    foreach ($assembly in [AppDomain]::CurrentDomain.GetAssemblies()) {
-        try {
-            $AllExceptions = $assembly.GetExportedTypes() -match 'Exception' -notmatch $irregulars
-        }
-        catch {
-            write-verbose "Could not get exported types for assembly '$assembly'"
-            continue
-        }
-        foreach ($exc in $AllExceptions) {
-            if (-not $exc.GetConstructors()) {
-                write-verbose "No constructors for '$exc' in '$assembly'"
-                continue
-            }
-            try {
-                $TestException = New-Object $exc.FullName
-                $TestError = New-Object Management.Automation.ErrorRecord $TestException,ErrorID,OpenError,Target
-            }
-            catch { # Tests failed, don't add this as a relevant exception
-                write-verbose "Could not create test exception/error for '$exc' in '$assembly'"
-                continue
-            }
-            $RelevantExceptions += $exc.FullName
-        }
-    }
-    return $RelevantExceptions
 }
 
 <#

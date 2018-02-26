@@ -1,16 +1,18 @@
 @{
-    RootModule = 'MrlDebugging.psm1'
+    RootModule = 'MrlPuttyHelper.psm1'
     ModuleVersion = '0.0.1'
-    GUID = 'efccfb84-5d5c-4a4f-b3b1-ffb6c86585b4'
+    GUID = '1b383f7e-a075-4c14-9bb5-e5a9a5a6385a'
     Author = 'Micah R Ledbetter'
     CompanyName = ''
     Copyright = '(c) 2018 Micah R Ledbetter. All rights reserved.'
-    Description = 'Powershell debugging helpers'
-    PowerShellVersion = '5.0'
+    Description = 'Putty helper functions'
+    PowerShellVersion = '3.0'
 
     FunctionsToExport = @(
-        'Get-AvailableExceptionsList'
-        'Show-ObjectProperties'
+        'Convert-PuttyRsaPublicKey'
+        'Export-PuttySession'
+        'Get-PuttySession'
+        'Publish-PuttySshPublicKey'
     )
     CmdletsToExport = @()
     VariablesToExport = @()
