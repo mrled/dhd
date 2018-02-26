@@ -74,11 +74,6 @@ function Set-WindowTitle {
     $Host.UI.RawUI.WindowTitle = $message
 }
 
-function conkeror {
-    $xulrunnerbin = $home + "\opt\xulrunner\xulrunner.exe"
-    & $xulrunnerbin  "$home\opt\src\conkeror\application.ini" $args
-}
-
 function New-Password {
     param([int]$length=8)
     # From: http://ronalddameron.blogspot.com/2009/09/two-lines-of-powershell-random.html
@@ -124,21 +119,6 @@ function vless {
     }
 }
 set-alias vl vless
-
-function Get-MagicNumber {
-    [CmdletBinding()] Param(
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true)] [String[]] $filePath,
-        [Int] $bytes = 2
-    )
-    process {
-        $firstBytes = Get-Content $filePath -Encoding Byte | Select-Object -First $bytes
-        New-Object PSObject -Property @{
-            FullName = Get-Item $filePath | Select-Object -Expand FullName
-            FirstBytesDecimal = $firstBytes
-            FirstBytesHexadecimal = $firstBytes |% { "0x{0:X0}" -f $_ }
-        }
-    }
-}
 
 # Make output of get-command better (more like Unix) for interactive use.
 # NOTE: For aliases, the processing function calls the show function again - this is recursive!
@@ -238,12 +218,66 @@ function touch {
     }
 }
 
-if (test-path alias:man) { del alias:man }
-function man {
-    foreach ($a in $args) {
-        get-help $a -full | less.bat
+<#
+.SYNOPSIS
+Get help in an interactively useful format
+
+.DESCRIPTION
+Get the help for a command in an interactively useful format, and pipe through less.exe for easy reading.
+Parameters are proxied to the Microsoft.PowerShell.Core\Get-Help cmdlet, but the parameter -Full is always passed.
+#>
+function Get-MrlHelp {
+    [CmdletBinding(DefaultParameterSetName='AllUsersView', HelpUri='https://go.microsoft.com/fwlink/?LinkID=113316')]
+    param(
+        [Parameter(Position=0, ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        ${Name},
+
+        [string]
+        ${Path},
+
+        [ValidateSet('Alias','Cmdlet','Provider','General','FAQ','Glossary','HelpFile','ScriptCommand','Function','Filter','ExternalScript','All','DefaultHelp','Workflow','DscResource','Class','Configuration')]
+        [string[]]
+        ${Category},
+
+        [string[]]
+        ${Component},
+
+        [string[]]
+        ${Functionality},
+
+        [string[]]
+        ${Role}
+    )
+
+    begin {
+        $outBuffer = $null
+        if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
+            $PSBoundParameters['OutBuffer'] = 1
+        }
+        $PSBoundParameters['Full'] = $true
+        $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Core\Get-Help', [System.Management.Automation.CommandTypes]::Cmdlet)
+        $scriptCmd = { & $wrappedCmd @PSBoundParameters | less.exe }
+        $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
+        $steppablePipeline.Begin($PSCmdlet)
+    }
+
+    process {
+        $steppablePipeline.Process($_)
+    }
+
+    end {
+        $steppablePipeline.End()
     }
 }
+
+if (Test-Path -Path Alias:\man) {
+    Remove-Item -Force -Path Alias:\man
+}
+Set-Alias -Name man -Value Get-MrlHelp
+
+
 <#
 .synopsis
 Get the syntax for a command
@@ -276,62 +310,6 @@ function Set-LocationMrl {
 }
 if (Test-Path Alias:\cd) { Remove-Item Alias:\cd }
 Set-Alias cd Set-LocationMrl -Force
-
-# original version from <http://www.techmumbojumblog.com/?p=39>
-# I changed it so it uses invoke-command rather than WMI for remoting
-# this means it works only w/ PowerShell 2.0 I think
-# neither WMI nor PS remoting enabled by default, but I always enable PS
-# remoting on my domains anyway. It does limit it to PS 2.0 though (no XP?)
-function Get-InstalledPrograms ($computer = 'localhost') {
-    $programs_installed = @{};
-    $win32_product = @(invoke-command -computername $computer -scriptblock {get-wmiobject -class 'Win32_Product'});
-    foreach ($product in $win32_product) {
-        $name = $product.Name;
-        $version = $product.Version;
-        if ($name -ne $null) {
-            $programs_installed.$name = $version;
-        }
-    }
-    return $programs_installed;
-}
-
-function New-MRLShortcut {
-    param(
-        [parameter(Mandatory=$true)] [string] $linkPath,
-        [parameter(Mandatory=$true)] [string] $targetPath,
-        [string] [ValidateSet("Activate","Maximize","Minimize")] $windowStyle = "Activate",
-        [string] $arguments,
-        [switch] $force,
-        [switch] $PassThru
-    )
-    if (-not [System.IO.Path]::IsPathRooted($linkPath)) {
-        $linkPath = "$pwd\$linkPath"
-    }
-    if (-not $linkPath.tolower().endswith(".lnk")) {
-        # required, or you'll get an error message and fail.
-        $linkPath = "$linkPath.lnk"
-    }
-    if ((test-path $linkPath) -and (-not $force.ispresent)) {
-        # I don't think I care to check if there's a non-link file named .lnk that we're going to overwrite
-        write-error ("linkPath $linkPath already exists; use -force to overwrite.")
-        return $null
-    }
-    $wshshell = New-Object -ComObject WScript.Shell
-    $lnk = $wshshell.CreateShortcut($linkPath)
-
-    switch ($windowStyle) {
-        "Activate" { $lnk.WindowStyle = 1 }
-        "Maximize" { $lnk.WindowStyle = 2 }
-        "Minimize" { $lnk.WindowStyle = 7 }
-    }
-
-    $lnk.targetPath = "$targetPath"
-    $lnk.Arguments = "$arguments" #it's ok if this is $null
-    $lnk.save()
-    if ($PassThru) {
-        return $lnk
-    }
-}
 
 function Import-ModuleIdempotently {
     [CmdletBinding()] Param(
@@ -380,7 +358,6 @@ function Test-PowershellSyntax {
     }
     return $true
 }
-
 
 function Format-XML {
     Param (
