@@ -74,3 +74,109 @@ function Get-AvailableExceptionsList {
         }
     }
 }
+
+<#
+.SYNOPSIS
+Show an error report
+
+.PARAMETER ErrorList
+An array of errors to report on. (Defaults to the value of the $Error variable)
+
+.PARAMETER ExitCode
+An exit code to report on. (Defaults to the value of the $LASTEXITCODE variable)
+
+.PARAMETER WrapWidth
+Specify a custom wrap width.
+By default, use $Host.UI.RawUI.Buffersize.Width if that property exists, or else 9999.
+
+.PARAMETER ExitIfErrors
+If any errors are present, exit with a nonzero code.
+#>
+function Show-ErrorReport {
+    [CmdletBinding()] Param(
+        [Array] $ErrorList = $global:Error,
+        [Int] $ExitCode = $global:LASTEXITCODE,
+        [switch] $ExitIfErrors,
+        [Int] $WrapWidth
+    )
+
+    function WrapText {
+        param($text, $width, $indentSpaces)
+        $width = $width -1
+        $indent = " " * $indentSpaces
+        foreach ($line in ($text -split "`n")) {
+            while ($line.length -gt $width) {
+                $line = "$indent$line"
+                Write-Output -InputObject $line.substring(0,$width)
+                $line = $line.substring($width)
+            }
+            Write-Output -InputObject "$indent$line"
+        }
+    }
+
+    if (-not $WrapWidth) {
+        if ($Host.UI.RawUI.Buffersize.Width) {
+            $WrapWidth = $Host.UI.RawUI.Buffersize.Width
+        } else {
+            $WrapWidth = 9999
+        }
+    }
+
+    if ($ErrorList.count -or $ExitCode) {
+        Write-Output -InputObject "ERROR Report: `$LASTEXITCODE=$ExitCode, `$Error.count=$($Error.count)"
+        for ($i=$ErrorList.count -1; $i -ge 0; $i-=1) {
+            $err = $ErrorList[$i]
+            Write-Output -InputObject "`$Error[$i]:"
+
+            # $error can contain at least 2 kind of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
+            # The information we need is found in the ErrorRecord objects, so unwrap them here if necessary
+            if ($err.PSObject.Properties['ErrorRecord']) {$err = $err.ErrorRecord}
+
+            WrapText -text $err.ToString() -width $WrapWidth -indentSpaces 4
+
+            if ($err.ScriptStackTrace) {
+                WrapText -text $err.ScriptStackTrace -width $WrapWidth -indentSpaces 8
+            }
+        }
+        if ($ExitIfErrors) {
+            exit 1
+        }
+    }
+    else {
+        Write-Output -InputObject "ERROR Report: No errors"
+    }
+}
+
+<#
+.SYNOPSIS
+Clear the $Error and $LASTEXITCODE variables
+#>
+function Clear-Error {
+    [CmdletBinding()] Param()
+    $global:Error.Clear()
+    $global:LASTEXITCODE = 0
+}
+
+<#
+.SYNOPSIS
+Get the type of an error
+
+.PARAMETER ErrorObject
+An error object to examine
+#>
+function Get-ErrorType {
+    [CmdletBinding()] Param(
+        $ErrorObject = $global:Error[0]
+    )
+    if (-not $ErrorObject) {
+        throw "No object passed as -ErrorObject, and `$Error is empty"
+    }
+
+    $exception = if ($ErrorObject.Exception) {$ErrorObject.Exception} else {$ErrorObject}
+    $errNamespace = $exception.GetType().Namespace
+    $errName = $exception.GetType().Name
+    return "${errNamespace}.${errName}"
+}
+
+Set-Alias -Name err -Value Show-ErrorReport
+Set-Alias -Name clerr -Value Clear-Error

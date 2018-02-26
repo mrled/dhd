@@ -381,74 +381,6 @@ function Test-PowershellSyntax {
     return $true
 }
 
-function Show-ErrorReport {
-    [cmdletbinding()]
-    param(
-        [switch] $ExitIfErrors,
-        [Array] $errorList = $Error,
-        [Int] $exitCode = $LASTEXITCODE
-    )
-
-    function WrapText {
-        param($text, $width, $indentSpaces)
-        $width = $width -1
-        $indent = " " * $indentSpaces
-        foreach ($line in ($text -split "`n")) {
-            while ($line.length -gt $width) {
-                $line = "$indent$line"
-                Write-Output $line.substring(0,$width)
-                $line = $line.substring($width)
-            }
-            Write-Output "$indent$line"
-        }
-    }
-
-    $wrapWidth = if ($Host -and $Host.UI -and $Host.UI.RawUI -and ($Host.UI.RawUI.Buffersize.Width -gt 0)) {$Host.UI.RawUI.Buffersize.Width} else {9999}
-    if ($errorList.count -or $exitCode) {
-        Write-Output "ERROR Report: `$LASTEXITCODE=$exitCode, `$Error.count=$($Error.count)"
-        for ($i=$errorList.count -1; $i -ge 0; $i-=1) {
-            $err = $errorList[$i]
-            Write-Output "`$Error[$i]:"
-
-            # $error can contain at least 2 kind of objects - ErrorRecord objects, and things that wrap ErrorRecord objects
-            # The information we need is found in the ErrorRecord objects, so unwrap them here if necessary
-            if ($err.PSObject.Properties['ErrorRecord']) {$err = $err.ErrorRecord}
-
-            WrapText -text $err.ToString() -width $wrapWidth -indentSpaces 4
-
-            if ($err.ScriptStackTrace) {
-                WrapText -text $err.ScriptStackTrace -width $wrapWidth -indentSpaces 8
-            }
-        }
-        if ($ExitIfErrors) {
-            exit 1
-        }
-    }
-    else {
-        Write-Output "ERROR Report: No errors"
-    }
-}
-set-alias err Show-ErrorReport
-
-function Clear-Error {
-    $error.clear()
-    $global:LASTEXITCODE = 0
-}
-set-alias clerr Clear-Error
-
-function Get-ErrorType {
-    [CmdletBinding()] Param(
-        $errorObject = $Error[0]
-    )
-    if (-not $errorObject) {
-        throw "No object passed as -errorObject, and `$Error is empty"
-    }
-
-    $exception = if ($errorObject.Exception) {$errorObject.Exception} else {$errorObject}
-    $errNamespace = $exception.GetType().Namespace
-    $errName = $exception.GetType().Name
-    return "${errNamespace}.${errName}"
-}
 
 function Format-XML {
     Param (
@@ -479,7 +411,6 @@ function Start-BatchFile {
     cmd.exe "/c $batchFile $batchArgs <NUL"
 }
 set-alias bat Start-BatchFile
-
 
 <#
 .synopsis

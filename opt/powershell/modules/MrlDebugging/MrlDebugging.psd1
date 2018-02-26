@@ -9,12 +9,18 @@
     PowerShellVersion = '5.0'
 
     FunctionsToExport = @(
+        'Clear-Error'
         'Get-AvailableExceptionsList'
+        'Get-ErrorType'
+        'Show-ErrorReport'
         'Show-ObjectProperties'
     )
     CmdletsToExport = @()
     VariablesToExport = @()
-    AliasesToExport = @()
+    AliasesToExport = @(
+        'clerr'
+        'err'
+    )
     DscResourcesToExport = @()
 
     PrivateData = @{
