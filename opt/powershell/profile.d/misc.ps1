@@ -277,39 +277,6 @@ function Set-LocationMrl {
 if (Test-Path Alias:\cd) { Remove-Item Alias:\cd }
 Set-Alias cd Set-LocationMrl -Force
 
-function Send-Notification {
-    # We use start-job so that the function can return right away, but also sleep for $seconds
-    # before removing the icon from the systray. $objNotifyIcon.ShowBaloonTip() returns immediately
-    # and the icon remains even after $seconds, so I needed a way to sleep, but I didn't want it
-    # to lock my PS session while it did so. Anyway.
-    $sb = {
-        param(
-            [parameter(mandatory=$true)][string]$message,
-            [string]$title="Powershell Notification",
-            [ValidateSet("Info","Warning","Error")][string]$icon="Info",
-            [int32]$seconds=10
-        )
-
-        [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-        $objNotifyIcon = New-Object System.Windows.Forms.NotifyIcon
-        #systray icon - make this customizable too? It is required but that path doesn't look universal.
-        $objNotifyIcon.Icon = "C:\Windows\Installer\{3156336D-8E44-3671-A6FE-AE51D3D6564E}\Icon_app.ico"
-
-        $objNotifyIcon.BalloonTipIcon = $icon  #in-balloon icon
-        $objNotifyIcon.BalloonTipText = $message
-        $objNotifyIcon.BalloonTipTitle = $title
-
-        $objNotifyIcon.Visible = $True
-        $objNotifyIcon.ShowBalloonTip($seconds * 1000)
-        start-sleep $seconds
-        $objNotifyIcon.Visible = $False
-        $objNotifyIcon = $null
-    }
-    $job = start-job -scriptblock $sb -argumentlist @args
-
-    #return $job #useful for debugging
-}
-
 # original version from <http://www.techmumbojumblog.com/?p=39>
 # I changed it so it uses invoke-command rather than WMI for remoting
 # this means it works only w/ PowerShell 2.0 I think
@@ -366,65 +333,25 @@ function New-MRLShortcut {
     }
 }
 
-function reimport-module {
-    param([parameter(mandatory=$true)] [string] $moduleName)
-    $module = get-module $moduleName
-    if ($module) {
-        write-host "Module is imported. Removing and re-adding."
-        remove-module $moduleName
-        import-module $module.path
-    }
-    else {
-        write-host "Module was not imported. Trying to add module $modulename..."
-        import-module $modulename
-    }
-}
-set-alias reimport reimport-module
-
-
-
-set-alias getmo Get-Module
-set-alias rmmo Remove-Module
-
-# from: http://andyarismendi.blogspot.com/2013/04/out-clipboard-cmdlet.html
-function Set-Clipboard {
-    [cmdletbinding()]
-    param (
-        [parameter(Position=0,Mandatory=$true,ValueFromPipeline=$true)]$InputObject,
-        [switch] $File
+function Import-ModuleIdempotently {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory)] [string] $Name
     )
-    begin {
-        # STA is required to set the clipboard. (...whatever)
-        # Creating a new runspace is much faster than a whole new Powershell process
-        $ps = [PowerShell]::Create()
-        $rs = [RunSpaceFactory]::CreateRunspace()
-        $rs.ApartmentState = "STA"
-        $rs.ThreadOptions = "ReuseThread"
-        $rs.Open()
-        $data = @()
-    }
-    process {$data += $InputObject}
-    end {
-        $rs.SessionStateProxy.SetVariable("do_file_copy", $File)
-        $rs.SessionStateProxy.SetVariable("data", $data)
-        $ps.Runspace = $rs
-        $ps.AddScript({
-            Add-Type -AssemblyName 'System.Windows.Forms'
-            if ($do_file_copy) {
-                $file_list = New-Object -TypeName System.Collections.Specialized.StringCollection
-                $data | % {
-                    if ($_ -is [System.IO.FileInfo]) {[void]$file_list.Add($_.FullName)}
-                    elseif ([IO.File]::Exists($_))    {[void]$file_list.Add($_)}
-                }
-                [System.Windows.Forms.Clipboard]::SetFileDropList($file_list)
-            } else {
-                $host_out = (($data | Out-String -Width 1000) -split "`n" | % {$_.TrimEnd()}) -join "`n"
-                [System.Windows.Forms.Clipboard]::SetText($host_out)
-            }
-        }).Invoke()
+    $module = Get-Module -Name $Name
+    if ($module) {
+        Write-Verbose -Message "Module is already imported. Removing and re-adding..."
+        Remove-Module -Name $Name
+        Import-Module -Name $module.Path
+    } else {
+        Write-Verbose -Message "Module was not imported. Trying to add module by name '$Name'..."
+        Import-Module -Name $Name
     }
 }
-set-alias Out-Clipboard Set-Clipboard
+Set-Alias -Name Reimport-Module -Value Import-ModuleIdempotently
+Set-Alias -Name reimport -Value Import-ModuleIdempotently
+
+Set-Alias -Name getmo -Value Get-Module
+Set-Alias -Name rmmo -Value Remove-Module
 
 function Test-PowershellSyntax {
     [cmdletbinding(DefaultParameterSetName='FromFile')]
@@ -452,17 +379,6 @@ function Test-PowershellSyntax {
         return $false
     }
     return $true
-}
-
-function Decrypt-SecureString {
-    param(
-        [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)] [System.Security.SecureString] $secureString
-    )
-    $marshal = [System.Runtime.InteropServices.Marshal]
-    $pointer = $marshal::SecureStringToBSTR($secureString)
-    $decryptedString = $marshal::PtrToStringBSTR($pointer)
-    $marshal::ZeroFreeBSTR($pointer)
-    return $decryptedString
 }
 
 function Show-ErrorReport {
@@ -786,66 +702,6 @@ function Send-NetworkData {
         # cleanup
         $Stream.Dispose()
         $Client.Dispose()
-    }
-}
-
-<#
-.ForwardHelpTargetName Microsoft.PowerShell.Core\Enter-PSSession
-.ForwardHelpCategory Cmdlet
-#>
-function remote {
-    [CmdletBinding(HelpUri='http://go.microsoft.com/fwlink/?LinkID=135210', RemotingCapability='OwnedByCommand')]
-    param(
-        [Parameter(Mandatory=$true)] [Alias('Cn')] [ValidateNotNullOrEmpty()] [string] ${ComputerName},
-        [switch] ${EnableNetworkAccess},
-        [pscredential] [System.Management.Automation.CredentialAttribute()] ${Credential},
-        [ValidateRange(1, 65535)] [int] ${Port},
-        [switch] ${UseSSL},
-        [string] ${ConfigurationName},
-        [string] ${ApplicationName},
-        [ValidateNotNull()] [System.Management.Automation.Remoting.PSSessionOption] ${SessionOption},
-        [System.Management.Automation.Runspaces.AuthenticationMechanism] ${Authentication},
-        [string] ${CertificateThumbprint}
-    )
-    begin {
-        try {
-            $outBuffer = $null
-            if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
-                $PSBoundParameters['OutBuffer'] = 1
-            }
-
-            # We're going to get the remote session and load our local profile into it
-            $npssParams = @{}
-            $npssParams['ComputerName'] = $PSBoundParameters.ComputerName
-            foreach ($remoteParam in @('ApplicationName', 'Authentication', 'CertificateThumbprint', 'ConfigurationName', 'Credential', 'EnableNetworkAccess', 'Port', 'Sessionoption')) {
-                if ($PSBoundParameters[$remoteParam]) {
-                    $npssParams[$remoteParam] = $PSBoundParameters[$remoteParam]
-                }
-            }
-            $session = New-PSSession @npssParams
-            $PSBoundParameters['Session'] = $session
-
-            $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Core\Enter-PSSession', [System.Management.Automation.CommandTypes]::Cmdlet)
-            $scriptCmd = {& $wrappedCmd @PSBoundParameters }
-            $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
-            $steppablePipeline.Begin($PSCmdlet)
-        } catch {
-            throw
-        }
-    }
-    process {
-        try {
-            $steppablePipeline.Process($_)
-        } catch {
-            throw
-        }
-    }
-    end {
-        try {
-            $steppablePipeline.End()
-        } catch {
-            throw
-        }
     }
 }
 
