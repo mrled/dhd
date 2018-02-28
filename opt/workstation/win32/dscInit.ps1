@@ -302,6 +302,13 @@ function Invoke-AllDscConfigurations {
 # If dot-sourced, the following block will not run:
 
 if ($MyInvocation.InvocationName -ne '.') {
+
+    # Set the Process/User exec policies to prevent a possible error when setting the LocalMachine policy
+    # Setting the LocalMachine policy will throw an error if a more specific scope takes precedence
+    foreach ($scope in @('Process', 'CurrentUser', 'LocalMachine')) {
+        Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope $scope -Force
+    }
+
     Enable-PsRemotingForce
     if ($TestRemote -Or -Not $PSScriptRoot) {
         if ($CalledFromSelf) {
@@ -313,20 +320,12 @@ if ($MyInvocation.InvocationName -ne '.') {
         } finally {
             Remove-Item -Recurse -Force -LiteralPath $dhdRepo.DhdTemp
         }
-
         # Since we execute dscInit.ps1 from the just-downloaded dhd repo -
         # that is, another copy of this same script -
         # stop executing this copy of the script when that one finishes
         return
-
     } else {
         $dhdRepo = Get-DhdRepository -Local
-    }
-
-    # Set the Process/User exec policies to prevent a possible error when setting the LocalMachine policy
-    # Setting the LocalMachine policy will throw an error if a more specific scope takes precedence
-    foreach ($scope in @('Process', 'CurrentUser', 'LocalMachine')) {
-        Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope $scope -Force
     }
 
     Install-DscPrerequisites
