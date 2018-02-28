@@ -3,23 +3,27 @@
 #Requires -RunAsAdministrator
 
 <#
-.synopsis
+.SYNOPSIS
 Configure a new Windows workstation the way I like it
-.description
+.DESCRIPTION
 Initialize a new Windows workstation
-.parameter UserCredential
-The credential for the user to configure
-.parameter TestRemote
+.PARAMETER UserCredential
+The credential for the local account you wish to use. This account should already be created on the local machine, but you need not be logged into it now.
+Note that it works with local, domain, or Microsoft accounts used to log in to Windows.
+For a local account, just enter the account name and password.
+For a Microsoft account, enter the email address as the account name (like user@example.com) and the Microsoft account password.
+For a domain account, enter EXAMPLE\username or username@example.com for the username and the domain account password.
+.PARAMETER TestRemote
 Normally, this script will try to determine if it's being run from inside a checked-out dhd repository or not.
 If it is, then it uses relative paths to find items in dhd that it depends on.
 If it is not, then it downloads the latest code from the dhd master branch to a temporary directory.
 This switch bypasses that check, forcing it to download the latest from GitHub.
-.parameter CalledFromSelf
+.PARAMETER CalledFromSelf
 Internal use only. Used to prevent an infinite loop.
-.example
+.EXAMPLE
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 Must be run from an administrative prompt
-.example
+.EXAMPLE
 Invoke-WebRequest -Headers @{"Cache-Control"="no-cache"} -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 When testing, run this way to prevent Invoke-WebRequest from caching the response
 #>
@@ -41,6 +45,10 @@ $MinimumMaxEnvelopeSize = 8192
 
 ## Helper Functions
 
+<#
+.SYNOPSIS
+Create a temporary directory
+#>
 function New-TemporaryDirectory {
     [CmdletBinding()] Param()
     do {
@@ -49,6 +57,18 @@ function New-TemporaryDirectory {
     New-Item -ItemType Directory -Path $newTempDirPath
 }
 
+<#
+.SYNOPSIS
+Invoke a Powershell DSC configuration
+.DESCRIPTION
+Invoke a Powershell DSC configuration by compiling it to a temporary directory,
+running it immediately from that location,
+and then removing the temporary directory.
+.PARAMETER Name
+The name of the DSC configuration to invoke
+.PARAMETER Parameters
+Parameters to pass to the DSC configuration
+#>
 function Invoke-DscConfiguration {
     [CmdletBinding()] Param(
         [Parameter(Mandatory)] [string] $Name,
@@ -69,38 +89,67 @@ function Invoke-DscConfiguration {
 }
 
 <#
-.synopsis
-Add or clear a location from the local machine's PSModulePath environment variable
-.parameter Location
-A location to ensure exists in the path
-.parameter Clear
-If passed, rather than ensuring the location exists in the path, ensure it is cleared from it
-.notes
-I hate how DSC deals with $env:PsModulePath
-It needs all DSC modules to reside in the _machine_ PsModulePath environment variable
-Whatever
+.SYNOPSIS
+Remove a value from a PATH-like environment variable
+.PARAMETER Name
+The name of the environment variable
+.PARAMETER Value
+The value to remove from the environment variable
+.PARAMETER TargetLocation
+The environment location
 #>
-function Set-LocationInMachinePsModulePath {
+function Remove-PathLikeEnvironmentVariableValue {
     [CmdletBinding()] Param(
-        [Parameter(Mandatory)] [string] $Location,
-        [switch] $Clear
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $Value,
+        [Parameter(Mandatory)] [ValidateSet('Process', 'User', 'Machine')] [string[]] $TargetLocation
     )
-    $currentValue = [Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
-    $currentValueSplit = $currentValue -Split ';'
-    $Location = Resolve-Path -LiteralPath $Location | Select-Object -ExpandProperty Path
-
-    if ($currentValueSplit -NotContains $Location -And -Not $Clear) {
-        Write-Verbose -Message "Setting Machine PSModulePath environment variable to include '$Location'"
-        [Environment]::SetEnvironmentVariable("PSModulePath", "$currentValue;$Location", "Machine")
-    } elseif ($currentValueSplit -Contains $Location -And $Clear) {
-        Write-Verbose -Message "Removing '$Location' from Machine PSModulePath environment variable"
-        $newValue = ($currentValueSplit | Foreach-Object -Process { if ($_ -ne $Location) {$_} }) -Join ";"
-        [Environment]::SetEnvironmentVariable("PSModulePath", $newValue, "Machine")
-    } else {
-        Write-Verbose -Message "Nothign to change"
+    foreach ($location in $TargetLocation) {
+        $currentValue = [Environment]::GetEnvironmentVariable($Name, $location)
+        $currentValueSplit = $currentValue -Split ';'
+        if ($currentValueSplit -Contains $Value) {
+            Write-Verbose -Message "Removing value '$Value' from '$location' '$Name' environment variable"
+            $newValue = ($currentValueSplit | Foreach-Object -Process { if ($_ -ne $Value) {$_} }) -Join ";"
+            [Environment]::SetEnvironmentVariable($Name, $newValue, $location)
+        } else {
+            Write-Verbose -Message "The value '$Value' is not a member of '$location' '$Name' environment variable"
+        }
     }
 }
 
+<#
+.SYNOPSIS
+Append a value to a PATH-like environment variable
+.PARAMETER Name
+The name of the environment variable
+.PARAMETER Value
+The value to add to the environment variable
+.PARAMETER  Location
+The environment location
+#>
+function Add-PathLikeEnvironmentVariableValue {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $Value,
+        [Parameter(Mandatory)] [ValidateSet('Process', 'User', 'Machine')] [string[]] $TargetLocation
+    )
+    foreach ($location in $TargetLocation) {
+        $currentValue = [Environment]::GetEnvironmentVariable($Name, $location)
+        $currentValueSplit = $currentValue -Split ';'
+        if ($currentValueSplit -NotContains $Value) {
+            Remove-PathLikeEnvironmentVariableValue @PSBoundParameters
+            Write-Verbose -Message "Adding value '$Value' to '$location' '$Name' environment variable"
+            [Environment]::SetEnvironmentVariable($Name, "$currentValue;$Value", $location)
+        } else {
+            Write-Verbose -Message "The value '$Value' is already a member of the '$location' '$Name' environment variable"
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+Test whether WinRM aka Powershell Remoting has been enabled
+#>
 function Test-WinRmEnabled {
     [CmdletBinding()] Param()
     try {
@@ -111,12 +160,13 @@ function Test-WinRmEnabled {
     }
 }
 
-
-## Apply necessary Windows changes
-
-$publicNetConnProfs = Get-NetConnectionProfile -NetworkCategory Public
-$currentMaxEnvSize = Get-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb | Select-Object -ExpandProperty Value
-if (-not (Test-WinRmEnabled) -or ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize)) {
+<#
+.DESCRIPTION
+Ensure that WinRM aka Powershell Remoting has been enabled and that its settings will work for us
+#>
+function Enable-PsRemotingForce {
+    [CmdletBinding()] Param()
+    $publicNetConnProfs = Get-NetConnectionProfile -NetworkCategory Public
     try {
         # Because ~*~FUCKING WINDOWS~*~ if you have ANY network connection profile set to "Public",
         # you cannot set MaxEnvelopeSizekb or enable PSRemoting. What.
@@ -124,7 +174,9 @@ if (-not (Test-WinRmEnabled) -or ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize
         if (-not (Test-WinRmEnabled)) {
             Enable-PSRemoting -SkipNetworkProfileCheck -Force
         }
-        if ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize) {
+        # Get the current max envelope size _after_ enabling remoting, or else the path doesn't exist
+        $currentMaxEnvSize = Get-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb | Select-Object -ExpandProperty Value
+        if ($currentMaxEnvSize -lt $script:MinimumMaxEnvelopeSize) {
             Set-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb -Value 2048
         }
     } finally {
@@ -132,81 +184,147 @@ if (-not (Test-WinRmEnabled) -or ($currentMaxEnvSize -lt $MinimumMaxEnvelopeSize
     }
 }
 
+<#
+.SYNOPSIS
+Get the dhd repository we are executing from
+.PARAMETER Remote
+Download the dhd zipfile and extract it to a temporary directory
+.PARAMETER Local
+Use the dhd repository already on disk where this file resides
+Requires that this file be run from a checked-out dhd repository
+.OUTPUTS
+An object with these properties:
+- DhdLocation:  The location of the dhd repository
+- DhdTemp:      $false if -Local was passed, otherwise the path to the temporary directory where dhd is checked out
+#>
+function Get-DhdRepository {
+    [CmdletBinding(DefaultParameterSetName='Remote')] Param(
+        [Parameter(Mandatory, ParameterSetName='Remote')] [switch] $Remote,
+        [Parameter(Mandatory, ParameterSetName='Local')] [switch] $Local
+    )
+    if ($Remote) {
+        Write-Verbose -Message "Downloading dhd from '$script:DhdZipUri'..."
+        $dhdTemp = New-TemporaryDirectory
+        $dhdTempZip = "$dhdTemp\dhd-temp.zip"
 
-## Get dhd
+        # I am not sure why, but by default, this request will sometimes fail if we don't enable TLS1.2 like this:
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -UseBasicParsing -Uri $script:DhdZipUri -OutFile $dhdTempZip
 
-if ($TestRemote -Or -Not $PSScriptRoot) {
-    if ($CalledFromSelf) {
-        throw "Looks like we might be in an infinite loop, ejecting..."
+        Expand-Archive -LiteralPath $dhdTempZip -DestinationPath $dhdTemp
+        # We rely on the fact that GitHub zipfiles contain a single subdir with all repo items inside
+        $dhdLocation = Get-ChildItem -Directory -LiteralPath $dhdTemp | Select-Object -ExpandProperty FullName
+    } elseif ($Local) {
+        Write-Verbose -Message "Using on-disk dhd..."
+        $dhdLocation = Resolve-Path -LiteralPath $PSScriptRoot\..\..\..\ | Select-Object -ExpandProperty Path
+        $dhdTemp = $false
+    } else {
+        throw "Unable to determine parameter set"
     }
-    Write-Verbose -Message "Downloading dhd from '$DhdZipUri'..."
-    # If we aren't running this script from a local filesystem, assume we need to download and install dhd
-    $dhdTemp = New-TemporaryDirectory
-    $dhdTempZip = "$dhdTemp\dhd-temp.zip"
-    Invoke-WebRequest -Uri $DhdZipUri -OutFile $dhdTempZip
-    Expand-Archive -LiteralPath $dhdTempZip -DestinationPath $dhdTemp
-    # We rely on the fact that GitHub zipfiles contain a single subdir with all repo items inside
-    $dhdLocation = Get-ChildItem -Directory -LiteralPath $dhdTemp | Select-Object -ExpandProperty FullName
-    & "$dhdLocation\opt\workstation\win32\dscInit.ps1" -Verbose -CalledFromSelf -UserCredential (Get-Credential)
-    return
-} else {
-    Write-Verbose -Message "Using on-disk dhd..."
-    $dhdLocation = Resolve-Path -LiteralPath $PSScriptRoot\..\..\..\ | Select-Object -ExpandProperty Path
-    $dhdTemp = $false
+
+    New-Object -TypeName PSObject -Property @{
+        DhdLocation = $dhdLocation
+        DhdTemp = $dhdTemp
+    }
 }
-Write-Verbose "Using dhd at location '$dhdLocation'"
 
-
-## Install DSC prerequisites
-
-Set-ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
-
-if ('NuGet' -notin (Get-PackageProvider | Select-Object -ExpandProperty Name)) {
-    Install-PackageProvider -Name NuGet -Force
-}
-if ('PSGallery' -notin (Get-PSRepository | Where-Object -Property InstallationPolicy -eq 'Trusted')) {
-    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-}
-foreach ($module in $RequiredDscModules) {
-    if (-not (Get-Module -ListAvailable -Name $module)) {
-        Install-Module -Name $module
+<#
+.SYNOPSIS
+Install modules required by out DSC configurations
+#>
+function Install-DscPrerequisites {
+    [CmdletBinding()] Param()
+    if ('NuGet' -notin (Get-PackageProvider | Select-Object -ExpandProperty Name)) {
+        Install-PackageProvider -Name NuGet -Force
+    }
+    if ('PSGallery' -notin (Get-PSRepository | Where-Object -Property InstallationPolicy -eq 'Trusted')) {
+        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+    }
+    foreach ($module in $script:RequiredDscModules) {
+        if (-not (Get-Module -ListAvailable -Name $module)) {
+            Install-Module -Name $module
+        }
     }
 }
 
+<#
+.SYNOPSIS
+Invoke all our DSC configurations
+#>
+function Invoke-AllDscConfigurations {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory)] $DhdLocation
+    )
 
-## Apply DSC Configuration
+    try {
+        $dscInitModulePath = Resolve-Path -LiteralPath $DhdLocation\opt\powershell\modules | Select-Object -ExpandProperty Path
 
-try {
-    Set-LocationInMachinePsModulePath -Location $dhdLocation\opt\powershell\modules
+        # TODO: lkadjflakdjflakdj comment me why both machine and proess
+        Add-PathLikeEnvironmentVariableValue -Name PSModulePath -Value $dscInitModulePath -TargetLocation $("Machine","Process")
 
-    $LocalhostConfigData = @{
-        AllNodes = @(
-            @{
-                NodeName = "localhost"
-                PSDscAllowPlainTextPassword = $true
-                PSDscAllowDomainUser = $true
-            }
-        )
+        $UserCredentialConfigData = @{
+            AllNodes = @(
+                @{
+                    NodeName = "localhost"
+                    PSDscAllowPlainTextPassword = $true
+                    PSDscAllowDomainUser = $true
+                }
+            )
+        }
+
+        . $DhdLocation\opt\workstation\win32\dscConfiguration.ps1
+
+        Invoke-DscConfiguration -Name InstallSoftware
+        Invoke-DscConfiguration -Name MachineSettingsConfig
+        Invoke-DscConfiguration -Name DhdConfig -Parameters @{
+            Credential = $UserCredential
+            ConfigurationData = $UserCredentialConfigData
+        }
+        Invoke-DscConfiguration -Name UserSettingsConfig -Parameters @{
+            Credential = $UserCredential
+            ConfigurationData = $UserCredentialConfigData
+        }
+
+    } finally {
+        # We don't want our module path to stick around in the _machine_'s module path
+        Remove-PathLikeEnvironmentVariableValue -Name PSModulePath -Value $dscInitModulePath -TargetLocation "Machine"
     }
 
-    . $dhdLocation\opt\workstation\win32\dscConfiguration.ps1
+}
 
-    Invoke-DscConfiguration -Name InstallSoftware
-    Invoke-DscConfiguration -Name MachineSettingsConfig
-    Invoke-DscConfiguration -Name DhdConfig -Parameters @{
-        Credential = $UserCredential
-        ConfigurationData = $LocalhostConfigData
-    }
-    Invoke-DscConfiguration -Name UserSettingsConfig -Parameters @{
-        Credential = $UserCredential
-        ConfigurationData = $LocalhostConfigData
-    }
-} finally {
-    # We don't want our module path to stick around in the _machine_'s module path
-    Set-LocationInMachinePsModulePath -Location $dhdLocation\opt\powershell\modules -Clear
+# Allow dot-sourcing the script without running
+# (Useful during debugging)
+# If dot-sourced, the following block will not run:
 
-    # If we put dhd in a temp location, don't leave copies of it around
-    if ($dhdTemp) {
-        Remove-Item -Recurse -Force -LiteralPath $dhdTemp
+if ($MyInvocation.InvocationName -ne '.') {
+    Enable-PsRemotingForce
+    if ($TestRemote -Or -Not $PSScriptRoot) {
+        if ($CalledFromSelf) {
+            throw "Looks like we might be in an infinite loop, ejecting..."
+        }
+        $dhdRepo = Get-DhdRepository -Remote
+        try {
+            & "$($dhdRepo.DhdLocation)\opt\workstation\win32\dscInit.ps1" -Verbose -CalledFromSelf -UserCredential (Get-Credential)
+        } finally {
+            Remove-Item -Recurse -Force -LiteralPath $dhdRepo.DhdTemp
+        }
+
+        # Since we execute dscInit.ps1 from the just-downloaded dhd repo -
+        # that is, another copy of this same script -
+        # stop executing this copy of the script when that one finishes
+        return
+
+    } else {
+        $dhdRepo = Get-DhdRepository -Local
     }
+
+    # Set the Process/User exec policies to prevent a possible error when setting the LocalMachine policy
+    # Setting the LocalMachine policy will throw an error if a more specific scope takes precedence
+    foreach ($scope in @('Process', 'CurrentUser', 'LocalMachine')) {
+        Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope $scope -Force
+    }
+
+    Install-DscPrerequisites
+
+    Invoke-AllDscConfigurations -DhdLocation $dhdRepo.DhdLocation
 }
