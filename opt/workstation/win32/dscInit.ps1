@@ -137,7 +137,6 @@ function Add-PathLikeEnvironmentVariableValue {
         $currentValue = [Environment]::GetEnvironmentVariable($Name, $location)
         $currentValueSplit = $currentValue -Split ';'
         if ($currentValueSplit -NotContains $Value) {
-            Remove-PathLikeEnvironmentVariableValue @PSBoundParameters
             Write-Verbose -Message "Adding value '$Value' to '$location' '$Name' environment variable"
             [Environment]::SetEnvironmentVariable($Name, "$currentValue;$Value", $location)
         } else {
