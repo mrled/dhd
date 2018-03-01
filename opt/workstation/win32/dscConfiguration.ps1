@@ -384,6 +384,20 @@ Configuration UserSettingsConfig {
             Ensure = "Present"
         }
 
+        Script "GitSetUserName" {
+            GetScript  = { return @{ Result = "" } }
+            TestScript = { return $(git config --global --get user.name) -eq "Micah R Ledbetter" }
+            SetScript  = { git config --global user.email "Micah R Ledbetter" }
+            PsDscRunAsCredential = $Credential
+        }
+
+        Script "GitSetUserEmail" {
+            GetScript  = { return @{ Result = "" } }
+            TestScript = { return $(git config --global --get user.email) -eq "me@micahrl.com" }
+            SetScript  = { git config --global user.email "me@micahrl.com" }
+            PsDscRunAsCredential = $Credential
+        }
+
         # By default, 'git branch' commands are piped to a pager, which is annoying
         Script "GitDisablePagerForBranchCommand" {
             GetScript  = { return @{ Result = "" } }
