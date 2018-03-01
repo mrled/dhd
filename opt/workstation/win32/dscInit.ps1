@@ -171,11 +171,13 @@ Ensure that WinRM aka Powershell Remoting has been enabled and that its settings
 #>
 function Enable-PsRemotingForce {
     [CmdletBinding()] Param()
-    $publicNetConnProfs = Get-NetConnectionProfile -NetworkCategory Public
+    $publicNetConnProfs = Get-NetConnectionProfile | Where-Object -Property NetworkCategory -EQ Public
     try {
         # Because ~*~FUCKING WINDOWS~*~ if you have ANY network connection profile set to "Public",
         # you cannot set MaxEnvelopeSizekb or enable PSRemoting. What.
-        Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Private
+        if ($publicNetConnProfs) {
+            Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Private
+        }
         if (-not (Test-WinRmEnabled)) {
             Enable-PSRemoting -SkipNetworkProfileCheck -Force
         }
@@ -185,7 +187,9 @@ function Enable-PsRemotingForce {
             Set-Item -LiteralPath WSMan:\localhost\MaxEnvelopeSizekb -Value 2048
         }
     } finally {
-        Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Public
+        if ($publicNetConnProfs) {
+            Set-NetConnectionProfile -InterfaceIndex $publicNetConnProfs.InterfaceIndex -NetworkCategory Public
+        }
     }
 }
 
