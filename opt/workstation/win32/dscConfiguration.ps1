@@ -275,6 +275,7 @@ Configuration UserSettingsConfig {
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName cMrlUserEnvironment
+    Import-DscResource -ModuleName cMrlGitGlobalConfiguration
 
     Node $ComputerName {
 
@@ -384,33 +385,33 @@ Configuration UserSettingsConfig {
             Ensure = "Present"
         }
 
-        Script "GitSetUserName" {
-            GetScript  = { return @{ Result = "" } }
-            TestScript = { return $(git config --global --get user.name) -eq "Micah R Ledbetter" }
-            SetScript  = { git config --global user.email "Micah R Ledbetter" }
+        cMrlGitGlobalConfiguration "GitSetUsername" {
+            Name = "user.name"
+            Value = "Micah R Ledbetter"
+            Ensure = "Present"
             PsDscRunAsCredential = $Credential
         }
 
-        Script "GitSetUserEmail" {
-            GetScript  = { return @{ Result = "" } }
-            TestScript = { return $(git config --global --get user.email) -eq "me@micahrl.com" }
-            SetScript  = { git config --global user.email "me@micahrl.com" }
+        cMrlGitGlobalConfiguration "GitSetUserEmail" {
+            Name = "user.email"
+            Value = "me@micahrl.com"
+            Ensure = "Present"
             PsDscRunAsCredential = $Credential
         }
 
         # By default, 'git branch' commands are piped to a pager, which is annoying
-        Script "GitDisablePagerForBranchCommand" {
-            GetScript  = { return @{ Result = "" } }
-            TestScript = { return $(git config --global --get pager.branch) -eq "false" }
-            SetScript  = { git config --global pager.branch false }
+        cMrlGitGlobalConfiguration "GitDisablePagerForBranchCommand" {
+            Name = "pager.branch"
+            Value = "false"
+            Ensure = "Present"
             PsDscRunAsCredential = $Credential
         }
 
         # Requires subl.exe to be in $env:PATH
-        Script "GitConfigureSublimeTextAsEditor" {
-            GetScript  = { return @{ Result = "" } }
-            TestScript = { return $(git config --global --get core.editor) -eq "subl.exe -w" }
-            SetScript  = { git config --global core.editor "subl.exe -w" }
+        cMrlGitGlobalConfiguration "GitConfigureSublimeTextAsEditor" {
+            Name = "core.editor"
+            Value= "subl.exe -w"
+            Ensure = "Present"
             PsDscRunAsCredential = $Credential
         }
 
@@ -419,10 +420,10 @@ Configuration UserSettingsConfig {
         # - Displays colors from ANSI escape sequences properly
         # - It's much faster than relying on vim's less.vim package
         # Requires less.exe to be in $env:PATH
-        Script "GitConfigureLessPager" {
-            GetScript  = { return @{ Result = "" } }
-            TestScript = { return $(git config --global --get core.pager) -eq "less.exe" }
-            SetScript  = { git config --global core.pager "less.exe" }
+        cMrlGitGlobalConfiguration "GitConfigureLessPager" {
+            Name = "core.pager"
+            Value= "less.exe"
+            Ensure = "Present"
             PsDscRunAsCredential = $Credential
         }
 
@@ -430,10 +431,10 @@ Configuration UserSettingsConfig {
         # - Lets us use ~/.ssh/config, ~/.ssh/id_* keys, etc
         # - Tested and works well
         # Requires ssh.exe to be in $env:PATH
-        Script "GitConfigureSsh" {
-            GetScript  = { return @{ Result = "" } }
-            TestScript = { return $(git config --global --get core.sshCommand) -eq "ssh.exe" }
-            SetScript  = { git config --global core.sshCommand "ssh.exe" }
+        cMrlGitGlobalConfiguration "GitConfigureSsh" {
+            Name = "core.sshCommand"
+            Value = "ssh.exe"
+            Ensure = "Present"
             PsDscRunAsCredential = $Credential
         }
 
@@ -441,8 +442,8 @@ Configuration UserSettingsConfig {
         cMrlUserEnvironment "SetGoPathEnvVar" {
             Name = "GOPATH"
             Value = "$env:USERPROFILE\Documents\Go"
-            PsDscRunAsCredential = $Credential
             Ensure = "Present"
+            PsDscRunAsCredential = $Credential
         }
 
     }
