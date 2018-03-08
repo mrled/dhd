@@ -1,0 +1,81 @@
+#!/bin/sh
+
+set -e
+PATHSETUPLOG=${PATHSETUPLOG:-}
+set -u
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat <<ENDUSAGE
+Usage: $cmdname <PATHSTR>
+Set up a PATH-like string
+
+ARGUMENTS
+    <PATHSTR>   A PATH-like string
+                That is, a string containing paths separated by colons
+                We also accept paths separated by newlines
+
+VARIABLES
+    \$PATHSETUPLOG
+        If set, assume it points to a file path, and log debugging information
+        to that file.
+
+OUTPUTS
+    Return a string continaing only the existing directories from PATHSTR,
+    separated by colons.
+    Can set PATH to this output.
+
+EXAMPLES
+    > pathsetup "/bin:/nonexistent:/sbin"
+    /bin:/sbin
+
+    > PATHSETUPLOG=$HOME/pathsetup.log pathsetup "/bin:/nonexistent:/sbin"
+    /bin:/sbin
+    > ls $HOME/pathsetup.log
+    pathsetup.log
+
+ENDUSAGE
+}
+
+pathsetuplog() {
+    if test "$PATHSETUPLOG"; then
+        touch "$PATHSETUPLOG"
+        echo "$@" >> "$PATHSETUPLOG"
+    fi
+}
+
+if test $# != 1; then
+    echo "Found $# arguments but expected only 1"
+    usage
+    exit 1
+elif test "$1" = "-h"; then
+    usage
+    exit 0
+fi
+
+pathlike=$1
+outpath=
+initialifs=$IFS
+IFS=$'\n:'
+for path in $pathlike; do
+    if test -d "$path"; then
+        pathsetuplog "Found path: $path"
+        foundexisting=
+        for existingpath in $outpath; do
+            if test "$path" = "$existingpath"; then
+                pathsetuplog "... however, '$path' was already in output, skipping..."
+                foundexisting=1
+                break
+            else
+                pathsetuplog "... and it did not match with existing path '$existingpath'"
+            fi
+        done
+        test $foundexisting || outpath="${outpath}${path}:"
+    else
+        pathsetuplog "Nonexistent path: $path"
+    fi
+done
+IFS=$initialifs
+unset pathlike initialifs
+echo "$outpath"

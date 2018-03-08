@@ -10,100 +10,59 @@ MRL_PROFILE_GUARD=1
 
 umask 077
 
-# If set to a filename, log all debugging messages to that file
-# If unset, do nothing
-# I considered logging to STDERR in color, but that doesn't work in subshells
-# Make sure this is set to an absolute path
-export PROFDBGLOG=
-# export PROFDBGLOG=$HOME/profiledbg.log
-profdbglog() {
-    if test "$PROFDBGLOG"; then
-        echo "$@" >> "$PROFDBGLOG"
-    fi
-}
-profdbglog "Starting shell at $(date)"
+# We use this to find paths inside dhd
+export DHD=${DHD:-"$HOME/.dhd"}
 
-# Must be in .profile - used to populate the $PATH
-pathsetup() {
-    if test "$1" = "-h"; then
-        cat <<ENDUSAGE
-pathsetup(): Set up a PATH-like string
-Given a PATH-like string, return a PATH-like string that contains only
-extant directories
-Usage: pathsetup PATHSTR
-    PATHSTR: A PATH-like string - that is, a string containing paths
-             separated by colons
-EXAMPLES
-> pathsetup "/bin:/nonexistent:/sbin"
-/bin:/sbin
-ENDUSAGE
-        return
-    fi
-    pathlike=$1
-    outpath=
-    initialifs=$IFS
-    IFS=:
-    for path in $pathlike; do
-        if test -d "$path"; then
-            profdbglog "Found path: $path"
-            foundexisting=
-            for existingpath in $outpath; do
-                if test "$path" = "$existingpath"; then
-                    profdbglog "... however, '$path' was already in output, skipping..."
-                    foundexisting=1
-                    break
-                else
-                    profdbglog "... and it did not match with existing path '$existingpath'"
-                fi
-            done
-            test $foundexisting || outpath="${outpath}${path}:"
-        else
-            profdbglog "Nonexistent path: $path"
-        fi
-    done
-    IFS=$initialifs
-    unset pathlike initialifs
-    echo "$outpath"
-}
-
+# A list of all the paths which MIGHT exist and contain binaries we
+# want in our $PATH
 # Order is important in $PATH; earlier entries are searched first
-tpath=
-tpath="${tpath}:${HOME}/opt/lib/miniconda3/bin"
-tpath="${tpath}:${HOME}/opt/bin:${HOME}/opt/sbin:${HOME}/.dhd/opt/bin:${HOME}/.dhd/opt/bash/bin"
-tpath="${tpath}:${HOME}/opt/homebrew/bin:${HOME}/opt/homebrew/sbin"
-tpath="${tpath}:/opt/homebrew/bin:/opt/homebrew/sbin"
-tpath="${tpath}:/usr/pkg/bin:/usr/pkg/sbin"
-tpath="${tpath}:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
-tpath="${tpath}:/c/WINDOWS:/c/WINDOWS/system32/Wbem:/c/WINDOWS/system32"
-tpath="${tpath}:/c/MinGW/bin:/c/MinGW/sbin:/c/MinGW/msys/1.0/bin:/c/MinGW/msys/1.0/sbin"
-#tpath="${tpath}:$HOME/test spaces in path"
-tpath="${tpath}:${PATH}"
+export POSSIBLE_PATHS="
+${HOME}/opt/lib/miniconda3/bin
+${HOME}/opt/bin
+${HOME}/opt/sbin
+${DHD}/opt/bin
+${DHD}/opt/bash/bin
+${HOME}/opt/homebrew/bin
+${HOME}/opt/homebrew/sbin
+${HOME}/test spaces in path
+/opt/homebrew/bin
+/opt/homebrew/sbin
+/usr/pkg/bin
+/usr/pkg/sbin
+/usr/local/bin
+/usr/local/sbin
+/usr/bin
+/usr/sbin
+/bin
+/sbin
+/c/WINDOWS
+/c/WINDOWS/system32/Wbem
+/c/WINDOWS/system32
+/c/MinGW/bin
+/c/MinGW/sbin
+/c/MinGW/msys/1.0/bin
+/c/MinGW/msys/1.0/sbin
+${PATH}
+"
 
-PATH=$(pathsetup "$tpath")
-export PATH
-unset tpath
+export PATH=$("$DHD/opt/bin/pathsetup" "$POSSIBLE_PATHS")
 
 if cmdavail brew; then
     # This is NOT a standard environment variable, for some reason
-    HOMEBREWDIR=$(dirname "$(dirname "$(command -v brew)")")
-    export HOMEBREWDIR
+    export HOMEBREWDIR=$(dirname "$(dirname "$(command -v brew)")")
+
+    if test -d "$HOMEBREWDIR/opt/go" && test -z "$GOROOT"; then
+        export GOROOT="$HOMEBREWDIR/opt/go/libexec"
+    fi
 fi
+
+export PATH="$(pathsetup "${PATH}:${GOROOT}/bin:${GOPATH}/bin")"
 
 if cmdavail ruby; then
-    usrdir=$(ruby -rubygems -e 'puts Gem.user_dir')
-    sysdir=$(ruby -rubygems -e 'puts Gem.dir')
-    if test -d "$usrdir"; then PATH="${PATH}:$usrdir/bin"; fi
-    if test -d "$sysdir"; then PATH="${PATH}:$sysdir/bin"; fi
-    unset usrdir sysdir
+    export PATH="$(pathsetup "${PATH}:$(ruby -rubygems -e 'puts "%s:%s" % [Gem.dir, Gem.user_dir]')")"
 fi
 
-if test -d "$HOMEBREWDIR/opt/go"; then
-    export GOROOT="$HOMEBREWDIR/opt/go/libexec"
-    export GOPATH="$HOME/Documents/Go"
-    export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
-fi
-
-export PYTHONSTARTUP=$HOME/.dhd/hbase/python.profile
+export PYTHONSTARTUP=$DHD/hbase/python.profile
 
 export EDITOR=emacs
 export VISUAL=emacs

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# .bashrc should contain ONLY statements that apply to interactive shells
+# .bashrc should contain ONLY statements that apply to interactive bash shells
 # Bashisms are obviously appropriate here
 # Try not to rely on non-POSIX tools (like GNU grep), or that a given optional
 # package (like SSH) is installed.
@@ -14,7 +14,7 @@ if test -z "$MRL_PROFILE_GUARD"; then
     . $HOME/.profile
 fi
 
-# A pipeline with a failing command at the beginning will set #? to a failure even if later piped commands succeed
+# A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
 set -o pipefail
 
 # glob filenames in a case-insensitive manner
@@ -30,44 +30,31 @@ shopt -s checkwinsize
 # (By default, it will overwrite the history file with commands from this session)
 shopt -s histappend
 
-# These should be POSIX compatible; extensions are detected later
-lscmd=ls
-lsargs="-F"
 if ls --version 2>/dev/null | grep -q GNU; then
-    lsargs="$lsargs -H --color"
+    # GNU ls command
+    alias ls="ls -F -H --color"
 elif ls -h -G >/dev/null 2>&1; then
-    lsargs="$lsarge -h -G"
+    # BSD ls commands, such as FreeBSD or macOS
+    alias ls="ls -F -h -G"
+else
+    # POSIX supported
+    alias ls="ls -F"
 fi
-alias ls="$lscmd $lsargs"
 alias lsa='ls -a'
 alias lsl='ls -a -l'
 alias lsli='lsl -i' # lsl+inodes
 alias l1='ls -1'
 alias llm='lsl -r -t' # lsl+ sort by modified time (lastest at bottom)
 
-# System-specific enhancements
-# Ideally, don't rely on *too many* of these
-unames=$(uname -s)
-if strcontains "$unames" Cygwin; then
-    export CYGWIN="binmode ntsec stty"
-elif test "$unames" = Darwin; then
+# View manpages in Preview.app on macOS
+test -e "/Applications/Preview.app" && alias previewman='man -t "$@" | open -g -f -a /Applications/Preview.app'
 
-    alias previewman='man -t "$@" | ps2pdf - - | open -g -f -a /Applications/Preview.app'
+# Launch QuickLook from the command line (^c will kill it and return to prompt)
+cmdavail qlmanage && alias ql='qlmanage -p 2>/dev/null'
 
-    # Note that this works on X11 even when keyboard shortcuts are disabled in preferences :)
-    alias switchx="osascript $HOME/.dhd/opt/ascript/x11-cmd-tab.ascript"
-
-    # Launch QuickLook from the command line (^c will kill it and return to prompt)
-    alias ql='qlmanage -p 2>/dev/null'
-
-    # fucking quarantine thing
-    # could also turn it off completely:
-    # defaults write com.apple.LaunchServices LSQuarantine -bool false
-    alias unquarantine="xattr -r -d com.apple.quarantine"
-fi
-unset unames
-
+# Debian has weird ideas about things sometimes
 cmdavail 'ack-grep' && alias ack='ack-grep'
+
 df -h >/dev/null 2>&1 && alias df="df -h"
 alias ..="cd .."
 alias c=clear
@@ -92,16 +79,14 @@ alias dush='du -sh' # du -h is a POSIX extension
 alias rehash='hash -r'
 
 # Test for a grep that supports --color=auto, which includes GNU, FreeBSD, and macOS greps
-grepcmd="grep"
 if echo x | grep -q --color=auto x 2>/dev/null; then
-    grepcmd="grep --color=auto"
-    alias grep=$grepcmd
+    alias grep="grep --color=auto"
 fi
 
 alias psa="ps -A"
 psaf() {
     # (the second call to grep prevents this function from being returned as a hit)
-    psa | grep -i "$1" | grep -v "$grepcmd -i $1"
+    psa | grep -i "$1" | grep -v "grep -i $1"
 }
 
 # For my 'scr' command
@@ -142,7 +127,7 @@ export HISTSIZE="INFINITE"
 export HISTFILESIZE="5000"
 # If a command starts with a space, do not save it in history
 export HISTCONTROL="ignorespace"
-# Add a timestamp to the history command
+# Add a timestamp to history entry
 export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
 
 # Completion settings
