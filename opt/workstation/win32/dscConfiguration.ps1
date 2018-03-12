@@ -422,7 +422,7 @@ Configuration UserSettingsConfig {
         # Requires less.exe to be in $env:PATH
         cMrlGitGlobalConfiguration "GitConfigureLessPager" {
             Name = "core.pager"
-            Value= "less.exe"
+            Value = "${env:ChocolateyInstall}\bin\less.exe" -Replace "\\","\\"
             Ensure = "Present"
             PsDscRunAsCredential = $Credential
         }
