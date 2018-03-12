@@ -45,6 +45,21 @@ When exploring new systems, particularly new Windows versions or OEM crapware, i
 
 ## TO DO
 
+ -  **Parameterize the DSC configuration more**
+     -  For example, I am setting my personal email as the git author email - but on work machines, I'd like that to be my work email
+     -  More parameterization about the kind of machine I'm making. Maybe the following?
+         -  Basic: dhd, command line tools. Maybe VS Code etc.
+         -  Workstation: include stuff like 1password, dropbox, that kind of thing.
+         -  Social: Slack
+         -  Windows development: SQL Server, Visual Studio 2017, etc
+ -  Software configuration that requires passwords, license keys, or other secrets
+     -  Dropbox + 1Password
+     -  Firefox Sync
+     -  Sublime Text license
+     -  Slack logins, slack settings like preventing it from starting
+     -  Email, contacts, and calendars configuration
+ -  Hyper-V didn't get installed when I ran this on magrassee but it did for my new work laptop, what's up with that?
+ -  The keyboard remapping of caps->control didn't work on magrassee, but it looked like the registry was set correctly, and when I set it via keytweak and rebooted, not only did it work but the registry value didn't appear to change? Confused
  -  What to do about reboots?
      -  On first application of my config, I will probably usually want to reboot when prompted and then start configuration again
      -  On subsequent applications of my config, I will probably not want to reboot, as I'll be in the middle of something
