@@ -12,6 +12,14 @@ $SpecialCharacters = New-Object PSObject -Property @{
 #### Functions
 
 <#
+.SYNOPSIS
+The closest thing I could get to my bashrc's '.b' function
+#>
+function p {
+    . "$Home\.dhd\hbase\profile.ps1"
+}
+
+<#
 .description
 Retrieve powershell platform (cross platform)
 #>

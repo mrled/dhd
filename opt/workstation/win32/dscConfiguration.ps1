@@ -111,6 +111,7 @@ Configuration DhdConfig {
         [string] $UserProfile = "${env:USERPROFILE}",
         [string] $DhdPath = "$UserProfile\.dhd",
         [string] $AppData = "${env:AppData}",
+        [string] $LocalAppData = "${env:LocalAppData}",
         [string] $VsCodePath = "${env:ProgramFiles}\Microsoft VS Code\bin\code.cmd",
         [Parameter(Mandatory)] [PSCredential] $Credential
     )
@@ -118,6 +119,8 @@ Configuration DhdConfig {
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName cMrlFileLink
     Import-DscResource -ModuleName cMrlUserEnvironment
+    Import-DscResource -ModuleName cMrlPathLikeEnvVar
+    Import-DscResource -ModuleName cMrlPathLikeEnvVarSet
 
     Node $ComputerName {
 
@@ -131,19 +134,6 @@ Configuration DhdConfig {
             }
             PsDscRunAsCredential = $Credential
         }
-
-        # TODO: Fix error when this is uncommented:
-        #   PowerShell DSC resource MSFT_ScriptResource  failed to execute Set-TargetResource functionality with error message: Exception setting "BackgroundColor": "A command that prompts the user failed because the host program or the command type does not support user interaction. Try a host program that supports user interaction, such as the Windows PowerShell Console or Windows PowerShell ISE, and remove prompt-related commands from command types that do not support user interaction, such as Windows PowerShell workflows."
-        # Script InitialSetupPathAndEnv {
-        #     GetScript = { return @{ Result = "" } }
-        #     TestScript = { return $false }
-        #     SetScript = {
-        #         . "$Using:DhdPath\hbase\profile.ps1"
-        #         Setup-SystemPath
-        #         Setup-Environment
-        #     }
-        #     PsDscRunAsCredential = $Credential
-        # }
 
         File EnableWindowsPowershellProfile {
             DestinationPath = "$UserProfile\Documents\WindowsPowershell\profile.ps1"
@@ -264,18 +254,34 @@ Configuration DhdConfig {
             Ensure = "Present"
         }
 
+        cMrlPathLikeEnvVarSet "PrependPathEnvironmentVariables" {
+            Name = "PATH"
+            Location = @(
+                "$UserProfile\.dhd\opt\bin"
+                "$UserProfile\.dhd\opt\powershell\bin"
+            )
+            Ensure = "Present"
+            InsertionMode = "Prepend"
+            OnlyIfExists = $true
+            PsDscRunAscredential = $Credential
+        }
+
     }
 }
 
 Configuration UserSettingsConfig {
     param(
         [string[]] $ComputerName = "localhost",
+        [string] $AppData = "${env:AppData}",
+        [string] $LocalAppData = "${env:LocalAppData}",
         [Parameter(Mandatory)] [PSCredential] $Credential
     )
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName cMrlUserEnvironment
     Import-DscResource -ModuleName cMrlGitGlobalConfiguration
+    Import-DscResource -ModuleName cMrlPathLikeEnvVar
+    Import-DscResource -ModuleName cMrlPathLikeEnvVarSet
 
     Node $ComputerName {
 
@@ -446,6 +452,37 @@ Configuration UserSettingsConfig {
             PsDscRunAsCredential = $Credential
         }
 
+        cMrlPathLikeEnvVarSet "PrependPathEnvironmentVariables" {
+            Name = "PATH"
+            Location = @(
+                "$UserProfile\opt\bin"
+                "$LocalAppData\Continuum\miniconda3"
+                "$LocalAppData\Continuum\miniconda3\Scripts"
+            )
+            Ensure = "Present"
+            InsertionMode = "Prepend"
+            OnlyIfExists = $true
+            PsDscRunAscredential = $Credential
+        }
+
+        cMrlPathLikeEnvVarSet "AppendPathEnvironmentVariables" {
+            Name = "PATH"
+            Location = @(
+                "${AppData}\npm"
+                "${AppData}\Python\Python3*\Scripts"
+                "${AppData}\Python\Python2*\Scripts"
+                "${LocalAppData}\atom\bin"
+                "${LocalAppData}\Pandoc"
+                "${LocalAppData}\Keybase"
+                "${env:GOROOT}\bin"
+                "${env:GOPATH}\bin"
+            )
+            Ensure = "Present"
+            InsertionMode = "Append"
+            OnlyIfExists = $true
+            PsDscRunAscredential = $Credential
+        }
+
     }
 }
 
@@ -455,6 +492,8 @@ Configuration MachineSettingsConfig {
     )
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
+    Import-DscResource -ModuleName cMrlPathLikeEnvVar
+    Import-DscResource -ModuleName cMrlPathLikeEnvVarSet
 
     Node $ComputerName {
 
@@ -516,5 +555,58 @@ Configuration MachineSettingsConfig {
             ValueType = "DWord"
         }
 
+        cMrlPathLikeEnvVarSet "PrependPathEnvironmentVariables" {
+            Name = "PATH"
+            Location = @(
+                "${env:ChocolateyInstall}\bin"
+                "${env:SystemDrive}\ProgramData\Chocolatey\bin"
+
+                "${env:SystemDrive}\Perl64"
+                "${env:SystemDrive}\Python3*"
+                "${env:SystemDrive}\Python3*\Scripts"
+                "${env:SystemDrive}\Python2*"
+                "${env:SystemDrive}\Python2*\Scripts"
+                "${env:SystemDrive}\Tools\Go\bin"
+                "${env:SystemDrive}\Tools\mingw64\bin"
+                "${env:SystemDrive}\Tools\Python3*"
+                "${env:SystemDrive}\Tools\Python3*\Scripts"
+                "${env:SystemDrive}\Tools\Ruby*\bin"
+
+                "${env:ProgramFiles}\7-zip"
+                "${env:ProgramFiles}\Amazon\AWSCLI"
+                "${env:ProgramFiles}\ConEmu"
+                "${env:ProgramFiles}\ConEmu\ConEmu"
+                "${env:ProgramFiles}\Docker\Docker\Resources\bin"
+                "${env:ProgramFiles}\Docker\Docker\Resources\qemu-img"
+                "${env:ProgramFiles}\Docker\Docker\Resources"
+                "${env:ProgramFiles}\Git\cmd"
+                "${env:ProgramFiles}\GNU\GnuPG"
+                "${env:ProgramFiles}\Graphviz*\bin"
+                "${env:ProgramFiles}\Kdiff3"
+                "${env:ProgramFiles}\LLVM\bin"
+                "${env:ProgramFiles}\Microsoft Visual Studio*\VC\bin"
+                "${env:ProgramFiles}\Microsoft VS Code\bin\code"
+                "${env:ProgramFiles}\MSBuild\*\Bin"
+                "${env:ProgramFiles}\NUnit*\bin"
+                "${env:ProgramFiles}\OpenSSH"
+                "${env:ProgramFiles}\OpenSSL\bin"
+                "${env:ProgramFiles}\Oracle\VirtualBox"
+                "${env:ProgramFiles}\Powershell\*"
+                "${env:ProgramFiles}\Nmap"
+                "${env:ProgramFiles}\PuTTY"
+                "${env:ProgramFiles}\Sublime Text 3"
+                "${env:ProgramFiles}\WordNet\2.1\bin"
+                "${env:ProgramFiles}\ZeroTier\One"
+                "${env:ProgramFiles}\vim\vim*"
+                "${env:ProgramFiles}\vim\vim*\macros"
+
+                "${env:ProgramFiles(x86)}\GNU\GnuPG"
+                "${env:ProgramFiles(x86)}\vim\vim*"
+                "${env:ProgramFiles(x86)}\vim\vim*\macros"
+            )
+            Ensure = "Present"
+            InsertionMode = "Prepend"
+            OnlyIfExists = $true
+        }
     }
 }
