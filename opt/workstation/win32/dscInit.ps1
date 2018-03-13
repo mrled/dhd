@@ -250,7 +250,7 @@ function Install-DscPrerequisites {
     if ('NuGet' -notin (Get-PackageProvider | Select-Object -ExpandProperty Name)) {
         Install-PackageProvider -Name NuGet -Force
     }
-    if ('PSGallery' -notin (Get-PSRepository | Where-Object -Property InstallationPolicy -eq 'Trusted')) {
+    if ('PSGallery' -NotIn (Get-PSRepository | Where-Object -Property InstallationPolicy -eq 'Trusted' | Select-Object -ExpandProperty Name)) {
         Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     }
     foreach ($module in $script:RequiredDscModules) {
