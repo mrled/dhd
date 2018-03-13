@@ -266,7 +266,8 @@ Invoke all our DSC configurations
 #>
 function Invoke-AllDscConfigurations {
     [CmdletBinding()] Param(
-        [Parameter(Mandatory)] $DhdLocation
+        [Parameter(Mandatory)] $DhdLocation,
+        [Parameter(Mandatory)] [PSCredential] $UserCredential
     )
 
     try {
@@ -343,5 +344,5 @@ if ($MyInvocation.InvocationName -ne '.') {
         $dhdRepo = Get-DhdRepository -Local
     }
 
-    Invoke-AllDscConfigurations -DhdLocation $dhdRepo.DhdLocation
+    Invoke-AllDscConfigurations -DhdLocation $dhdRepo.DhdLocation -UserCredential $UserCredential
 }
