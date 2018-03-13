@@ -17,6 +17,9 @@ Normally, this script will try to determine if it's being run from inside a chec
 If it is, then it uses relative paths to find items in dhd that it depends on.
 If it is not, then it downloads the latest code from the dhd master branch to a temporary directory.
 This switch bypasses that check, forcing it to download the latest from GitHub.
+.PARAMETER SkipPreSteps
+Skip pre steps, including enabling PSRemoting and installing prereqs.
+Intended for use in development.
 .PARAMETER CalledFromSelf
 Internal use only. Used to prevent an infinite loop.
 .EXAMPLE
@@ -29,6 +32,7 @@ When testing, run this way to prevent Invoke-WebRequest from caching the respons
 [CmdletBinding()] Param(
     [Parameter(Mandatory)] [PSCredential] $UserCredential,
     [switch] $TestRemote,
+    [switch] $SkipPreSteps,
     [switch] $CalledFromSelf
 )
 
@@ -307,32 +311,37 @@ function Invoke-AllDscConfigurations {
 
 if ($MyInvocation.InvocationName -ne '.') {
 
-    # Set the Process/User exec policies to prevent a possible error when setting the LocalMachine policy
-    # Setting the LocalMachine policy will throw an error if a more specific scope takes precedence
-    foreach ($scope in @('Process', 'CurrentUser', 'LocalMachine')) {
-        Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope $scope -Force
-    }
+    if (-not $SkipPreSteps) {
+        # Set the Process/User exec policies to prevent a possible error when setting the LocalMachine policy
+        # Setting the LocalMachine policy will throw an error if a more specific scope takes precedence
+        foreach ($scope in @('Process', 'CurrentUser', 'LocalMachine')) {
+            Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope $scope -Force
+        }
 
-    Enable-PsRemotingForce
-    if ($TestRemote -Or -Not $PSScriptRoot) {
-        if ($CalledFromSelf) {
-            throw "Looks like we might be in an infinite loop, ejecting..."
+        Enable-PsRemotingForce
+        if ($TestRemote -Or -Not $PSScriptRoot) {
+            if ($CalledFromSelf) {
+                throw "Looks like we might be in an infinite loop, ejecting..."
+            }
+            $dhdRepo = Get-DhdRepository -Remote
+            try {
+                & "$($dhdRepo.DhdLocation)\opt\workstation\win32\dscInit.ps1" -Verbose -CalledFromSelf -UserCredential (Get-Credential)
+            } finally {
+                Remove-Item -Recurse -Force -LiteralPath $dhdRepo.DhdTemp
+            }
+            # Since we execute dscInit.ps1 from the just-downloaded dhd repo -
+            # that is, another copy of this same script -
+            # stop executing this copy of the script when that one finishes
+            return
+        } else {
+            $dhdRepo = Get-DhdRepository -Local
         }
-        $dhdRepo = Get-DhdRepository -Remote
-        try {
-            & "$($dhdRepo.DhdLocation)\opt\workstation\win32\dscInit.ps1" -Verbose -CalledFromSelf -UserCredential (Get-Credential)
-        } finally {
-            Remove-Item -Recurse -Force -LiteralPath $dhdRepo.DhdTemp
-        }
-        # Since we execute dscInit.ps1 from the just-downloaded dhd repo -
-        # that is, another copy of this same script -
-        # stop executing this copy of the script when that one finishes
-        return
+
+        Install-DscPrerequisites
+
     } else {
         $dhdRepo = Get-DhdRepository -Local
     }
-
-    Install-DscPrerequisites
 
     Invoke-AllDscConfigurations -DhdLocation $dhdRepo.DhdLocation
 }
