@@ -87,7 +87,7 @@ oneargval=default
 twoarg1=default
 twoarg2=default
 
-if test $# = 0; then
+if test $# -eq 0; then
     # If we do not provide an argument, show help and exit with error
     usage
     exit 1
