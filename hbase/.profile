@@ -76,6 +76,5 @@ export FSEDIT=emacs
 export PERL_MM_USE_DEFAULT=1
 
 if test -z "$MRL_BASHRC_GUARD" && test "$BASH_VERSION"; then
-    . "$DHD/hbase
-    /.bashrc"
+    . "$DHD/hbase/.bashrc"
 fi
