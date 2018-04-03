@@ -57,7 +57,13 @@ fi
 pathlike=$1
 outpath=
 initialifs=$IFS
-IFS=$'\n:'
+
+# Set IFS to be only newlines or the colon character
+# Oddly, I have seen IFS=$'\n:' work on some systems,
+# but fail on others. Unclear why, but this seems to fix it
+IFS=$'
+:'
+
 for path in $pathlike; do
     if test -d "$path"; then
         pathsetuplog "Found path: $path"
