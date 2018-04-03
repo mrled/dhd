@@ -1,10 +1,14 @@
 #!/bin/sh
 
 # Profile guidelines
-# 1. When something should only affect an interactive shell, use the interactive shell's RC file - for Bash, this is .bashrc
-# 2. When something should affect noninteractive shells, use this file (.profile)
-# 3. The .profile script should be compatible with any POSIX shell - do not use bashisms
-# 4. Where possible, place functions in separate files in a directory found in the $PATH rather than defining them in a shell startup script
+# 1. When something should only affect an interactive shell,
+#    use the interactive shell's RC file - for Bash, this is .bashrc
+# 2. When something should affect noninteractive shells, use this file
+#    (.profile)
+# 3. The .profile script should be compatible with any POSIX shell -
+#    do not use bashisms
+# 4. Where possible, place functions in separate files in a directory
+#    found in the $PATH rather than defining them in a shell startup script
 
 MRL_PROFILE_GUARD=1
 
@@ -72,5 +76,6 @@ export FSEDIT=emacs
 export PERL_MM_USE_DEFAULT=1
 
 if test -z "$MRL_BASHRC_GUARD" && test "$BASH_VERSION"; then
-    . "$HOME/.bashrc"
+    . "$DHD/hbase
+    /.bashrc"
 fi

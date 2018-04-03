@@ -9,9 +9,12 @@
 # If possible, test for non-POSIX extensions before using in this file
 # This file may be sourced multiple times; all settings should be idempotent
 
+# We use this to find paths inside dhd
+export DHD=${DHD:-"$HOME/.dhd"}
+
 MRL_BASHRC_GUARD=1
 if test -z "$MRL_PROFILE_GUARD"; then
-    . $HOME/.profile
+    . $DHD/hbase/.profile
 fi
 
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
