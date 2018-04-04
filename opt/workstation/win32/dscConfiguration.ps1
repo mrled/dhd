@@ -86,6 +86,7 @@ Configuration InstallSoftware {
                 'trid'
                 'vagrant'
                 'vim'
+                'visualstudio2017buildtools'
             )
             DependsOn = '[cChocoInstaller]InstallChoco'
         }
@@ -159,6 +160,31 @@ Configuration DhdConfig {
             LinkTarget = "$DhdPath\hbase\known_hosts"
             Ensure = "Present"
             PsDscRunAsCredential = $Credential
+        }
+
+        Script ConfigureSshHashKnownHosts {
+            GetScript = { return @{ Result = "" } }
+            TestScript = {
+                return $(Test-Path -Path $using:UserProfile\.ssh\config) -And
+                    $(Select-String -Path $using:UserProfile\.ssh\config -Pattern 'HashKnownHosts Yes' -Quiet)
+            }
+            SetScript = {
+                # Work around an issue with string that was triggered by a string like
+                # "${using:UserProfile}\.ssh\config"
+                $uprof = $using:UserProfile
+                if (-not (Test-Path -Path $uprof\.ssh\config)) {
+                    New-Item -Force -ItemType Directory -Path $uprof\.ssh
+                    New-Item -ItemType File -Path $uprof\.ssh\config
+                }
+                $sshConfigContent = @(
+                    "HashKnownHosts Yes"
+                    Get-Content -LiteralPath $uprof\.ssh\config
+                )
+                [IO.File]::WriteAllLines(
+                    "$uprof\.ssh\config",
+                    $sshConfigContent,
+                    $(New-Object -TypeName System.Text.UTF8Encoding -ArgumentList @($False) ))
+            }
         }
 
         cMrlFileLink SymlinkVsCodeConfig {
@@ -585,7 +611,7 @@ Configuration MachineSettingsConfig {
                 "${env:ProgramFiles}\Kdiff3"
                 "${env:ProgramFiles}\LLVM\bin"
                 "${env:ProgramFiles}\Microsoft Visual Studio*\VC\bin"
-                "${env:ProgramFiles}\Microsoft VS Code\bin\code"
+                "${env:ProgramFiles}\Microsoft VS Code\bin"
                 "${env:ProgramFiles}\MSBuild\*\Bin"
                 "${env:ProgramFiles}\NUnit*\bin"
                 "${env:ProgramFiles}\OpenSSH"
