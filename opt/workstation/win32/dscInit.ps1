@@ -37,7 +37,7 @@ When testing, run this way to prevent Invoke-WebRequest from caching the respons
 )
 
 # Comments for the Requires settings at the top of this file
-# (Connents cannot precede "Requires" statements, so this is down here)
+# (Comments cannot precede "Requires" statements, so this is down here)
 # - Requires -Version 5:            We use Powershell 5.x concepts
 # - Requires -RunAsAdministrator:   This script sets machine settings and must be run as an admin
 # - Requires -PSEdition Desktop:    Not present, but true
