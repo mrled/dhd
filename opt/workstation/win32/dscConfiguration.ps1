@@ -68,6 +68,10 @@ Configuration InstallSoftware {
                 'bind-toolsonly'
                 'curl'
                 'docker-for-windows'
+                'gnuwin32-coreutils.portable'
+                'gnuwin32-make.portable'
+                'gnuwin32-sed.install'
+                'gnuwin32-grep.install'
                 'golang'
                 'gpg4win-vanilla'
                 'greenshot'
@@ -172,6 +176,7 @@ Configuration DhdConfig {
                 # Work around an issue with string that was triggered by a string like
                 # "${using:UserProfile}\.ssh\config"
                 $uprof = $using:UserProfile
+
                 if (-not (Test-Path -Path $uprof\.ssh\config)) {
                     New-Item -Force -ItemType Directory -Path $uprof\.ssh
                     New-Item -ItemType File -Path $uprof\.ssh\config
@@ -180,6 +185,8 @@ Configuration DhdConfig {
                     "HashKnownHosts Yes"
                     Get-Content -LiteralPath $uprof\.ssh\config
                 )
+
+                # Write a UTF8 file without a BOM
                 [IO.File]::WriteAllLines(
                     "$uprof\.ssh\config",
                     $sshConfigContent,
@@ -607,6 +614,7 @@ Configuration MachineSettingsConfig {
                 "${env:ProgramFiles}\Docker\Docker\Resources"
                 "${env:ProgramFiles}\Git\cmd"
                 "${env:ProgramFiles}\GNU\GnuPG"
+                "${env:ProgramFiles}\GnuWin32\bin"
                 "${env:ProgramFiles}\Graphviz*\bin"
                 "${env:ProgramFiles}\Kdiff3"
                 "${env:ProgramFiles}\LLVM\bin"
@@ -627,6 +635,7 @@ Configuration MachineSettingsConfig {
                 "${env:ProgramFiles}\vim\vim*\macros"
 
                 "${env:ProgramFiles(x86)}\GNU\GnuPG"
+                "${env:ProgramFiles(x86)}\GnuWin32\bin"
                 "${env:ProgramFiles(x86)}\vim\vim*"
                 "${env:ProgramFiles(x86)}\vim\vim*\macros"
             )
