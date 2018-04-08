@@ -282,7 +282,7 @@ Configuration DhdConfig {
         }
         cMrlUserEnvironment "SetPythonPathEnvVar" {
             Name = "PythonPath"
-            Value = "$DhdPath\opt\pythopn"
+            Value = "$DhdPath\opt\python"
             PsDscRunAsCredential = $Credential
             Ensure = "Present"
         }
