@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -e
+
+# venv/bin/activate fails if we set -u :/
+# set -u
+
+# Hard code python path to ensure we aren't getting a `conda` python
+# which will not have ensurepip
+# (Also, don't use conda because conda is third party software,
+# and we want to use this script for bootstrapping)
+python=/usr/bin/python
+
+# The location of the venv dir to use
+venv_dir="venv"
+
+if ! test -d "./$venv_dir"; then
+    echo "Virtual environment at '$venv_dir' not configured, installing using python at '$python'..."
+    $python -m ensurepip --user
+    $python -m pip install --user --upgrade virtualenv
+    $python -m virtualenv "$venv_dir"
+    source "./$venv_dir/bin/activate"
+    python -m pip install -U pip
+    python -m pip install -r requirements.txt
+else
+    echo "Virtual environment at '$venv_dir' configured"
+fi
+
+if ! type python | grep -q "$(pwd)/$venv_dir"; then
+    echo "Virtual environment at '$venv_dir' not activated, activating..."
+    source "./$venv_dir/bin/activate"
+else
+    echo "Virtual environment at '$venv_dir' activated"
+fi
+
+ansible-playbook deploy.yaml
