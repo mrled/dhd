@@ -1,0 +1,16 @@
+---
+
+- name: Set HOME fact
+  set_fact:
+    HOME: "{{ lookup('env', 'HOME') }}"
+
+- name: Ensure docker config file exists
+  file:
+    path: "{{ HOME }}/.docker/config.json"
+    owner: "{{ ansible_user_id }}"
+    mode: 0600
+
+- name: Fix Docker default detach keys
+  ghetto_json:
+    path: "{{ HOME }}/.docker/config.json"
+    detachKeys: ctrl-q,ctrl-p

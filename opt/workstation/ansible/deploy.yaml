@@ -1,0 +1,7 @@
+---
+
+- name: Apply user configuration
+  hosts: localhost
+
+  roles:
+    - role: user_configuration
