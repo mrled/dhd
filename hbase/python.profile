@@ -2,6 +2,7 @@
 
 import sys
 import os
+import pip
 import platform
 
 # the \001 and \002 stuff came from this useful thread:
@@ -14,22 +15,34 @@ import platform
 #     ctypes.windll.Kernel32.SetConsoleTextAttribute(h, color)
 #     print("hello")
 
-try:
-    import colorama
+vt = platform.python_version_tuple()
+
+# ignore minor releases: py3.2 instead of py3.2.3
+pv = "py" + vt[0] + "." + vt[1]
+
+if os.name is "nt":
+    try:
+        import colorama
+    except ImportError:
+        print("colorama is not installed, installing...")
+        pip.main(['install', 'colorama'])
+        import colorama
+    # no way to do this on NT without colorama :(
+    #colortype = "none"
     colorama.init()
     colortype = "colorama"
-except ImportError:
-    if os.name is "posix":
-        colortype = "ansi"
-    elif os.name is "nt":
-        # no way to do this on NT without colorama :(
-        colortype = "none"
-    else:
-        raise Exception(
-            "Your OS is reported to be " + os.name + " but we don't know how to colorize it.")
 
-vt = platform.python_version_tuple()
-pv = "py" + vt[0] + "." + vt[1]  # ignore minor releases: py3.2 instead of py3.2.3
+    try:
+        import pyreadline as readline
+    except ImportError:
+        print("pyreadline is not installed, installing...")
+        pip.main(['install', 'pyreadline'])
+        import pyreadline as readline
+
+#elif os.name is "posix":
+else:
+    colortype = "ansi"
+    import readline
 
 # set default ps1 and ps2; used by default if I can't colorize
 newps1 = pv      + " >>> "
@@ -41,7 +54,6 @@ if colortype is "colorama":
     newps2 = colorama.Style.BRIGHT + colorama.Fore.GREEN + "     "  + " ... " + colorama.Style.RESET_ALL
 
 elif colortype is "ansi":
-
     ansi_norm='\001\033[0m\002'
     ansi_bold='\001\033[1m\002'
     ansi_blink='\001\033[5m\002'
