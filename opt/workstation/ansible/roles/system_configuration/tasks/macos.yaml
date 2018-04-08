@@ -1,0 +1,28 @@
+---
+
+- name: Ensure that the Xcode command line tools are installed
+  # Taken from https://github.com/elliotweiser/ansible-osx-command-line-tools
+  block:
+
+  - name: Check the Command Line Tools package metadata
+    command: pkgutil --pkg-info=com.apple.pkg.CLTools_Executables
+    ignore_errors: true
+    check_mode: no
+    register: pkg_info
+    changed_when: false
+
+  - name: Check for Command Line Tools in Software Update list
+    shell: >
+      softwareupdate -l |
+      grep -B 1 -E 'Command Line Tools' |
+      awk -F'*' '/^ +\*/ {print $2}' |
+      sed 's/^ *//' |
+      head -n1
+    register: su_list
+    changed_when: false
+    when: pkg_info.rc != 0
+    failed_when: su_list.rc != 0 or su_list.stdout|length == 0
+
+  - name: Install Command Line Tools
+    command: softwareupdate -i '{{ su_list.stdout }}'
+    when: pkg_info.rc != 0

@@ -4,4 +4,6 @@
   hosts: localhost
 
   roles:
+    - role: system_configuration
+      become: true
     - role: user_configuration
