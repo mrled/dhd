@@ -4,13 +4,31 @@
   set_fact:
     HOME: "{{ lookup('env', 'HOME') }}"
 
-- name: Ensure docker config file exists
-  file:
-    path: "{{ HOME }}/.docker/config.json"
-    owner: "{{ ansible_user_id }}"
-    mode: 0600
+- name: Ensure DHD is checked out
+  block:
 
-- name: Fix Docker default detach keys
-  ghetto_json:
-    path: "{{ HOME }}/.docker/config.json"
-    detachKeys: ctrl-q,ctrl-p
+    - name: Test whether DHD is checked out
+      stat:
+        path: "{{ HOME }}/.dhd/.git"
+      register: dhd_git_stat_result
+
+    - name: Check out DHD
+      git:
+        repo: https://github.com/mrled/dhd
+        dest: "{{ HOME }}/.dhd"
+        update: no
+      when: dhd_git_stat_result.stat.exists == 'false'
+
+- name: Configure Docker
+  block:
+
+  - name: Ensure docker config file exists
+    file:
+      path: "{{ HOME }}/.docker/config.json"
+      owner: "{{ ansible_user_id }}"
+      mode: 0600
+
+  - name: Fix Docker default detach keys
+    ghetto_json:
+      path: "{{ HOME }}/.docker/config.json"
+      detachKeys: ctrl-q,ctrl-p
