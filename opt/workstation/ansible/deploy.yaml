@@ -3,6 +3,13 @@
 - name: Apply user configuration
   hosts: localhost
 
+  pre_tasks:
+    - name: Ensure proper ansible version
+      assert:
+        that:
+          - "ansible_version.major >= 2"
+          - "ansible_version.minor >= 5"
+
   roles:
     - role: system_configuration
       become: true
