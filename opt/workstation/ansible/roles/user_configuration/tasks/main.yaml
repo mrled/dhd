@@ -4,6 +4,9 @@
   set_fact:
     HOME: "{{ lookup('env', 'HOME') }}"
 
+- import_tasks: macos.yaml
+  when: ansible_distribution == 'MacOSX'
+
 - name: Ensure DHD is checked out
   block:
 

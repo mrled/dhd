@@ -1,0 +1,23 @@
+---
+
+
+- name: Ensure Homebrew is installed
+  block:
+
+  - name: Check if homebrew installed
+    stat:
+      path: "{{ homebrew_install_dir }}"
+    register: homebrew_exists_result
+
+  - name: Make homebrew directory
+    file:
+      path: "{{ homebrew_install_dir }}"
+      state: directory
+    when: homebrew_install_dir.stat.exists == 'false' and homebrew_install_dir.stat.isdir == 'false'
+
+  # Fuck /usr/local, fuck homebrew for defaulting to that
+  - name: Install homebrew
+    shell: >
+      mcurl -L https://github.com/Homebrew/brew/tarball/master |
+      tar xz --strip 1 -C "{{ homebrew_install_dir }}"
+    when: homebrew_install_dir.stat.exists == 'false' and homebrew_install_dir.stat.isdir == 'false'
