@@ -1,5 +1,10 @@
 ---
 
+- name: Configure DefaultKeyBindings.dict
+  template:
+    src: DefaultKeyBinding.dict
+    dest: "{{ lookup('env', 'HOME') }}/Library/KeyBindings/DefaultKeyBinding.dict"
+    mode: 0644
 
 - name: Ensure Homebrew is installed
   block:
