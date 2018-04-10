@@ -586,15 +586,13 @@ function Send-NetworkData {
 
 function Set-ConEmuTabTitle {
     [cmdletbinding()] param(
-        $title
+        $Prefix = [char]187,    # » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
+        $Title
     )
-    $DoublePrompt = [char]187    # » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
-    if ($title) { $title = ":$title" }
-    $fullTitle = "${DoublePrompt}$title" -replace " ",''
-    $macro = "Rename(0,$fullTitle"
-    Write-Verbose "Running macro: $macro"
-    $out = conemuc /guimacro $macro
+    # Calling from cmd.exe fixes some quoting issues
+    $out = cmd.exe /c "ConEmuC.exe -Guimacro Rename(0, `"$Prefix $Title`")"
     if ($out -ne "OK") {
+        # Unfortunately, ConEmuC does _not_ set a nonzero exit code when the macro fails
         throw "Failed to change tab title with error: $out"
     }
 }
