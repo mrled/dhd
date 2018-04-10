@@ -88,7 +88,6 @@ function New-Password {
     $null = [Reflection.Assembly]::LoadWithPartialName("System.Web")
     [System.Web.Security.Membership]::GeneratePassword($length,2)  # 8 bytes long
 }
-Set-Alias -Name pwgen -Value New-Password
 
 function ConvertTo-Base64($string) {
    $bytes  = [System.Text.Encoding]::UTF8.GetBytes($string)
@@ -107,12 +106,6 @@ function .. { cd .. }
 function ... { cd ../.. }
 function .... { cd ../../.. }
 
-
-if (test-path alias:more) { del alias:more }
-if (test-path function:more) { del function:more }
-if (test-path alias:l) { del alias:l }
-set-alias l less
-
 function vless {
     # Adapted from vim/macros/less.bat. Assumes vim is in path though.
     [cmdletbinding()]
@@ -126,7 +119,6 @@ function vless {
         vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" $filename
     }
 }
-set-alias vl vless
 
 # Make output of get-command better (more like Unix) for interactive use.
 # NOTE: For aliases, the processing function calls the show function again - this is recursive!
@@ -210,11 +202,8 @@ function Display-AllCommands {
         }
     }
 }
-set-alias wh display-allcommands
 
-# by defaul, touch is aliased to set-filetime, which doesn't create new empty files.
-if (test-path alias:touch) {del alias:touch}
-function touch {
+function Set-MrlFile {
     param([parameter(mandatory=$true)] [string[]] $file)
     foreach ($f in $file) {
         if (test-path $f) {
@@ -280,12 +269,6 @@ function Get-MrlHelp {
     }
 }
 
-if (Test-Path -Path Alias:\man) {
-    Remove-Item -Force -Path Alias:\man
-}
-Set-Alias -Name man -Value Get-MrlHelp
-
-
 <#
 .synopsis
 Get the syntax for a command
@@ -308,7 +291,6 @@ function Get-Syntax {
         $cmdSyntax
     }
 }
-set-alias syntax get-syntax
 
 function Set-LocationMrl {
     param(
@@ -316,8 +298,6 @@ function Set-LocationMrl {
     )
     Set-Location $location
 }
-if (Test-Path Alias:\cd) { Remove-Item Alias:\cd }
-Set-Alias cd Set-LocationMrl -Force
 
 function Import-ModuleIdempotently {
     [CmdletBinding()] Param(
@@ -333,11 +313,6 @@ function Import-ModuleIdempotently {
         Import-Module -Name $Name
     }
 }
-Set-Alias -Name Reimport-Module -Value Import-ModuleIdempotently
-Set-Alias -Name reimport -Value Import-ModuleIdempotently
-
-Set-Alias -Name getmo -Value Get-Module
-Set-Alias -Name rmmo -Value Remove-Module
 
 function Test-PowershellSyntax {
     [cmdletbinding(DefaultParameterSetName='FromFile')]
@@ -395,7 +370,6 @@ function Start-BatchFile {
     # we use "<NUL" to prevent that fucking "Terminate batch job? Y/N" prompt
     cmd.exe "/c $batchFile $batchArgs <NUL"
 }
-set-alias bat Start-BatchFile
 
 <#
 .synopsis
@@ -545,9 +519,6 @@ function Extract-FuckingArchive {
     return $outFiles
 }
 
-set-alias Fucking-Extract Extract-FuckingArchive
-set-alias fex Extract-FuckingArchive
-
 <#
 .synopsis
 Send data over the network
@@ -634,4 +605,3 @@ function Set-ConEmuTabTitle {
         throw "Failed to change tab title with error: $out"
     }
 }
-Set-Alias Rename-Tab Set-ConEmuTabTitle
