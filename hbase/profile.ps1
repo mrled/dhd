@@ -9,7 +9,16 @@ My Powershell profile
   and finally other scripts in .dhd/opt/powershell/profile.d
 #>
 
+# Halt on all errors
+# By default, Powershell only halts execution on "terminating errors" (from `throw`)
+# Setting $ErrorActionPreference to "Stop" will halt execution on "non-terminating errors"
+# (from `write-error`) as well
 $ErrorActionPreference = "Stop"
+
+# Set separators when displaying an array in a string
+# By default, Powershell separates array items with a space, like "1 2 3"
+# Setting $OFS to ", " will display them with a comma as well, like "1, 2, 3"
+$OFS = ", "
 
 <#
 .synopsis
