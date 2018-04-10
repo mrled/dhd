@@ -505,7 +505,7 @@
 				<key name="Task1" modified="2017-12-19 11:56:46" build="171109">
 					<value name="Name" type="string" data="{PS}"/>
 					<value name="GuiArgs" type="string" data=""/>
-					<value name="Cmd1" type="string" data="powershell.exe  -cur_console:d:%USERPROFILE% -cur_console:t:λ"/>
+					<value name="Cmd1" type="string" data="powershell.exe  -cur_console:d:%USERPROFILE% -cur_console:t:»"/>
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
@@ -569,7 +569,7 @@
 					<value name="Name" type="string" data="{pwsh}"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 					<value name="GuiArgs" type="string" data=""/>
-					<value name="Cmd1" type="string" data='"C:\Program Files\PowerShell\6.0.1\pwsh.exe"  -cur_console:d:%USERPROFILE% -cur_console:t:λ'/>
+					<value name="Cmd1" type="string" data='"C:\Program Files\PowerShell\6.0.1\pwsh.exe"  -cur_console:d:%USERPROFILE% -cur_console:t:»'/>
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 					<value name="Flags" type="dword" data="00000004"/>
@@ -578,7 +578,7 @@
 					<value name="Name" type="string" data="{sudo pwsh}"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 					<value name="GuiArgs" type="string" data=""/>
-					<value name="Cmd1" type="string" data='*"C:\Program Files\PowerShell\6.0.1\pwsh.exe"  -cur_console:d:%USERPROFILE% -cur_console:t:λ'/>
+					<value name="Cmd1" type="string" data='*"C:\Program Files\PowerShell\6.0.1\pwsh.exe"  -cur_console:d:%USERPROFILE% -cur_console:t:»'/>
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 					<value name="Flags" type="dword" data="00000004"/>
@@ -877,4 +877,3 @@
 		</key>
 	</key>
 </key>
-

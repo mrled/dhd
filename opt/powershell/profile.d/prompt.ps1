@@ -63,6 +63,9 @@ function Set-UserPrompt {
         [Parameter(Position=0, Mandatory=$True, ParameterSetName='Custom')] [Scriptblock] $newPrompt
     )
 
+    $DoublePrompt = [char]187    # » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
+    $HammerSickle = [char]9773   # ☭ (HAMMER AND SICKLE)
+
     $builtIns = @{
 
         # A color prompt that looks like my bash prompt. Colors require write-host, which sometimes
@@ -93,10 +96,11 @@ function Set-UserPrompt {
             Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
 
             if (Test-AdminRole) {
-                Write-Host " $($SpecialCharacters.HammerSickle) " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
+                # Surround with spaces because this is a wide character
+                Write-Host " $HammerSickle " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
             }
             else {
-                Write-Host $SpecialCharacters.DoublePrompt -NoNewLine -ForegroundColor White
+                Write-Host $DoublePrompt -NoNewLine -ForegroundColor White
             }
 
             # Close our comment
@@ -126,10 +130,11 @@ function Set-UserPrompt {
             Write-Host " $(Get-DisplayPath $pwd) " -nonewline -foregroundcolor Green
 
             if (Test-AdminRole) {
-                Write-Host " $($SpecialCharacters.HammerSickle) " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
+                # Surround with spaces because this is a wide character
+                Write-Host " $HammerSickle " -NoNewLine -ForegroundColor Red -BackgroundColor Yellow
             }
             else {
-                Write-Host $SpecialCharacters.DoublePrompt -NoNewLine -ForegroundColor White
+                Write-Host $DoublePrompt -NoNewLine -ForegroundColor White
             }
 
             # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours

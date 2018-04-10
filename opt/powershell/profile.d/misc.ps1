@@ -1,14 +1,6 @@
 #### Miscellaneous / Everything ####
 
 
-$SpecialCharacters = New-Object PSObject -Property @{
-    Beep         = [char]7      # beeps @ u
-    DoublePrompt = [char]187    # » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
-    Lambda       = [char]955    # λ (GREEK LETTER LAMBDA)
-    HammerSickle = [char]9773   # ☭ (HAMMER AND SICKLE)
-    VisualStudio = [char]42479  # ꗯ (VAI SYLLABLE GBE)
-}
-
 #### Functions
 
 <#
@@ -596,8 +588,9 @@ function Set-ConEmuTabTitle {
     [cmdletbinding()] param(
         $title
     )
+    $DoublePrompt = [char]187    # » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
     if ($title) { $title = ":$title" }
-    $fullTitle = "$($SpecialCharacters.DoublePrompt)$title" -replace " ",''
+    $fullTitle = "${DoublePrompt}$title" -replace " ",''
     $macro = "Rename(0,$fullTitle"
     Write-Verbose "Running macro: $macro"
     $out = conemuc /guimacro $macro
