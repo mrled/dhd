@@ -259,6 +259,13 @@ Configuration DhdConfig {
             PsDscRunAsCredential = $Credential
         }
 
+        cMrlFileLink SymlinkVimrc {
+            LinkPath = "$UserProfile\_vimrc"
+            LinkTarget = "$DhdPath\hbase\.vimrc"
+            Ensure = "Present"
+            PsDscRunAsCredential = $Credential
+        }
+
         # On first startup, Package Control will then run and install all my packages, nice
         Script InstallSublimeTextPackageControl {
             GetScript = { return @{ Result = "" } }
