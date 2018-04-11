@@ -49,7 +49,11 @@ $ErrorActionPreference = "Stop"
 ## Globals I'll use later
 
 $DhdZipUri = "https://github.com/mrled/dhd/archive/master.zip"
-$RequiredDscModules = @('xHyper-V', 'cChoco')
+$RequiredDscModules = @(
+    'cChoco'
+    'xComputerManagement'
+    'xHyper-V'
+)
 $MinimumMaxEnvelopeSize = 8192
 
 

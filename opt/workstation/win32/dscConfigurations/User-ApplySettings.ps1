@@ -16,6 +16,7 @@ Configuration UserSettingsConfig {
     Import-DscResource -ModuleName cMrlGitGlobalConfiguration
     Import-DscResource -ModuleName cMrlPathLikeEnvVar
     Import-DscResource -ModuleName cMrlPathLikeEnvVarSet
+    Import-DscResource -ModuleName xComputerManagement
 
     Node $ComputerName {
 
@@ -217,5 +218,14 @@ Configuration UserSettingsConfig {
             PsDscRunAscredential = $Credential
         }
 
+        xScheduledTask AddRepoHelperDrive {
+            TaskName = 'Configure R:\ drive'
+            TaskPath = '\'
+            ActionExecutable = 'cmd.exe'
+            ActionArguments = '/c "IF EXIST `"{}\Documents\Repositories`" ( subst.exe R: `"{}\Documents\Repositories`" )' -f $UserProfile, $UserProfile
+            ScheduleType = 'AtLogOn'
+            Enable = $true
+            ExecuteAsCredential = $Credential
+        }
     }
 }
