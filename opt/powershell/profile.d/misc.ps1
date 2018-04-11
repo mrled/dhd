@@ -3,48 +3,6 @@
 
 #### Functions
 
-<#
-.description
-Retrieve powershell platform (cross platform)
-#>
-function Get-PowershellPlatform {
-    [CmdletBinding()] Param()
-    if ($PSVersionTable.Keys -Contains 'Platform') {
-        return $PsVersionTable.Platform
-    } else {
-        # This value is what is returned by $PsVersionTabble.Platform on Powershell Core
-        return "Win32NT"
-    }
-}
-
-<#
-.description
-Test whether the current session has administrative privileges (cross platform)
-#>
-function Test-AdminRole {
-    [CmdletBinding()] Param()
-    if ((Get-PowershellPlatform) -eq "Win32NT") {
-        $identity = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-        $adminRole = [Security.Principal.WindowsBuiltInRole] "Administrator"
-        return $identity.IsInRole($adminRole)
-    } else {
-        return (id -u) -eq 0
-    }
-}
-
-<#
-.description
-Retrieve the current machine's hostname (cross platform)
-#>
-function Get-Hostname {
-    [CmdletBinding()] Param()
-    if ($env:COMPUTERNAME) {
-        return $env:COMPUTERNAME
-    } else {
-        return hostname
-    }
-}
-
 function ConvertTo-Base64($string) {
    $bytes  = [System.Text.Encoding]::UTF8.GetBytes($string)
    [System.Convert]::ToBase64String($bytes)

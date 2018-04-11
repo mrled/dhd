@@ -90,6 +90,8 @@ Import-Module -Name @(
     'AsciiArt'
     'ExecutablePathManager'
     'MrlInteractive'
+    'MrlOsHelper'
+    'MrlPromptHelper'
 )
 
 Show-AsciiSquareWindowsLogo
@@ -102,7 +104,7 @@ foreach ($profileItem in (Get-ChildItem -LiteralPath "$DhdPath/opt/powershell/pr
 # so if you're going to use that module, import it first so my format file overrides their bullshit
 Update-FormatData -Prependpath "$DhdPath/opt/powershell/mrl.format.ps1xml"
 
-Set-UserPrompt -builtInPrompt Color
+Set-UserPrompt -Name Color
 Set-ConsoleColors
 
 # Must set the prompt before importing this module or it'll puke
