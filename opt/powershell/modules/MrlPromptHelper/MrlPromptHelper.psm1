@@ -15,6 +15,9 @@ $script:UserPrompts = @{
         # Useful with ConEmu's status bar's "Console Title" field - always puts your CWD in the status bar
         $Host.UI.RawUI.WindowTitle = $pwd
 
+        $DoublePrompt = [char]187    #  »  (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
+        $HammerSickle = [char]9773   #  ☭  (HAMMER AND SICKLE)
+
         # Wrap our writes in comments so that we can copy/paste entire lines, including the prompt
         Write-Host '<# ' -NoNewLine -ForegroundColor DarkGray
 
