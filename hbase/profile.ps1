@@ -1,12 +1,6 @@
 <#
-.synopsis
+.SYNOPSIS
 My Powershell profile
-.notes
-- `Out-File -InputObject ". $Home/.dhd/hbase/profile.ps1" -LiteralPath $profile`
-- Then your profile will dot-source
-- This file will load required third party modules,
-  any required modules in .dhd/opt/powershell/modules,
-  and finally other scripts in .dhd/opt/powershell/profile.d
 #>
 
 # Halt on all errors
@@ -19,6 +13,33 @@ $ErrorActionPreference = "Stop"
 # By default, Powershell separates array items with a space, like "1 2 3"
 # Setting $OFS to ", " will display them with a comma as well, like "1, 2, 3"
 $OFS = ", "
+
+$DhdPath = Join-Path -Path $Home -ChildPath ".dhd"
+
+<#
+.SYNOPSIS
+Re-source my profile
+.NOTES
+This can be called with '. p' (note the space), analogous to my '.b' bash function.
+This function cannot exist in a module, due to scoping issues
+#>
+function p {
+    [CmdletBinding()] Param()
+    $profiles = @(
+        $profile.AllUsersAllHosts
+        $profile.AllUsersCurrentHost
+        $profile.CurrentUserAllHosts
+        $profile.CurrentUserCurrentHost
+    )
+    foreach ($prof in $profiles) {
+        if (Test-Path -Path $prof) {
+            Write-Verbose -Message "Found profile at '$prof', sourcing..."
+            . $prof
+        } else {
+            Write-Verbose -Message "Would source profile at '$prof', but it does not exist"
+        }
+    }
+}
 
 <#
 .synopsis
@@ -57,7 +78,7 @@ Add-ExtantPathToPsModulePath -Path @(
     "${env:programfiles(x86)}\Windows Kits\8.0\Assessment and Deployment Kit\Deployment Tools\${env:Processor_Architecture}\DISM"
     "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows Azure\PowerShell\Azure"
     "${env:ProgramFiles(x86)}\Microsoft SQL Server\110\Tools\PowerShell\Modules"
-    "$home/.dhd/opt/powershell/modules"
+    "$DhdPath/opt/powershell/modules"
     "$home/Documents/WindowsPowerShell/Modules"
 )
 
@@ -66,19 +87,20 @@ Import-ExtantModule -Name @(
 )
 
 Import-Module -Name @(
-    'ExecutablePathManager'
     'AsciiArt'
+    'ExecutablePathManager'
+    'MrlInteractive'
 )
 
 Show-AsciiSquareWindowsLogo
 
-foreach ($profileItem in (Get-ChildItem -LiteralPath "$Home/.dhd/opt/powershell/profile.d")) {
+foreach ($profileItem in (Get-ChildItem -LiteralPath "$DhdPath/opt/powershell/profile.d")) {
     . $profileItem.FullName
 }
 
 # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file,
 # so if you're going to use that module, import it first so my format file overrides their bullshit
-Update-FormatData -Prependpath "$Home/.dhd/opt/powershell/mrl.format.ps1xml"
+Update-FormatData -Prependpath "$DhdPath/opt/powershell/mrl.format.ps1xml"
 
 Set-UserPrompt -builtInPrompt Color
 Set-ConsoleColors

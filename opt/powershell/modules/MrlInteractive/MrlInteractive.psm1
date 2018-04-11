@@ -5,113 +5,152 @@ A module template
 
 <#
 .SYNOPSIS
-The closest thing I could get to my bashrc's '.b' function
+Show the input commandline
+.DESCRIPTION
+OH MY GOD
+Type a command, change your mind about it, move the cursor to the front of the line, type "omg ",
+and hit return. Blammo, it returns "wtf <the command line you typed>"
+.NOTES
+Intended to be aliased to 'omg'
 #>
-function p {
-    . "$Home\.dhd\hbase\profile.ps1"
+function Show-InputCommandline {
+    [CmdletBinding()] Param(
+        [Parameter(Position=0, ValueFromRemainingArguments=$true)] $Arguments,
+        $Prefix = "wtf:"
+    )
+    # Wrap $Prefix in <# #> so you can copy/paste the whole line
+    # Use $Arguments -join to get around any custom $OFS settings
+    Write-Output -InputObject "<# $Prefix #> $($Arguments -join ' ')"
 }
 
 <#
-.synopsis
-OH MY GOD
-.description
-Type a command, change your mind about it, move the cursor to the front of the line, type "omg ", and hit return.
-Blammo, it returns "wtf <the command line you typed>"
+.SYNOPSIS
+Create a new password
+.PARAMETER Length
+The length of the password
 #>
-function omg {
-    [cmdletbinding()] param(
-        [parameter(Position=0, ValueFromRemainingArguments=$true)] $arguments
-    )
-    Write-Host "wtf $arguments"
-}
-
-function Set-WindowTitle {
-    param(
-        [parameter(mandatory=$true)] [string] $message
-    )
-    $Host.UI.RawUI.WindowTitle = $message
-}
-
 function New-Password {
-    param([int]$length=8)
+    Param(
+        [int] $Length = 16
+    )
     # From: http://ronalddameron.blogspot.com/2009/09/two-lines-of-powershell-random.html
-    $null = [Reflection.Assembly]::LoadWithPartialName("System.Web")
-    [System.Web.Security.Membership]::GeneratePassword($length,2)  # 8 bytes long
+    [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
+    [System.Web.Security.Membership]::GeneratePassword($length,2)
 }
 
-function llm {
-    get-childitem $args | sort-object -property lastwritetime
+<#
+.SYNOPSIS
+Get child items sorted by last write time
+.NOTES
+Intended to be aliased to 'llm', analogous to my bash function of the same name
+#>
+function Get-ChildItemSortedLastWriteTime {
+    Get-ChildItem $args | Sort-Object -Property LastWriteTime
 }
 
-function .. { cd .. }
-function ... { cd ../.. }
-function .... { cd ../../.. }
+<#
+.SYNOPSIS
+Change to parent directory
+.NOTES
+Intended to be aliased to '..'
+#>
+function Set-LocationParent {
+    [CmdletBinding()] Param()
+    Set-Location -Path ..
+}
 
-function vless {
+<#
+.SYNOPSIS
+Change to grandparent directory
+.NOTES
+Intended to be aliased to '...'
+#>
+function Set-LocationGrantParent {
+    [CmdletBinding()] Param()
+    Set-Location -Path ../..
+}
+
+<#
+.SYNOPSIS
+Change to great grandparent directory
+.NOTES
+Intended to be aliased to '....'
+#>
+function Set-LocationGreatGrandParent {
+    [CmdletBinding()] Param()
+    Set-Location -Path ../../..
+}
+
+<#
+.SYNOPSIS
+Invoke vim's less macro
+#>
+function Invoke-VimLessMacro {
     # Adapted from vim/macros/less.bat. Assumes vim is in path though.
-    [cmdletbinding()]
-    param(
-        [Parameter(Mandatory=$True,ValueFromPipeline=$True)] [string] $filename
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$True, ValueFromPipeline=$True)] [string] $Filename
     )
     if ($input) {
         $input | vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" -
-    }
-    else {
-        vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" $filename
+    } else {
+        vim --cmd "let no_plugin_maps = 1" -c "runtime! macros/less.vim" "$Filename"
     }
 }
 
-# Make output of get-command better (more like Unix) for interactive use.
-# NOTE: For aliases, the processing function calls the show function again - this is recursive!
-# it's so if you have an alias chain like x->y->z->, where x and y are aliases
-# and z is a function, you'll get the whole relationship + the function definition as well.
-function Display-AllCommands {
-    param(
-        [alias("r","a","all")] [switch]$recurse,
-        [int]$recursionlevel=0,
-        # weird syntax means that if the $recursionlevel isn't specified,
-        # $args[0] doesn't become $recursionlevel:
-        [parameter(Position=0, ValueFromRemainingArguments=$true)] $args
+<#
+.SYNOPSIS
+Show all definitions of a command
+.PARAMETER Command
+The name of the command(s) to display
+.PARAMETER Recurse
+Show definitions recursively - if a command resolves to an alias, also show the definition of the
+alias target.
+.PARAMETER RecursionLevel
+Used when the function calls itself recursively - do not pass this parameter
+.NOTES
+Intended to be aliased to 'wh'
+#>
+function Show-AllCommands {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$true, Position=0, ValueFromRemainingArguments=$true)]
+        [String[]] $Command,
+
+        [Alias("r","a","all")] [switch] $Recurse,
+
+        [int] $RecursionLevel = 0
     )
-    if ($args.Count -le 0) {return}
-    foreach ($a in $args) {
-        $level = $recursionlevel
-        # This next line helps keep track if there is lots of output, but also clutters everything. Hmm.
-        #if ($level -eq 0) {write-host ($a) -foregroundcolor Green}
+    foreach ($cmdName in $Command) {
+        $level = $RecursionLevel
         if ($level -gt 20) {
-            $errstr  = "Recursion is greater than 20 levels deep. Probably a circular set of aliases? "
-            write-error $errstr
-            return
+            throw "Recursion is greater than 20 levels deep. Probably a circular set of aliases?"
         }
         $levelprefix = ""
         for ($i=0; $i -le $level; $i++) {
-            if ($i -eq $level) { $levelprefix += "-> " }
-            else { $levelprefix += "   " }
+            if ($i -eq $level) {
+                $levelprefix += "-> "
+            } else {
+                $levelprefix += "   "
+            }
         }
 
-        $cmdobjs = @()
-        $gcmoutput = get-command -all $a
-        if ($gcmoutput.count) { $cmdobjs = $gcmoutput } #there was an array of results; use it
-        else { $cmdobjs += $gcmoutput } #there was just one result; make a one-item array
-
-        foreach ($c in $cmdobjs) {
+        foreach ($c in @(Get-Command -All -Name $cmdName)) {
             if ($c.CommandType) { #sometime get-command passes us an empty object! awesome!!
                 switch ($c.CommandType) {
                     "Alias" {
-                        write-output ($levelprefix + $c.Name + ": Aliased to " + $c.Definition) #-nonewline
+                        Write-Output -InputObject "${levelprefix}$($c.Name): Aliased to $($c.Definition)"
                         if ($recurse.ispresent) {
-                            $level = $level +1
-                            Display-AllCommands $c.Definition -recurse -recursionlevel $level
+                            Show-AllCommands -Command $c.Definition -Recurse -RecursionLevel ($level + 1)
                         }
                     }
                     "Application" {
-                        write-output ($levelprefix + $c.Name + ": Executable at " + $c.Definition)
+                        Write-Output -InputObject "${levelprefix}$($c.Name): Executable at $($c.Definition)"
                     }
                     "Function" {
                         # TODO: don't display function definition unless I do -recurse
                         # Can I still show just the parameters though? Hmm.
-                        write-output ($levelprefix + $c.Name + ": " + $c.CommandType)
+                        Write-Output -InputObject "${levelprefix}$($c.Name): $($c.CommandType)"
                         $defstr = $c.Definition
+
                         # $c.Definition is a string.
                         # - SOMETIMES, it begins w/ a new line. if so, chomp.
                         # - SOMETIMES it ends w/ a new line too; chomp that.
@@ -124,10 +163,10 @@ function Display-AllCommands {
 
                         $regex = [system.text.regularexpressions.regex]
                         $reml = [System.Text.RegularExpressions.RegexOptions]::MultiLine
-                        $re_firstnewline = new-object $regex ('\A\r?\n', $reml)
-                        $re_lastnewline = new-object $regex ('\Z\r?\n', $reml)
-                        $re_newline = new-object $regex ('\r?\n', $reml)
-                        $re_stringbegin = new-object $regex ('\A', $reml)
+                        $re_firstnewline = New-Object -TypeName $regex -ArgumentList ('\A\r?\n', $reml)
+                        $re_lastnewline = New-Object -TypeName $regex -ArgumentList ('\Z\r?\n', $reml)
+                        $re_newline = New-Object -TypeName $regex -ArgumentList ('\r?\n', $reml)
+                        $re_stringbegin = New-Object -TypeName $regex -ArgumentList ('\A', $reml)
 
                         $functionprefix = $levelprefix + "   " #indent the funct definitions a bit further
                         $defstr = $re_firstnewline.replace($defstr, '')
@@ -135,9 +174,11 @@ function Display-AllCommands {
                         $defstr = $re_newline.replace($defstr, [environment]::NewLine + $functionprefix)
                         $defstr = $re_stringbegin.replace($defstr, $functionprefix)
 
-                        write-output ($defstr)
+                        Write-Output -InputObject $defstr
                     }
-                    default { write-output ($levelprefix + $c.Name + ": " + $c.CommandType) }
+                    default {
+                        Write-Output -InputObject "${levelPrefix}$($c.Name): $($c.CommandType)"
+                    }
                 }
             }
         }
@@ -148,16 +189,20 @@ function Display-AllCommands {
 .SYNOPSIS
 "Touch" a file
 .NOTES
-Intended to be aliased to 'touch', which by default is aliased to Set-FileTime
+Intended to be aliased to 'touch'
 #>
 function Set-MrlFile {
-    param([parameter(mandatory=$true)] [string[]] $file)
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$true)] [string[]] $Path,
+        [DateTime] $Date = (Get-Date)
+    )
     foreach ($f in $file) {
-        if (test-path $f) {
-            set-filetime $f
+        if (Test-Path -Path $f) {
+            $item = Get-Item -Path $f
+            $item.LastWriteTime = $Date
         }
         else {
-            new-item -ItemType file $f
+            New-Item -ItemType File -Path $f
         }
     }
 }
@@ -217,9 +262,9 @@ function Get-MrlHelp {
 }
 
 <#
-.synopsis
+.SYNOPSIS
 Get the syntax for a command
-.description
+.DESCRIPTION
 If you do (Get-Help Something).Syntax, it will return just the syntax for the command. Yay.
 ... Unless it's a function without a documentation block. Then it returns an ugly SyntaxItem object.
 It's mostly the same thing, but if a PSObject is of type `MamlCommandHelpInfo#syntax`, then it
@@ -227,11 +272,11 @@ displays is properly. All this does is check to see if the .Syntax object you ge
 contains that type; if it doesn't, it adds it before returning it.
 #>
 function Get-Syntax {
-    param(
-        [string[]] $command
+    [CmdletBinding()] Param(
+        [string[]] $Command
     )
-    foreach ($cmd in $command) {
-        $cmdSyntax = (get-help $cmd).Syntax
+    foreach ($cmd in $Command) {
+        $cmdSyntax = (Get-Help -Name $cmd).Syntax
         if (-not $cmdSyntax.PSObject.TypeNames.Contains("MamlCommandHelpInfo#syntax")) {
             $cmdSyntax.PSObject.TypeNames.Insert(0,"MamlCommandHelpInfo#syntax")
         }
@@ -242,16 +287,29 @@ function Get-Syntax {
 <#
 .SYNOPSIS
 Set the location
+.DESCRIPTION
+Proxy function for the built-in Set-Location cmdlet, with a default Path argument of $Home
+.PARAMETER Path
+The location to change to
 .NOTES
 Intended to be aliased to 'cd', which by default has no default argument
 #>
-function Set-LocationMrl {
-    param(
-        [parameter(position=0, valuefrompipeline=$true)] $location = $home
+function Set-MrlLocation {
+    [CmdletBinding()] Param(
+        $Path = $Home
     )
-    Set-Location $location
+    Set-Location -Path $Path
 }
 
+<#
+.SYNOPSIS
+Import a module idempotently
+.DESCRIPTION
+If the module is not already imported, import it.
+If the module is already imported, remove it, then import it again from the same path
+.PARAMETER Name
+The name of the module to (re-)import
+#>
 function Import-ModuleIdempotently {
     [CmdletBinding()] Param(
         [Parameter(Mandatory)] [string] $Name
@@ -268,25 +326,32 @@ function Import-ModuleIdempotently {
 }
 
 <#
-.synopsis
+.SYNOPSIS
 Start a batch file
-.description
-Start a batch file, and prevent a stupid "Terminate batch job? Y/N" prompt if
-you Ctrl-C the process.
+.DESCRIPTION
+Start a batch file, preventing a stupid "Terminate batch job? Y/N" prompt if you Ctrl-C the process
+Throw if $LASTEXITCODE was nonzero
+.PARAMETER BatchFile
+The path to the batch file
+.PARAMETER BatchArgs
+Arguments to pass to the batch file
 #>
 function Start-BatchFile {
     [CmdletBinding()] Param(
-        [parameter(mandatory=$true)] [string] $batchFile,
-        [parameter(ValueFromRemainingArguments=$true)] $batchArgs
+        [parameter(mandatory=$true)] [string] $BatchFile,
+        [parameter(ValueFromRemainingArguments=$true)] $BatchArgs
     )
     # we use "<NUL" to prevent that fucking "Terminate batch job? Y/N" prompt
-    cmd.exe "/c $batchFile $batchArgs <NUL"
+    cmd.exe "/c $BatchFile $($BatchArgs -Join ' ') <NUL"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command '$BatchFile $($BatchArgs -Join ' ')' exited with code $LASTEXITCODE"
+    }
 }
 
 <#
-.synopsis
+.SYNOPSIS
 Fucking extract an archive the right way.
-.description
+.DESCRIPTION
 Fucking extract an archive the right way:
 - Create a new temporary directory inside $outDir
 - Use 7z.exe to extract the archive to that temp dir
@@ -297,140 +362,139 @@ Fucking extract an archive the right way:
   - If there was more than one item in the archive, rename the temp dir to
     something sensible based on the archive name. (For example, if the archive
     name is SomeArchive.zip, rename the temp dir to SomeArchive)
-.parameter archive
+.PARAMETER Archive
 A list of archives to extract
-.parameter outDir
+.PARAMETER OutDir
 The directory to extract the archives to. Defaults to the current working
 directory.
-.parameter force
+.PARAMETER Force
 If there is an existing file/directory with the same name as one that would be
 extracted, delete the existing item first.
 #>
-function Extract-FuckingArchive {
-    [cmdletbinding()] param(
-        [parameter(mandatory=$true)] [string[]] $archive,
-        [string] $outDir,
-        [switch] $force
+function Expand-FuckingArchive {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory=$true)] [string[]] $Archive,
+        [string] $OutDir,
+        [switch] $Force
     )
 
     <#
-    .synopsis
+    .SYNOPSIS
     Fucking extract an archive to a temporary directory
-    .parameter archive
+    .PARAMETER Archive
     An archive file
-    .parameter outDir
+    .PARAMETER OutDir
     The directory in which to create the temporary extraction dir
-    .parameter noOutDir
+    .PARAMETER NoOutDir
     Instead of creating a temporary extraction dir, just use the archive's parent directory
     #>
-    function fuckingExtractOneLayer {
-        [cmdletbinding()] param(
-            [parameter(mandatory=$true)] [System.IO.FileInfo] $archive,
-            [parameter(mandatory=$true,parametersetname="outDir")] [System.IO.DirectoryInfo] $outDir,
-            [parameter(mandatory=$true,parametersetname="noOutDir")] [switch] $noOutDir
+    function Expand-OneFuckingLayer {
+        [CmdletBinding()] param(
+            [Parameter(Mandatory=$true)] [System.IO.FileInfo] $Archive,
+            [Parameter(Mandatory=$true,ParameterSetName="OutDir")] [System.IO.DirectoryInfo] $OutDir,
+            [Parameter(Mandatory=$true,ParameterSetName="NoOutDir")] [switch] $NoOutDir
         )
 
-        if ($noOutDir) {
-            $outDir = $archive.directory.fullname
-        }
-        else {
+        if ($NoOutDir) {
+            $OutDir = $Archive.Directory.FullName
+        } else {
             $tempDirName = "fuckingextract-" + [System.IO.Path]::GetRandomFileName()
-            $outDir = "$($outDir.fullname)\$tempDirName"
-            if (test-path $outDir) {
+            $OutDir = "$($OutDir.FullName)\$tempDirName"
+            if (Test-Path -Path $OutDir) {
                 throw "The temporary directory that already exists"
             }
-            mkdir $outDir | out-null
+            New-Item -Type Directory $OutDir | Out-Null
         }
 
-        $7zcmd = '7z x "-o{0}" "{1}"' -f @($outDir, $archive.fullName)
-        $7zout = iex $7zcmd
+        $7zcmd = '7z x "-o{0}" "{1}"' -f @($OutDir, $Archive.FullName)
+        $7zout = Invoke-Expression -Command $7zcmd
         if ($LASTEXITCODE -ne 0) {
             throw "7z exited with code $LASTEXITCODE`n`tcommand line: $7zcmd`n`toutput: `n$7zout"
         }
-        return $outDir
+        return $OutDir
     }
 
     try {
-        gcm 7z | out-null
-    }
-    catch {
+        Get-Command -Name 7z | Out-Null
+    } catch {
         throw "7z.exe is not in your `$ENV:PATH; cannot continue"
     }
 
     $secondLayerExtensions = @(".tar") # There aren't any more that I can think of?
 
-    if (-not $outDir) {
-        $outDir = $pwd
+    if (-not $OutDir) {
+        $OutDir = $pwd
+    } elseif (-not (Test-Path -Path $OutDir)) {
+        New-Item -Type Directory -Force $OutDir | Out-Null
     }
-    elseif (-not (test-path $outDir)) {
-        mkdir -force $outDir | out-null
-    }
-    $outDirItem = get-item $outDir
+    $outDirItem = Get-Item -Path $OutDir
 
     $outFiles = @()
     foreach ($arch in $archive) {
-        $archItem = get-item $arch
+        $archItem = Get-Item -Path $arch
 
         # this is the name of the archive w/o its extension
         # this will be used as the eventual directory name to extract to
-        $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($archItem.name)
+        $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($archItem.Name)
 
-        $exDir = fuckingExtractOneLayer -archive $archItem -outdir $outDirItem
-        write-verbose "Using temporary extraction directory: $exDir"
-        $exItems = gci $exDir
+        $exDir = Expand-OneFuckingLayer -Archive $archItem -Outdir $outDirItem
+        Write-Verbose -Message "Using temporary extraction directory: $exDir"
+        $exItems = Get-ChildItem -Path $exDir
 
-        # If there is only one item in the archive, AND that item has an
-        # extension in $secondLayerExtensions, extract that item too.
-        if (((gci $exDir).count -eq 1) -and
-            ($secondLayerExtensions |? { $exItems[0].name.endswith($_) }) )
-        {
+        # If there is exactly one item in the archive which has an extension in
+        # $secondLayerExtensions, extract that item too.
+        if (
+            $exItems.Count -eq 1 -and
+            $secondLayerExtensions | Where-Object -FilterScript { $exItems[0].Name.EndsWith($_) }
+        ) {
             $innerArchItem = $exItems[0]
             write-verbose "Found inner archive: $($innerArchItem.fullname)"
-            fuckingExtractOneLayer -archive $innerArchItem.fullname -noOutDir | out-null
-            $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($innerArchItem.name)
-            rm $innerArchItem.fullname
-            $exItems = gci $exDir
+            Expand-OneFuckingLayer -Archive $innerArchItem.FullName -NoOutDir | Out-Null
+            $archBareName = [System.IO.Path]::GetFileNameWithoutExtension($innerArchItem.Name)
+            Remove-Item -Path $innerArchItem.FullName
+            $exItems = Get-ChildItem -Path $exDir
         }
 
-        # If there is only one item in the archive, we don't need the
-        # extraction directory - just move the item into the output dir
-        if ($exItems.count -eq 1) {
+        if ($exItems.Count -eq 1) {
             $outItem = $exItems[0]
-            $outItemName = "$($outDirItem.fullname)\$($outItem.name)"
-            write-verbose "Only one item in archive: '$($outItem.fullname)'; moving to '$($outDirItem.fullname)'"
+            $outItemName = Join-Path -Path $outDirItem -ChildPath $outItem.Name
+            Write-Verbose -Message "Only one item in archive: '$($outItem.FullName)'; moving to '$($outDirItem.FullName)'"
 
-            if ((test-path $outItemName) -and $force) {
-                write-verbose "Found existing item at '$outItemName' but -force was specified; removing..."
-                rm -recurse -force $outItemName
-            }
-            elseif ((test-path $outItemName) -and -not $force) {
+            if ((Test-Path -Path $outItemName) -and $Force) {
+                Write-Verbose -Message "Found existing item at '$outItemName' but -force was specified; removing..."
+                Remove-Item -Recurse -Force -Path $outItemName
+            } elseif ((Test-Path -Path $outItemName) -and -not $Force) {
                 throw "Extracted archive to '$exDir' but could not move to '$outItemName' because '$outItemName' already exists"
             }
 
-            $outFiles += @( mv $outItem.fullname $outItemName -passthru )
-            rm -recurse $exDir
-        }
-        # If there's more than item in the archive, then rename the dir to the
-        # bare name of the archive
-        else {
-            $outItemName = "$($outDirItem.fullName)\$archBareName"
-            write-verbose "Multiple items in archive; moving temporary extraction directory to '$outItemName'"
+            $outFiles += @(Move-Item -Path $outItem.FullName -Destination $outItemName -PassThru)
+            Remove-Item -Recurse -Path $exDir
+        } else {
+            $outItemName = Join-Path -Path $outDirItem -ChildPath $archBareName
+            Write-Verbose -Message "Multiple items in archive; moving temporary extraction directory to '$outItemName'"
 
-            if ((test-path $outItemName) -and $force) {
-                write-verbose "Found existing item at '$outItemName' but -force was specified; removing..."
-                rm -recurse -force $outItemName
-            }
-            elseif ((test-path $outItemName) -and -not $force) {
+            if ((Test-Path -Path $outItemName) -and $Force) {
+                Write-Verbose -Message "Found existing item at '$outItemName' but -force was specified; removing..."
+                Remove-Item -Recurse -Force -Path $outItemName
+            } elseif ((Test-Path -Path $outItemName) -and -not $Force) {
                 throw "Extracted archive to '$exDir' but could not move to '$outItemName' because '$outItemName' already exists"
             }
 
-            $outFiles += @( mv $exDir $outItemName -passthru )
+            $outFiles += @(Move-Item -Path $exDir Destination $outItemName -PassThru)
         }
     }
 
     return $outFiles
 }
 
+<#
+.SYNOPSIS
+Set the title of a ConEmu tab
+.PARAMETER Prefix
+A prefix character. Just for fun lol.
+.PARAMETER Title
+A title
+#>
 function Set-ConEmuTabTitle {
     [cmdletbinding()] param(
         $Prefix = [char]187,    # » (RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK)
