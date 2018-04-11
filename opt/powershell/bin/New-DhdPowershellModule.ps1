@@ -42,7 +42,7 @@ switch ($PSCmdlet.ParameterSetName) {
         $moduleContents = @"
 <#
 .SYNOPSIS
-A module template
+$Description
 #>
 "@
     }
@@ -65,7 +65,7 @@ A module template
         $moduleContents = @"
 <#
 .SYNOPSIS
-A DSC resource module template
+$Description
 #>
 
 enum Ensure {
