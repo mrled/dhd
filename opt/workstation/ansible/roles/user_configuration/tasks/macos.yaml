@@ -15,17 +15,17 @@
     register: homebrew_exists_result
 
   - name: Make homebrew directory
-    file:
+    template:
       path: "{{ homebrew_install_dir }}"
       state: directory
-    when: homebrew_exists_result.stat.exists == 'false' and homebrew_exists_result.stat.isdir == 'false'
+    when: homebrew_exists_result.stat.exists == 'false' or homebrew_exists_result.stat.isdir == 'false'
 
   # Fuck /usr/local, fuck homebrew for defaulting to that
   - name: Install homebrew
     shell: >
-      mcurl -L https://github.com/Homebrew/brew/tarball/master |
+      curl -L https://github.com/Homebrew/brew/tarball/master |
       tar xz --strip 1 -C "{{ homebrew_install_dir }}"
-    when: homebrew_exists_result.stat.exists == 'false' and homebrew_exists_result.stat.isdir == 'false'
+    when: homebrew_exists_result.stat.exists == 'false' or homebrew_exists_result.stat.isdir == 'false'
 
 - name: Ensure homebrew packages are installed
   homebrew:
