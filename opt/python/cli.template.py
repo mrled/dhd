@@ -9,6 +9,8 @@ import sys
 
 
 scriptdir = os.path.dirname(os.path.realpath(__file__))
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 # Helper functions
@@ -46,9 +48,9 @@ def which(commandname):
         path = path.strip('"')
         exe_file = os.path.join(path, commandname)
         if is_exe(exe_file):
-            logging.info("Exe path is {}".format(exe_file))
+            logger.info("Exe path is {}".format(exe_file))
             return exe_file
-    logging.error("Could not find {} in PATH, which includes:\n{}".format(
+    logger.error("Could not find {} in PATH, which includes:\n{}".format(
         commandname, "\n".join(os.environ["PATH"].split(os.pathsep))))
     raise Exception("No such command '{}' in PATH".format(commandname))
 
@@ -56,20 +58,19 @@ def which(commandname):
 # Example implementation functions
 
 def echo(message):
-    logging.debug("Asked to echo a message: {}".format(message))
+    logger.debug("Asked to echo a message: {}".format(message))
     result = subprocess.call(['/bin/echo', message])
     return result
 
 
 def whatever(something):
-    logging.debug("I'm doing whatever with {}".format(something))
+    logger.debug("I'm doing whatever with {}".format(something))
     print("yeah ok whatever, {}!!".format(something))
 
 
 # Main handling
 # The main() function is not special - it's invoked explicitly at the end
 def main(*args, **kwargs):
-    logging.basicConfig()
     parser = argparse.ArgumentParser(
         description="A template for writing a new Python3 command line tool")
     parser.add_argument(
@@ -82,7 +83,7 @@ def main(*args, **kwargs):
     parsed = parser.parse_args()
     if parsed.debug:
         sys.excepthook = idb_excepthook
-        logging.root.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     whatever(parsed.directobject)
 
 
