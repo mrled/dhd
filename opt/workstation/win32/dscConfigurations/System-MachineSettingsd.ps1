@@ -120,6 +120,7 @@ Configuration MachineSettingsConfig {
 
                 "${env:ProgramFiles(x86)}\GNU\GnuPG"
                 "${env:ProgramFiles(x86)}\GnuWin32\bin"
+                "${env:ProgramFiles(x86)}\MSBuild\*\Bin"
                 "${env:ProgramFiles(x86)}\vim\vim*"
                 "${env:ProgramFiles(x86)}\vim\vim*\macros"
             )

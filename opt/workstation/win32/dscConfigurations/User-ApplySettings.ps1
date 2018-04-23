@@ -219,10 +219,10 @@ Configuration UserSettingsConfig {
         }
 
         xScheduledTask AddRepoHelperDrive {
-            TaskName = 'Configure R:\ drive'
-            TaskPath = '\'
+            TaskName = 'Configure R drive'
+            # TaskPath = '\'
             ActionExecutable = 'cmd.exe'
-            ActionArguments = '/c "IF EXIST `"{}\Documents\Repositories`" ( subst.exe R: `"{}\Documents\Repositories`" )' -f $UserProfile, $UserProfile
+            ActionArguments = '/c "IF EXIST `"{0}\Documents\Repositories`" ( subst.exe R: `"{0}\Documents\Repositories`" )"' -f $UserProfile
             ScheduleType = 'AtLogOn'
             Enable = $true
             ExecuteAsCredential = $Credential
