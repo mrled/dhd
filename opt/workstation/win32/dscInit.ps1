@@ -290,7 +290,8 @@ function Invoke-AllDscConfigurations {
             )
         }
 
-        Get-ChildItem -Path $DhdLocation\opt\workstation\win32\dscConfigurations\* -Include *.ps1 | Foreach-Object -Process { . $_ }
+        Get-ChildItem -Path $DhdLocation\opt\workstation\win32\dscConfigurations\* -Include *.ps1 |
+            Foreach-Object -Process { . $_ }
 
         Invoke-DscConfiguration -Name InstallSoftware
         Invoke-DscConfiguration -Name MachineSettingsConfig
