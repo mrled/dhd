@@ -9,6 +9,10 @@ Set-Alias -Name getmo -Value Get-Module -Force
 Set-Alias -Name rmmo -Value Remove-Module -Force
 
 
+#### Aliases for external binaries
+Set-Alias -Name l -Value less -Force
+
+
 #### Aliases for MrlInteractive functions
 Set-Alias -Name .. -Value MrlInteractive\Set-LocationParent -Force
 Set-Alias -Name ... -Value MrlInteractive\Set-LocationGrantParent -Force
@@ -28,5 +32,6 @@ Set-Alias -Name vl -Value MrlInteractive\Invoke-VimLessMacro -Force
 Set-Alias -Name wh -Value MrlInteractive\Show-AllCommands -Force
 
 
-#### Aliases for external binaries
-Set-Alias -Name l -Value less -Force
+#### Aliases for my other modules
+Set-Alias -Name err -Value MrlDebugging\Show-ErrorReport
+Set-Alias -Name clerr -Value MrlDebugging\Clear-Error

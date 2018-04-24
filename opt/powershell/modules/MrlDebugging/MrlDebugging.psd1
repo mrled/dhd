@@ -19,10 +19,7 @@
     )
     CmdletsToExport = @()
     VariablesToExport = @()
-    AliasesToExport = @(
-        'clerr'
-        'err'
-    )
+    AliasesToExport = @()
     DscResourcesToExport = @()
 
     PrivateData = @{

@@ -178,9 +178,6 @@ function Get-ErrorType {
     return "${errNamespace}.${errName}"
 }
 
-Set-Alias -Name err -Value Show-ErrorReport
-Set-Alias -Name clerr -Value Clear-Error
-
 <#
 .SYNOPSIS
 Get all loaded assemblies
