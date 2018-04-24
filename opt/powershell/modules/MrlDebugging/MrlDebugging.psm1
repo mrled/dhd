@@ -180,3 +180,63 @@ function Get-ErrorType {
 
 Set-Alias -Name err -Value Show-ErrorReport
 Set-Alias -Name clerr -Value Clear-Error
+
+<#
+.SYNOPSIS
+Get all loaded assemblies
+
+.PARAMETER Name
+Only return an assembly whose Name or FullName is like this string
+
+.OUTPUTS
+System.Reflection.RuntimeAssembly
+
+.NOTES
+Originally from https://groups.google.com/forum/#!topic/microsoft.public.windows.powershell/U00MT33QMBs
+#>
+function Get-Assembly {
+    [CmdletBinding()] Param(
+        [string] $Name
+    )
+    foreach ($asm in [AppDomain]::CurrentDomain.GetAssemblies()) {
+        if (-Not $Name -or $asm.GetName().Name -like $Name -or $asm.FullName -like $Name) {
+            Add-Member -InputObject $asm -PassThru -Force -NotePropertyMembers @{
+                Name = $asm.GetName().Name
+                Version = $asm.GetName().Version
+            }
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+Show the origin of a type
+
+.PARAMETER Name
+Only return types whose Name or FullName is like this string
+
+.PARAMETER Assembly
+Only return types whose assembly Name or assembly FullName is like this string
+
+.OUTPUTS
+System.RuntimeType
+
+.NOTES
+Originally from https://groups.google.com/forum/#!topic/microsoft.public.windows.powershell/U00MT33QMBs
+#>
+function Get-Type {
+    [CmdletBinding()] Param(
+        [string] $Name,
+        [string] $Assembly
+    )
+    foreach ($asm in (Get-Assembly -Name $Assembly)) {
+        foreach ($type in $asm.GetTypes()) {
+            if (-not $Name -or $type.Name -like $Name -or $type.FullName -like $Name) {
+                Add-Member -InputObject $type -PassThru -Force -NotePropertyMembers @{
+                    AssemblyName = $asm.Name
+                    AssemblyVersion = $asm.Version
+                }
+            }
+        }
+    }
+}

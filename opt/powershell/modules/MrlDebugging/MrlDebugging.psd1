@@ -10,8 +10,10 @@
 
     FunctionsToExport = @(
         'Clear-Error'
+        'Get-Assembly'
         'Get-AvailableExceptionsList'
         'Get-ErrorType'
+        'Get-Type'
         'Show-ErrorReport'
         'Show-ObjectProperties'
     )
