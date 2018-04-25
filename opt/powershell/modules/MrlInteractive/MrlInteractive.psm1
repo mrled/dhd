@@ -65,7 +65,7 @@ Change to grandparent directory
 .NOTES
 Intended to be aliased to '...'
 #>
-function Set-LocationGrantParent {
+function Set-LocationGrandParent {
     [CmdletBinding()] Param()
     Set-Location -Path ../..
 }
