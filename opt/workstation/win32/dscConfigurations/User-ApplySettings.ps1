@@ -118,6 +118,14 @@ Configuration UserSettingsConfig {
             Ensure = "Present"
         }
 
+        # LESSOPEN is not always set with security in mind
+        # See also: https://marc.info/?l=full-disclosure&m=141678420425808&w=2
+        cMrlUserEnvironment "SetLessopenEnvVar" {
+            Name = "LESSOPEN"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Absent"
+        }
+
         # I think this is less necessary recently, but some unix software does still use this
         cMrlUserEnvironment "SetHomeEnvVar" {
             Name = "HOME"

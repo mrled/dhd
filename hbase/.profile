@@ -68,6 +68,10 @@ fi
 
 export PYTHONSTARTUP=$DHD/hbase/python.profile
 
+# LESSOPEN is not always set with security in mind, especially on desktop distros
+# See also: https://marc.info/?l=full-disclosure&m=141678420425808&w=2
+export LESSOPEN=
+
 export EDITOR=emacs
 export VISUAL=emacs
 export FSEDIT=emacs
