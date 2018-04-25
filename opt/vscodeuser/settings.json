@@ -32,7 +32,7 @@
     ,"MD013": false
     ,"MD030": false
   }
-  ,
-  "files.eol": "\n",
-  "explorer.confirmDragAndDrop": false
+  ,"files.eol": "\n"
+  ,"explorer.confirmDragAndDrop": false
+  ,"telemetry.enableTelemetry": false
 }
