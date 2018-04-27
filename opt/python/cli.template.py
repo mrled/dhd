@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Helper functions
 
+
 strace = pdb.set_trace
 
 
@@ -37,6 +38,66 @@ def idb_excepthook(type, value, tb):
         pdb.pm()
 
 
+def pipe(arg_kwarg_list):
+    """Construct a shell pipeline
+
+    Invokes the first command in the arglist, retrieves its STDOUT, passes that to the STDIN of the
+    next command in the arglist, and so on.
+
+    Logs each command, including its STDIN, STDOUT, and STDERR.
+
+    arg_kwarg_list:     A list of (command, kwargs) tuples
+                        command:    A list to pass to subprocess.Popen
+                        kwargs:     Any keyword arguments to subprocess.Popen
+    result:             The STDOUT of the final command
+
+    Example:
+
+        # Call:
+        pipe([
+            (['ls', '-1'], {'cwd': '/'}),
+            (['head', '-n', '2'], {}),      # Can pass an empty dict...
+            (['grep', 'p'],)                # ... or make a one-item tuple with a trailing comma
+        ])
+        # Result (on my Mac):
+        Applications
+    """
+    first = True
+    stdin = b""
+    for argtuple in arg_kwarg_list:
+        if len(argtuple) < 1:
+            raise Exception("Found empty tuple")
+        if len(argtuple) > 2:
+            raise Exception(f"Found tuple with {len(argtuple)} elements")
+        command = argtuple[0]
+        kwargs = argtuple[1] if len(argtuple) == 2 else {}
+        kwargs['stdout'] = subprocess.PIPE
+        kwargs['stderr'] = subprocess.PIPE
+
+        if not first:
+            kwargs['stdin'] = subprocess.PIPE
+        first = False
+
+        process = subprocess.Popen(command, **kwargs)
+        stdout, stderr = process.communicate(input=stdin)
+
+        # Don't log stdin/stdout because it may contain binary
+        logger.debug(
+            f"Popen call {command} with keyword arguments {kwargs} "
+            f"exited with code {process.returncode} "
+            # f"with a stdin of '{stdin}' "
+            # f"and with a stdout of '{stdout}' "
+            f"and with a stderr of '{stderr.decode()}'"
+        )
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(
+                process.returncode, command, output=stdout, stderr=stderr)
+
+        stdin = stdout
+
+    return stdout
+
+
 def resolvepath(path):
     return os.path.realpath(os.path.normpath(os.path.expanduser(path)))
 
@@ -57,10 +118,29 @@ def which(commandname):
 
 # Example implementation functions
 
+# You would obviously do this in a more pythonic way
+# Meant to show an example of subprocess.call()
 def echo(message):
     logger.debug("Asked to echo a message: {}".format(message))
     result = subprocess.call(['/bin/echo', message])
     return result
+
+
+# You would obviously do this in a more pythonic way
+# Meant to show an example of the subprocess.run()
+def getuser():
+    me = subprocess.run(['logname'], stdout=subprocess.PIPE).stdout.decode().rstrip()
+    return me
+
+
+# You would obviously do this in a more pythonic way
+# Meant to show an example of the pipe function
+def getpasshash():
+    pwhash = pipe([
+        (['grep', '^root:', 'passwd'], {'cwd': '/etc'}),
+        (['cut', '-d', ':', '-f', '2'], {})
+    ]).decode().rstrip()
+    return pwhash
 
 
 def whatever(something):
@@ -85,6 +165,9 @@ def main(*args, **kwargs):
         sys.excepthook = idb_excepthook
         logger.setLevel(logging.DEBUG)
     whatever(parsed.directobject)
+    echo("message not interpreted by shell; this should be just the raw string $HOME, not my homedir")
+    echo(f"My username is: {getuser()}")
+    print(f"root's password hash is: {getpasshash()}")
 
 
 # Unless we are running this script directly on the commandline, the main()
