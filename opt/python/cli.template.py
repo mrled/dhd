@@ -8,6 +8,10 @@ import subprocess
 import sys
 
 
+MIN_PYTHON = (3, 5)
+if sys.version_info < MIN_PYTHON:
+    sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
+
 scriptdir = os.path.dirname(os.path.realpath(__file__))
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
