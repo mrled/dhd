@@ -123,6 +123,32 @@ man() {
             man "$@"
 }
 
+cdd() {
+    if test $# -ne 2; then
+
+        cat <<ENDUSAGE
+Usage: cdd [-h] <PATTERN> <REPLACEMENT>
+Replace a segment of the CWD matched by PATTERN with REPLACEMENT
+
+ARGUMENTS
+    -h | --help:    Print help and exit
+    PATTERN:        A pattern in the current CWD to replace
+    REPLACEMENT:    The replacement for PATTERN
+
+EXAMPLES
+    [~/projects/foobar/src/lib/whatever/]$ cdd foobar bazbar
+    [~/projects/bazbar/src/lib/whatever/]$
+
+NOTES
+    From: https://mobile.twitter.com/frameslip/status/987878911643013120
+    This _must_ be a shell function/alias because it uses 'cd'
+ENDUSAGE
+
+        return
+    fi
+    cd "$( pwd | sed -e s/"$1"/"$2"/ )"
+}
+
 # The number of lines to save to _memory_ in a history list
 export HISTSIZE="INFINITE"
 # The number of lines to save to _disk_ in a history list
