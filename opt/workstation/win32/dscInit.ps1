@@ -22,6 +22,8 @@ Skip pre steps, including enabling PSRemoting and installing prereqs.
 Intended for use in development.
 .PARAMETER CalledFromSelf
 Internal use only. Used to prevent an infinite loop.
+.PARAMETER ConfigurationName
+Only apply configurations that match this filter. Configuration names are defined in *.ps1 files in the dscConfigurations directory.
 .EXAMPLE
 Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/mrled/dhd/master/opt/workstation/win32/dscInit.ps1 | Invoke-Expression
 Must be run from an administrative prompt
@@ -33,7 +35,8 @@ When testing, run this way to prevent Invoke-WebRequest from caching the respons
     [Parameter(Mandatory)] [PSCredential] $UserCredential,
     [switch] $TestRemote,
     [switch] $SkipPreSteps,
-    [switch] $CalledFromSelf
+    [switch] $CalledFromSelf,
+    $ConfigurationName = '*'
 )
 
 # Comments for the Requires settings at the top of this file
@@ -271,7 +274,8 @@ Invoke all our DSC configurations
 function Invoke-AllDscConfigurations {
     [CmdletBinding()] Param(
         [Parameter(Mandatory)] $DhdLocation,
-        [Parameter(Mandatory)] [PSCredential] $UserCredential
+        [Parameter(Mandatory)] [PSCredential] $UserCredential,
+        $ConfigurationName = "*"
     )
 
     try {
@@ -293,15 +297,23 @@ function Invoke-AllDscConfigurations {
         Get-ChildItem -Path $DhdLocation\opt\workstation\win32\dscConfigurations\* -Include *.ps1 |
             Foreach-Object -Process { . $_ }
 
-        Invoke-DscConfiguration -Name InstallSoftware
-        Invoke-DscConfiguration -Name MachineSettingsConfig
-        Invoke-DscConfiguration -Name DhdConfig -Parameters @{
-            Credential = $UserCredential
-            ConfigurationData = $UserCredentialConfigData
+        if ($ConfigurationName -like "InstallSoftware") {
+            Invoke-DscConfiguration -Name InstallSoftware
         }
-        Invoke-DscConfiguration -Name UserSettingsConfig -Parameters @{
-            Credential = $UserCredential
-            ConfigurationData = $UserCredentialConfigData
+        if ($ConfigurationName -like "MachineSettingsConfig") {
+            Invoke-DscConfiguration -Name MachineSettingsConfig
+        }
+        if ($ConfigurationName -like "DhdConfig") {
+            Invoke-DscConfiguration -Name DhdConfig -Parameters @{
+                Credential = $UserCredential
+                ConfigurationData = $UserCredentialConfigData
+            }
+        }
+        if ($ConfigurationName -like "UserSettingsConfig") {
+            Invoke-DscConfiguration -Name UserSettingsConfig -Parameters @{
+                Credential = $UserCredential
+                ConfigurationData = $UserCredentialConfigData
+            }
         }
 
     } finally {
@@ -349,5 +361,5 @@ if ($MyInvocation.InvocationName -ne '.') {
         $dhdRepo = Get-DhdRepository -Local
     }
 
-    Invoke-AllDscConfigurations -DhdLocation $dhdRepo.DhdLocation -UserCredential $UserCredential
+    Invoke-AllDscConfigurations -DhdLocation $dhdRepo.DhdLocation -UserCredential $UserCredential -ConfigurationName $ConfigurationName
 }

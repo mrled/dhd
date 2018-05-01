@@ -198,7 +198,7 @@ Configuration UserSettingsConfig {
         cMrlPathLikeEnvVarSet "PrependPathEnvironmentVariables" {
             Name = "PATH"
             Location = @(
-                "$UserProfile\opt\bin"
+                "$env:USERPROFILE\opt\bin"
                 "$LocalAppData\Continuum\miniconda3"
                 "$LocalAppData\Continuum\miniconda3\Scripts"
             )
@@ -226,14 +226,30 @@ Configuration UserSettingsConfig {
             PsDscRunAscredential = $Credential
         }
 
-        xScheduledTask AddRepoHelperDrive {
-            TaskName = 'Configure R drive'
+        xScheduledTask AddRepoHelperDriveLimited {
+            TaskName = 'Configure R drive (limited)'
             # TaskPath = '\'
             ActionExecutable = 'cmd.exe'
-            ActionArguments = '/c "IF EXIST `"{0}\Documents\Repositories`" ( subst.exe R: `"{0}\Documents\Repositories`" )"' -f $UserProfile
+            ActionArguments = '/c IF EXIST "%USERPROFILE%\Documents\Repositories" ( subst.exe R: "%USERPROFILE%\Documents\Repositories" )'
             ScheduleType = 'AtLogOn'
             Enable = $true
+            User = $Credential.UserName
+            LogonType = 'Interactive'
+            RunLevel = 'Limited'
             ExecuteAsCredential = $Credential
         }
+        xScheduledTask AddRepoHelperDriveElevated {
+            TaskName = 'Configure R drive (elevated)'
+            # TaskPath = '\'
+            ActionExecutable = 'cmd.exe'
+            ActionArguments = '/c IF EXIST "%USERPROFILE%\Documents\Repositories" ( subst.exe R: "%USERPROFILE%\Documents\Repositories" )'
+            ScheduleType = 'AtLogOn'
+            Enable = $true
+            User = $Credential.UserName
+            LogonType = 'Interactive'
+            RunLevel = 'Highest'
+            ExecuteAsCredential = $Credential
+        }
+
     }
 }
