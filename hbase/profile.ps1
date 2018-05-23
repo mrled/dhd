@@ -9,11 +9,6 @@ My Powershell profile
 # (from `write-error`) as well
 $ErrorActionPreference = "Stop"
 
-# Set separators when displaying an array in a string
-# By default, Powershell separates array items with a space, like "1 2 3"
-# Setting $OFS to ", " will display them with a comma as well, like "1, 2, 3"
-$OFS = ", "
-
 $DhdPath = Join-Path -Path $Home -ChildPath ".dhd"
 
 <#
@@ -96,8 +91,8 @@ Import-Module -Name @(
 
 Show-AsciiSquareWindowsLogo
 
-foreach ($profileItem in (Get-ChildItem -LiteralPath "$DhdPath/opt/powershell/profile.d")) {
-    . $profileItem.FullName
+foreach ($alias in (Import-PowerShellDataFile -Path $DhdPath\opt\powershell\alias.psd1).Alias) {
+    Set-Alias @alias
 }
 
 # Note that PSCX fucks with my get-childitem formatting in my mrl.format.ps1xml file,
