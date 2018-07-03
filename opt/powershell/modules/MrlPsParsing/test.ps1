@@ -248,7 +248,9 @@ function New-FunctionCallGraphDot {
     $OutputFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath("$OutputFile")
     $gvAlgo = New-Object -TypeName 'QuickGraph.Graphviz.GraphvizAlgorithm[QualifiedCommand,FunctionCallEdge]' -ArgumentList @($graph)
     if ($VertexFormatter) {
-        $gvAlgo.FormatVertex += $VertexFormatter
+        # $gvAlgo.FormatVertex += $VertexFormatter
+        $formatterSourceId = [Guid]::NewGuid()
+        Register-ObjectEvent -InputObject $gvAlgo -EventName "FormatVertex" -Action $FormatVertex -SourceId $formatterSourceId
     }
     $gvAlgo.Generate((New-Object -TypeName QuickGraph.Graphviz.FileDotEngine), $OutputFile)
 }
