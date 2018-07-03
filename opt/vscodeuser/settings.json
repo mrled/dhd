@@ -34,5 +34,11 @@
   }
   ,"files.eol": "\n"
   ,"explorer.confirmDragAndDrop": false
-  ,"telemetry.enableTelemetry": false
+  ,
+  "telemetry.enableTelemetry": false,
+  "cSpell.userWords": [
+    "endhighlight",
+    "lability",
+    "vhds"
+  ]
 }
