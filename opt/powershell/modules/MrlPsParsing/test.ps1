@@ -8,28 +8,6 @@ Test generating a graph of function calls in an extracted Ed-Fi ODS database dep
 $Error.Clear()
 $ErrorActionPreference = "Stop"
 
-Invoke-Command -ScriptBlock {
-    Import-Module $PSScriptRoot
-    $qgLib = "$PSScriptRoot\Packages\YC.QuickGraph.3.7.3\lib\net45"
-    if (-not (Test-Path -Path $qgLib)) {
-        $spParams = @{
-            FilePath = "NuGet.exe"
-            ArgumentList = @("restore", "-PackagesDirectory", "packages")
-            WorkingDirectory = $PSScriptRoot
-            NoNewWindow = $true
-            Wait = $true
-        }
-        Start-Process @spParams
-    }
-    Add-Type -Path @(
-        "$qgLib\YC.QuickGraph.dll"
-        "$qgLib\YC.QuickGraph.Data.dll"
-        "$qgLib\YC.QuickGraph.Glee.dll"
-        "$qgLib\YC.QuickGraph.Graphviz.dll"
-        "$qgLib\YC.QuickGraph.Petri.dll"
-    )
-}
-
 <#
 .DESCRIPTION
 A command name, along with a FileInfo object pointing to the file that defines the command
@@ -97,18 +75,29 @@ function Resolve-CommandDefinitionFile {
             $command = $command.ResolvedCommand
         }
 
-        if (-not $command.CommandType) {
-            Write-Warning -Message "Having trouble resolving '$Name', ignoring..."
-        } elseif ($command.CommandType -eq [System.Management.Automation.CommandTypes]::Function) {
-            return $Null
-        } elseif ($command.CommandType -in @( [System.Management.Automation.CommandTypes]::Application, [System.Management.Automation.CommandTypes]::ExternalScript ) ) {
-            return Get-Item -Path $command.Source
-        } elseif ($command.CommandType -eq [System.Management.Automation.CommandTypes]::Cmdlet) {
-            return Get-Item -Path $command.DLL
-        } else {
-            throw "No support for commands of type '$($command.CommandType)' (trying to resolve command '$Name')"
+        try {
+            if (-not $command.CommandType) {
+                Write-Warning -Message "Having trouble resolving '$Name', ignoring..."
+                continue
+            } elseif ($command.CommandType -eq [System.Management.Automation.CommandTypes]::Function) {
+                return $Null
+            } elseif ($command.CommandType -in @( [System.Management.Automation.CommandTypes]::Application, [System.Management.Automation.CommandTypes]::ExternalScript ) ) {
+                return Get-Item -Path $command.Source
+            } elseif ($command.CommandType -eq [System.Management.Automation.CommandTypes]::Cmdlet) {
+                # You'd think you can just do this:
+                #   return Get-Item -Path $command.DLL
+                # Naturally, that doesn't work; the .DLL property somehow is not populated sometimes,
+                # even though doing Get-Command on the problematic command in the terminal has a .DLL property
+                # I have seen this with at least Start-Transcript;
+                # most other commands don't seem to exhibit this behavior
+                # smmfgdh
+                return Get-Item "$PSHome\powershell.exe"
+            }
+        } catch {
+            Write-Warning -Message "Got an error after resolving '$Name' to '$($command.Name)'"
+            throw $_
         }
-
+        throw "No support for commands of type '$($command.CommandType)' (trying to resolve command '$Name')"
     }
 }
 
@@ -170,7 +159,7 @@ function Get-FunctionCallEdgeList {
         # Get each function *DEFINED* at the root of the file
         # (i.e. exclude nested functions, defined within another function)
         # and save their AST to $functionAstMap
-        foreach ($definedFuncAst in $parsedFile.AST.FindAll($AstFilters.DefinedFunctions, $false)) {
+        foreach ($definedFuncAst in (Find-AstObjects -FilterName DefinedFunctions -Ast $parsedFile.AST)) {
             $qualifiedFunc = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $definedFuncAst.Name)
             $functionAstMap.Add($qualifiedFunc, $definedFuncAst)
             if (-not $functionQfMap.ContainsKey($definedFuncAst.Name)) {
@@ -199,7 +188,7 @@ function Get-FunctionCallEdgeList {
         # only look inside function definitions in the second case.
         $recurseNested = $kvp.Key.Function -ne $Null
 
-        $calledFuncNames = $kvp.Value.FindAll($AstFilters.CalledFunctions, $recurseNested) |
+        $calledFuncNames = Find-AstObjects -FilterName CalledFunctions -AST $kvp.Value |
             Foreach-Object -Process { $_.CommandElements[0].Value } |
             Sort-Object -Unique
 
@@ -251,21 +240,54 @@ function New-FunctionCallGraphDot {
         [QuickGraph.BidirectionalGraph[QualifiedCommand,FunctionCallEdge]] $Graph,
 
         [Parameter(Mandatory)]
-        [string] $OutputFile
+        [string] $OutputFile,
+
+        [ScriptBlock] $VertexFormatter
     )
 
     $OutputFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath("$OutputFile")
     $gvAlgo = New-Object -TypeName 'QuickGraph.Graphviz.GraphvizAlgorithm[QualifiedCommand,FunctionCallEdge]' -ArgumentList @($graph)
+    if ($VertexFormatter) {
+        $gvAlgo.FormatVertex += $VertexFormatter
+    }
     $gvAlgo.Generate((New-Object -TypeName QuickGraph.Graphviz.FileDotEngine), $OutputFile)
 }
 
+<#
+.DESCRIPTION
+A format event handler for vertices
+#>
+$FormatVertex = {
+    Parameter(
+        [Parameter(Mandatory)] $Sender,
+        [Parameter(Mandatory)] [QuickGraph.Graphviz.FormatVertexEventArgs[QualifiedCommand]] $EventArgs
+    )
+    $EventArgs.VertextFormatter.Label = $EventArgs.Vertex.ToString()
+    $EventArgs.VertexFormatter.Shape = [QuickGraph.Graphviz.Dot.GraphvizVertexShape]::PlainText
+}
+
 if (-not $allCommands) {
+    Write-Host -ForegroundColor Green -Object "Caching output of 'Get-Command'... " -NoNewLine
     $allCommands = Get-Command
+    Write-Host -ForegroundColor Green -Object "Done"
 }
+
 if (-not $allPs) {
+    Write-Host -ForegroundColor Green -Object "Retrieving sample Powershell file list... " -NoNewLine
     $allPs = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Exclude "EntityFramework.psm1","DeployDatabasesToAzure.ps1" -Path C:\Users\mledbetter\Downloads\edfidb\
+    Write-Host -ForegroundColor Green -Object "Done"
 }
+
+Write-Host -ForegroundColor Green -Object "Building list of edges... " -NoNewLine
 $edges = Get-FunctionCallEdgeList -Path $allPs
+Write-Host -ForegroundColor Green -Object "Done"
+
+Write-Host -ForegroundColor Green -Object "Building graph... " -NoNewLine
 $graph = New-FunctionCallGraph -EdgeList $edges
-New-FunctionCallGraphDot -Graph $graph -OutputFile $PSScriptRoot\output.dot
+Write-Host -ForegroundColor Green -Object "Done"
+
+Write-Host -ForegroundColor Green -Object "Building graph -ical representation... " -NoNewLine
+New-FunctionCallGraphDot -Graph $graph -OutputFile $PSScriptRoot\output.dot -VertexFormatter $FormatVertex
+Write-Host -ForegroundColor Green -Object "Done"
+
 return $graph
