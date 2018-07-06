@@ -3,10 +3,19 @@
 Test generating a graph of function calls in an extracted Ed-Fi ODS database deployment package
 #>
 [CmdletBinding()] Param(
+    $DotPath = "$Home\Downloads\FunctionGraph.dot",
+    $ImagePath = "$Home\Downloads\FunctionGraph.pdf",
+    $ImageFormat = "pdf",
+    $RootScriptPath = (Resolve-Path -Path "$Home\Downloads\edfidb\EdFi.RestApi.Databases.0.0.49-bps" | Select-Object -ExpandProperty Path),
+    $RootScriptPsDriveLetter = "V",
+    $ExcludeScriptFiles = @("EntityFramework.psm1","DeployDatabasesToAzure.ps1")
 )
 
 $Error.Clear()
 $ErrorActionPreference = "Stop"
+
+Import-Module -Name PSGraph
+Import-Module -Name MrlPsParsing
 
 <#
 .DESCRIPTION
@@ -17,21 +26,88 @@ class QualifiedCommand {
     # If $File is $Null, that means the file where the command is defined is unknown
     [System.IO.FileInfo] $File;
 
-    # If $Command is $Null, that indicates the file's root scope, outside of any function
+    # The string name of the command. Null if the command represents a script file itself
     [string] $Command;
+
+    # True if the command represents a script file itself; false otherwise
+    [bool] $ScriptRoot;
+
+    hidden [string[]] $ReplaceChars = @('\-', '\.', '\\', '\:')
 
     QualifiedCommand() {}
 
     QualifiedCommand(
         [System.IO.FileInfo] $File,
-        [string] $Command
+        [string] $Command,
+        [bool] $ScriptRoot
     ) {
         $this.File = $File
+        if (($Command -And $ScriptRoot) -Or (-Not $Command -And -Not $ScriptRoot)) {
+            throw "Command must be a string and ScriptRoot false, or Command must be null and ScriptRoot true"
+        }
         $this.Command = $Command
+        $this.ScriptRoot = $ScriptRoot
     }
 
     [string] ToString() {
-        return '{0}\{1}' -f $this.File.Name, $this.Command
+        return $this.Label()
+    }
+
+    [string] FileIdentity() {
+        $fileId = $this.File.FullName
+        foreach ($char in $this.ReplaceChars) {
+            $fileId = $fileId -Replace $char, '_'
+        }
+        return $fileId.ToLower()
+    }
+
+    [string] FileLabel() {
+        return $this.File.FullName -Replace "\\", "\\"
+    }
+
+    [string] CommandIdentity() {
+        if ($this.ScriptRoot) {
+            $cmdId = "ROOT"
+        } else {
+            $cmdId = $this.Command
+        }
+        foreach ($char in $this.ReplaceChars) {
+            $cmdId = $cmdId -Replace $char, '_'
+        }
+        return $cmdId.ToLower()
+    }
+
+    [string] CommandLabel() {
+        if ($this.ScriptRoot) {
+            return "ROOT"
+        } else {
+            return $this.Command
+        }
+    }
+
+    [string] Identity() {
+        return "{0}:{1}" -f $this.FileIdentity(), $this.CommandIdentity()
+    }
+
+    [string] Label() {
+        return "{0}:{1}" -f $this.FileLabel(), $this.CommandLabel()
+    }
+
+}
+
+<#
+.DESCRIPTION
+A graph edge, connecting two QualifiedCommand instances
+#>
+class FunctionCallEdge {
+    [QualifiedCommand] $Source;
+    [QualifiedCommand] $Target;
+    FunctionCallEdge(
+        [QualifiedCommand] $Source,
+        [QualifiedCommand] $Target
+    ) {
+        $this.Source = $Source
+        $this.Target = $Target
     }
 }
 
@@ -102,34 +178,6 @@ function Resolve-CommandDefinitionFile {
 }
 
 <#
-.DESCRIPTION
-A QuickGraph edge, connecting two QualifiedCommand instances
-#>
-class FunctionCallEdge : QuickGraph.IEdge[QualifiedCommand] {
-    [QualifiedCommand] $Source;
-    [QualifiedCommand] $Target;
-    [int] $Weight;
-    FunctionCallEdge(
-        [QualifiedCommand] $Source,
-        [QualifiedCommand] $Target
-        # [int] $Weight
-    ) {
-        $this.Source = $Source
-        $this.Target = $Target
-        $this.Weight = 1
-    }
-    [QualifiedCommand] get_Source() {
-        return $this.Source
-    }
-    [QualifiedCommand] get_Target() {
-        return $this.Target
-    }
-    [int] get_Weight() {
-        return $this.Weight
-    }
-}
-
-<#
 .SYNOPSIS
 Get a graph representation of all functions defined and called in a (set of) Powershell file(s)
 .PARAMETER Path
@@ -145,28 +193,25 @@ function Get-FunctionCallEdgeList {
     # A .NET dictionary having keys of QualifiedCommand and values of Powershell AST
     $functionAstMap = New-Object -TypeName 'System.Collections.Generic.Dictionary[QualifiedCommand,System.Management.Automation.Language.Ast]'
 
-    # Hashtable having keys of function name and values of QualifiedCommand objects
-    $functionQfMap = @{}
+    # An array of all the QualifiedCommand instances we have found
+    $qualCmds = @()
 
     foreach ($pathEntry in $Path) {
         $pathItem = Get-Item -Path $pathEntry
         $parsedFile = Invoke-PowershellParser -Path $pathItem.FullName
 
         # Save the whole file's AST to $functionAstMap
-        $rootKey = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $Null)
-        $functionAstMap.Add($rootKey, $parsedFile.AST)
+        $rootQualCmd = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $Null, $True)
+        $functionAstMap.Add($rootQualCmd, $parsedFile.AST)
+        $qualCmds += $rootQualCmd
 
         # Get each function *DEFINED* at the root of the file
         # (i.e. exclude nested functions, defined within another function)
         # and save their AST to $functionAstMap
         foreach ($definedFuncAst in (Find-AstObjects -FilterName DefinedFunctions -Ast $parsedFile.AST)) {
-            $qualifiedFunc = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $definedFuncAst.Name)
+            $qualifiedFunc = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $definedFuncAst.Name, $False)
             $functionAstMap.Add($qualifiedFunc, $definedFuncAst)
-            if (-not $functionQfMap.ContainsKey($definedFuncAst.Name)) {
-                $functionQfMap.Add($definedFuncAst.Name, @($qualifiedFunc))
-            } else {
-                $functionQfMap[$definedFuncAst.Name] += @($qualifiedFunc)
-            }
+            $qualCmds += $qualifiedFunc
         }
     }
 
@@ -194,15 +239,21 @@ function Get-FunctionCallEdgeList {
 
         foreach ($calledFunc in $calledFuncNames) {
 
-            # NOTE: Resolve-CommandDefinitionFile may return an array if there are multiple places a command is defined
-            # NOTE: QuickGraph only assumes two edges are the same if they point to the same object in memory
-            if (-not $functionQfMap.ContainsKey($calledFunc)) {
+            # If $functionQfMap alrady has an entry for this function,
+            # then we saw it earlier when enumerating defined functions.
+            # Otherwise, try to make a reasonable guess about the source of the function.
+            # if (-not $functionQfMap.ContainsKey($calledFunc)) {
+            $existingQualCmds = $qualCmds | Where-Object -Property Command -EQ $calledFunc
+            if (-Not ($existingQualCmds)) {
+                # NOTE: Resolve-CommandDefinitionFile may return an array if there are multiple places a command is defined
+                $existingQualCmds = @()
                 foreach ($cmdDefFile in (Resolve-CommandDefinitionFile -Name $calledFunc)) {
-                    $functionQfMap[$calledFunc] = New-Object -TypeName QualifiedCommand -ArgumentList @($cmdDefFile, $calledFunc)
+                    $existingQualCmds += New-Object -TypeName QualifiedCommand -ArgumentList @($cmdDefFile, $calledFunc, $False)
                 }
+                $qualCmds += $existingQualCmds
             }
 
-            foreach ($func in $functionQfMap[$calledFunc]) {
+            foreach ($func in $existingQualCmds) {
                 $edges += New-Object -TypeName FunctionCallEdge -ArgumentList @($kvp.Key, $func)
             }
         }
@@ -223,49 +274,63 @@ function New-FunctionCallGraph {
         [FunctionCallEdge[]]
         $EdgeList
     )
-    $graph = New-Object -TypeName 'QuickGraph.BidirectionalGraph[QualifiedCommand,FunctionCallEdge]'
-    foreach ($edge in $EdgeList) {
-        $graph.AddVerticesAndEdge($edge) | Out-Null
+
+    $ignoredTargets = @(
+        'powershell.exe'
+        'psake.psm1'
+    )
+
+    $allNodes = $EdgeList |
+        Foreach-Object -Process { @($_.Source, $_.Target) } |
+        Select-Object -Unique
+
+    $allFiles = $allNodes |
+        Select-Object -ExpandProperty File -Unique
+
+    $functionsByFile = @{}
+    foreach ($uniqueFile in $allFiles) {
+        $functionsByFile[$uniqueFile.FullName] = $allNodes |
+            Where-Object -FilterScript { $_.File.FullName -eq $uniqueFile.FullName }
     }
+    function LabelMaker([QualifiedCommand[]] $Commands) {
+        $output = @(
+            "<{0}>{1}" -f $Commands[0].FileIdentity(), $Commands[0].FileLabel()
+        )
+        foreach ($cmd in $Commands) {
+            $output += "<{0}>{1}" -f $cmd.CommandIdentity(), $cmd.CommandLabel()
+        }
+        return $output -Join "|"
+    }
+
+    $graphParams = @{
+        Name = "FunctionCallGraph"
+        Attributes = @{
+            label = "Function Call Graph"
+            overlap = $False
+            splines = $True
+            rankdir = 'LR'
+            concentrate = $True
+        }
+        ScriptBlock = {
+
+            foreach ($filePath in $functionsByFile.Keys) {
+                # $fileInfo = Get-Item -Path $filePath
+                $fileId = $functionsByFile[$filePath][0].FileIdentity()
+                Node -Name $fileId -Attributes @{
+                    shape = 'record'
+                    label = LabelMaker -Commands $functionsByFile[$filePath]
+                }
+                write-host -foreground yellow $fileId
+            }
+
+            foreach ($edge in $EdgeList) {
+                Edge -From $edge.Source.Identity() -To $edge.Target.Identity()
+            }
+        }
+    }
+    $graph = Graph @graphParams
+
     return $graph
-}
-
-<#
-.SYNOPSIS
-Generate a .dot file from a bidirectional graph
-#>
-function New-FunctionCallGraphDot {
-    [CmdletBinding()] Param(
-        [Parameter(Mandatory, ValueFromPipeline=$true)]
-        [QuickGraph.BidirectionalGraph[QualifiedCommand,FunctionCallEdge]] $Graph,
-
-        [Parameter(Mandatory)]
-        [string] $OutputFile,
-
-        [ScriptBlock] $VertexFormatter
-    )
-
-    $OutputFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath("$OutputFile")
-    $gvAlgo = New-Object -TypeName 'QuickGraph.Graphviz.GraphvizAlgorithm[QualifiedCommand,FunctionCallEdge]' -ArgumentList @($graph)
-    if ($VertexFormatter) {
-        # $gvAlgo.FormatVertex += $VertexFormatter
-        $formatterSourceId = [Guid]::NewGuid()
-        Register-ObjectEvent -InputObject $gvAlgo -EventName "FormatVertex" -Action $FormatVertex -SourceId $formatterSourceId
-    }
-    $gvAlgo.Generate((New-Object -TypeName QuickGraph.Graphviz.FileDotEngine), $OutputFile)
-}
-
-<#
-.DESCRIPTION
-A format event handler for vertices
-#>
-$FormatVertex = {
-    Parameter(
-        [Parameter(Mandatory)] $Sender,
-        [Parameter(Mandatory)] [QuickGraph.Graphviz.FormatVertexEventArgs[QualifiedCommand]] $EventArgs
-    )
-    $EventArgs.VertextFormatter.Label = $EventArgs.Vertex.ToString()
-    $EventArgs.VertexFormatter.Shape = [QuickGraph.Graphviz.Dot.GraphvizVertexShape]::PlainText
 }
 
 if (-not $allCommands) {
@@ -274,11 +339,17 @@ if (-not $allCommands) {
     Write-Host -ForegroundColor Green -Object "Done"
 }
 
-if (-not $allPs) {
-    Write-Host -ForegroundColor Green -Object "Retrieving sample Powershell file list... " -NoNewLine
-    $allPs = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Exclude "EntityFramework.psm1","DeployDatabasesToAzure.ps1" -Path C:\Users\mledbetter\Downloads\edfidb\
-    Write-Host -ForegroundColor Green -Object "Done"
+if (-Not (Get-PSDrive | Where-Object -Property Name -EQ -Value $RootScriptPsDrive)) {
+    $RootScriptPath = Resolve-Path -Path $RootScriptPath | Select-Object -ExpandProperty Path
+    $RootScriptPath = $RootScriptPath -Replace "\\$", ""
+    subst.exe "${RootScriptPsDriveLetter}:" /D
+    subst.exe "${RootScriptPsDriveLetter}:" "$RootScriptPath"
+    Get-PSDrive | Out-Null
 }
+
+Write-Host -ForegroundColor Green -Object "Retrieving sample Powershell file list... " -NoNewLine
+$allPs = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Exclude $ExcludeScriptFiles -Path "${RootScriptPsDriveLetter}:"
+Write-Host -ForegroundColor Green -Object "Done"
 
 Write-Host -ForegroundColor Green -Object "Building list of edges... " -NoNewLine
 $edges = Get-FunctionCallEdgeList -Path $allPs
@@ -286,10 +357,13 @@ Write-Host -ForegroundColor Green -Object "Done"
 
 Write-Host -ForegroundColor Green -Object "Building graph... " -NoNewLine
 $graph = New-FunctionCallGraph -EdgeList $edges
+Out-File -FilePath $DotPath -Encoding ASCII -Force -InputObject $graph
 Write-Host -ForegroundColor Green -Object "Done"
 
 Write-Host -ForegroundColor Green -Object "Building graph -ical representation... " -NoNewLine
-New-FunctionCallGraphDot -Graph $graph -OutputFile $PSScriptRoot\output.dot -VertexFormatter $FormatVertex
+Export-PSGraph -Source $DotPath -DestinationPath $ImagePath -ShowGraph -OutputFormat $ImageFormat
 Write-Host -ForegroundColor Green -Object "Done"
 
-return $graph
+Start-Process -FilePath $ImagePath
+
+# return $graph
