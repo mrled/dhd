@@ -179,22 +179,19 @@ function Resolve-CommandDefinitionFile {
 
 <#
 .SYNOPSIS
-Get a graph representation of all functions defined and called in a (set of) Powershell file(s)
+Get an AST for all functions defined and called in a Powershell file
 .PARAMETER Path
 A list of Powershell files
 .OUTPUTS
-A list of FunctionCallEdge objects
+A .NET dictionary with keys of type QualifiedCommand and values of type System.Management.Automation.Language.Ast
 #>
-function Get-FunctionCallEdgeList {
+function New-FunctionCallAstMap {
     [CmdletBinding()] Param(
         [Parameter(Mandatory)] [string[]] $Path
     )
 
     # A .NET dictionary having keys of QualifiedCommand and values of Powershell AST
     $functionAstMap = New-Object -TypeName 'System.Collections.Generic.Dictionary[QualifiedCommand,System.Management.Automation.Language.Ast]'
-
-    # An array of all the QualifiedCommand instances we have found
-    $qualCmds = @()
 
     foreach ($pathEntry in $Path) {
         $pathItem = Get-Item -Path $pathEntry
@@ -203,7 +200,6 @@ function Get-FunctionCallEdgeList {
         # Save the whole file's AST to $functionAstMap
         $rootQualCmd = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $Null, $True)
         $functionAstMap.Add($rootQualCmd, $parsedFile.AST)
-        $qualCmds += $rootQualCmd
 
         # Get each function *DEFINED* at the root of the file
         # (i.e. exclude nested functions, defined within another function)
@@ -211,9 +207,29 @@ function Get-FunctionCallEdgeList {
         foreach ($definedFuncAst in (Find-AstObjects -FilterName DefinedFunctions -Ast $parsedFile.AST)) {
             $qualifiedFunc = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $definedFuncAst.Name, $False)
             $functionAstMap.Add($qualifiedFunc, $definedFuncAst)
-            $qualCmds += $qualifiedFunc
         }
     }
+
+    return $functionAstMap
+}
+
+<#
+.SYNOPSIS
+Get a graph representation of all functions defined and called from a function-AST map
+.PARAMETER FunctionAstMap
+A .NET generic dictionary with keys of type QualifiedCommand and values of type System.Management.Automation.Language.Ast
+.OUTPUTS
+A list of FunctionCallEdge objects
+#>
+function Get-FunctionCallEdgeList {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory)]
+        [System.Collections.Generic.Dictionary[QualifiedCommand,System.Management.Automation.Language.Ast]]
+        $FunctionAstMap
+    )
+
+    # A list of QualifiedCommand objects that we have seen before
+    $qualCmds = $FunctionAstMap.Keys
 
     # List of FunctionCallEdge objects
     $edges = @()
@@ -233,7 +249,7 @@ function Get-FunctionCallEdgeList {
         # only look inside function definitions in the second case.
         $recurseNested = $kvp.Key.Function -ne $Null
 
-        $calledFuncNames = Find-AstObjects -FilterName CalledFunctions -AST $kvp.Value |
+        $calledFuncNames = Find-AstObjects -FilterName CalledFunctions -AST $kvp.Value -RecurseNested:$recurseNested |
             Foreach-Object -Process { $_.CommandElements[0].Value } |
             Sort-Object -Unique
 
@@ -314,13 +330,15 @@ function New-FunctionCallGraph {
         ScriptBlock = {
 
             foreach ($filePath in $functionsByFile.Keys) {
-                # $fileInfo = Get-Item -Path $filePath
+                $fileInfo = Get-Item -Path $filePath
+                if ($fileInfo.Name -In $ignoredTargets) {
+                    continue
+                }
                 $fileId = $functionsByFile[$filePath][0].FileIdentity()
                 Node -Name $fileId -Attributes @{
                     shape = 'record'
                     label = LabelMaker -Commands $functionsByFile[$filePath]
                 }
-                write-host -foreground yellow $fileId
             }
 
             foreach ($edge in $EdgeList) {
@@ -351,8 +369,12 @@ Write-Host -ForegroundColor Green -Object "Retrieving sample Powershell file lis
 $allPs = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Exclude $ExcludeScriptFiles -Path "${RootScriptPsDriveLetter}:"
 Write-Host -ForegroundColor Green -Object "Done"
 
+Write-Host -ForegroundColor Green -Object "Building function call / AST map... " -NoNewLine
+$functionAstMap = New-FunctionCallAstMap -Path $allPs
+Write-Host -ForegroundColor Green -Object "Done"
+
 Write-Host -ForegroundColor Green -Object "Building list of edges... " -NoNewLine
-$edges = Get-FunctionCallEdgeList -Path $allPs
+$edges = Get-FunctionCallEdgeList -FunctionAstMap $functionAstMap
 Write-Host -ForegroundColor Green -Object "Done"
 
 Write-Host -ForegroundColor Green -Object "Building graph... " -NoNewLine
