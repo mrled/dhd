@@ -234,31 +234,33 @@ function Get-FunctionCallEdgeList {
     # List of FunctionCallEdge objects
     $edges = @()
 
-    # $functionAstMap keys are fully qualified function names of _defined_ functions
+    # $FunctionAstMap keys are fully qualified function names of _defined_ functions
     # Here, we attempt to resolve fully qualified names for _called_ functions,
     # to populate the $edges array
     # (If we cannot resolve a fully qualified name,
     # the .File property of the unresolvable function will remain $Null)
-    foreach ($kvp in $functionAstMap.GetEnumerator()) {
+    foreach ($kvp in $FunctionAstMap.GetEnumerator()) {
+        $function = $kvp.Key
+        $ast = $kvp.Value
 
-        # If $kvp.Key.Function is $Null,
+        # If the entry represents the root of a script,
         # then the value represents the AST for the code in _the entire file_,
         # naturally including function definitions.
-        # If it is a string, then the value represents the AST for the code _just in that function_.
+        # If the entry does NOT represent the root of a script,
+        # then the value represents the AST for the code _just in that function_.
         # When enumerating called functions,
         # only look inside function definitions in the second case.
-        $recurseNested = $kvp.Key.Function -ne $Null
+        $recurseNested = -Not $function.ScriptRoot
 
-        $calledFuncNames = Find-AstObjects -FilterName CalledFunctions -AST $kvp.Value -RecurseNested:$recurseNested |
+        $calledFuncNames = Find-AstObjects -FilterName CalledFunctions -AST $ast -RecurseNested:$recurseNested |
             Foreach-Object -Process { $_.CommandElements[0].Value } |
             Sort-Object -Unique
 
         foreach ($calledFunc in $calledFuncNames) {
 
-            # If $functionQfMap alrady has an entry for this function,
+            # If $qualCmds alrady has an entry for this function,
             # then we saw it earlier when enumerating defined functions.
             # Otherwise, try to make a reasonable guess about the source of the function.
-            # if (-not $functionQfMap.ContainsKey($calledFunc)) {
             $existingQualCmds = $qualCmds | Where-Object -Property Command -EQ $calledFunc
             if (-Not ($existingQualCmds)) {
                 # NOTE: Resolve-CommandDefinitionFile may return an array if there are multiple places a command is defined
@@ -269,8 +271,8 @@ function Get-FunctionCallEdgeList {
                 $qualCmds += $existingQualCmds
             }
 
-            foreach ($func in $existingQualCmds) {
-                $edges += New-Object -TypeName FunctionCallEdge -ArgumentList @($kvp.Key, $func)
+            foreach ($existingQualCmd in $existingQualCmds) {
+                $edges += New-Object -TypeName FunctionCallEdge -ArgumentList @($function, $existingQualCmd)
             }
         }
     }
