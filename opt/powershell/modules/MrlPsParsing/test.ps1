@@ -8,7 +8,16 @@ Test generating a graph of function calls in an extracted Ed-Fi ODS database dep
     $ImageFormat = "pdf",
     $RootScriptPath = (Resolve-Path -Path "$Home\Downloads\edfidb\EdFi.RestApi.Databases.0.0.49-bps" | Select-Object -ExpandProperty Path),
     $RootScriptPsDriveLetter = "V",
-    $ExcludeScriptFiles = @("EntityFramework.psm1","DeployDatabasesToAzure.ps1")
+    $ExcludeSourceFilePattern = @(
+        "DeployDatabasesToAzure"
+        "\\EntityFramework\\"
+        "*psake*"
+        "*\.credentials\.ps1"
+        "*\.Tests\.ps1"
+        "*\.vars\.ps1"
+        "*-vars\.ps1"
+        '\\sqlps\\'
+    )
 )
 
 $Error.Clear()
@@ -293,7 +302,7 @@ function New-FunctionCallGraph {
         $EdgeList
     )
 
-    $ignoredTargets = @(
+    $excludeTargets = @(
         'powershell.exe'
         'psake.psm1'
     )
@@ -330,10 +339,9 @@ function New-FunctionCallGraph {
             concentrate = $True
         }
         ScriptBlock = {
-
             foreach ($filePath in $functionsByFile.Keys) {
                 $fileInfo = Get-Item -Path $filePath
-                if ($fileInfo.Name -In $ignoredTargets) {
+                if ($fileInfo.Name -In $excludeTargets) {
                     continue
                 }
                 $fileId = $functionsByFile[$filePath][0].FileIdentity()
@@ -342,8 +350,10 @@ function New-FunctionCallGraph {
                     label = LabelMaker -Commands $functionsByFile[$filePath]
                 }
             }
-
             foreach ($edge in $EdgeList) {
+                if ($edge.Target.File.Name -in $excludeTargets) {
+                    continue
+                }
                 Edge -From $edge.Source.Identity() -To $edge.Target.Identity()
             }
         }
@@ -368,7 +378,8 @@ if (-Not (Get-PSDrive | Where-Object -Property Name -EQ -Value $RootScriptPsDriv
 }
 
 Write-Host -ForegroundColor Green -Object "Retrieving sample Powershell file list... " -NoNewLine
-$allPs = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Exclude $ExcludeScriptFiles -Path "${RootScriptPsDriveLetter}:"
+$allPs = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Path "${RootScriptPsDriveLetter}:" |
+    Where-Object -Property FullName -NotMatch $ExcludeSourceFilePattern
 Write-Host -ForegroundColor Green -Object "Done"
 
 Write-Host -ForegroundColor Green -Object "Building function call / AST map... " -NoNewLine
