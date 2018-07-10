@@ -9,13 +9,13 @@ Test generating a graph of function calls in an extracted Ed-Fi ODS database dep
     $RootScriptPath = (Resolve-Path -Path "$Home\Downloads\edfidb\EdFi.RestApi.Databases.0.0.49-bps" | Select-Object -ExpandProperty Path),
     $RootScriptPsDriveLetter = "V",
     $ExcludeSourceFilePattern = @(
-        "DeployDatabasesToAzure"
+        "DeployDatabasesToAzure\.ps1$"
         "\\EntityFramework\\"
-        "*psake*"
-        "*\.credentials\.ps1"
-        "*\.Tests\.ps1"
-        "*\.vars\.ps1"
-        "*-vars\.ps1"
+        "psake\.psm1$"
+        "\.credentials\.ps1$"
+        "\.Tests\.ps1$"
+        "\.vars\.ps1$"
+        "\-vars\.ps1$"
         '\\sqlps\\'
     )
 )
@@ -184,6 +184,27 @@ function Resolve-CommandDefinitionFile {
         }
         throw "No support for commands of type '$($command.CommandType)' (trying to resolve command '$Name')"
     }
+}
+
+<#
+.SYNOPSIS
+Test whether an input string matches any pattern in a list
+.PARAMETER String
+An input string
+.PARAMETER PatternList
+A list of regex patterns to test
+#>
+function Test-MatchesAnyPattern {
+    [CmdletBinding()] Param(
+        [Parameter(Mandatory)] [string] $String,
+        [Parameter(Mandatory)] [string[]] $PatternList
+    )
+    foreach ($pattern in $PatternList) {
+        if ($String -Match $pattern) {
+            return $true
+        }
+    }
+    return $false
 }
 
 <#
@@ -378,8 +399,13 @@ if (-Not (Get-PSDrive | Where-Object -Property Name -EQ -Value $RootScriptPsDriv
 }
 
 Write-Host -ForegroundColor Green -Object "Retrieving sample Powershell file list... " -NoNewLine
-$allPs = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Path "${RootScriptPsDriveLetter}:" |
-    Where-Object -Property FullName -NotMatch $ExcludeSourceFilePattern
+$allPsUnfiltered = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Path "${RootScriptPsDriveLetter}:"
+$allPs = @()
+foreach ($psFile in $allPsUnfiltered) {
+    if (Test-MatchesAnyPattern -String $psFile.FullName -PatternList $ExcludeSourceFilePattern) {
+        $allPs += $psFile
+    }
+}
 Write-Host -ForegroundColor Green -Object "Done"
 
 Write-Host -ForegroundColor Green -Object "Building function call / AST map... " -NoNewLine
