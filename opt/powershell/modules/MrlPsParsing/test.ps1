@@ -4,9 +4,10 @@ Test generating a graph of function calls in an extracted Ed-Fi ODS database dep
 #>
 [CmdletBinding()] Param(
     $DotPath = "$Home\Downloads\FunctionGraph.dot",
-    $ImagePath = "$Home\Downloads\FunctionGraph.pdf",
-    $ImageFormat = "pdf",
-    $RootScriptPath = (Resolve-Path -Path "$Home\Downloads\edfidb\EdFi.RestApi.Databases.0.0.49-bps" | Select-Object -ExpandProperty Path),
+    $RootScriptPath = (
+        Resolve-Path -Path "$Home\Downloads\edfidb\EdFi.RestApi.Databases.0.0.49-bps" |
+            Select-Object -ExpandProperty Path
+    ),
     $RootScriptPsDriveLetter = "V",
     $ExcludeSourceFilePattern = @(
 
@@ -58,7 +59,14 @@ Test generating a graph of function calls in an extracted Ed-Fi ODS database dep
         ".*\.Tests\.ps1$"
         ".*\.vars\.ps1$"
         ".*\-vars\.ps1$"
-    )
+    ),
+
+    [Parameter(ParameterSetName='Graph', Mandatory)] [switch] $Graph,
+    [Parameter(ParameterSetName='Graph')] $ImagePath = "$Home\Downloads\FunctionGraph.pdf",
+    [Parameter(ParameterSetName='Graph')] $ImageFormat = "pdf",
+
+    [Parameter(ParameterSetName='List', Mandatory)] [switch] $List,
+    [Parameter(ParameterSetName='List')] $ListFilename = "$Home\Downloads\FunctionList.txt"
 )
 
 $Error.Clear()
@@ -272,12 +280,17 @@ function New-FunctionCallAstMap {
         $rootQualCmd = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $Null, $True)
         $functionAstMap.Add($rootQualCmd, $parsedFile.AST)
 
-        # Get each function *DEFINED* at the root of the file
-        # (i.e. exclude nested functions, defined within another function)
-        # and save their AST to $functionAstMap
-        foreach ($definedFuncAst in (Find-AstObjects -FilterName DefinedFunctions -Ast $parsedFile.AST)) {
-            $qualifiedFunc = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $definedFuncAst.Name, $False)
-            $functionAstMap.Add($qualifiedFunc, $definedFuncAst)
+        # In modules, find defined functions
+        # In other files like scripts ending in .ps1,
+        # ignore defined functions
+        if ($pathItem.Name.EndsWith(".psm1")) {
+            # Get each function *DEFINED* at the root of the file
+            # (i.e. exclude nested functions, defined within another function)
+            # and save their AST to $functionAstMap
+            foreach ($definedFuncAst in (Find-AstObjects -FilterName DefinedFunctions -Ast $parsedFile.AST)) {
+                $qualifiedFunc = New-Object -TypeName QualifiedCommand -ArgumentList @($pathItem, $definedFuncAst.Name, $False)
+                $functionAstMap.Add($qualifiedFunc, $definedFuncAst)
+            }
         }
     }
 
@@ -314,6 +327,7 @@ function Get-FunctionCallEdgeList {
         $function = $kvp.Key
         $ast = $kvp.Value
 
+
         # If the entry represents the root of a script,
         # then the value represents the AST for the code in _the entire file_,
         # naturally including function definitions.
@@ -321,7 +335,12 @@ function Get-FunctionCallEdgeList {
         # then the value represents the AST for the code _just in that function_.
         # When enumerating called functions,
         # only look inside function definitions in the second case.
-        $recurseNested = -Not $function.ScriptRoot
+        # $recurseNested = -Not $function.ScriptRoot
+
+        # If we are in a script, look inside any nested scopes to find function calls
+        # If we are in a module at root scope, do NOT look inside nested scopes for function calls
+        # If we are in a module at function scope, DO look inside nested scopes for function calls
+        $recurseNested = $function.File.Name.EndsWith("ps1") -Or -Not $function.ScriptRoot
 
         $calledFuncNames = Find-AstObjects -FilterName CalledFunctions -AST $ast -RecurseNested:$recurseNested |
             Foreach-Object -Process { $_.CommandElements[0].Value } |
@@ -457,15 +476,41 @@ Write-Host -ForegroundColor Green -Object "Building list of edges... " -NoNewLin
 $edges = Get-FunctionCallEdgeList -FunctionAstMap $functionAstMap
 Write-Host -ForegroundColor Green -Object "Done"
 
-Write-Host -ForegroundColor Green -Object "Building graph... " -NoNewLine
-$graph = New-FunctionCallGraph -EdgeList $edges
-Out-File -FilePath $DotPath -Encoding ASCII -Force -InputObject $graph
-Write-Host -ForegroundColor Green -Object "Done"
+switch ($PsCmdlet.ParameterSetName) {
+    "Graph" {
+        Write-Host -ForegroundColor Green -Object "Building graph... " -NoNewLine
+        $graph = New-FunctionCallGraph -EdgeList $edges
+        Out-File -FilePath $DotPath -Encoding ASCII -Force -InputObject $graph
+        Write-Host -ForegroundColor Green -Object "Done"
 
-Write-Host -ForegroundColor Green -Object "Building graph -ical representation... " -NoNewLine
-Export-PSGraph -Source $DotPath -DestinationPath $ImagePath -ShowGraph -OutputFormat $ImageFormat
-Write-Host -ForegroundColor Green -Object "Done"
+        Write-Host -ForegroundColor Green -Object "Building graph -ical representation... " -NoNewLine
+        Export-PSGraph -Source $DotPath -DestinationPath $ImagePath -ShowGraph -OutputFormat $ImageFormat
+        Write-Host -ForegroundColor Green -Object "Done"
 
-Start-Process -FilePath $ImagePath
+        Start-Process -FilePath $ImagePath
 
-# return $graph
+        # return $graph
+    }
+    "List" {
+        $outStr = ""
+        foreach ($psFile in $allPs) {
+            $fileEdges = $edges | Where-Object -FilterScript { $_.Target.File.FullName -eq $psFile.FullName }
+            if ($fileEdges.Count -gt 0) {
+                write-host "file $($psFile.FullName) has $($fileEdges.Count) edges"
+                $outStr += "`r`n -  $($psFile.FullName) functions:"
+                foreach ($qualCmd in $functionAstMap.Keys) {
+                    $fileFunctionEdges = $fileEdges | Where-Object -FilterScript { $_.Target.Command -eq $qualCmd.Command }
+                    if ($fileFunctionEdges.Count -gt 0) {
+                        $outStr += "`r`n     -  $($qualCmd.Command) is called by:"
+                        foreach ($ffe in $fileFunctionEdges) {
+                            $outStr += "`r`n         -  $($ffe.Source)"
+                        }
+                    }
+                }
+            }
+        }
+        $global:TestOutStr = $outStr
+        Out-File -FilePath $ListFilename -Encoding utf8 -Force -Width 9999 -InputObject $outStr
+        Start-Process -FilePath $ListFilename
+    }
+}
