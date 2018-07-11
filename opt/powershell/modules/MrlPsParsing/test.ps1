@@ -9,14 +9,55 @@ Test generating a graph of function calls in an extracted Ed-Fi ODS database dep
     $RootScriptPath = (Resolve-Path -Path "$Home\Downloads\edfidb\EdFi.RestApi.Databases.0.0.49-bps" | Select-Object -ExpandProperty Path),
     $RootScriptPsDriveLetter = "V",
     $ExcludeSourceFilePattern = @(
-        "DeployDatabasesToAzure\.ps1$"
+
+        # Stuff I'll probably never need / obsolete stuff / etc
+        "\\Database\\CreateDbScript\.ps1$"
+        "\\DeployDatabasesToAzure\.ps1$"
+        "\\PsakeTabExpansion\.ps1$"
+        "\\TransformSchoolYearTypeInserts\.ps1$"
+        "\\TransformXSDtoTypeInserts\.ps1$"
         "\\EntityFramework\\"
-        "psake\.psm1$"
-        "\.credentials\.ps1$"
-        "\.Tests\.ps1$"
-        "\.vars\.ps1$"
-        "\-vars\.ps1$"
+        ".*azure.*"
+        "\\reset\-shared\-sandbox\.ps1$"
+
+        # External modules I won't care about
         '\\sqlps\\'
+        "\\psake\.psm1$"
+
+        # Stuff from database projects themselves
+        "\\EdFi\.Ods\.Db\.Ods\.Extension\\deploy\.ps1$"
+
+        # Activities, which are all obsolete anyway
+        "\\activities\\build\\"
+        "\\activities\\deployment\\"
+        "\\activities\\adhoc\-processes\\"
+        "\\activities\\data\-extraction\\"
+        ".*psake\.ps1$"
+
+        # Ed-Fi Modules I can probably ignore
+        "\\7z\.psm1$"
+        "\\build\-utility\.ps1$"
+        "\\build\-utility\.psm1$"
+        "\\certificate\-management\.psm1$"
+        "\\common\.ps1$"
+        "\\common\.psm1$"
+        "\\common\-objects\.psm1$"
+        "\\config\-encryption\.psm1$"
+        "\\config\-transform\.psm1$"
+        "\\credential\-management\.psm1$"
+        "\\deployment\.psm1$"
+        "\\gac\-utility\.psm1$"
+        "\\packaging\.psm1$"
+        "\\path\-resolver\.psm1$"
+        "\\permissions\.psm1$"
+        "\\zip\.psm1$"
+
+        # Credentials, tests, vars, etc
+        ".*\.credentials\.ps1$"
+        ".*\-credentials\.ps1$"
+        ".*\.Tests\.ps1$"
+        ".*\.vars\.ps1$"
+        ".*\-vars\.ps1$"
     )
 )
 
@@ -402,7 +443,7 @@ Write-Host -ForegroundColor Green -Object "Retrieving sample Powershell file lis
 $allPsUnfiltered = Get-ChildItem -Recurse -Include "*.ps1","*.psm1" -Path "${RootScriptPsDriveLetter}:"
 $allPs = @()
 foreach ($psFile in $allPsUnfiltered) {
-    if (Test-MatchesAnyPattern -String $psFile.FullName -PatternList $ExcludeSourceFilePattern) {
+    if (-Not (Test-MatchesAnyPattern -String $psFile.FullName -PatternList $ExcludeSourceFilePattern)) {
         $allPs += $psFile
     }
 }
