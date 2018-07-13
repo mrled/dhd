@@ -254,7 +254,9 @@ Install modules required by out DSC configurations
 #>
 function Install-DscPrerequisites {
     [CmdletBinding()] Param()
-    if ('PSGallery' -NotIn (Get-PSRepository | Select-Object -ExpandProperty Name)) {
+    try {
+        Import-Module -Name PowerShellGet
+    } catch {
         Install-PackageProvider -Name NuGet -Force
         Install-Module -Name PowerShellGet -Force
     }
