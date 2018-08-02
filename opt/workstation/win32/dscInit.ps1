@@ -257,7 +257,13 @@ function Install-DscPrerequisites {
     try {
         Import-Module -Name PowerShellGet
     } catch {
+        # This stuff is weird
+        # Looks like you might need a new Powershell instance after adding the NuGet package provider?
+        # And possibly another new PS instance after installing the PowerShellGet module?
         Install-PackageProvider -Name NuGet -Force
+        # You must provide -Force here,
+        # because a version of the PowerShellGet module ships with Windows,
+        # and we must install a newer version of it side-by-side here with -Force
         Install-Module -Name PowerShellGet -Force
     }
     if ('PSGallery' -NotIn (Get-PSRepository | Where-Object -Property InstallationPolicy -eq 'Trusted' | Select-Object -ExpandProperty Name)) {
