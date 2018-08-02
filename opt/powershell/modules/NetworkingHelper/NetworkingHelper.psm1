@@ -61,4 +61,40 @@ function Add-ToIpV4Address {
     return $newAddr
 }
 
-Export-ModuleMember -Function *
+<#
+.DESCRIPTION
+Serve a directory over HTTP
+.PARAMETER HostIdentifier
+The host to listen on, or a plus character (+) for all hosts
+.PARAMETER Port
+A port to listen on
+.NOTES
+Original version: https://obscuresecurity.blogspot.com/2014/05/dirty-powershell-webserver.html
+#>
+function Start-WebServer {
+    [CmdletBinding()] Param(
+        [string] $HostIdentifier = '+',
+        [Int] $Port = 8080
+    )
+    $prefix = "http://${HostIdentifier}:${Port}/"
+    $httpListener = New-Object -TypeName Net.HttpListener
+    $httpListener.Prefixes.Add($prefix)
+    $httpListener.Start()
+    try {
+        while ($httpListener.IsListening) {
+            $listenerContext = $httpListener.GetContext()
+
+            $reqFilePath = Join-Path -Path $Pwd -ChildPath $listenerContext.Request.RawUrl
+            $reqFileContents = Get-Content -Path $reqFilePath
+            $responseBuffer = [Text.Encoding]::UTF8.GetBytes($reqFileContents)
+
+            $response = $listenerContext.Response
+            $response.Headers.Add("Content-Type", "text/plain")
+            $response.ContentLength64 = $responseBuffer.Length
+            $response.OutputStream.Write($responseBuffer, 0, $responseBuffer.Length)
+            $response.Close()
+        }
+    } finally {
+        $httpListener.Stop()
+    }
+}
