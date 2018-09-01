@@ -24,6 +24,7 @@ export POSSIBLE_PATHS="
 ${HOME}/opt/lib/miniconda3/bin
 ${HOME}/opt/bin
 ${HOME}/opt/sbin
+${HOME}/.local/bin
 ${DHD}/opt/bin
 ${DHD}/opt/bash/bin
 ${HOME}/opt/homebrew/bin
