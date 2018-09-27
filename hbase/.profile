@@ -17,6 +17,8 @@ umask 077
 # We use this to find paths inside dhd
 export DHD=${DHD:-"$HOME/.dhd"}
 
+LANG=en_US.UTF-8
+
 # A list of all the paths which MIGHT exist and contain binaries we
 # want in our $PATH
 # Order is important in $PATH; earlier entries are searched first
