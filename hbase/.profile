@@ -63,6 +63,8 @@ if cmdavail brew; then
     fi
 fi
 
+export GOPATH="${HOME}/Documents/Go"
+
 export PATH="$(pathsetup "${PATH}:${GOROOT}/bin:${GOPATH}/bin")"
 
 if cmdavail ruby; then
