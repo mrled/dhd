@@ -2,7 +2,7 @@
 
 Symlink the directory:
 
-    # Windows w/ Powershell 
+    # Windows w/ Powershell
     <# PS #> Set-Location -Path "${ENV:AppData}\Code"
     <# PS #> Remove-Item -Path User
     <# PS #> cmd /C mklink /D User ..\..\..\.dhd\opt\vscodeuser User
@@ -15,7 +15,7 @@ Symlink the directory:
 List extensions
 
     # Windows w/ Powershell
-    <# PS #> code --list-extensions > extensions.txt
+    <# PS #> code --list-extensions | Out-File -Encoding ASCII -FilePath extensions.txt
 
     # macOS w/ bash
     (: bash) code --list-extensions > extensions.txt
