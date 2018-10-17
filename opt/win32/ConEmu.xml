@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <key name="Software">
 	<key name="ConEmu">
-		<key name=".Vanilla" modified="2018-07-19 16:54:31" build="180626">
+		<key name=".Vanilla" modified="2018-10-17 10:07:05" build="180626">
 			<value name="ColorTable00" type="dword" data="00000000"/>
 			<value name="ColorTable01" type="dword" data="00ee0000"/>
 			<value name="ColorTable02" type="dword" data="0000cd00"/>
@@ -70,7 +70,7 @@
 			<value name="ProcessAnsi" type="hex" data="01"/>
 			<value name="ConsoleExceptionHandler" type="hex" data="00"/>
 			<value name="UseClink" type="hex" data="01"/>
-			<value name="StartType" type="hex" data="02"/>
+			<value name="StartType" type="hex" data="03"/>
 			<value name="CmdLine" type="string" data=""/>
 			<value name="StartTasksFile" type="string" data=""/>
 			<value name="StartTasksName" type="string" data="{PS}"/>
@@ -131,8 +131,8 @@
 			<value name="ConWnd Width" type="dword" data="000000aa"/>
 			<value name="ConWnd Height" type="dword" data="00000028"/>
 			<value name="Cascaded" type="hex" data="01"/>
-			<value name="ConWnd X" type="long" data="-71"/>
-			<value name="ConWnd Y" type="long" data="-20"/>
+			<value name="ConWnd X" type="long" data="37"/>
+			<value name="ConWnd Y" type="long" data="21"/>
 			<value name="16bit Height" type="ulong" data="0"/>
 			<value name="AutoSaveSizePos" type="hex" data="01"/>
 			<value name="IntegralSize" type="hex" data="00"/>
@@ -583,6 +583,16 @@
 					<value name="Count" type="long" data="1"/>
 					<value name="Flags" type="dword" data="00000004"/>
 				</key>
+				<key name="&lt;Startup&gt;" modified="2018-10-17 11:00:25" build="180626">
+					<value name="GuiArgs" type="string" data=""/>
+					<value name="Active" type="long" data="5"/>
+					<value name="Count" type="long" data="5"/>
+					<value name="Cmd1" type="string" data='* -cur_console:b -cur_console:d:C:\Users\mledbetter -cur_console:t:☭ "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"'/>
+					<value name="Cmd2" type="string" data='-cur_console:b -cur_console:d:R:\mains\Ed-Fi-Ods-Implementation -cur_console:t:"impl " powershell.exe'/>
+					<value name="Cmd3" type="string" data='-cur_console:b -cur_console:d:R:\mains\Ed-Fi-ODS -cur_console:t:"ods " powershell.exe'/>
+					<value name="Cmd4" type="string" data='-cur_console:b -cur_console:d:R:\mains\Ed-Fi-Ods-Implementation -cur_console:t:"common " powershell.exe'/>
+					<value name="Cmd5" type="string" data='&gt; -cur_console:d:C:\Users\mledbetter\.dhd\opt\win32 -cur_console:t:"dhd " powershell.exe'/>
+				</key>
 			</key>
 			<key name="Apps" modified="2017-12-19 11:56:46" build="171109">
 				<value name="Count" type="long" data="0"/>
@@ -646,7 +656,7 @@
 			<value name="StatusBar.Hide.WVBack" type="hex" data="01"/>
 			<value name="StatusBar.Hide.WVDC" type="hex" data="01"/>
 			<value name="Notification.StopBuzzingDate" type="string" data="2015-3-26"/>
-			<key name="HotKeys" modified="2018-02-02 12:17:53" build="180131">
+			<key name="HotKeys" modified="2018-10-17 10:07:05" build="180626">
 				<value name="KeyMacroVersion" type="hex" data="02"/>
 				<value name="Multi.Modifier" type="dword" data="0000005b"/>
 				<value name="Multi.ArrowsModifier" type="dword" data="0000005b"/>
@@ -840,6 +850,8 @@
 				<value name="Multi.GroupInputAll" type="dword" data="00105d47"/>
 				<value name="Multi.GroupInputKey" type="dword" data="00125d47"/>
 				<value name="CloseToRightKey" type="dword" data="00000000"/>
+				<value name="CheckUpdates" type="dword" data="00105b55"/>
+				<value name="Multi.NewWndConfirm" type="dword" data="00000000"/>
 			</key>
 			<value name="StartCreateDelay" type="ulong" data="100"/>
 			<value name="VividColors" type="hex" data="01"/>
@@ -874,6 +886,8 @@
 			<value name="ClipboardFirstLinePosix" type="hex" data="00"/>
 			<value name="DynamicBufferHeight" type="hex" data="01"/>
 			<value name="StatusBar.Hide.WMode" type="hex" data="01"/>
+			<value name="Language" type="string" data="en"/>
+			<value name="RestoreInactive" type="hex" data="00"/>
 		</key>
 	</key>
 </key>
