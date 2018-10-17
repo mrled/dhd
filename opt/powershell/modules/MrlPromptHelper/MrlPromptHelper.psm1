@@ -47,22 +47,36 @@ $script:UserPrompts = @{
         Write-Host ' #>' -NoNewLine -ForegroundColor DarkGray
 
         # Always return a string or PS will echo the standard "PS>" prompt and it will append to yours
-        return " "
+        return " $(Get-ConEmuPromptMetadata)"
     }
 
     # A one-line-only prompt with no colors that uses 'return' rather that 'write-host'
     Simple = {
         $lcop = if (MrlOsHelper\Test-AdminRole) {"#"} else {'>'}
-        return "$((get-date).Tostring('HH:mm:ss')) $(MrlOsHelper\Get-Hostname) $(Get-DisplayPath $pwd) PS$lcop "
+        return "$((get-date).Tostring('HH:mm:ss')) $(MrlOsHelper\Get-Hostname) $(Get-DisplayPath $pwd) PS$lcop $(Get-ConEmuPromptMetadata)"
     }
 
     # A very tiny prompt that at least differentiates based on color
     Tiny = {
         $lcop = if (MrlOsHelper\Test-AdminRole) { "#" } else { ">" }
         write-host "PS$lcop" -foreground Green -nonewline
-        return " "
+        return " $(Get-ConEmuPromptMetadata)"
     }
 
+}
+
+function Get-ConEmuPromptMetadata {
+    # Indicate end of prompt, allows selecting typed command, change cursor position with click, etc
+    $promptEndIndic = "$([char]27)]9;12$([char]7)"
+
+    # Indicate CWD if in a filesystem, allowing restore on restart and hyperlink clicks from git
+    $location = Get-Location
+    if ($location.Provider.Name -eq "FileSystem") {
+        $promptCwd = "$([char]27)]9;9;`"$($location.Path)`"$([char]7)"
+    } else {
+        $promptCwd = ""
+    }
+    return "${promptEndIndic}${promptCwd}"
 }
 
 function Get-DisplayPath {
