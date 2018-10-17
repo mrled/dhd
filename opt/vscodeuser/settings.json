@@ -40,5 +40,7 @@
     "endhighlight",
     "lability",
     "vhds"
-  ]
+  ],
+  "workbench.colorTheme": "Default Light+",
+  "breadcrumbs.enabled": true
 }
