@@ -583,15 +583,15 @@
 					<value name="Count" type="long" data="1"/>
 					<value name="Flags" type="dword" data="00000004"/>
 				</key>
-				<key name="&lt;Startup&gt;" modified="2018-10-17 11:00:25" build="180626">
+				<key name="&lt;Startup&gt;" modified="2018-10-22 18:02:02" build="180626">
 					<value name="GuiArgs" type="string" data=""/>
-					<value name="Active" type="long" data="5"/>
+					<value name="Active" type="long" data="1"/>
 					<value name="Count" type="long" data="5"/>
-					<value name="Cmd1" type="string" data='* -cur_console:b -cur_console:d:C:\Users\mledbetter -cur_console:t:☭ "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"'/>
+					<value name="Cmd1" type="string" data='&gt;* -cur_console:b -cur_console:d:C:\Users\mledbetter -cur_console:t:☭ "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"'/>
 					<value name="Cmd2" type="string" data='-cur_console:b -cur_console:d:R:\mains\Ed-Fi-Ods-Implementation -cur_console:t:"impl " powershell.exe'/>
 					<value name="Cmd3" type="string" data='-cur_console:b -cur_console:d:R:\mains\Ed-Fi-ODS -cur_console:t:"ods " powershell.exe'/>
-					<value name="Cmd4" type="string" data='-cur_console:b -cur_console:d:R:\mains\Ed-Fi-Ods-Implementation -cur_console:t:"common " powershell.exe'/>
-					<value name="Cmd5" type="string" data='&gt; -cur_console:d:C:\Users\mledbetter\.dhd\opt\win32 -cur_console:t:"dhd " powershell.exe'/>
+					<value name="Cmd4" type="string" data='-cur_console:b -cur_console:d:R:\mains\Ed-Fi-Common -cur_console:t:"common " powershell.exe'/>
+					<value name="Cmd5" type="string" data='-cur_console:d:C:\Users\mledbetter\.dhd\opt\win32 -cur_console:t:"dhd " powershell.exe'/>
 				</key>
 			</key>
 			<key name="Apps" modified="2017-12-19 11:56:46" build="171109">
