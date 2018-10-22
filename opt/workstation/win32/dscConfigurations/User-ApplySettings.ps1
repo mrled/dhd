@@ -208,7 +208,7 @@ Configuration UserSettingsConfig {
             PsDscRunAscredential = $Credential
         }
 
-        cMrlPathLikeEnvVarSet "AppendPathEnvironmentVariables" {
+        cMrlPathLikeEnvVarSet "PrependPathEnvironmentVariables" {
             Name = "PATH"
             Location = @(
                 "${AppData}\npm"
@@ -221,7 +221,7 @@ Configuration UserSettingsConfig {
                 "${env:GOPATH}\bin"
             )
             Ensure = "Present"
-            InsertionMode = "Append"
+            InsertionMode = "Prepend"
             OnlyIfExists = $true
             PsDscRunAscredential = $Credential
         }
