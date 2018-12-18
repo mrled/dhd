@@ -118,6 +118,14 @@ Configuration UserSettingsConfig {
             Ensure = "Present"
         }
 
+        # Set PAGER, useful for things like the `aws` CLI
+        cMrlUserEnvironment "SetPagerEnvVar" {
+            Name = "PAGER"
+            Value = "less.exe"
+            PsDscRunAsCredential = $Credential
+            Ensure = "Present"
+        }
+
         # LESSOPEN is not always set with security in mind
         # See also: https://marc.info/?l=full-disclosure&m=141678420425808&w=2
         cMrlUserEnvironment "SetLessopenEnvVar" {
