@@ -2,9 +2,15 @@
 {
     "breadcrumbs.enabled": true,
     "cSpell.userWords": [
+        "cred",
+        "creds",
         "endhighlight",
         "lability",
+        "prereq",
+        "prereqs",
         "vhds",
+        "vuln",
+        "webserver",
     ],
     "go.lintOnSave": "off", // golint fucking sucks
 	"editor.tabSize": 4,
@@ -64,6 +70,16 @@
         "**/venv.*": true
     },
     "search.useIgnoreFiles": true,
+    // "spellright.ignoreRegExps": [
+    //     "[Cc]reds?",
+    //     "endhighlight",
+    //     "Lability",
+    //     "prereq",
+    //     "prereqs",
+    //     "vhds",
+    //     "vuln",
+    //     "webserver",
+    // ],
     "telemetry.enableTelemetry": false,
     "terminal.integrated.shell.windows": "C:\\Windows\\sysnative\\WindowsPowerShell\\v1.0\\powershell.exe",
     "window.restoreWindows": "all",
