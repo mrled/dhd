@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -e
+set -u
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat <<ENDUSAGE
+Usage: $cmdname [-h] <URL>
+Get a video using youtube-dl and save metadata
+
+ARGUMENTS
+    -h | --help:    Print help and exit
+    -d | --debug:   Show debug messages
+    URL:            The URL to download
+ENDUSAGE
+}
+
+ytdl_internal() {
+    echo "==== $1 ===="
+    ytdl_json=$(youtube-dl --dump-json "$1")
+    filename=$(echo "$ytdl_json" | jq -r ._filename)
+    echo "$ytdl_json" > "${filename}.youtube-dl.json"
+    youtube-dl "$1"
+}
+
+url=
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help )   usage; exit 0;;
+        -d | --debug )  set -x; shift;;
+        *)              ytdl_internal "$1";;
+    esac
+done
