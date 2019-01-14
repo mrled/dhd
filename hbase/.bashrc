@@ -55,6 +55,9 @@ test -e "/Applications/Preview.app" && alias previewman='man -t "$@" | open -g -
 # Launch QuickLook from the command line (^c will kill it and return to prompt)
 cmdavail qlmanage && alias ql='qlmanage -p 2>/dev/null'
 
+# Fucking environment variables on macOS
+cmdavail launchctl && test "$LANG" && launchctl setenv LC_ALL "$LANG"
+
 # Debian has weird ideas about things sometimes
 cmdavail 'ack-grep' && alias ack='ack-grep'
 
