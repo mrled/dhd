@@ -656,7 +656,7 @@
 			<value name="StatusBar.Hide.WVBack" type="hex" data="01"/>
 			<value name="StatusBar.Hide.WVDC" type="hex" data="01"/>
 			<value name="Notification.StopBuzzingDate" type="string" data="2015-3-26"/>
-			<key name="HotKeys" modified="2018-10-17 10:07:05" build="180626">
+			<key name="HotKeys" modified="2019-03-17 12:44:02" build="190310">
 				<value name="KeyMacroVersion" type="hex" data="02"/>
 				<value name="Multi.Modifier" type="dword" data="0000005b"/>
 				<value name="Multi.ArrowsModifier" type="dword" data="0000005b"/>
@@ -721,7 +721,7 @@
 				<value name="HighlightMouseSwitchX" type="dword" data="00005d58"/>
 				<value name="Multi.ShowTabsList" type="dword" data="00000000"/>
 				<value name="Multi.ShowTabsList2" type="dword" data="00005d7b"/>
-				<value name="ClipboardVkAllLines" type="dword" data="0000102d"/>
+				<value name="ClipboardVkAllLines" type="dword" data="00121156"/>
 				<value name="ClipboardVkFirstLine" type="dword" data="00000000"/>
 				<value name="DeleteWordToLeft" type="dword" data="00001108"/>
 				<value name="FindTextKey" type="dword" data="00005d46"/>
@@ -864,7 +864,7 @@
 			<value name="SuppressBells" type="hex" data="01"/>
 			<value name="JumpListAutoUpdate" type="hex" data="01"/>
 			<value name="CompressLongStrings" type="hex" data="01"/>
-			<value name="LastMonitor" type="string" data="0,0,1920,1030"/>
+			<value name="LastMonitor" type="string" data="0,0,1920,1020"/>
 			<value name="Restore2ActiveMon" type="hex" data="00"/>
 			<value name="DownShowExOnTopMessage" type="hex" data="00"/>
 			<value name="EnvironmentSet" type="multi">
@@ -888,6 +888,7 @@
 			<value name="StatusBar.Hide.WMode" type="hex" data="01"/>
 			<value name="Language" type="string" data="en"/>
 			<value name="RestoreInactive" type="hex" data="00"/>
+			<value name="AutoTrimSingleLine" type="hex" data="00"/>
 		</key>
 	</key>
 </key>
