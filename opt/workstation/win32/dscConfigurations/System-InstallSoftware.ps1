@@ -60,6 +60,7 @@ Configuration InstallSoftware {
             Name = @(
                 '7zip'
                 'ConEmu'
+                'Emacs'
                 'Firefox'
                 'GoogleChrome'
                 'Less'
@@ -74,8 +75,6 @@ Configuration InstallSoftware {
                 'gnuwin32-grep.install'
                 'golang'
                 'gpg4win-vanilla'
-                'greenshot'
-                'mRemoteNG'
                 'metapad'
                 'nodejs'
                 'packer'
@@ -101,11 +100,5 @@ Configuration InstallSoftware {
             Params = "/GitOnlyOnPath"
             DependsOn = '[cChocoInstaller]InstallChoco'
         }
-        cChocoPackageInstaller "ChocoInstallOpenSSH" {
-            Name = 'openssh'
-            Params = "/SSHServerFeature /SSHAgentFeature"
-            DependsOn = '[cChocoInstaller]InstallChoco'
-        }
-
     }
 }

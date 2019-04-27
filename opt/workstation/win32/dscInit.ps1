@@ -306,19 +306,19 @@ function Invoke-AllDscConfigurations {
         Get-ChildItem -Path $DhdLocation\opt\workstation\win32\dscConfigurations\* -Include *.ps1 |
             Foreach-Object -Process { . $_ }
 
-        if ($ConfigurationName -like "InstallSoftware") {
+        if ("InstallSoftware" -Like $ConfigurationName) {
             Invoke-DscConfiguration -Name InstallSoftware
         }
-        if ($ConfigurationName -like "MachineSettingsConfig") {
+        if ("MachineSettingsConfig") {
             Invoke-DscConfiguration -Name MachineSettingsConfig
         }
-        if ($ConfigurationName -like "DhdConfig") {
+        if ("DhdConfig" -Like $ConfigurationName) {
             Invoke-DscConfiguration -Name DhdConfig -Parameters @{
                 Credential = $UserCredential
                 ConfigurationData = $UserCredentialConfigData
             }
         }
-        if ($ConfigurationName -like "UserSettingsConfig") {
+        if ("UserSettingsConfig" -Like $ConfigurationName) {
             Invoke-DscConfiguration -Name UserSettingsConfig -Parameters @{
                 Credential = $UserCredential
                 ConfigurationData = $UserCredentialConfigData

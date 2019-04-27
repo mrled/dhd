@@ -103,7 +103,11 @@ Configuration DhdConfig {
                     $extensions = Get-Content -LiteralPath $extensionsTxtPath
                     foreach ($extension in $extensions) {
                         Write-Verbose -Message "Installing VS Code extension '$extension'..."
-                        & $using:VsCodePath --install-extension "$extension"
+                        try {
+                            & $using:VsCodePath --install-extension "$extension"
+                        } catch {
+                            Write-Verbose -Message "Failed to install VS code extension '$extension'"
+                        }
                     }
                 }
             }

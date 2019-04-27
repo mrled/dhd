@@ -10,7 +10,7 @@ ms-python.python
 ms-vscode.azure-account
 ms-vscode.csharp
 ms-vscode.Go
-ms-vscode.PowerShell
+ms-vscode.powershell
 msazurermtools.azurerm-vscode-tools
 neuron.neuron-IPE
 PeterJausovec.vscode-docker
