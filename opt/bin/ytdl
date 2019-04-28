@@ -30,6 +30,6 @@ while test $# -gt 0; do
     case "$1" in
         -h | --help )   usage; exit 0;;
         -d | --debug )  set -x; shift;;
-        *)              ytdl_internal "$1";;
+        *)              ytdl_internal "$1"; shift;;
     esac
 done
