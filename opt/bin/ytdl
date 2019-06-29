@@ -7,12 +7,13 @@ cmdname=`basename "$0"`
 
 usage() {
     cat <<ENDUSAGE
-Usage: $cmdname [-h] <URL>
+Usage: $cmdname [-h] [-d] [-x <FILE>] [URL]
 Get a video using youtube-dl and save metadata
 
 ARGUMENTS
     -h | --help:    Print help and exit
     -d | --debug:   Show debug messages
+    -x | --xml:     Use an XLM/HTML file containing URLs
     URL:            The URL to download
 ENDUSAGE
 }
@@ -22,7 +23,7 @@ ytdl_internal() {
     ytdl_json=$(youtube-dl --dump-json "$1")
     filename=$(echo "$ytdl_json" | jq -r ._filename)
     echo "$ytdl_json" > "${filename}.youtube-dl.json"
-    youtube-dl "$1"
+    youtube-dl "$1" 
 }
 
 url=
@@ -30,6 +31,11 @@ while test $# -gt 0; do
     case "$1" in
         -h | --help )   usage; exit 0;;
         -d | --debug )  set -x; shift;;
+	-x | --xml)
+	    lynx -dump -listonly -nonumbers "$2" | while read url; do
+		ytdl_internal "$url"
+	    done
+	    shift 2;;
         *)              ytdl_internal "$1"; shift;;
     esac
 done
