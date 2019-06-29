@@ -77,4 +77,74 @@ hs.hotkey.bind(mods, 'm', function()
   hs.window.focusedWindow():maximize(animationDuration)
 end)
 
- 
+
+
+
+
+appCuts = {
+  e = 'Emacs',
+  f = 'Finder',
+  j = 'Cisco Jabber',
+  k = 'Keychain Access',
+  o = 'Microsoft Outlook',
+  s = 'Safari',
+  t = 'Terminal',
+}
+
+appHotKey = hs.hotkey.modal.new({"cmd", "ctrl"}, "q")
+appHotKey:exit() --When reloading config, if we were in the middle of this hotkey, exit it
+
+
+-- modalSuppression from https://github.com/asmagill/hammerspoon-config/blob/master/_scratch/modalSuppression.lua
+--[[
+modalSuppression = dofile("modalSuppression.lua")
+if modalSuppression.started() then
+   hs.alert("Reloading config, exiting modal suppression...")
+   modalSuppression.stop()
+end
+
+function appHotKey:entered()
+   hs.alert'Entered appHotKey mode'
+end
+function appHotKey:exited()
+   modalSuppression.stop()
+   hs.alert'Exited appHotKey mode'
+end
+--]]
+
+--[[
+-- This does cmd+x ctrl+t, appCuts key
+-- Works ok except that if you don't hit an appCuts key it waits for one which is stupid
+modalSuppression = dofile("modalSuppression.lua")
+for key, app in pairs(appCuts) do
+   -- hs.hotkey.bind({}, key, function ()
+   appHotKey:bind({}, key, function()
+         hs.application.launchOrFocus(app)
+         appHotKey:exit()
+   end)
+end
+--]]
+
+--[[
+-- This is an attempt to hide it inside another hotkey which might never work?
+appHotKey:bind({}, 'escape', function() appHotKey:exit() end)
+appHotKey:bind({"cmd", "ctrl"}, "t", function() appHotKey:exit() end)
+appHotKey:bind({}, 'i', 'Select app', function()
+  for key, app in pairs(appCuts) do
+     hs.hotkey.bind({}, key, function ()
+           hs.application.launchOrFocus(app)
+          appHotKey:exit()
+     end)
+  end
+  modalSuppression.start()
+  -- modalSuppression.stop()
+end)
+
+--]]
+
+modalHotKey = dofile("modalHotKey.lua")
+appActionTable = {}
+for key, app in pairs(appCuts) do
+   appActionTable[key] = function() hs.application.launchOrFocus(app) end
+end
+appModal = modalHotKey.new(hs.hotkey.modal.new({"cmd", "ctrl"}, "t"), appActionTable)
