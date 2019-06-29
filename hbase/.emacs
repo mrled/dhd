@@ -11,14 +11,12 @@
 (setq mrled-package-list '(
 			   ansible
 			   ansible-doc
-			   apache-mode
 			   dockerfile-mode
 			   jinja2-mode
 			   markdown-mode
 			   poly-ansible
 			   poly-markdown
 			   polymode
-			   powershell
 			   yaml-mode
 			   ))
 (dolist (package mrled-package-list)
