@@ -1,5 +1,10 @@
 hammerSpoonEmoji = "🔨🥄"
 
+hs.printf("======== config file reloaded ========")
+hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
+
+animationDuration = 0
+
 -- reload the configs automatically if anything changes in the config dir
 function reloadConfig(files)
     doReload = false
@@ -14,11 +19,6 @@ function reloadConfig(files)
 end
 hsWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 dhdWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/", reloadConfig):start()
-
-hs.printf("======== config file reloaded ========")
-hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
-
-animationDuration = 0
 
 --[[
 -- One replacement for ShiftIt
@@ -83,9 +83,12 @@ end)
 appCuts = {
   e = 'Emacs',
   f = 'Finder',
+  h = 'Hammerspoon',
   j = 'Cisco Jabber',
   k = 'Keychain Access',
+  m = 'Mail',
   o = 'Microsoft Outlook',
+  p = '1Password 7',
   s = 'Safari',
   t = 'Terminal',
 }
