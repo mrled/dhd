@@ -89,8 +89,20 @@ module.new = function(triggerKey, actionTable, actionDescTable, modalMessagePref
     local modality = {}
     modality.activeAlert = nil
     modality.alertMessage = modalMessagePrefix .. "\n========\n"
-    for subKey, desc in pairs(actionDescTable) do
-        modality.alertMessage = modality.alertMessage .. "\n" .. subKey .. ":" .. desc
+
+    -- Create a table of index->subKey mappings
+    -- This lets us alphabetize our hotkeys for display
+    alphaKeys = {}
+    for subKey, _ in pairs(actionDescTable) do
+        table.insert(alphaKeys, subKey)
+    end
+    table.sort(alphaKeys)
+
+    -- Show a menu of allowed subKey presses
+    doubleTab = "		"
+    for idx, subKey in pairs(alphaKeys) do
+        desc = actionDescTable[subKey]
+        modality.alertMessage = modality.alertMessage .. "\n" .. subKey .. ":" .. doubleTab .. desc
     end
 
     triggerKey.exitWithMessage = function(self, message)
@@ -118,7 +130,7 @@ module.new = function(triggerKey, actionTable, actionDescTable, modalMessagePref
             triggerKey:exit()
         end)
     end
- 
+
     modality.triggerKey = triggerKey
 
     modality.start = function(self)
