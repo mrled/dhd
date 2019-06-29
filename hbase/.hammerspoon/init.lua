@@ -96,7 +96,7 @@ for key, app in pairs(appCuts) do
    appActionTable[key] = function() hs.application.launchOrFocus(app) end
 end
 appModal = modalHotKey.new(
-  hs.hotkey.modal.new({"cmd", "ctrl"}, "t"),
+  hs.hotkey.modal.new({"cmd", "ctrl"}, "-"),
   appActionTable,
   appCuts,
   hammerSpoonEmoji .. "Special Application Switcher"
