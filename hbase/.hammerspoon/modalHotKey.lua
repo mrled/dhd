@@ -1,18 +1,40 @@
--- Adapted from https://github.com/asmagill/hammerspoon-config/blob/master/_scratch/modalSuppression.lua
--- see https://github.com/Hammerspoon/hammerspoon/issues/1505
+--[[ modalHotKey.lua
 
--- save file somewhere then type `modalSuppression = dofile("modalSuppression.lua")` to load it
--- For this example, since we're trying out varying modifiers, the recognized key sequences will be printed in the console
--- start the modal state by typing `modalSuppression.start()`
--- *only* the recognized key sequences will be allowed through -- this means you can't even quit hammerspoon with Cmd-Q
--- without tapping escape first.
+Adapted from https://github.com/asmagill/hammerspoon-config/blob/master/_scratch/modalSuppression.lua
+see https://github.com/Hammerspoon/hammerspoon/issues/1505
 
---- this generates the function to create the custom eventtap to suppress unwanted keys and pass through the ones we want
+save file somewhere then type `modalHotKey = dofile("modalHotKey.lua")` to load it
+Here's an example based on my usage:
 
-local eventtap = require("hs.eventtap")
-local hotkey   = require("hs.hotkey")
-local keycodes = require("hs.keycodes")
 
+appCuts = {
+  e = 'Emacs',
+  f = 'Finder',
+  j = 'Cisco Jabber',
+  k = 'Keychain Access',
+  o = 'Microsoft Outlook',
+  s = 'Safari',
+  t = 'Terminal',
+}
+appActionTable = {}
+for key, app in pairs(appCuts) do
+  appActionTable[key] = function() hs.application.launchOrFocus(app) end
+end
+modalHotKey = dofile("modalHotKey.lua")
+appModal = modalHotKey.new(
+  hs.hotkey.modal.new({"cmd", "ctrl"}, "t"),
+  appActionTable,
+  appCuts,
+  "Special Application Switcher"
+)
+
+
+*only* the recognized key sequences will be allowed through -- this means you can't even quit hammerspoon with Cmd-Q
+without tapping escape first.
+--]]
+
+-- suppressKeysOtherThanOurs(): Create custom eventtap to suppress unwanted keys and pass through the ones we do want
+-- modal: An object created from module.new() below (not just a modal hotkey from hs.hotkey.modal.new(); requires our extension methods)
 local suppressKeysOtherThanOurs = function(modal)
     local passThroughKeys = {}
 
@@ -25,31 +47,31 @@ local suppressKeysOtherThanOurs = function(modal)
         local hkFlags = tonumber(mods)
         local hkOriginal = hkFlags
         local flags = 0
-        if (hkFlags &  256) ==  256 then hkFlags, flags = hkFlags -  256, flags | eventtap.event.rawFlagMasks.command   end
-        if (hkFlags &  512) ==  512 then hkFlags, flags = hkFlags -  512, flags | eventtap.event.rawFlagMasks.shift     end
-        if (hkFlags & 2048) == 2048 then hkFlags, flags = hkFlags - 2048, flags | eventtap.event.rawFlagMasks.alternate end
-        if (hkFlags & 4096) == 4096 then hkFlags, flags = hkFlags - 4096, flags | eventtap.event.rawFlagMasks.control   end
+        if (hkFlags &  256) ==  256 then hkFlags, flags = hkFlags -  256, flags | hs.eventtap.event.rawFlagMasks.command   end
+        if (hkFlags &  512) ==  512 then hkFlags, flags = hkFlags -  512, flags | hs.eventtap.event.rawFlagMasks.shift     end
+        if (hkFlags & 2048) == 2048 then hkFlags, flags = hkFlags - 2048, flags | hs.eventtap.event.rawFlagMasks.alternate end
+        if (hkFlags & 4096) == 4096 then hkFlags, flags = hkFlags - 4096, flags | hs.eventtap.event.rawFlagMasks.control   end
         if hkFlags ~= 0 then print("unexpected flag pattern detected for " .. tostring(v._hk)) end
         passThroughKeys[tonumber(kc)] = flags
     end
 
-    return eventtap.new({
-        eventtap.event.types.keyDown,
-        eventtap.event.types.keyUp,
+    return hs.eventtap.new({
+        hs.eventtap.event.types.keyDown,
+        hs.eventtap.event.types.keyUp,
     }, function(event)
         -- check only the flags we care about and filter the rest
         local flags = event:getRawEventData().CGEventData.flags  & (
-                                                  eventtap.event.rawFlagMasks.command   |
-                                                  eventtap.event.rawFlagMasks.control   |
-                                                  eventtap.event.rawFlagMasks.alternate |
-                                                  eventtap.event.rawFlagMasks.shift
+                                                  hs.eventtap.event.rawFlagMasks.command   |
+                                                  hs.eventtap.event.rawFlagMasks.control   |
+                                                  hs.eventtap.event.rawFlagMasks.alternate |
+                                                  hs.eventtap.event.rawFlagMasks.shift
                                               )
         if passThroughKeys[event:getKeyCode()] == flags then
             hs.printf("passing:     %3d 0x%08x", event:getKeyCode(), flags)
             return false -- pass it through so hotkey can catch it
         else
             hs.printf("suppressing: %3d 0x%08x", event:getKeyCode(), flags)
-            modal:exit() -- If we type the wrong key, just exit the modal - don't make us hit esc
+            modal:exitWithMessage("Invalid modal key " .. event:getKeyCode() .. " exiting mode")
             return true -- delete it if we got this far -- it's a key that we want suppressed
         end
     end)
@@ -61,48 +83,59 @@ local module = {}
 -- new(): Create a new modal hotkey
 -- triggerKey: A table created by invoking hs.hotkey.modal.new(), like hs.hotkey.modal.new({"cmd", "ctrl"}, "t")
 -- actionTable: A table of {subKey = action} pairs
-module.new = function(triggerKey, actionList)
-   local modality = {}
+-- actionDescTable: A table of {subKey = description} pairs
+-- modalMessagePrefix: A message prefix to display when communicating to the user about this hot key
+module.new = function(triggerKey, actionTable, actionDescTable, modalMessagePrefix)
+    local modality = {}
+    modality.activeAlert = nil
+    modality.alertMessage = modalMessagePrefix .. "\n========\n"
+    for subKey, desc in pairs(actionDescTable) do
+        modality.alertMessage = modality.alertMessage .. "\n" .. subKey .. ":" .. desc
+    end
 
-   triggerKey.entered = function(self)
-      self._eventtap = suppressKeysOtherThanOurs(self):start()
-      hs.alert("Entering modal only key mode, tap escape to exit")
-   end
+    triggerKey.exitWithMessage = function(self, message)
+        hs.alert(modalMessagePrefix .. "\n========\n" .. message)
+        self:exit()
+    end
 
-   triggerKey.exited = function(self)
-      self._eventtap:stop()
-      self._eventtap = nil
-      hs.alert("Exiting modal only key mode")
-   end
+    triggerKey.entered = function(self)
+        self._eventtap = suppressKeysOtherThanOurs(self):start()
+        modality.activeAlert = hs.alert.show(modality.alertMessage, {}, hs.screen.mainScreen(), "forever")
+    end
 
-   -- make sure there is a way out!
-   triggerKey:bind({}, "escape", function() triggerKey:exit() end)
-   --triggerKey:bind({"ctrl"}, "g", function() triggerKey:exit() end)
+    triggerKey.exited = function(self)
+        self._eventtap:stop()
+        self._eventtap = nil
+        hs.alert.closeSpecific(modality.activeAlert)
+    end
 
-   for subKey, action in pairs(actionList) do
-      triggerKey:bind({}, subKey, function()
+    -- define an explicit way out
+    triggerKey:bind({}, "escape", function() triggerKey:exit() end)
+
+    for subKey, action in pairs(actionTable) do
+        triggerKey:bind({}, subKey, function()
             action()
-            appHotKey:exit()
-      end)
-   end
+            triggerKey:exit()
+        end)
+    end
+ 
+    modality.triggerKey = triggerKey
 
-   modality.triggerKey = triggerKey
+    modality.start = function(self)
+       if self.triggerKey._eventtap then
+           self.triggerKey:enter()
+       end
+    end
+    modality.stop = function(self)
+       if self.triggerKey._eventtap then
+           self.triggerKey:exit()
+       end
+    end
+    modality.started = function(self)
+        return not not self.triggerKey._eventtap
+    end
 
-   modality.start = function(self)
-      if self.triggerKey._eventtap then
-         self.triggerKey:enter()
-      end
-   end
-   modality.stop = function(self)
-      if self.triggerKey._eventtap then
-         self.triggerKey:exit()
-      end
-   end
-   modality.started = function(self)
-      return not not self.triggerKey._eventtap
-   end
-
-   return modality
+    return modality
 end
 
 

@@ -1,3 +1,6 @@
+hammerSpoonEmoji = "🔨🥄"
+
+-- reload the configs automatically if anything changes in the config dir
 function reloadConfig(files)
     doReload = false
     for _,file in pairs(files) do
@@ -9,14 +12,13 @@ function reloadConfig(files)
         hs.reload()
     end
 end
-myWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
-hs.alert.show("🔨🥄 Config Loaded")
+hsWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
+dhdWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/", reloadConfig):start()
 
+hs.printf("======== config file reloaded ========")
+hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
 
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
-  hs.alert.show("Hello World!")
-end)
-
+animationDuration = 0
 
 --[[
 -- One replacement for ShiftIt
@@ -49,37 +51,34 @@ hs.hotkey.bind(mash, 'm', function() hs.window.focusedWindow():move(units.maximu
 
 ]]--
 
+---
 -- Another ShiftIt replacement that is closer to the original
 -- https://github.com/fikovnik/ShiftIt/issues/296#issuecomment-476189164
+---
 
-mods = { 'ctrl', 'alt', 'cmd' }
-
+shiftItMods = { 'ctrl', 'alt', 'cmd' }
 units = {
   bottom = { x = 0.0, y = 0.5, w = 1.0, h = 0.5 },
   left   = { x = 0.0, y = 0.0, w = 0.5, h = 1.0 },
   right  = { x = 0.5, y = 0.0, w = 0.5, h = 1.0 },
   top    = { x = 0.0, y = 0.0, w = 1.0, h = 0.5 },
 }
-
-animationDuration = 0
-
 function createMoveWindow(rect)
   return function ()
     hs.window.focusedWindow():move(rect, nil, true, animationDuration)
   end
 end
-
-hs.hotkey.bind(mods, 'down', createMoveWindow(units.bottom))
-hs.hotkey.bind(mods, 'left', createMoveWindow(units.left))
-hs.hotkey.bind(mods, 'right', createMoveWindow(units.right))
-hs.hotkey.bind(mods, 'up', createMoveWindow(units.top))
-hs.hotkey.bind(mods, 'm', function()
+hs.hotkey.bind(shiftItMods, 'down', createMoveWindow(units.bottom))
+hs.hotkey.bind(shiftItMods, 'left', createMoveWindow(units.left))
+hs.hotkey.bind(shiftItMods, 'right', createMoveWindow(units.right))
+hs.hotkey.bind(shiftItMods, 'up', createMoveWindow(units.top))
+hs.hotkey.bind(shiftItMods, 'm', function()
   hs.window.focusedWindow():maximize(animationDuration)
 end)
 
-
-
-
+---
+-- Special Application Switcher
+---
 
 appCuts = {
   e = 'Emacs',
@@ -91,60 +90,14 @@ appCuts = {
   t = 'Terminal',
 }
 
-appHotKey = hs.hotkey.modal.new({"cmd", "ctrl"}, "q")
-appHotKey:exit() --When reloading config, if we were in the middle of this hotkey, exit it
-
-
--- modalSuppression from https://github.com/asmagill/hammerspoon-config/blob/master/_scratch/modalSuppression.lua
---[[
-modalSuppression = dofile("modalSuppression.lua")
-if modalSuppression.started() then
-   hs.alert("Reloading config, exiting modal suppression...")
-   modalSuppression.stop()
-end
-
-function appHotKey:entered()
-   hs.alert'Entered appHotKey mode'
-end
-function appHotKey:exited()
-   modalSuppression.stop()
-   hs.alert'Exited appHotKey mode'
-end
---]]
-
---[[
--- This does cmd+x ctrl+t, appCuts key
--- Works ok except that if you don't hit an appCuts key it waits for one which is stupid
-modalSuppression = dofile("modalSuppression.lua")
-for key, app in pairs(appCuts) do
-   -- hs.hotkey.bind({}, key, function ()
-   appHotKey:bind({}, key, function()
-         hs.application.launchOrFocus(app)
-         appHotKey:exit()
-   end)
-end
---]]
-
---[[
--- This is an attempt to hide it inside another hotkey which might never work?
-appHotKey:bind({}, 'escape', function() appHotKey:exit() end)
-appHotKey:bind({"cmd", "ctrl"}, "t", function() appHotKey:exit() end)
-appHotKey:bind({}, 'i', 'Select app', function()
-  for key, app in pairs(appCuts) do
-     hs.hotkey.bind({}, key, function ()
-           hs.application.launchOrFocus(app)
-          appHotKey:exit()
-     end)
-  end
-  modalSuppression.start()
-  -- modalSuppression.stop()
-end)
-
---]]
-
-modalHotKey = dofile("modalHotKey.lua")
+modalHotKey = dofile(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/modalHotKey.lua")
 appActionTable = {}
 for key, app in pairs(appCuts) do
    appActionTable[key] = function() hs.application.launchOrFocus(app) end
 end
-appModal = modalHotKey.new(hs.hotkey.modal.new({"cmd", "ctrl"}, "t"), appActionTable)
+appModal = modalHotKey.new(
+  hs.hotkey.modal.new({"cmd", "ctrl"}, "t"),
+  appActionTable,
+  appCuts,
+  hammerSpoonEmoji .. "Special Application Switcher"
+)
