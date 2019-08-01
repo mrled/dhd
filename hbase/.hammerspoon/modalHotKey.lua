@@ -151,6 +151,8 @@ module.shortcutKey = function(arg)
    if arg.appName then
        key.appName = arg.appName
        key.action = function() hs.application.launchOrFocus(key.appName) end
+   else
+      key.action = arg.action
    end
    if arg.appName and not arg.actionDesc then
        key.actionDesc = arg.appName
