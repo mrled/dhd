@@ -1,6 +1,6 @@
 # Hammerspoon config
 
-I got the original implementation of termdraw frmo [this post](https://blog.theodo.com/2018/03/making-runtime-funtime-hammerspoon/).
+I got the original implementation of termdraw from [this post](https://blog.theodo.com/2018/03/making-runtime-funtime-hammerspoon/).
 My improvements include refusing to create a new terminal if the window is under a certain size
 (hard coded for now)
 and showing in red when the dragged area is under that size.
