@@ -1,18 +1,28 @@
 local rectanglePreviewColor = '#81ecec'  -- cyan
 local rectangleCancelColor = '#f09d9d'   -- red
+local rectangleMinWidth = 300
+local rectangleMinHeight = 150
 local rectangleFadeDuration = 0.75
 local rectanglePreview = hs.drawing.rectangle(
  hs.geometry.rect(0, 0, 0, 0)
 )
 
-local function setRectangle(color)
- rectanglePreview:setStrokeColor({ hex=color, alpha=1 })
- rectanglePreview:setFillColor({ hex=color, alpha=0.5 })
+local function setRectangle(newFrame)
  rectanglePreview:setStrokeWidth(2)
  rectanglePreview:setRoundedRectRadii(2, 2)
  rectanglePreview:setStroke(true):setFill(true)
  rectanglePreview:setLevel('floating')
+
+ rectanglePreview:setFrame(newFrame)
+
+ local color = rectanglePreviewColor
+ if newFrame.w < rectangleMinWidth or newFrame.h < rectangleMinHeight then
+   color = rectangleCancelColor
+ end
+ rectanglePreview:setStrokeColor({ hex=color, alpha=1 })
+ rectanglePreview:setFillColor({ hex=color, alpha=0.5 })
 end
+
 
 local function openIterm(bounds)
  local openItemScript = string.format([[
@@ -39,7 +49,7 @@ local drag_event = hs.eventtap.new(
      ["x2"] = toPoint.x,
      ["y2"] = toPoint.y,
    })
-   rectanglePreview:setFrame(newFrame)
+   setRectangle(newFrame)
 
    return nil
  end
@@ -52,7 +62,7 @@ local flags_event = hs.eventtap.new(
    if flags.ctrl and flags.shift then
      fromPoint = hs.mouse.getAbsolutePosition()
      local newFrame = hs.geometry.rect(fromPoint.x, fromPoint.y, 0, 0)
-     setRectangle(rectanglePreviewColor)
+     setRectangle(newFrame)
      rectanglePreview:setFrame(newFrame)
      drag_event:start()
      rectanglePreview:show()
@@ -67,11 +77,10 @@ local flags_event = hs.eventtap.new(
      fromPoint = nil
      drag_event:stop()
 
-     if frame.w < 300 or frame.h < 150 then
+     if frame.w < rectangleMinWidth or frame.h < rectangleMinHeight then
        -- sometimes you press the keys accidentally and invisible terms get created
        -- this prevents that
-       setRectangle(rectangleCancelColor)
-       hs.printf("Absolutely not. Refusing to create tiny iTerm with " .. framedesc)
+       hs.printf("Cowardly refusing to create tiny iTerm with " .. framedesc)
      else
        openIterm(bounds)
        hs.printf("Created new iTerm with " .. framedesc)
