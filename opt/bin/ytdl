@@ -13,6 +13,7 @@ Get a video using youtube-dl and save metadata
 ARGUMENTS
     -h | --help:    Print help and exit
     -d | --debug:   Show debug messages
+    -t | --txt:     Use an txt file containing URLs, one per line
     -x | --xml:     Use an XLM/HTML file containing URLs
     URL:            The URL to download
 ENDUSAGE
@@ -21,21 +22,33 @@ ENDUSAGE
 ytdl_internal() {
     echo "==== $1 ===="
     ytdl_json=$(youtube-dl --dump-json "$1")
-    filename=$(echo "$ytdl_json" | jq -r ._filename)
+
+    # cut file name to some max
+    full_filename=$(echo "$ytdl_json" | jq -r ._filename)
+    filename=$(echo "$full_filename" | cut -c 1-92)
+    if test "$filename" != "$full_filename"; then
+	ext="${full_filename##*.}"
+	filename="${filename}.${ext}"
+    fi
+
     echo "$ytdl_json" > "${filename}.youtube-dl.json"
-    youtube-dl "$1" 
+    youtube-dl "$1" -o "$filename"
 }
 
-url=
 while test $# -gt 0; do
     case "$1" in
         -h | --help )   usage; exit 0;;
         -d | --debug )  set -x; shift;;
+	-t | --txt)
+	    while read url; do
+		ytdl_internal "$url" || echo "$url" >> "$2.failed.urls.txt"
+	    done < "$2"
+	    shift 2;;
 	-x | --xml)
 	    lynx -dump -listonly -nonumbers "$2" | while read url; do
-		ytdl_internal "$url"
+		ytdl_internal "$url" || echo "$url" >> "$2.failed.urls.txt"
 	    done
 	    shift 2;;
-        *)              ytdl_internal "$1"; shift;;
+        *) ytdl_internal "$1"; shift;;
     esac
 done
