@@ -61,7 +61,7 @@ cmdavail launchctl && test "$LANG" && launchctl setenv LC_ALL "$LANG"
 # Debian has weird ideas about things sometimes
 cmdavail 'ack-grep' && alias ack='ack-grep'
 
-df -h >/dev/null 2>&1 && alias df="df -h"
+df -h / >/dev/null 2>&1 && alias df="df -h"
 alias ..="cd .."
 alias c=clear
 alias h=history
