@@ -583,12 +583,12 @@
 					<value name="Count" type="long" data="1"/>
 					<value name="Flags" type="dword" data="00000004"/>
 				</key>
-				<key name="&lt;Startup&gt;" modified="2019-04-27 19:10:41" build="190331">
+				<key name="&lt;Startup&gt;" modified="2019-11-03 21:14:40" build="190526">
 					<value name="GuiArgs" type="string" data=""/>
-					<value name="Active" type="long" data="2"/>
+					<value name="Active" type="long" data="1"/>
 					<value name="Count" type="long" data="2"/>
-					<value name="Cmd1" type="string" data='-cur_console:f -cur_console:d:C:\Users\mrled\Documents\Repositories\vm-lab-book -cur_console:t:"vm-lab-book " powershell.exe'/>
-					<value name="Cmd2" type="string" data="&gt; -cur_console:d:C:\Users\mrled -cur_console:t:» powershell.exe"/>
+					<value name="Cmd1" type="string" data='&gt;* -cur_console:f -cur_console:d:C:\Users\mrled\Documents\Repositories\vm-lab-book -cur_console:t:☭ "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"'/>
+					<value name="Cmd2" type="string" data="-cur_console:b -cur_console:d:C:\Users\mrled\Downloads -cur_console:t:» powershell.exe"/>
 				</key>
 			</key>
 			<key name="Apps" modified="2017-12-19 11:56:46" build="171109">
