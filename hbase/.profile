@@ -69,7 +69,7 @@ export GOPATH="${HOME}/Documents/Go"
 export PATH="$(pathsetup "${PATH}:${GOROOT}/bin:${GOPATH}/bin")"
 
 if cmdavail ruby; then
-    export PATH="$(pathsetup "${PATH}:$(ruby -rubygems -e 'puts "%s/bin:%s/bin" % [Gem.dir, Gem.user_dir]')")"
+    export PATH="$(pathsetup "${PATH}:$(ruby -rrubygems -e 'puts "%s/bin:%s/bin" % [Gem.dir, Gem.user_dir]')")"
 fi
 
 export PYTHONSTARTUP=$DHD/hbase/python.profile
