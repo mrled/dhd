@@ -86,9 +86,17 @@ export PYTHONSTARTUP=$DHD/hbase/python.profile
 # See also: https://marc.info/?l=full-disclosure&m=141678420425808&w=2
 export LESSOPEN=
 
-export EDITOR=emacs
-export VISUAL=emacs
-export FSEDIT=emacs
+if cmdavail vimr; then
+    export EDITOR="vimr --wait --cur-env"
+elif cmdavail nvim; then
+    export EDITOR=nvim
+elif cmdavail vim; then
+    export EDITOR=vim
+else
+    export EDITOR=vi
+fi
+export VISUAL="$EDITOR"
+export FSEDIT="$EDITOR"
 
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
