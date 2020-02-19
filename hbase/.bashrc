@@ -52,6 +52,9 @@ alias llm='lsl -r -t' # lsl+ sort by modified time (lastest at bottom)
 # View manpages in Preview.app on macOS
 test -e "/Applications/Preview.app" && alias previewman='man -t "$@" | open -g -f -a /Applications/Preview.app'
 
+# OniVim
+test -e "/Applications/OniVim2.app" && alias oni2='/Applications/Onivim2.app/Contents/MacOS/Oni2'
+
 # Launch QuickLook from the command line (^c will kill it and return to prompt)
 cmdavail qlmanage && alias ql='qlmanage -p 2>/dev/null'
 
