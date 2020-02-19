@@ -23,15 +23,23 @@ LC_ALL="${LANG}"
 # A list of all the paths which MIGHT exist and contain binaries we
 # want in our $PATH
 # Order is important in $PATH; earlier entries are searched first
+# Some specific notes:
+# * npmglobal can be customized: https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
 export POSSIBLE_PATHS="
 ${HOME}/opt/lib/miniconda3/bin
 ${HOME}/opt/bin
 ${HOME}/opt/sbin
+${HOME}/.cabal/bin
+${HOME}/.cabal/sbin
 ${HOME}/.local/bin
+${HOME}/.local/sbin
+${HOME}/.poetry/bin
 ${DHD}/opt/bin
 ${DHD}/opt/bash/bin
 ${HOME}/opt/homebrew/bin
 ${HOME}/opt/homebrew/sbin
+${HOME}/opt/npmglobal/bin
+${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
 /opt/homebrew/bin
 /opt/homebrew/sbin
@@ -88,3 +96,4 @@ export PERL_MM_USE_DEFAULT=1
 if test -z "$MRL_BASHRC_GUARD" && test "$BASH_VERSION"; then
     . "$DHD/hbase/.bashrc"
 fi
+
