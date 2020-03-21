@@ -1,13 +1,4 @@
 
-"""""" PATHOGEN STUFF
-" First you have to get Pathogen and put it in .vim/bundle (or vimfiles/bundle on Windows) (aka <any valid runtimepath>/bundle on any platform)
-"     mkdir -p ~/.vim/bundle; cd ~/.vim/bundle; git clone https://github.com/tpope/vim-pathogen
-" Then you can check out other projects the same way. They'll get autoloaded. 
-" (e.g. I use vim-ps1 all the time: <https://github.com/PProvost/vim-ps1>)
-" That could be submodules I guess but eh... effort
-runtime bundle/vim-pathogen/autoload/pathogen.vim
-execute pathogen#infect()
-
 " fuck vi compatibility
 set nocompatible
 
