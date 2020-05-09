@@ -17,6 +17,18 @@ if test -z "$MRL_PROFILE_GUARD"; then
     . $DHD/hbase/.profile
 fi
 
+interactive=
+case $- in
+    *i*) interactive=1;;
+esac
+
+# Ignore the rest of this file if this shell is noninteractive
+# We only care about this file in an interactive shell
+# ... probably I should reorganize this shit but whatever
+if ! test "$interactive"; then
+    return
+fi
+
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
 set -o pipefail
 
