@@ -1,0 +1,4 @@
+#!/bin/sh
+# jesus fucking christ, what a bunch of fucking bullshit
+set -eu
+xattr -rd com.apple.quarantine "$@"
