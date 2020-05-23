@@ -41,6 +41,7 @@ ${HOME}/opt/homebrew/sbin
 ${HOME}/opt/npmglobal/bin
 ${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
+/Library/Frameworks/Python.framework/Versions/3.8/bin
 /opt/homebrew/bin
 /opt/homebrew/sbin
 /usr/pkg/bin
@@ -63,6 +64,14 @@ ${PATH}
 
 export PATH=$("$DHD/opt/bin/pathsetup" "$POSSIBLE_PATHS")
 
+if ! test "$MANPATH"; then
+    if cmdavail manpath; then
+        export MANPATH=$(manpath)
+    else
+        export MANPATH="/usr/share/man"
+    fi
+fi
+
 if cmdavail brew; then
     # This is NOT a standard environment variable, for some reason
     export HOMEBREWDIR=$(dirname "$(dirname "$(command -v brew)")")
@@ -70,6 +79,13 @@ if cmdavail brew; then
     if test -d "$HOMEBREWDIR/opt/go" && test -z "$GOROOT"; then
         export GOROOT="$HOMEBREWDIR/opt/go/libexec"
     fi
+fi
+
+if cmdavail npm; then
+    export NPM_PACKAGES="${HOME}/.npm-packages"
+    npm config set prefix "${HOME}/.npm-packages"
+    export PATH="$(pathsetup "${PATH}:${NPM_PACKAGES}/bin")"
+    export MANPATH="${MANPATH}:${NPM_PACKAGES}/share/man"
 fi
 
 export GOPATH="${HOME}/Documents/Go"
