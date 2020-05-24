@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    cat <<ENDUSAGE
+$0: "touch -p"
+USAGE: $0 <PATH> [PATH...]
+Create the parent directory for each argument,
+and touch the file.
+ENDUSAGE
+}
+
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help ) usage; exit 0;;
+        *) mkdir -p "$(dirname "$1")"; touch "$1"; shift;;
+    esac
+done
