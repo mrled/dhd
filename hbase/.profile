@@ -41,6 +41,7 @@ ${HOME}/opt/homebrew/sbin
 ${HOME}/opt/npmglobal/bin
 ${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
+${HOME}/Library/Python/3.8/bin
 /Library/Frameworks/Python.framework/Versions/3.8/bin
 /opt/homebrew/bin
 /opt/homebrew/sbin
@@ -52,6 +53,7 @@ ${HOME}/test spaces in path
 /usr/sbin
 /bin
 /sbin
+/Applications/QMK Toolbox.app/Contents/Resources
 /c/WINDOWS
 /c/WINDOWS/system32/Wbem
 /c/WINDOWS/system32
