@@ -22,7 +22,7 @@ ENDUSAGE
 ytdl_internal() {
     echo "==== $1 ===="
     tmpjson="tmp.json"
-    youtube-dl --dump-json "$1" > "$tmpjson"
+    youtube-dl --no-check-certificate --dump-json "$1" > "$tmpjson"
 
     # cut file name to some max
     full_filename=$(jq -r ._filename < "$tmpjson")
@@ -33,7 +33,7 @@ ytdl_internal() {
     fi
 
     mv "$tmpjson" "${filename}.youtube-dl.json"
-    youtube-dl "$1" -o "$filename"
+    youtube-dl --no-check-certificate "$1" -o "$filename"
 }
 
 while test $# -gt 0; do
