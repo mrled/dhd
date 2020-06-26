@@ -1,6 +1,14 @@
 # Visual Studio Code shit
 
-Symlink the directory:
+## Install the commandline
+
+[See docs](https://code.visualstudio.com/docs/editor/command-line).
+This is only required on macOS.
+
+Command Palette (Cmd-Shift-P) -> Shell Command: Install 'code' command in PATH
+
+
+## Symlink the directory:
 
     # Windows w/ Powershell
     <# PS #> Set-Location -Path "${ENV:AppData}\Code"
@@ -10,9 +18,9 @@ Symlink the directory:
     # macOS with bash
     (: bash) cd "~/Library/Application Support/Code"
     (: bash) rm -rf User
-    (: bash) ln -s User ../../../.dhd/opt/vscodeuser
+    (: bash) ln -s ../../../.dhd/opt/vscodeuser User
 
-List extensions
+## List extensions
 
     # Windows w/ Powershell
     <# PS #> code --list-extensions | Out-File -Encoding ASCII -FilePath extensions.txt
@@ -20,7 +28,7 @@ List extensions
     # macOS w/ bash
     (: bash) code --list-extensions > extensions.txt
 
-Restore extensions
+## Restore extensions
 
     <# PS #> Get-Content extensions.txt |% { code --install-extension "$_" }
 
