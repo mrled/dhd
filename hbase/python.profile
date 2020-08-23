@@ -20,7 +20,7 @@ vt = platform.python_version_tuple()
 # ignore minor releases: py3.2 instead of py3.2.3
 pv = "py" + vt[0] + "." + vt[1]
 
-if os.name is "nt":
+if os.name == "nt":
     try:
         import colorama
     except ImportError:
@@ -39,7 +39,7 @@ if os.name is "nt":
         pip.main(['install', 'pyreadline'])
         import pyreadline as readline
 
-#elif os.name is "posix":
+#elif os.name == "posix":
 else:
     colortype = "ansi"
     import readline
@@ -48,12 +48,12 @@ else:
 newps1 = pv      + " >>> "
 newps2 = "     " + " ... "
 
-if colortype is "colorama":
+if colortype == "colorama":
 
     newps1 = colorama.Style.BRIGHT + colorama.Fore.GREEN + pv       + " >>> " + colorama.Style.RESET_ALL
     newps2 = colorama.Style.BRIGHT + colorama.Fore.GREEN + "     "  + " ... " + colorama.Style.RESET_ALL
 
-elif colortype is "ansi":
+elif colortype == "ansi":
     ansi_norm='\001\033[0m\002'
     ansi_bold='\001\033[1m\002'
     ansi_blink='\001\033[5m\002'
