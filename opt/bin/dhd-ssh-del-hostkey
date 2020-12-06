@@ -11,7 +11,11 @@ Usage: $cmdname [-h] <HOSTNAME...>
 Delete a hostkey from known_hosts, ensuring ~/.dhd symlink remains.
 
 ARGUMENTS
-    HOSTNAME: A hostname in known_hosts. More than one is allowed.
+    -R HOSTLIST:
+        Remove a list of hosts from known_hosts.
+        known_hosts will be hashed afterwards.
+    -H:
+        Hash known_hosts
 ENDUSAGE
 }
 
@@ -24,6 +28,16 @@ umask 077
 
 message() {
     echo "$(ansi fg=green)$*$(ansi mode=reset)"
+}
+
+hashkhosts() {
+    ansi fg=yellow
+    echo "Hashing known hosts..."
+    ansi mode=reset
+    ssh-keygen -H
+    ansi fg=green
+    echo "Done"
+    ansi mode=reset
 }
 
 ensurelink() {
@@ -61,10 +75,19 @@ trap ensurelink SIGHUP SIGINT SIGTERM
 while test $# -gt 0; do
     case "$1" in
         -h | --help ) usage; exit 0;;
+        -R)
+            hostlist=${1//,/$'\n'} # replace commas with whitespace
+            for host in $hostlist; do
+                ssh-keygen -R "$host" || true
+            done
+            hashkhosts
+            shift 2;;
+        -H)
+            hashkhosts
+            shift;;
         *)
-            ssh-keygen -R "$1" || true
-            shift
-            ;;
+            echo "Unknown argument $1"
+            shift;;
     esac
 done
 
