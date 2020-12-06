@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat << ENDUSAGE
+git-revertpatch: Revert the commit at HEAD, then apply it as a patch.
+ENDUSAGE
+}
+
+if test "$1" = "-h" || test "$1" = "--help"; then
+    usage
+    exit
+fi
+
+git revert --no-edit HEAD
+git diff HEAD~2 HEAD~1 | git apply -
+

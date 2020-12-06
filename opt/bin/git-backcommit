@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat << ENDUSAGE
+git-backcommit: [-h|--help] <date> <args...>
+Make a commit with a certain date
+date: A date in git format, like "Sun Aug 30 19:48:32 2020 -0500"
+args: Others to send to 'git commit'.
+ENDUSAGE
+}
+
+if test "$1" = "-h" || test "$1" = "--help"; then
+    usage
+    exit
+fi
+date="$1"
+shift
+
+GIT_COMMITTER_DATE="$date" git commit --date "$date" "$@"
