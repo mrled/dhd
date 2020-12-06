@@ -8,7 +8,7 @@ dhdkhosts="$HOME/.dhd/hbase/known_hosts"
 usage() {
     cat <<ENDUSAGE
 Usage: $cmdname [-h] <HOSTNAME...>
-Delete a hostkey from known_hosts, ensuring ~/.dhd symlink remains.
+Manage the SSH known_hosts file, ensuring ~/.dhd symlink remains.
 
 ARGUMENTS
     -E:
