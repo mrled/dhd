@@ -1,0 +1,71 @@
+#!/bin/sh
+set -eu
+
+cmdname=`basename "$0"`
+khosts="$HOME/.ssh/known_hosts"
+dhdkhosts="$HOME/.dhd/hbase/known_hosts"
+
+usage() {
+    cat <<ENDUSAGE
+Usage: $cmdname [-h] <HOSTNAME...>
+Delete a hostkey from known_hosts, ensuring ~/.dhd symlink remains.
+
+ARGUMENTS
+    HOSTNAME: A hostname in known_hosts. More than one is allowed.
+ENDUSAGE
+}
+
+if test $# -lt 1; then
+    usage
+    exit 1
+fi
+
+umask 077
+
+message() {
+    echo "$(ansi fg=green)$*$(ansi mode=reset)"
+}
+
+ensurelink() {
+    if test -h "$khosts"; then
+        ansi fg=green
+        echo "$khosts is a symlink"
+        ansi mode=reset
+    elif test -e "$khosts"; then
+        # echo "$(ansi fg=yellow)"
+        ansi fg=yellow
+        echo "$khosts exists and is not a symlink"
+        ansi mode=reset
+        ls -alF "$khosts"
+        echo "Moving $khosts to $dhdkhosts and symlinking..."
+        mv "$khosts" "$dhdkhosts"
+        ln -s ../.dhd/hbase/known_hosts "$khosts"
+        ansi fg=green
+        echo "Done"
+        ansi mode=reset
+    else
+        ansi fg=yellow
+        echo "$khosts does not exist, symlinking..."
+        ansi mode=reset
+        mkdir -p "$HOME/.ssh"
+        ln -s ../.dhd/hbase/known_hosts "$khosts"
+        ansi fg=green
+        echo "Done"
+        ansi mode=reset
+    fi
+    ls -alF "$dhdkhosts"
+    ls -alF "$khosts"
+}
+trap ensurelink SIGHUP SIGINT SIGTERM
+
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help ) usage; exit 0;;
+        *)
+            ssh-keygen -R "$1" || true
+            shift
+            ;;
+    esac
+done
+
+ensurelink
