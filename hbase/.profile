@@ -42,6 +42,7 @@ ${HOME}/opt/npmglobal/bin
 ${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
 ${HOME}/Library/Python/3.8/bin
+${HOME}/Library/Python/3.9/bin
 /Library/Frameworks/Python.framework/Versions/3.8/bin
 /opt/homebrew/bin
 /opt/homebrew/sbin
@@ -53,6 +54,7 @@ ${HOME}/Library/Python/3.8/bin
 /usr/sbin
 /bin
 /sbin
+/Applications/FontForge.app/Contents/Resources/opt/local/bin
 /Applications/QMK Toolbox.app/Contents/Resources
 /c/WINDOWS
 /c/WINDOWS/system32/Wbem
@@ -85,6 +87,8 @@ fi
 
 if cmdavail npm; then
     export NPM_PACKAGES="${HOME}/.npm-packages"
+    npm config set update-notifier false
+    npm config set send-metrics false
     npm config set prefix "${HOME}/.npm-packages"
     export PATH="$(pathsetup "${PATH}:${NPM_PACKAGES}/bin")"
     export MANPATH="${MANPATH}:${NPM_PACKAGES}/share/man"
@@ -96,6 +100,14 @@ export PATH="$(pathsetup "${PATH}:${GOROOT}/bin:${GOPATH}/bin")"
 
 if cmdavail ruby; then
     export PATH="$(pathsetup "${PATH}:$(ruby -rrubygems -e 'puts "%s/bin:%s/bin" % [Gem.dir, Gem.user_dir]')")"
+fi
+
+if test -e "$HOME/Library/Android/sdk"; then
+    export ANDROID_HOME="$HOME/Library/Android/sdk"
+    export PATH="$PATH:$ANDROID_HOME/emulator"
+    export PATH="$PATH:$ANDROID_HOME/tools"
+    export PATH="$PATH:$ANDROID_HOME/tools/bin"
+    export PATH="$PATH:$ANDROID_HOME/platform-tools"
 fi
 
 export PYTHONSTARTUP=$DHD/hbase/python.profile
