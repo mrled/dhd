@@ -11,11 +11,15 @@ Usage: $cmdname [-h] <HOSTNAME...>
 Delete a hostkey from known_hosts, ensuring ~/.dhd symlink remains.
 
 ARGUMENTS
-    -R HOSTLIST:
-        Remove a list of hosts from known_hosts.
-        known_hosts will be hashed afterwards.
+    -E:
+        Ensure the known_hosts is a link to DHD.
     -H:
         Hash known_hosts
+        Ensure the known_hosts is a link to DHD.
+    -R HOSTLIST:
+        Remove a list of hosts from known_hosts.
+        Hash known_hosts.
+        Ensure the known_hosts is a link to DHD.
 ENDUSAGE
 }
 
@@ -84,6 +88,9 @@ while test $# -gt 0; do
             shift 2;;
         -H)
             hashkhosts
+            shift;;
+        -E)
+            # No need to explicitly ensurelink here, it always happens
             shift;;
         *)
             echo "Unknown argument $1"
