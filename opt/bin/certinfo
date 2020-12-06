@@ -1,0 +1,47 @@
+#!/bin/sh
+set -eu
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat <<ENDUSAGE
+Usage: $cmdname [-h] HOST [PORT]
+Show remote certificate metadata
+
+ARGUMENTS
+
+    -h          Show help and exit
+    HOST        The host to connect to.
+    PORT        The port. Defaults to 443.
+ENDUSAGE
+}
+
+host=
+port=
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help ) usage; exit 0;;
+        *)
+            if ! test "$host"; then
+                host="$1"
+            elif ! test "$port"; then
+                port="$1"
+            else
+                usage
+                exit 1
+            fi
+            shift;;
+    esac
+done
+
+if ! test "$host"; then
+    usage
+    exit 1
+fi
+if ! test "$port"; then
+    port=443
+fi
+
+echo |
+    openssl s_client -showcerts -servername "$host" -connect "${host}:${port}" 2>/dev/null |
+    openssl x509 -inform pem -noout -text
