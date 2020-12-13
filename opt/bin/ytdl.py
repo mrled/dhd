@@ -3,8 +3,11 @@
 import argparse
 import json
 import logging
+import plistlib
 import subprocess
 import sys
+
+import youtube_dl
 
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
@@ -26,31 +29,39 @@ def idb_excepthook(type, value, tb):
         pdb.pm()
 
 
-def download(uri, maxfilenamelen=92, verbose=False):
+def download(uri, download_archive, maxfilenamelen=None, verbose=False):
     """Wrap the youtube-dl program
     """
-    LOGGER.info(f"Downloading from URI: {uri}")
-    djproc = subprocess.run(['youtube-dl', '--dump-json', uri], check=True, stdout=subprocess.PIPE)
-    loaded = json.loads(djproc.stdout)
-    LOGGER.debug(json.dumps(loaded, indent=2, sort_keys=True))
-    filename = loaded['_filename'][0:maxfilenamelen]
-    if len(filename) < len(loaded['_filename']):
-        extension = loaded['_filename'].split('.')[-1]
-        if extension == loaded['_filename']:
-            extension = ""
-        filename = filename + extension
-    jsonfilename = f"{filename}.youtube-dl.json"
-    with open(jsonfilename, 'w') as jsf:
-        jsf.write(djproc.stdout.decode())
-    dlproc = subprocess.run(['youtube-dl', '--verbose', '-o', filename, uri], check=True)
+    with youtube_dl.YoutubeDL({
+        'verbose': True,
+
+        'writedescription': True,
+        'writeinfojson': True,
+        'writeannotations': True,
+        'write_all_thumbnails': True,
+        'writesubtitles': True,
+        'writeautomaticsub': True,
+        'allsubtitles': True,
+
+        'download_archive': download_archive,
+        'nooverwrites': True,
+    }) as ytdl:
+        result = ytdl.download([uri])
 
 
-def downloaduris(uris, faillist):
+def downloaduris(uris, archive, faillist):
+    idx = 1
     for uri in uris:
-        LOGGER.debug(f"Looping through URIs, processing {uri}")
+        LOGGER.debug(f"Looping through URIs, processing {idx}/{len(uris)}: {uri}")
+        idx += 1
+        if uri == 'about:blank':
+            LOGGER.debug("Skipping about:blank...")
+            continue
         try:
-            download(uri)
-        except subprocess.CalledProcessError:
+            download(uri, archive)
+        #except subprocess.CalledProcessError:
+        except BaseException as exc:
+            LOGGER.warning(f"Error attempting to download {uri}: ({type(exc)}) {exc}")
             with open(faillist, 'a') as flf:
                 flf.write(uri + "\n")
 
@@ -74,22 +85,39 @@ def parsehtml(htmlfile):
     return ldproc.stdout.split("\n")
 
 
+def parse_icab_tabs(tabsfile):
+    """Parse a plist of tabs generated from iCab Mobile
+
+    Return a list of every URI in the file
+
+    Tabs plists contain a single list of tabs.
+    Each tab is a dict with 'title' and 'url' keys.
+    """
+    with open(tabsfile, 'rb') as fp:
+        parsed = plistlib.load(fp)
+    return [p['url'] for p in parsed]
+
+
 def main(*args, **kwargs):
     parser = argparse.ArgumentParser(description="A youtube-dl wrapper")
     parser.add_argument("--debug", "-d", action="store_true", help="Show debug messages")
-    parser.add_argument("--txt", "-t", help="Parse a txt file containing one URL per line")
-    parser.add_argument("--html", "-x", help="Use an XML/HTML file containing URLs")
+    parser.add_argument("--txt", help="Parse a txt file containing one URL per line")
+    parser.add_argument("--html", help="Use an XML/HTML file containing URLs")
+    parser.add_argument("--icab-tabs", help="Parse a Plist file from iCab containing URLs of open tabs")
+    parser.add_argument("--archive", "-a", required=True, help="The download archive, which youtube-dl uses to record successful downloads (requied)")
     parser.add_argument("uri", nargs="*", help="URI to download")
     parsed = parser.parse_args()
     if parsed.debug:
         sys.excepthook = idb_excepthook
         LOGGER.setLevel(logging.DEBUG)
     if parsed.txt:
-        downloaduris(parsetxt(parsed.txt), f'{parsed.txt}.failedurls.txt')
+        downloaduris(parsetxt(parsed.txt), parsed.archive, f'{parsed.txt}.failedurls.txt')
     if parsed.html:
-        downloaduris(parsehtml(parsed.html), f'{parsed.html}.failedurls.txt')
+        downloaduris(parsehtml(parsed.html), parsed.archive, f'{parsed.html}.failedurls.txt')
+    if parsed.icab_tabs:
+        downloaduris(parse_icab_tabs(parsed.icab_tabs), parsed.archive, f'{parsed.icab_tabs}.failedurls.txt')
     if parsed.uri:
-        downloaduris(parsed.uri, 'ytdl.stdin.failed')
+        downloaduris(parsed.uri, 'cmdline.failedurls.txt')
 
 
 if __name__ == '__main__':
