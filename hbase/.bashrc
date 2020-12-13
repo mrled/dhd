@@ -29,6 +29,13 @@ if ! test "$interactive"; then
     return
 fi
 
+if cmdavail fortune; then
+    fortunate_checkout="$HOME/Documents/Repositories/fortunate"
+    if test -d "$fortunate_checkout"; then
+        fortune "$fortunate_checkout/invisiblestates/invisiblestates"
+    fi
+fi
+
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
 set -o pipefail
 
