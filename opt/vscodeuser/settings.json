@@ -181,5 +181,6 @@
   ],
   "yaml.validate": false,
   "prettier.requireConfig": true,
-  "typescript.updateImportsOnFileMove.enabled": "always"
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "python.showStartPage": false
 }
