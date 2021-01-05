@@ -72,16 +72,11 @@ shopt -s checkwinsize
 # (By default, it will overwrite the history file with commands from this session)
 shopt -s histappend
 
-if ls --version 2>/dev/null | grep -q GNU; then
-    # GNU ls command
-    alias ls="ls -LFhN --color=always"
-elif ls -h -G >/dev/null 2>&1; then
-    # BSD ls commands, such as FreeBSD or macOS
-    alias ls="ls -LFhG"
-else
-    # POSIX supported
-    alias ls="ls -LF"
-fi
+case "$DHD_LS_TYPE" in
+    gnu) alias ls="ls -LFhN --color=always";;
+    bsd) alias ls="ls -LFhG";;
+    *) alias ls="ls -LF";;
+esac
 alias lsa='ls -a'
 alias lsl='ls -a -l'
 alias lsli='lsl -i' # lsl+inodes
@@ -96,9 +91,6 @@ test -e "/Applications/OniVim2.app" && alias oni2='/Applications/Onivim2.app/Con
 
 # Launch QuickLook from the command line (^c will kill it and return to prompt)
 cmdavail qlmanage && alias ql='qlmanage -p 2>/dev/null'
-
-# Fucking environment variables on macOS
-cmdavail launchctl && test "$LANG" && launchctl setenv LC_ALL "$LANG"
 
 # Debian has weird ideas about things sometimes
 cmdavail 'ack-grep' && alias ack='ack-grep'
@@ -127,7 +119,7 @@ alias dush='du -sh' # du -h is a POSIX extension
 alias rehash='hash -r'
 
 # Test for a grep that supports --color=auto, which includes GNU, FreeBSD, and macOS greps
-if echo x | grep -q --color=auto x 2>/dev/null; then
+if test "$DHD_LS_SUPPORTS_COLOR_AUTO"; then
     alias grep="grep --color=auto"
 fi
 
@@ -143,10 +135,6 @@ export SCR_DEFAULT_SESSION="megaframe"
 # Aliases to make it easy to connect over ssh or scp WITHOUT CHECKING HOST KEYS
 alias sshtel="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias scptel="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-
-uploadid() {
-    ssh "$@" 'mkdir -p $HOME/.ssh && cat - >> $HOME/.ssh/authorized_keys' < "$HOME/.ssh/id_rsa.pub"
-}
 
 alias canhazip='curl icanhazip.com'
 

@@ -1,0 +1,179 @@
+#!/bin/sh
+set -e
+
+export SHDETECT_RESULTS="$HOME/.shdetect_dhd.sh"
+
+export DHD=${DHD:-"$HOME/.dhd"}
+
+
+usage() {
+    cat <<EOF
+$0: Detect settings for DHD shell config file
+
+Detect settings like what the \$PATH should be and what commands are available,
+and store them in the results file:
+    $SHDETECT_RESULTS
+
+This can be dot-sourced in .profile/.bashrc.
+
+This allows expensive computations, e.g. what paths exist or what the ruby
+command believes its Gem.dir to be, to happen just once, rather than to be
+recomputed on every shell launch.
+
+This command also applies basic configuration to e.g. git and npm.
+EOF
+}
+
+
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help ) usage; exit 0;;
+        *) usage; exit 1;;
+    esac
+done
+
+
+# A list of all the paths which MIGHT exist and contain binaries we
+# want in our $PATH
+# Order is important in $PATH; earlier entries are searched first
+# Some specific notes:
+# * npmglobal can be customized: https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
+POSSIBLE_PATHS="
+${HOME}/opt/lib/miniconda3/bin
+${HOME}/opt/bin
+${HOME}/opt/sbin
+${HOME}/.cabal/bin
+${HOME}/.cabal/sbin
+${HOME}/.local/bin
+${HOME}/.local/sbin
+${HOME}/.poetry/bin
+${DHD}/opt/bin
+${DHD}/opt/bash/bin
+${HOME}/opt/homebrew/bin
+${HOME}/opt/homebrew/sbin
+${HOME}/opt/npmglobal/bin
+${HOME}/opt/npmglobal/sbin
+${HOME}/test spaces in path
+${HOME}/Library/Python/3.8/bin
+${HOME}/Library/Python/3.9/bin
+/Library/Frameworks/Python.framework/Versions/3.8/bin
+/opt/homebrew/bin
+/opt/homebrew/sbin
+/usr/pkg/bin
+/usr/pkg/sbin
+/usr/local/bin
+/usr/local/sbin
+/usr/bin
+/usr/sbin
+/bin
+/sbin
+/Applications/FontForge.app/Contents/Resources/opt/local/bin
+/Applications/QMK Toolbox.app/Contents/Resources
+/c/WINDOWS
+/c/WINDOWS/system32/Wbem
+/c/WINDOWS/system32
+/c/MinGW/bin
+/c/MinGW/sbin
+/c/MinGW/msys/1.0/bin
+/c/MinGW/msys/1.0/sbin
+${GOROOT:-""}/bin
+${GOPATH:-""}/bin
+${PATH}
+"
+
+export PATH=$("$DHD/opt/bin/pathsetup" "$POSSIBLE_PATHS")
+
+if ! test "$MANPATH"; then
+    if cmdavail manpath; then
+        export MANPATH=$(manpath)
+    else
+        export MANPATH="/usr/share/man"
+    fi
+fi
+
+HOMEBREWDIR=
+GOROOT=
+if cmdavail brew; then
+    # This is NOT a standard environment variable, for some reason
+    HOMEBREWDIR=$(dirname "$(dirname "$(command -v brew)")")
+
+    if test -d "$HOMEBREWDIR/opt/go" && test -z "$GOROOT"; then
+        GOROOT="$HOMEBREWDIR/opt/go/libexec"
+    fi
+fi
+
+NPM_PACKAGES=
+if cmdavail npm; then
+    NPM_PACKAGES="${HOME}/.npm-packages"
+    npm config set update-notifier false
+    npm config set send-metrics false
+    npm config set prefix "${HOME}/.npm-packages"
+    export PATH="$(pathsetup "${PATH}:${NPM_PACKAGES}/bin")"
+    export MANPATH="${MANPATH}:${NPM_PACKAGES}/share/man"
+fi
+
+RUBY_GEMS_PATHS=
+if cmdavail ruby; then
+    RUBY_GEMS_PATHS="$(ruby -rrubygems -e 'puts "%s/bin:%s/bin" % [Gem.dir, Gem.user_dir]')"
+    export PATH="$(pathsetup "$PATH:$RUBY_GEMS_PATHS")"
+fi
+
+if test -e "$HOME/Library/Android/sdk"; then
+    export ANDROID_HOME="$HOME/Library/Android/sdk"
+    export PATH="$PATH:$ANDROID_HOME/emulator"
+    export PATH="$PATH:$ANDROID_HOME/tools"
+    export PATH="$PATH:$ANDROID_HOME/tools/bin"
+    export PATH="$PATH:$ANDROID_HOME/platform-tools"
+fi
+
+export EDITOR=vi
+if cmdavail vimr; then
+    export EDITOR="vimr --wait --cur-env"
+elif cmdavail nvim; then
+    export EDITOR=nvim
+elif cmdavail vim; then
+    export EDITOR=vim
+fi
+
+DHD_LS_TYPE=
+if ls --version 2>/dev/null | grep -q GNU; then
+    DHD_LS_TYPE=gnu
+elif ls -h -G >/dev/null 2>&1; then
+    DHD_LS_TYPE=bsd
+fi
+
+# Fucking environment variables on macOS
+if cmdavail launchctl && test "$LANG"; then
+    launchctl setenv LC_ALL "$LANG"
+fi
+
+# Test for a grep that supports --color=auto, which includes GNU, FreeBSD, and macOS greps
+DHD_GREP_SUPPORTS_COLOR_AUTO=
+if echo x | grep -q --color=auto x 2>/dev/null; then
+    DHD_GREP_SUPPORTS_COLOR_AUTO=1
+fi
+
+
+test -e "$SHDETECT_RESULTS" && rm "$SHDETECT_RESULTS"
+genresults() {
+    cat <<ENDRESULTS
+# AUTO GENERATED FILE - MODIFICATIONS WILL BE OVERWRITTEN BY
+# $0
+# GENERATED $(date +%Y%m%d-%H%M%S)
+
+export PATH="$PATH"
+export MANPATH="$MANPATH"
+export GOROOT="$GOROOT"
+export GOPATH="$GOPATH"
+export NPM_PACKAGES="$NPM_PACKAGES"
+export RUBY_GEMS_PATHS="$RUBY_GEMS_PATHS"
+export ANDROID_HOME="$ANDROID_HOME"
+export EDITOR="$EDITOR"
+export VISUAL="$EDITOR"
+export FSEDIT="$EDITOR"
+export DHD_LS_TYPE="$DHD_LS_TYPE"
+export DHD_LS_SUPPORTS_COLOR_AUTO="$DHD_LS_SUPPORTS_COLOR_AUTO"
+ENDRESULTS
+}
+genresults | tee "$SHDETECT_RESULTS"
+echo "Now log in again, or run the '.b' alias"
