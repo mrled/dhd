@@ -138,7 +138,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.tabSize": 2
   },
-  "python.languageServer": "Pylance",
   "telemetry.enableCrashReporter": false,
   "dotnetAcquisitionExtension.enableTelemetry": false,
   "[yaml]": {
@@ -182,5 +181,13 @@
   "yaml.validate": false,
   "prettier.requireConfig": true,
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "python.showStartPage": false
+  "python.showStartPage": false,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": "/Users/mrled/Library/Python/3.9/bin/black",
+  "[python]": {
+
+    "editor.wordBasedSuggestions": false
+  },
+  "python.defaultInterpreterPath": "/Users/mrled/opt/homebrew/bin/python3"
 }
