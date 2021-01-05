@@ -40,7 +40,6 @@ ENDUSAGE
 
 pathsetuplog() {
     if test "$PATHSETUPLOG"; then
-        touch "$PATHSETUPLOG"
         echo "$@" >> "$PATHSETUPLOG"
     fi
 }
@@ -52,6 +51,10 @@ if test $# != 1; then
 elif test "$1" = "-h"; then
     usage
     exit 0
+fi
+
+if test "$PATHSETUPLOG"; then
+    touch "$PATHSETUPLOG"
 fi
 
 pathlike=$1
