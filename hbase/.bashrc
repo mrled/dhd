@@ -74,13 +74,13 @@ shopt -s histappend
 
 if ls --version 2>/dev/null | grep -q GNU; then
     # GNU ls command
-    alias ls="ls -F -H --color"
+    alias ls="ls -LFhN --color=always"
 elif ls -h -G >/dev/null 2>&1; then
     # BSD ls commands, such as FreeBSD or macOS
-    alias ls="ls -F -h -G"
+    alias ls="ls -LFhG"
 else
     # POSIX supported
-    alias ls="ls -F"
+    alias ls="ls -LF"
 fi
 alias lsa='ls -a'
 alias lsl='ls -a -l'
