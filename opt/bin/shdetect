@@ -161,6 +161,7 @@ genresults() {
 # $0
 # GENERATED $(date +%Y%m%d-%H%M%S)
 
+export DHD_SHDETECT_INCLUDED=1
 export PATH="$PATH"
 export MANPATH="$MANPATH"
 export GOROOT="$GOROOT"
@@ -175,5 +176,6 @@ export DHD_LS_TYPE="$DHD_LS_TYPE"
 export DHD_LS_SUPPORTS_COLOR_AUTO="$DHD_LS_SUPPORTS_COLOR_AUTO"
 ENDRESULTS
 }
-genresults | tee "$SHDETECT_RESULTS"
+genresults > "$SHDETECT_RESULTS"
+echo "Generated data saved to $SHDETECT_RESULTS"
 echo "Now log in again, or run the '.b' alias"

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# .bashrc expects that shdetect has already been run.
+# .bashrc expects a working ~/.dhd checkout and will dot-source dhd's .profile
+# if that hasn't already happened.
+# If shdetect isn't working after the .profile dot-source, it will stop execution.
+#
 # .bashrc should contain ONLY statements that apply to interactive bash shells
 # Bashisms are obviously appropriate here
 # Try not to rely on non-POSIX tools (like GNU grep), or that a given optional
@@ -15,6 +20,10 @@ export DHD=${DHD:-"$HOME/.dhd"}
 MRL_BASHRC_GUARD=1
 if test -z "$MRL_PROFILE_GUARD"; then
     . $DHD/hbase/.profile
+fi
+
+if test -z "$DHD_SHDETECT_INCLUDED"; then
+    return
 fi
 
 interactive=

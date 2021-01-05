@@ -41,9 +41,8 @@ export PERL_MM_USE_DEFAULT=1
 
 # Source shell-specific init files, but only if we have run shdetect.
 # Shell-specific init files like bashrc assume functioning dhd, because they are stored in dhd.
-if test "$SHDETECT_RESULTS"; then
+if test "$DHD_SHDETECT_INCLUDED"; then
     if test -z "$MRL_BASHRC_GUARD" && test "$BASH_VERSION"; then
         . "$DHD/hbase/.bashrc"
     fi
 fi
-
