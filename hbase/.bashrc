@@ -14,6 +14,9 @@
 # If possible, test for non-POSIX extensions before using in this file
 # This file may be sourced multiple times; all settings should be idempotent
 
+# For fuck's sake, Apple
+export BASH_SILENCE_DEPRECATION_WARNING=1
+
 # We use this to find paths inside dhd
 export DHD=${DHD:-"$HOME/.dhd"}
 
