@@ -27,7 +27,7 @@ if test -e "$SHDETECT_RESULTS"; then
     . "$SHDETECT_RESULTS"
 else
     echo "WARNING: Missing shdetect results at $SHDETECT_RESULTS"
-    echo "WARNING: run $DHD/opt/bin/shdetect"
+    echo "WARNING: run $DHD/opt/bin/dhd-shdetect"
 fi
 
 export PYTHONSTARTUP=$DHD/hbase/python.profile
