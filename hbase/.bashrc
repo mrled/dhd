@@ -29,10 +29,30 @@ if ! test "$interactive"; then
     return
 fi
 
+# The most important thing in this whole file
+if cmdavail lolcatjs; then
+    alias outfilter=lolcatjs
+else
+    alias outfilter=cat
+fi
+export FIGLET_FONTS="$HOME/Documents/Repositories/psyops/docker/setup/figlet-fonts"
+if cmdavail figlet; then
+    if test -d "$FIGLET_FONTS"; then
+        echo ""
+        #banner="$(whoami) @ $(hostname -s)"
+        banner="usb ports like cocaine"
+        figlet -f "$FIGLET_FONTS/future" "$banner" |
+            outfilter
+    fi
+fi
+export FORTUNATE_CHECKOUT="$HOME/Documents/Repositories/fortunate"
 if cmdavail fortune; then
-    fortunate_checkout="$HOME/Documents/Repositories/fortunate"
-    if test -d "$fortunate_checkout"; then
-        fortune "$fortunate_checkout/invisiblestates/invisiblestates"
+    #fortdb="$FORTUNATE_CHECKOUT/invisiblestates/invisiblestates"
+    fortdb="$FORTUNATE_CHECKOUT/tweets/ctrlcreep.tweets"
+    if test -d "$FORTUNATE_CHECKOUT"; then
+        fortune "$fortdb" |
+            fold -w 80 -s |
+            outfilter
     fi
 fi
 
