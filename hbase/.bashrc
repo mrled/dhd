@@ -41,32 +41,6 @@ if ! test "$interactive"; then
     return
 fi
 
-# The most important thing in this whole file
-if cmdavail lolcatjs; then
-    alias outfilter=lolcatjs
-else
-    alias outfilter=cat
-fi
-export FIGLET_FONTS="$HOME/Documents/Repositories/psyops/docker/setup/figlet-fonts"
-if cmdavail figlet; then
-    if test -d "$FIGLET_FONTS"; then
-        echo ""
-        #banner="$(whoami) @ $(hostname -s)"
-        banner="usb ports like cocaine"
-        figlet -f "$FIGLET_FONTS/future" "$banner" |
-            outfilter
-    fi
-fi
-export FORTUNATE_CHECKOUT="$HOME/Documents/Repositories/fortunate"
-if cmdavail fortune; then
-    #fortdb="$FORTUNATE_CHECKOUT/invisiblestates/invisiblestates"
-    fortdb="$FORTUNATE_CHECKOUT/tweets/ctrlcreep.tweets"
-    if test -d "$FORTUNATE_CHECKOUT"; then
-        fortune "$fortdb" |
-            fold -w 80 -s |
-            outfilter
-    fi
-fi
 
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
 set -o pipefail
@@ -287,4 +261,10 @@ if test -d "$HOME/.bashrc.d"; then
     for script in $(find "$HOME/.bashrc.d" -type f); do
         . "$script"
     done
+fi
+
+if test -e "$DHD/hosts/$DHD_HOSTNAME/motd.sh"; then
+    . "$DHD/hosts/$DHD_HOSTNAME/motd.sh"
+else
+    . "$DHD/hosts/default/motd.sh"
 fi

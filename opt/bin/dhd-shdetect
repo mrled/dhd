@@ -152,6 +152,35 @@ if echo x | grep -q --color=auto x 2>/dev/null; then
 fi
 
 
+# Normalize hostnames
+# Some hostnames are unchangeable and bad, like my work laptop's hostname.
+# These we set explicitly.
+# Other hostnames are just the lower case short hostname (without fqdn).
+DHD_HOSTNAME=
+uname_n_lower="$(uname -n | tr '[:upper:]' '[:lower:]')"
+case "$uname_n_lower" in
+    "virtu’s-macbook-pro*") DHD_HOSTNAME=virtumbp;;
+    *) DHD_HOSTNAME="${uname_n_lower%%.*}";;
+esac
+
+
+# Available commands
+# Can test for them with
+#    test "${DHD_CMDAVAIL#*cmd_name}" != "$DHD_CMDAVAIL"
+DHD_CMDAVAIL=
+cmdavail lolcatjs && DHD_CMDAVAIL="$DHD_CMDAVAIL lolcatjs"
+cmdavail figlet && DHD_CMDAVAIL="$DHD_CMDAVAIL figlet"
+cmdavail fortune && DHD_CMDAVAIL="$DHD_CMDAVAIL fortune"
+
+# motd stuff
+figlet_font_dir="$HOME/Documents/Repositories/psyops/docker/setup/figlet-fonts"
+DHD_FIGLET_FONTS=
+test -e "$figlet_font_dir" && DHD_FIGLET_FONTS="$figlet_font_dir"
+fortunate_checkout="$HOME/Documents/Repositories/fortunate"
+FORTUNATE_CHECKOUT=
+test -e "$fortunate_checkout" && FORTUNATE_CHECKOUT="$fortunate_checkout"
+
+
 test -e "$SHDETECT_RESULTS" && rm "$SHDETECT_RESULTS"
 genresults() {
     cat <<ENDRESULTS
@@ -172,6 +201,17 @@ export VISUAL="$EDITOR"
 export FSEDIT="$EDITOR"
 export DHD_LS_TYPE="$DHD_LS_TYPE"
 export DHD_LS_SUPPORTS_COLOR_AUTO="$DHD_LS_SUPPORTS_COLOR_AUTO"
+export DHD_HOSTNAME="$DHD_HOSTNAME"
+export DHD_CMDAVAIL="$DHD_CMDAVAIL"
+export DHD_FIGLET_FONTS="$DHD_FIGLET_FONTS"
+export FORTUNATE_CHECKOUT="$FORTUNATE_CHECKOUT"
+
+# Very fast way to test precomputed command availability
+dhd_cmdavail() {
+    test "\${DHD_CMDAVAIL#*\$1}" != "\$DHD_CMDAVAIL"
+    return \$?
+}
+
 ENDRESULTS
 }
 genresults > "$SHDETECT_RESULTS"
