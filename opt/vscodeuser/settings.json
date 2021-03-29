@@ -189,5 +189,11 @@
 
     "editor.wordBasedSuggestions": false
   },
-  "python.defaultInterpreterPath": "/Users/mrled/opt/homebrew/bin/python3"
+  "python.defaultInterpreterPath": "/Users/mrled/opt/homebrew/bin/python3",
+  "workbench.editorAssociations": [
+    {
+      "viewType": "jupyter.notebook.ipynb",
+      "filenamePattern": "*.ipynb"
+    }
+  ]
 }
