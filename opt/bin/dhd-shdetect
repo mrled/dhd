@@ -38,7 +38,10 @@ done
 # Order is important in $PATH; earlier entries are searched first
 # Some specific notes:
 # * npmglobal can be customized: https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
+# * Homebrew python should be preempted by a Python installation from python.org
+#   <https://justinmayer.com/posts/homebrew-python-is-not-for-you/>
 POSSIBLE_PATHS="
+/Library/Frameworks/Python.framework/Versions/3.9/bin
 ${HOME}/opt/lib/miniconda3/bin
 ${HOME}/opt/bin
 ${HOME}/opt/sbin
