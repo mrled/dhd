@@ -1,0 +1,52 @@
+#!/bin/sh
+set -eu
+
+cmdname=`basename "$0"`
+siteuri="https://me.micahrl.com"
+
+usage() {
+    cat <<ENDUSAGE
+Usage: $cmdname [-h] [-l] [-u] <FORMULA> <DESTINATION>
+Retrieve a formula from https://me.micahrl.com/formulae.
+
+ARGUMENTS
+    -h | --help:    Print help and exit
+    -l | --list:    Retrieve a list of formulae and exit
+    -u | --uri:     Use a different URI than '$siteuri' (for local testing)
+    FORMULA:        The name of the formula
+    DESTINATION:    Where to save it on the local filesystem
+ENDUSAGE
+}
+
+formula=
+destination=
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help ) usage; exit 0;;
+        -l | --list )
+            curl "$siteuri/formulae/index.formulae.txt"
+            exit;;
+        -u | --uri )
+            siteuri="$2"
+            shift 2;;
+        *)
+            if test -z "$formula"; then
+                formula="$1"
+            elif test -z "$destination"; then
+                destination="$1"
+            else
+                usage
+                exit 1
+            fi
+            shift;;
+    esac
+done
+
+if test -z "$formula" || test -z "$destination"; then
+    usage
+    exit 1
+fi
+
+mkdir -p "$(dirname $destination)"
+curl -L -o "$destination" "$siteuri/q/$formula"
+chmod 700 "$destination"
