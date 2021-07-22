@@ -42,6 +42,8 @@ if ! test "$interactive"; then
 fi
 
 
+export CDPATH="$HOME:$HOME/Documents:$HOME/Documents/Repositories"
+
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
 set -o pipefail
 
