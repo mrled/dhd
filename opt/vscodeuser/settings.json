@@ -74,7 +74,9 @@
     "**/.git": true,
     "**/.svn": true,
     "**/.hg": true,
-    "**/*.js": { "when": "$(basename).ts" },
+    "**/*.js": {
+      "when": "$(basename).ts"
+    },
     "**/*.js.map": true,
     "**/*.pyc": true,
     "**/CVS": true,
@@ -125,10 +127,8 @@
   "telemetry.enableTelemetry": false,
   "terminal.integrated.shell.windows": "C:\\Windows\\sysnative\\WindowsPowerShell\\v1.0\\powershell.exe",
   "window.restoreWindows": "all",
-  "window.zoomLevel": -1,
   "workbench.startupEditor": "newUntitledFile",
   "workbench.tips.enabled": false,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -179,21 +179,24 @@
     "!Split sequence"
   ],
   "yaml.validate": false,
-  "prettier.requireConfig": true,
   "typescript.updateImportsOnFileMove.enabled": "always",
   "python.showStartPage": false,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "python.formatting.provider": "black",
   "python.formatting.blackPath": "/Users/mrled/Library/Python/3.9/bin/black",
   "[python]": {
-
     "editor.wordBasedSuggestions": false
   },
   "python.defaultInterpreterPath": "/Users/mrled/opt/homebrew/bin/python3",
-  "workbench.editorAssociations": [
-    {
-      "viewType": "jupyter.notebook.ipynb",
-      "filenamePattern": "*.ipynb"
-    }
-  ]
+  "workbench.editorAssociations": {
+    "*.ipynb": "jupyter-notebook"
+  },
+  "python.linting.mypyEnabled": true,
+  "workbench.editor.untitled.hint": "hidden",
+  "window.zoomLevel": -1,
+  "typescript.surveys.enabled": false,
+  "notebook.cellToolbarLocation": {
+    "default": "right",
+    "jupyter-notebook": "left"
+  }
 }
