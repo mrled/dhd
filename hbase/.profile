@@ -32,6 +32,9 @@ fi
 
 export PYTHONSTARTUP=$DHD/hbase/python.profile
 
+# rustup configures this
+test -e "$HOME/.cargo/env" && . "$HOME/.cargo/env"
+
 # LESSOPEN is not always set with security in mind, especially on desktop distros
 # See also: https://marc.info/?l=full-disclosure&m=141678420425808&w=2
 export LESSOPEN=
