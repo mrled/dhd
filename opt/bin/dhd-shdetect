@@ -62,6 +62,7 @@ ${HOME}/Library/Python/3.9/bin
 /opt/homebrew/sbin
 /usr/pkg/bin
 /usr/pkg/sbin
+/usr/local/go/bin
 /usr/local/bin
 /usr/local/sbin
 /usr/bin
@@ -101,6 +102,14 @@ if cmdavail brew; then
     if test -d "$HOMEBREWDIR/opt/go" && test -z "$GOROOT"; then
         GOROOT="$HOMEBREWDIR/opt/go/libexec"
     fi
+
+    # I can't remember why I had this in here. Commenting out in case I need to remember later.
+    # if test -d "$HOMEBREWDIR/opt/openssl@1.1"; then
+    #     export PATH="$HOMEBREWDIR/opt/openssl@1.1/bin:$PATH"
+    #     export LDFLAGS="-L$HOMEBREWDIR/opt/openssl@1.1/lib"
+    #     export CPPFLAGS="-I$HOMEBREWDIR/opt/openssl@1.1/include"
+    #     export PKG_CONFIG_PATH="$HOMEBREWDIR/opt/openssl@1.1/lib/pkgconfig"
+    # fi
 fi
 
 NPM_PACKAGES=
@@ -208,6 +217,7 @@ export DHD_HOSTNAME="$DHD_HOSTNAME"
 export DHD_CMDAVAIL="$DHD_CMDAVAIL"
 export DHD_FIGLET_FONTS="$DHD_FIGLET_FONTS"
 export FORTUNATE_CHECKOUT="$FORTUNATE_CHECKOUT"
+export HOMEBREWDIR="$HOMEBREWDIR"
 
 # Very fast way to test precomputed command availability
 dhd_cmdavail() {
