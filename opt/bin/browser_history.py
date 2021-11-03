@@ -68,6 +68,24 @@ class FirefoxProfileUrls:
     bookmarks: typing.List[FirefoxBookmarkEntry]
 
 
+"""
+TODO: Add support for other browsers
+
+Safari:
+    default="~/Library/Safari/History.db"
+    cp "$default" "$OUTPUT_DIR/safari_history.db.tmp"
+
+    sqlite3 "$OUTPUT_DIR/safari_history.db.tmp" "select url from history_items" > "$OUTPUT_DIR/safari_history.json"
+
+Chrome:
+    default=$(ls ~/Library/Application\ Support/Google/Chrome/Default/History)
+    cp "$default" "$OUTPUT_DIR/chrome_history.db.tmp"
+
+    sqlite3 "$OUTPUT_DIR/chrome_history.db.tmp" "SELECT \"[\" || group_concat(json_object('timestamp', last_visit_time, 'description', title, 'href', url)) || \"]\" FROM urls;" > "$OUTPUT_DIR/chrome_history.json"
+    jq < "$(dirname "${2:-$default}")"/Bookmarks '.roots.other.children[] | {href: .url, description: .name, timestamp: .date_added}' > "$OUTPUT_DIR/chrome_bookmarks.json"
+"""
+
+
 def archivebox_ff_profiles(newerthan=None) -> typing.List[FirefoxProfileUrls]:
     """Run archivebox for all firefox profiles (assumes macOS)"""
     ff_profiles_parent = resolvepath("~/Library/Application Support/Firefox/Profiles")
