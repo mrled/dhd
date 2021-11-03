@@ -257,7 +257,11 @@ bashprompt() {
 
     export PS1="${init}${date} ${exitcode} ${hostname} ${jobcount} ${workdir} ${lcop} "
 }
-export PROMPT_COMMAND=bashprompt
+
+# Currently, Warp can't handle PROMPT_COMMAND
+if test "$TERM_PROGRAM" != "WarpTerminal"; then
+    export PROMPT_COMMAND=bashprompt
+fi
 
 if test -d "$HOME/.bashrc.d"; then
     for script in $(find "$HOME/.bashrc.d" -type f); do
@@ -270,3 +274,13 @@ if test -e "$DHD/hosts/$DHD_HOSTNAME/motd.sh"; then
 else
     . "$DHD/hosts/default/motd.sh"
 fi
+
+PATH="/Users/mrled/perl5/bin${PATH:+:${PATH}}"; export PATH;
+PERL5LIB="/Users/mrled/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
+PERL_LOCAL_LIB_ROOT="/Users/mrled/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
+PERL_MB_OPT="--install_base \"/Users/mrled/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/Users/mrled/perl5"; export PERL_MM_OPT;
+
+# Jesus fucking christ these people are just so fucking tacky
+export DOCKER_SCAN_SUGGEST=false
+
