@@ -42,6 +42,7 @@ done
 #   <https://justinmayer.com/posts/homebrew-python-is-not-for-you/>
 POSSIBLE_PATHS="
 /Library/Frameworks/Python.framework/Versions/3.9/bin
+/Library/PostgreSQL/13/bin
 ${HOME}/opt/lib/miniconda3/bin
 ${HOME}/opt/bin
 ${HOME}/opt/sbin
