@@ -3,6 +3,7 @@
 
 import argparse
 import collections
+import collections.abc
 import dataclasses
 import datetime
 import logging
@@ -155,7 +156,7 @@ def archivebox_ff_profiles(newerthan=None) -> typing.List[FirefoxProfileUrls]:
     # subprocess.run(['archivebox', 'add'], input=bookmarks)
 
 
-def show_profiles_urls(profiles, bookmarks=False, history=False):
+def show_profiles_urls_metadata(profiles, bookmarks=False, history=False):
     """Given a list of FirefoxProfileUrls objects, show the URLs"""
     for profile in profiles:
         print(f"Profile {profile.profile}")
@@ -167,6 +168,17 @@ def show_profiles_urls(profiles, bookmarks=False, history=False):
             print("Bookmarks")
             for entry in profile.bookmarks:
                 print(entry)
+
+
+def show_profiles_urls(profiles, bookmarks=False, history=False):
+    """Given a list of FirefoxProfileUrls objects, show the URLs"""
+    for profile in profiles:
+        if history:
+            for entry in profile.history:
+                print(entry.url)
+        if bookmarks:
+            for entry in profile.bookmarks:
+                print(entry.url)
 
 
 def urlentries2domains(entries):
@@ -231,28 +243,59 @@ def parseargs(arguments: typing.List[str]):
     )
     parser.add_argument(
         "--process",
-        default="show",
-        choices=["show", "domainstats"],
-        help="How to process the result. Show all with 'show', calculate domain stats with 'domainstats'.",
+        default="urls-metadata",
+        choices=["urls-metadata", "urls", "domainstats"],
+        help="How to process the result. Show URL/title/date with 'urls-metadata', show just URLs with 'urls', calculate domain stats with 'domainstats'.",
     )
     parsed = parser.parse_args(arguments)
     return parsed
 
 
-def main(*arguments):
+# A function that works like a typical Unix main() function
+MainFunction = collections.abc.Callable[[typing.List[str], int]]
+
+
+def main(*arguments: typing.List[str]) -> int:
     """Main program"""
     parsed = parseargs(arguments[1:])
     if parsed.debug:
         sys.excepthook = idb_excepthook
+        logger.setLevel(logging.DEBUG)
 
     profiles = archivebox_ff_profiles(newerthan=parsed.newer_than)
     urls_bookmarks = parsed.urls in ["bookmarks", "all"]
     urls_history = parsed.urls in ["history", "all"]
-    if parsed.process == "show":
+    if parsed.process == "urls-metadata":
+        show_profiles_urls_metadata(profiles, urls_bookmarks, urls_history)
+    elif parsed.process == "urls":
         show_profiles_urls(profiles, urls_bookmarks, urls_history)
     elif parsed.process == "domainstats":
         domainstats_profiles_urls(profiles, urls_bookmarks, urls_history)
+    else:
+        raise Exception(f"Unknown value for --process: {parsed.process}")
+
+    return 0
+
+
+def broken_pipe_handler(func: MainFunction, *arguments: typing.List[str]) -> int:
+    """Handler for broken pipes
+
+    Wrap the main() function in this to properly handle broken pipes
+    without a giant nastsy backtrace.
+
+    See <https://docs.python.org/3/library/signal.html#note-on-sigpipe>
+    """
+    try:
+        returncode = func(*arguments)
+        sys.stdout.flush()
+    except BrokenPipeError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        # Convention is 128 + whatever the return code would otherwise be
+        returncode = 128 + 1
+    return returncode
 
 
 if __name__ == "__main__":
-    sys.exit(main(*sys.argv))
+    exitcode = broken_pipe_handler(main, *sys.argv)
+    sys.exit(exitcode)
