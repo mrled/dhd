@@ -193,10 +193,12 @@
   },
   "python.linting.mypyEnabled": true,
   "workbench.editor.untitled.hint": "hidden",
-  "window.zoomLevel": -1,
   "typescript.surveys.enabled": false,
   "notebook.cellToolbarLocation": {
     "default": "right",
     "jupyter-notebook": "left"
-  }
+  },
+  "security.workspace.trust.untrustedFiles": "open",
+  "prettier.requireConfig": true,
+  "window.zoomLevel": -1
 }
