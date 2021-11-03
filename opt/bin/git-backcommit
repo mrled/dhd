@@ -8,8 +8,14 @@ usage() {
     cat << ENDUSAGE
 git-backcommit: [-h|--help] <date> <args...>
 Make a commit with a certain date
-date: A date in git format, like "Sun Aug 30 19:48:32 2020 -0500"
-args: Others to send to 'git commit'.
+
+    date: A date in git format, like "Sun Aug 30 19:48:32 2020 -0500"
+    args: Others to send to 'git commit'.
+
+DATE FORMATTING
+
+The final word on date formatting comes from the
+https://github.com/git/git/blob/master/Documentation/date-formats.txt
 ENDUSAGE
 }
 
