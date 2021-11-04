@@ -20,6 +20,11 @@ import traceback
 import typing
 
 
+MIN_PYTHON = (3, 9)
+if sys.version_info < MIN_PYTHON:
+    sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
+
+
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s"
 )
@@ -66,29 +71,10 @@ class BrowserBookmarkEntry:
 
 @dataclasses.dataclass
 class BrowserProfile:
+    browser: str
     profile: str
     history: typing.List[BrowserHistoryEntry]
     bookmarks: typing.List[BrowserBookmarkEntry]
-
-
-'''
-TODO: Add support for other browsers
-
-Safari:
-    default="~/Library/Safari/History.db"
-    cp "$default" "$OUTPUT_DIR/safari_history.db.tmp"
-
-    sqlite3 "$OUTPUT_DIR/safari_history.db.tmp" "select url from history_items" > "$OUTPUT_DIR/safari_history.json"
-
-                _SQL = """SELECT url, title, datetime(visit_time + 978307200, 'unixepoch', 'localtime')
-                                    FROM history_visits INNER JOIN history_items ON history_items.id = history_visits.history_item ORDER BY visit_time DESC"""
-
-Chrome:
-    default=$(ls ~/Library/Application\ Support/Google/Chrome/Default/History)
-    cp "$default" "$OUTPUT_DIR/chrome_history.db.tmp"
-
-    sqlite3 "$OUTPUT_DIR/chrome_history.db.tmp" "SELECT \"[\" || group_concat(json_object('timestamp', last_visit_time, 'description', title, 'href', url)) || \"]\" FROM urls;" > "$OUTPUT_DIR/chrome_history.json"
-'''
 
 
 def get_safari_urls(newerthan=None) -> typing.List[BrowserProfile]:
@@ -130,7 +116,7 @@ def get_safari_urls(newerthan=None) -> typing.List[BrowserProfile]:
                 if i["WebBookmarkType"] == "WebBookmarkTypeLeaf"
             ]
 
-    profile = BrowserProfile(profile_dir, history, bookmarks)
+    profile = BrowserProfile("Safari", profile_dir, history, bookmarks)
     return [profile]
 
 
@@ -198,7 +184,7 @@ def get_chrome_urls(newerthan=None) -> typing.List[BrowserProfile]:
                     bookmarks_data = json.load(bkmkfp)
                 bookmarks = chrome_bookmarks_extractor(bookmarks_data)
 
-            result += [BrowserProfile(resolvedchild, history, bookmarks)]
+            result += [BrowserProfile("Chrome", resolvedchild, history, bookmarks)]
 
     return result
 
@@ -261,34 +247,79 @@ def get_firefox_urls(newerthan=None) -> typing.List[BrowserProfile]:
             # for b in bookmarks:
             #     print(f"{b['url']} ({b['title']}) @{b['dateAdded']}")
 
-            result += [BrowserProfile(resolvedchild, history, bookmarks)]
+            result += [BrowserProfile("Firefox", resolvedchild, history, bookmarks)]
 
     return result
 
 
-def show_profiles_urls_metadata(profiles, bookmarks=False, history=False):
-    """Given a list of FirefoxProfileUrls objects, show the URLs"""
+def profiles_html(
+    profiles: typing.List[BrowserProfile],
+    bookmarks: bool = False,
+    history: bool = False,
+):
+    """Given a list of BrowserProfile objects, return an HTML report."""
+    result = []
+    result += ["<h1>Browser profiles</h1>"]
     for profile in profiles:
-        print(f"Profile {profile.profile}")
+        result += [f"<h2>{profile.browser} profile at {profile.profile}</h2>"]
         if history:
-            print("History")
+            result += [f"<h3>History</h3>"]
+            result += ["<ul>"]
             for entry in profile.history:
-                print(entry)
+                result += [
+                    f'<li><a href="{entry.url}">{entry.title} @{entry.last_visited}</a></li>'
+                ]
+            result += ["</ul>"]
         if bookmarks:
-            print("Bookmarks")
+            result += [f"<h3>Bookmarks</h3>"]
+            result += ["<ul>"]
             for entry in profile.bookmarks:
-                print(entry)
+                result += [
+                    f'<li><a href="{entry.url}">{entry.title} @{entry.bookmarked}</a></li>'
+                ]
+            result += ["</ul>"]
+    return "\n".join(result)
 
 
-def show_profiles_urls(profiles, bookmarks=False, history=False):
-    """Given a list of FirefoxProfileUrls objects, show the URLs"""
+def profiles_markdown(
+    profiles: typing.List[BrowserProfile],
+    bookmarks: bool = False,
+    history: bool = False,
+):
+    """Given a list of BrowserProfile objects, return a Markdown report."""
+    result = []
+    result += ["# Browser profiles", ""]
     for profile in profiles:
+        result += [f"## {profile.browser} profile at {profile.profile}", ""]
         if history:
+            result += [f"### History", ""]
             for entry in profile.history:
-                print(entry.url)
+                result += [f"- [{entry.title @{entry.last_visited}}]({entry.url})"]
+            result += [""]
         if bookmarks:
+            result += ["### Bookmarks", ""]
             for entry in profile.bookmarks:
-                print(entry.url)
+                result += [f"- [{entry.title} @{entry.bookmarked}]({entry.url})"]
+            result += [""]
+    return "\n".join(result)
+
+
+def profiles_urls_txt(
+    profiles: typing.List[BrowserProfile],
+    bookmarks: bool = False,
+    history: bool = False,
+):
+    """Given a list of BrowserProfile objects, return a list of URLs."""
+    result = []
+    for profile in profiles:
+        hurls = []
+        if history:
+            hurls = [entry.url for entry in profile.history]
+        burls = []
+        if bookmarks:
+            burls += [entry.url for entry in profile.bookmarks]
+        result += hurls + burls
+    return "\n".join(result)
 
 
 def urlentries2domains(entries):
@@ -310,23 +341,34 @@ def show_sorted_uniq_count_items(items: typing.List[str]):
     collectionctr = collections.Counter(items).most_common()
     sorted_collectionctr = sorted(collectionctr, key=lambda d: d[1])
     largest_count = sorted_collectionctr[-1][1]
+    result = []
     for item, count in sorted_collectionctr:
-        print(f"{str(count).ljust(len(str(largest_count)), ' ')} {item}")
+        result += [f"{str(count).ljust(len(str(largest_count)), ' ')} {item}"]
+    return result
 
 
-def domainstats_profiles_urls(
-    profiles: typing.List[BrowserProfile], bookmarks=False, history=False
+def profiles_urls_domainstats(
+    profiles: typing.List[BrowserProfile],
+    bookmarks: bool = False,
+    history: bool = False,
 ):
-    """Given a list of FirefoxProfileUrls objects, show domain stats"""
+    """Given a list of BrowserProfile objects, show domain stats"""
+    result = []
     for profile in profiles:
-        print(f"Profile {profile.profile}")
+        result += [f"Profile {profile.profile}"]
         if history:
-            print("History")
-            show_sorted_uniq_count_items(urlentries2domains(profile.history))
+            result += ["History"]
+            if profile.history:
+                result += show_sorted_uniq_count_items(
+                    urlentries2domains(profile.history)
+                )
         if bookmarks:
-            print("Bookmarks")
-            show_sorted_uniq_count_items(urlentries2domains(profile.bookmarks))
-    return
+            result += ["Bookmarks"]
+            if profile.bookmarks:
+                result += show_sorted_uniq_count_items(
+                    urlentries2domains(profile.bookmarks)
+                )
+    return "\n".join(result)
 
 
 def parseargs(arguments: typing.List[str]):
@@ -347,21 +389,26 @@ def parseargs(arguments: typing.List[str]):
         help="Which browsers to get history from",
     )
     parser.add_argument(
-        "--newer-than",
-        default="",
-        help="Only look at Firefox history newer than this date. Could slowly move this back as more and more history gets archived with time.",
+        "--history-newer-than",
+        help="Only look at browser history newer than this date. Has no effect on bookmarks. Could slowly move this back as more and more history gets archived with time.",
     )
     parser.add_argument(
-        "--urls",
-        default="all",
-        choices=["bookmarks", "history", "all"],
-        help="Which URLs to return, either 'bookmarks' or 'history' or 'all'.",
+        "--history",
+        default=True,
+        action=argparse.BooleanOptionalAction,
+        help="Return history (default True)",
     )
     parser.add_argument(
-        "--process",
-        default="urls-metadata",
-        choices=["urls-metadata", "urls", "domainstats"],
-        help="How to process the result. Show URL/title/date with 'urls-metadata', show just URLs with 'urls', calculate domain stats with 'domainstats'.",
+        "--bookmarks",
+        default=True,
+        action=argparse.BooleanOptionalAction,
+        help="Return bookmarks (default True)",
+    )
+    parser.add_argument(
+        "--format",
+        default="html",
+        choices=["html", "markdown", "urls", "domainstats"],
+        help="The output format. html: A list with <a href='http://...'>Title @ date</a>. markdown: A list with [Title @ date](http://...) urls: Just the URLs, one per line. domainstats: Calculate number of times each domain is present (calculated separately per profile).",
     )
     parsed = parser.parse_args(arguments)
     return parsed
@@ -380,24 +427,23 @@ def main(*arguments: typing.List[str]) -> int:
 
     profiles = []
 
-    urls_bookmarks = parsed.urls in ["bookmarks", "all"]
-    urls_history = parsed.urls in ["history", "all"]
-
     if parsed.browsers in ["firefox", "all"]:
-        profiles += get_firefox_urls(newerthan=parsed.newer_than)
+        profiles += get_firefox_urls(newerthan=parsed.history_newer_than)
     if parsed.browsers in ["chrome", "all"]:
-        profiles += get_chrome_urls(newerthan=parsed.newer_than)
+        profiles += get_chrome_urls(newerthan=parsed.history_newer_than)
     if parsed.browsers in ["safari", "all"]:
-        profiles += get_safari_urls(newerthan=parsed.newer_than)
+        profiles += get_safari_urls(newerthan=parsed.history_newer_than)
 
-    if parsed.process == "urls-metadata":
-        show_profiles_urls_metadata(profiles, urls_bookmarks, urls_history)
-    elif parsed.process == "urls":
-        show_profiles_urls(profiles, urls_bookmarks, urls_history)
-    elif parsed.process == "domainstats":
-        domainstats_profiles_urls(profiles, urls_bookmarks, urls_history)
+    if parsed.format == "html":
+        print(profiles_html(profiles, parsed.bookmarks, parsed.history))
+    elif parsed.format == "markdown":
+        print(profiles_markdown(profiles, parsed.bookmarks, parsed.history))
+    elif parsed.format == "urls":
+        print(profiles_urls_txt(profiles, parsed.bookmarks, parsed.history))
+    elif parsed.format == "domainstats":
+        print(profiles_urls_domainstats(profiles, parsed.bookmarks, parsed.history))
     else:
-        raise Exception(f"Unknown value for --process: {parsed.process}")
+        raise Exception(f"Unknown value for --format: {parsed.format}")
 
     return 0
 
