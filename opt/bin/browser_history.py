@@ -6,9 +6,11 @@ import collections
 import collections.abc
 import dataclasses
 import datetime
+import json
 import logging
 import os
 import pdb
+import plistlib
 import shutil
 import sqlite3
 import subprocess
@@ -43,7 +45,7 @@ def resolvepath(path):
 
 
 @dataclasses.dataclass
-class FirefoxHistoryEntry:
+class BrowserHistoryEntry:
     url: str
     title: str
     last_visited: datetime.datetime
@@ -53,23 +55,23 @@ class FirefoxHistoryEntry:
 
 
 @dataclasses.dataclass
-class FirefoxBookmarkEntry:
+class BrowserBookmarkEntry:
     url: str
     title: str
-    bookmarked: datetime.datetime
+    bookmarked: typing.Optional[datetime.datetime]
 
     def __str__(self) -> str:
         return f"{self.url} ({self.title}) @{self.bookmarked}"
 
 
 @dataclasses.dataclass
-class FirefoxProfileUrls:
+class BrowserProfile:
     profile: str
-    history: typing.List[FirefoxHistoryEntry]
-    bookmarks: typing.List[FirefoxBookmarkEntry]
+    history: typing.List[BrowserHistoryEntry]
+    bookmarks: typing.List[BrowserBookmarkEntry]
 
 
-"""
+'''
 TODO: Add support for other browsers
 
 Safari:
@@ -78,17 +80,131 @@ Safari:
 
     sqlite3 "$OUTPUT_DIR/safari_history.db.tmp" "select url from history_items" > "$OUTPUT_DIR/safari_history.json"
 
+                _SQL = """SELECT url, title, datetime(visit_time + 978307200, 'unixepoch', 'localtime')
+                                    FROM history_visits INNER JOIN history_items ON history_items.id = history_visits.history_item ORDER BY visit_time DESC"""
+
 Chrome:
     default=$(ls ~/Library/Application\ Support/Google/Chrome/Default/History)
     cp "$default" "$OUTPUT_DIR/chrome_history.db.tmp"
 
     sqlite3 "$OUTPUT_DIR/chrome_history.db.tmp" "SELECT \"[\" || group_concat(json_object('timestamp', last_visit_time, 'description', title, 'href', url)) || \"]\" FROM urls;" > "$OUTPUT_DIR/chrome_history.json"
-    jq < "$(dirname "${2:-$default}")"/Bookmarks '.roots.other.children[] | {href: .url, description: .name, timestamp: .date_added}' > "$OUTPUT_DIR/chrome_bookmarks.json"
-"""
+'''
 
 
-def archivebox_ff_profiles(newerthan=None) -> typing.List[FirefoxProfileUrls]:
-    """Run archivebox for all firefox profiles (assumes macOS)"""
+def get_safari_urls(newerthan=None) -> typing.List[BrowserProfile]:
+    """Get URLs from Safari profiles
+
+    Actually I think Safari just has one profile, but still return a list so this works the same as for other browsers
+    """
+    profile_dir = resolvepath("~/Library/Safari")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        history = []
+        histfile = os.path.join(profile_dir, "History.db")
+        if os.path.exists(histfile):
+            histfile2 = os.path.join(tmpdir, "Safari.History.db")
+            shutil.copy(histfile, histfile2)
+
+            con = sqlite3.connect(histfile2)
+            con.row_factory = sqlite3.Row
+
+            cur = con.cursor()
+
+            history_sql = f"SELECT url, title, datetime(visit_time + 978307200, 'unixepoch', 'localtime') as parseddate FROM history_visits  INNER JOIN history_items ON history_items.id = history_visits.history_item"
+            if newerthan:
+                history_sql += f" WHERE parseddate > '{newerthan}'"
+            history_result = cur.execute(history_sql)
+            history = [
+                BrowserHistoryEntry(h["url"], h["title"], h["parseddate"])
+                for h in history_result
+            ]
+            logger.info(f"{profile_dir} profile has {len(history)} history items")
+
+        bookmarks = []
+        marksfile = os.path.join(profile_dir, "Bookmarks.plist")
+        if os.path.exists(marksfile):
+            with open(marksfile, "rb") as fp:
+                marksdata = plistlib.load(fp)
+            bookmarks = [
+                BrowserBookmarkEntry(i["URLString"], i["URIDictionary"]["title"], None)
+                for i in marksdata["Children"]
+                if i["WebBookmarkType"] == "WebBookmarkTypeLeaf"
+            ]
+
+    profile = BrowserProfile(profile_dir, history, bookmarks)
+    return [profile]
+
+
+def chrome_bookmarks_extractor(d: dict) -> typing.List[BrowserBookmarkEntry]:
+    """Given a dict from reading a Chrome bookmarks file as JSON, return a list of all bookmarks.
+
+    The initial dictionary passed should be bookmark_json_data['roots'].
+
+    Properly handle nested bookmark folders.
+    """
+    if "roots" in d:
+        bar_bookmarks = chrome_bookmarks_extractor(d["roots"]["bookmark_bar"])
+        other_bookmarks = chrome_bookmarks_extractor(d["roots"]["other"])
+
+        # Instead of flattening this, I should write a good recursive function that does not need flattening.
+        # Sad!
+        flatten = lambda l: sum(map(flatten, l), []) if isinstance(l, list) else [l]
+
+        all_bookmarks = flatten(bar_bookmarks + other_bookmarks)
+
+        return all_bookmarks
+    if "children" in d:
+        return [chrome_bookmarks_extractor(c) for c in d["children"]]
+    return BrowserBookmarkEntry(d["url"], d["name"], d["date_added"])
+
+
+def get_chrome_urls(newerthan=None) -> typing.List[BrowserProfile]:
+    """Get URLs from all Chrome profiles"""
+    profiles_parent = resolvepath("~/Library/Application Support/Google/Chrome")
+    result = []
+    with tempfile.TemporaryDirectory() as tmpdir:
+
+        for child in os.listdir(profiles_parent):
+            if not (child == "Default" or child.startswith("Profile")):
+                continue
+            resolvedchild = os.path.join(profiles_parent, child)
+            if not os.path.isdir(resolvedchild):
+                continue
+
+            history = []
+            histfile = os.path.join(resolvedchild, "History")
+            if os.path.exists(histfile):
+                histfile2 = os.path.join(tmpdir, "history.sqlite")
+                shutil.copy(histfile, histfile2)
+
+                con = sqlite3.connect(histfile2)
+                con.row_factory = sqlite3.Row
+
+                cur = con.cursor()
+                history_sql = "SELECT datetime(last_visit_time/1000000, 'unixepoch') as parseddate, title, url FROM urls"
+                if newerthan:
+                    history_sql += f" WHERE parseddate > '{newerthan}'"
+                history_result = cur.execute(history_sql)
+                history = [
+                    BrowserHistoryEntry(h["url"], h["title"], h["parseddate"])
+                    for h in history_result
+                ]
+                logger.info(f"{resolvedchild} profile has {len(history)} history items")
+
+            bookmarks = []
+            bookmarksfile = os.path.join(resolvedchild, "Bookmarks")
+            if os.path.exists(bookmarksfile):
+                logger.info(f"Bookmarks for profile {resolvedchild}:")
+                with open(bookmarksfile) as bkmkfp:
+                    bookmarks_data = json.load(bkmkfp)
+                bookmarks = chrome_bookmarks_extractor(bookmarks_data)
+
+            result += [BrowserProfile(resolvedchild, history, bookmarks)]
+
+    return result
+
+
+def get_firefox_urls(newerthan=None) -> typing.List[BrowserProfile]:
+    """Get URLs from all Firefox profiles"""
     ff_profiles_parent = resolvepath("~/Library/Application Support/Firefox/Profiles")
 
     result = []
@@ -109,9 +225,6 @@ def archivebox_ff_profiles(newerthan=None) -> typing.List[FirefoxProfileUrls]:
             places2 = os.path.join(tmpdir, "places2.sqlite")
             shutil.copy(places, places2)
 
-            # Open the database in immutable mode
-            # Allows connecting even if the database is locked
-            # (and therefore even when Firefox is running)
             con = sqlite3.connect(places2)
             con.row_factory = sqlite3.Row
 
@@ -123,7 +236,7 @@ def archivebox_ff_profiles(newerthan=None) -> typing.List[FirefoxProfileUrls]:
             history_result = cur.execute(history_sql)
 
             history = [
-                FirefoxHistoryEntry(h["url"], h["title"], h["parsedlvd"])
+                BrowserHistoryEntry(h["url"], h["title"], h["parsedlvd"])
                 for h in history_result
             ]
             logger.info(f"{resolvedchild} profile has {len(history)} history items")
@@ -141,19 +254,16 @@ def archivebox_ff_profiles(newerthan=None) -> typing.List[FirefoxProfileUrls]:
                 "SELECT b.dateAdded, b.title, f.url FROM moz_bookmarks as b JOIN moz_places AS f ON f.id = b.fk;"
             )
             bookmarks = [
-                FirefoxBookmarkEntry(b["url"], b["title"], b["dateAdded"])
+                BrowserBookmarkEntry(b["url"], b["title"], b["dateAdded"])
                 for b in bookmarks_result
             ]
             logger.debug(f"{resolvedchild} profile has {len(bookmarks)} bookmarks")
             # for b in bookmarks:
             #     print(f"{b['url']} ({b['title']}) @{b['dateAdded']}")
 
-            result += [FirefoxProfileUrls(resolvedchild, history, bookmarks)]
+            result += [BrowserProfile(resolvedchild, history, bookmarks)]
 
     return result
-
-    # subprocess.run(['archivebox', 'add'], input=history)
-    # subprocess.run(['archivebox', 'add'], input=bookmarks)
 
 
 def show_profiles_urls_metadata(profiles, bookmarks=False, history=False):
@@ -205,7 +315,7 @@ def show_sorted_uniq_count_items(items: typing.List[str]):
 
 
 def domainstats_profiles_urls(
-    profiles: typing.List[FirefoxProfileUrls], bookmarks=False, history=False
+    profiles: typing.List[BrowserProfile], bookmarks=False, history=False
 ):
     """Given a list of FirefoxProfileUrls objects, show domain stats"""
     for profile in profiles:
@@ -229,6 +339,12 @@ def parseargs(arguments: typing.List[str]):
         "-d",
         action="store_true",
         help="Launch a debugger on unhandled exception",
+    )
+    parser.add_argument(
+        "--browsers",
+        default="all",
+        choices=["firefox", "chrome", "safari", "all"],
+        help="Which browsers to get history from",
     )
     parser.add_argument(
         "--newer-than",
@@ -262,9 +378,18 @@ def main(*arguments: typing.List[str]) -> int:
         sys.excepthook = idb_excepthook
         logger.setLevel(logging.DEBUG)
 
-    profiles = archivebox_ff_profiles(newerthan=parsed.newer_than)
+    profiles = []
+
     urls_bookmarks = parsed.urls in ["bookmarks", "all"]
     urls_history = parsed.urls in ["history", "all"]
+
+    if parsed.browsers in ["firefox", "all"]:
+        profiles += get_firefox_urls(newerthan=parsed.newer_than)
+    if parsed.browsers in ["chrome", "all"]:
+        profiles += get_chrome_urls(newerthan=parsed.newer_than)
+    if parsed.browsers in ["safari", "all"]:
+        profiles += get_safari_urls(newerthan=parsed.newer_than)
+
     if parsed.process == "urls-metadata":
         show_profiles_urls_metadata(profiles, urls_bookmarks, urls_history)
     elif parsed.process == "urls":
