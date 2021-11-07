@@ -308,8 +308,12 @@ def profiles_urls_txt(
     profiles: typing.List[BrowserProfile],
     bookmarks: bool = False,
     history: bool = False,
+    dedup: bool = False,
 ):
-    """Given a list of BrowserProfile objects, return a list of URLs."""
+    """Given a list of BrowserProfile objects, return a list of URLs.
+
+    If dedup is True, don't show a URL more than once.
+    """
     result = []
     for profile in profiles:
         hurls = []
@@ -319,6 +323,8 @@ def profiles_urls_txt(
         if bookmarks:
             burls += [entry.url for entry in profile.bookmarks]
         result += hurls + burls
+    if dedup:
+        result = set(result)
     return "\n".join(result)
 
 
@@ -407,8 +413,8 @@ def parseargs(arguments: typing.List[str]):
     parser.add_argument(
         "--format",
         default="html",
-        choices=["html", "markdown", "urls", "domainstats"],
-        help="The output format. html: A list with <a href='http://...'>Title @ date</a>. markdown: A list with [Title @ date](http://...) urls: Just the URLs, one per line. domainstats: Calculate number of times each domain is present (calculated separately per profile).",
+        choices=["html", "markdown", "urls", "urls-dedup", "domainstats"],
+        help="The output format. html: A list with <a href='http://...'>Title @ date</a>. markdown: A list with [Title @ date](http://...) urls: Just the URLs, one per line. urls-dedup: Like 'urls', but with duplicates removed. domainstats: Calculate number of times each domain is present (calculated separately per profile).",
     )
     parsed = parser.parse_args(arguments)
     return parsed
@@ -438,8 +444,12 @@ def main(*arguments: typing.List[str]) -> int:
         print(profiles_html(profiles, parsed.bookmarks, parsed.history))
     elif parsed.format == "markdown":
         print(profiles_markdown(profiles, parsed.bookmarks, parsed.history))
+    elif parsed.format == "urls-dedup":
+        print(profiles_urls_txt(profiles, parsed.bookmarks, parsed.history, dedup=True))
     elif parsed.format == "urls":
-        print(profiles_urls_txt(profiles, parsed.bookmarks, parsed.history))
+        print(
+            profiles_urls_txt(profiles, parsed.bookmarks, parsed.history, dedup=False)
+        )
     elif parsed.format == "domainstats":
         print(profiles_urls_domainstats(profiles, parsed.bookmarks, parsed.history))
     else:
