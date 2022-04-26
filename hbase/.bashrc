@@ -178,7 +178,9 @@ export HISTFILESIZE="5000"
 # If a command starts with a space, do not save it in history
 export HISTCONTROL="ignorespace"
 # Add a timestamp to history entry
-export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
+#export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
+# Add an epoch-based timestamp to history entry (required for dbhist)
+HISTTIMEFORMAT="%s "
 
 # Completion settings
 # on macOS, 'brew install bash-completion' is required
@@ -262,6 +264,15 @@ bashprompt() {
 if test "$TERM_PROGRAM" != "WarpTerminal"; then
     export PROMPT_COMMAND=bashprompt
 fi
+
+# Enable dbhist
+DBHISTORY=true
+# Location of dbhist database
+DBHISTORYFILE=$HOME/.dbhist
+# Dot-source dbhist
+# This must happen _after_ bashprompt is set
+source $DHD/opt/bash/dbhist.sh
+
 
 if test -d "$HOME/.bashrc.d"; then
     for script in $(find "$HOME/.bashrc.d" -type f); do
