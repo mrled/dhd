@@ -69,11 +69,12 @@
   "extensions.ignoreRecommendations": true,
   "files.eol": "\n",
   "files.exclude": {
+    "**/__pycache__": true,
     "**/._*": true,
     "**/.DS_Store": true,
     "**/.git": true,
-    "**/.svn": true,
     "**/.hg": true,
+    "**/.svn": true,
     "**/*.js": {
       "when": "$(basename).ts"
     },
@@ -200,5 +201,16 @@
   },
   "security.workspace.trust.untrustedFiles": "open",
   "prettier.requireConfig": true,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "update.showReleaseNotes": false,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "terminal.integrated.macOptionIsMeta": true,
   "window.zoomLevel": -1
 }
