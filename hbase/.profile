@@ -42,6 +42,10 @@ export LESSOPEN=
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 
+if test -e "$DHD/hosts/$DHD_HOSTNAME/profile.sh"; then
+    . "$DHD/hosts/$DHD_HOSTNAME/profile.sh"
+fi
+
 # Source shell-specific init files, but only if we have run shdetect.
 # Shell-specific init files like bashrc assume functioning dhd, because they are stored in dhd.
 if test "$DHD_SHDETECT_INCLUDED"; then

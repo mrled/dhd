@@ -285,6 +285,10 @@ if test -e "$DHD/hosts/$DHD_HOSTNAME/motd.sh"; then
 else
     . "$DHD/hosts/default/motd.sh"
 fi
+if test -e "$DHD/hosts/$DHD_HOSTNAME/bashrc.sh"; then
+    . "$DHD/hosts/$DHD_HOSTNAME/bashrc.sh"
+fi
+
 
 PATH="/Users/mrled/perl5/bin${PATH:+:${PATH}}"; export PATH;
 PERL5LIB="/Users/mrled/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
@@ -294,4 +298,3 @@ PERL_MM_OPT="INSTALL_BASE=/Users/mrled/perl5"; export PERL_MM_OPT;
 
 # Jesus fucking christ these people are just so fucking tacky
 export DOCKER_SCAN_SUGGEST=false
-
