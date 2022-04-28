@@ -1,3 +1,8 @@
+## My own customizations:
+
+# Setting a more restrictive umask breaks system-setup
+umask 022
+
 ## Must run system-setup, then cut the parts between these two lines and paste them below
 ##   BEGIN env Setup -- Managed by Ansible DO NOT EDIT.
 ##   END env Setup -- Managed by Ansible DO NOT EDIT.
