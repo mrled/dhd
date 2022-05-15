@@ -33,26 +33,27 @@ local modalHotKey = dofile(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/modalH
 local appModal = modalHotKey.new(
   hs.hotkey.modal.new({ "cmd", "ctrl" }, "-"),
   {
-    modalHotKey.shortcutKey { shortcutKey = 'e', appName = 'Emacs', },
+    modalHotKey.shortcutKey { shortcutKey = 'b', appName = 'Boop', },
+    modalHotKey.shortcutKey { shortcutKey = 'c', appName = 'Google Chrome', },
     modalHotKey.shortcutKey { shortcutKey = 'f', appName = 'Finder', },
-    modalHotKey.shortcutKey { shortcutKey = 'i', appName = 'iTerm', },
-    modalHotKey.shortcutKey { shortcutKey = 'j', appName = 'Cisco Jabber', },
     modalHotKey.shortcutKey { shortcutKey = 'k', appName = 'Keychain Access', },
-    modalHotKey.shortcutKey { shortcutKey = 'n', appName = 'nvAlt', },
-    modalHotKey.shortcutKey { shortcutKey = 'o', appName = 'Microsoft Outlook', },
+    modalHotKey.shortcutKey { shortcutKey = 'n', appName = 'Numi', },
     modalHotKey.shortcutKey { shortcutKey = 's', appName = 'Safari', },
     modalHotKey.shortcutKey { shortcutKey = 't', appName = 'Terminal', },
+    modalHotKey.shortcutKey { shortcutKey = 'v', appName = 'Visual Studio Code', },
+    modalHotKey.shortcutKey { shortcutKey = 'w', appName = 'Brave Browser', },
+    modalHotKey.shortcutKey { shortcutKey = 'x', appName = 'Firefox', },
   },
-  hammerSpoonEmoji .. " Swapp",
   {
-  fillColor = {
-    white = 0.45,
-    alpha = 1,
+    fillColor = {
+      white = 0.45,
+      alpha = 1,
+    },
+    strokeWidth = 10,
+    fadeInDuration = 0,
+    fadeOutDuration = 0,
   },
-  strokeWidth = 10,
-  fadeInDuration = 0,
-  fadeOutDuration = 0,
-}
+  hammerSpoonEmoji .. " Swapp"
 )
 
 local function newStigOlBickies()
@@ -78,16 +79,16 @@ appModal = modalHotKey.new(
   {
     modalHotKey.shortcutKey { shortcutKey = 'n', actionDesc = "New stig ol' bickies", action = newStigOlBickies }
   },
-  hammerSpoonEmoji .. " Special functions",
   {
-  fillColor = {
-    white = 0.45,
-    alpha = 1,
+    fillColor = {
+      white = 0.45,
+      alpha = 1,
+    },
+    strokeWidth = 10,
+    fadeInDuration = 0,
+    fadeOutDuration = 0,
   },
-  strokeWidth = 10,
-  fadeInDuration = 0,
-  fadeOutDuration = 0,
-}
+  hammerSpoonEmoji .. " Special functions"
 )
 
 -- TODO: Convert to better module

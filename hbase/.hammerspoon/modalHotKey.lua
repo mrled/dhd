@@ -82,9 +82,9 @@ local module = {}
 -- new(): Create a new modal hotkey
 -- triggerKey: A table created by invoking hs.hotkey.modal.new(), like hs.hotkey.modal.new({"cmd", "ctrl"}, "t")
 -- actionList: A list of module.shortcutKey tables
--- modalMessagePrefix: A message prefix to display when communicating to the user about this hot key
 -- modalMessageStyle: a table to pass to hs.alert.show() for alert styling
-module.new = function(triggerKey, actionList, modalMessagePrefix, modalMessageStyle)
+-- modalMessagePrefix: A message prefix to display when communicating to the user about this hot key
+module.new = function(triggerKey, actionList, modalMessageStyle, modalMessagePrefix)
    local modality = {}
    modality.triggerKey = triggerKey
    modality.activeAlert = nil
@@ -96,7 +96,7 @@ module.new = function(triggerKey, actionList, modalMessagePrefix, modalMessageSt
 
    local doubleTab = ""
    for _, action in pairs(actionList) do
-      modality.modalMenuMessage = modality.modalMenuMessage .. "\n" .. string.upper(action.shortcutKey) .. ":" .. doubleTab .. action.actionDesc
+      modality.modalMenuMessage = modality.modalMenuMessage .. "\n" .. string.upper(action.shortcutKey) .. ": " .. doubleTab .. action.actionDesc
       modality.triggerKey:bind({}, action.shortcutKey, function()
          action.action()
          modality.triggerKey:exit()
