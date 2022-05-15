@@ -13,7 +13,9 @@ local function reloadConfig(files)
   end
 end
 
-local hsWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
+-- Enabling both of these seems to break automatic reloading...
+-- maybe because .hammerspoon/ is a symlink to .dhd/hbase/.hammerspoon/ ?
+-- local hsWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 local dhdWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/", reloadConfig):start()
 
 package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/?.lua"
