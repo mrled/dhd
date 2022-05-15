@@ -46,15 +46,6 @@ local appModal = modalHotKey.new(
     modalHotKey.shortcutKey { shortcutKey = 'w', appName = 'Brave Browser', },
     modalHotKey.shortcutKey { shortcutKey = 'x', appName = 'Firefox', },
   },
-  {
-    fillColor = {
-      white = 0.45,
-      alpha = 1,
-    },
-    strokeWidth = 10,
-    fadeInDuration = 0,
-    fadeOutDuration = 0,
-  },
   hammerSpoonEmoji .. " Swapp"
 )
 
@@ -80,15 +71,6 @@ appModal = modalHotKey.new(
   hs.hotkey.modal.new({ "cmd", "ctrl" }, "="),
   {
     modalHotKey.shortcutKey { shortcutKey = 'n', actionDesc = "New stig ol' bickies", action = newStigOlBickies }
-  },
-  {
-    fillColor = {
-      white = 0.45,
-      alpha = 1,
-    },
-    strokeWidth = 10,
-    fadeInDuration = 0,
-    fadeOutDuration = 0,
   },
   hammerSpoonEmoji .. " Special functions"
 )

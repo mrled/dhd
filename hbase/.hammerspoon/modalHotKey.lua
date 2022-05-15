@@ -3,34 +3,10 @@ Adapted from https://github.com/asmagill/hammerspoon-config/blob/master/_scratch
 see https://github.com/Hammerspoon/hammerspoon/issues/1505
 
 save file somewhere then type `modalHotKey = dofile("modalHotKey.lua")` to load it
-Here's an example based on my usage:
-
-
-appCuts = {
- e = 'Emacs',
- f = 'Finder',
- j = 'Cisco Jabber',
- k = 'Keychain Access',
- o = 'Microsoft Outlook',
- s = 'Safari',
- t = 'Terminal',
-}
-appActionTable = {}
-for key, app in pairs(appCuts) do
-  appActionTable[key] = function() hs.application.launchOrFocus(app) end
-end
-modalHotKey = dofile("modalHotKey.lua")
-appModal = modalHotKey.new(
-  hs.hotkey.modal.new({"cmd", "ctrl"}, "t"),
-  appActionTable,
-  appCuts,
-  "Special Application Switcher"
-)
-
 
 *only* the recognized key sequences will be allowed through -- this means you can't even quit hammerspoon with Cmd-Q
 without tapping escape first.
---]]
+]]
 
 -- suppressKeysOtherThanOurs(): Create custom eventtap to suppress unwanted keys and pass through the ones we do want
 -- modal: An object created from module.new() below (not just a modal hotkey from hs.hotkey.modal.new(); requires our extension methods)
@@ -77,19 +53,127 @@ local suppressKeysOtherThanOurs = function(modal)
 end
 
 
+--[[
+   Create a new web view intended for modal messages.
+
+   Works like hs.alert, but with complete control over the layout in HTML.
+]]
+local modalWebView = function(content)
+
+   -- The screen with the currently focused window
+   local mainScreen = hs.screen.mainScreen()
+
+   -- A rect containing coordinates of the entire frame, including dock and menu
+   local mainFrame = mainScreen:fullFrame()
+
+   local wvWidth = 300
+   local wvHeight = 700
+
+   -- Coordinates to center the web view in the main frame
+   local wvLeftCoord = ((mainFrame.w - mainFrame.x) / 2) - (wvWidth / 2)
+   local wvTopCoord = ((mainFrame.h - mainFrame.y) / 2) - (wvHeight / 2)
+   local wvRect = hs.geometry.rect(wvLeftCoord, wvTopCoord, wvWidth, wvHeight)
+
+   -- local wv = hs.webview.new(hs.geometry.rect(500, 500, 500, 500))
+   local wv = hs.webview.new(wvRect)
+   wv:bringToFront(true)
+   wv:closeOnEscape(true)
+   -- wv:alpha(0.85)
+   wv:html(content)
+   return wv
+end
+
+
+--[[
+   Return a string containing HTML for the modal menu.
+
+   Lists shortcut keys and the description for the function they execute.
+]]
+local modalWebViewMenuHtml = function(title, actionList)
+
+   local modalItemTable = ""
+   for _, action in pairs(actionList) do
+      modalItemTable = string.format(
+         [[%s<tr><td class="hotkey">%s</td><td class="description">%s</td></tr>]],
+         modalItemTable,
+         string.upper(action.shortcutKey),
+         action.actionDesc
+      )
+   end
+
+   local webViewMenuMessageTemplate = [[
+      <html>
+      <head>
+         <title>%s</title>
+         <style>
+            html {
+               border: 2px solid black;
+            }
+            body {
+               margin: 0 auto;
+               width: 80%%;
+               font-family: sans-serif;
+            }
+            h1 {
+               font-size: 1rem;
+               margin: 1rem 0;
+               text-align: center;
+            }
+            table {
+               border-collapse: collapse;
+            }
+            td {
+               padding: 0.5rem 1rem 0.5rem 1rem;
+            }
+            td.hotkey {
+               font-size: 1.5rem;
+            }
+            td.description {
+               font-size: 0.8rem;
+               color: gray;
+            }
+         </style>
+      </head>
+      <body>
+      <h1>%s</h1>
+      <table>
+      %s
+      </table>
+      </body>
+   ]]
+
+   local html = string.format(
+      webViewMenuMessageTemplate,
+      title,
+      title,
+      modalItemTable
+   )
+
+   return html
+end
+
+
 local module = {}
 
 -- new(): Create a new modal hotkey
 -- triggerKey: A table created by invoking hs.hotkey.modal.new(), like hs.hotkey.modal.new({"cmd", "ctrl"}, "t")
 -- actionList: A list of module.shortcutKey tables
--- modalMessageStyle: a table to pass to hs.alert.show() for alert styling
--- modalMessagePrefix: A message prefix to display when communicating to the user about this hot key
-module.new = function(triggerKey, actionList, modalMessageStyle, modalMessagePrefix)
+-- title: A message prefix to display when communicating to the user about this hot key
+module.new = function(triggerKey, actionList, title)
    local modality = {}
    modality.triggerKey = triggerKey
-   modality.activeAlert = nil
-   modality.modalMenuMessage = modalMessagePrefix .. "\n\n"
-   modality.alertStyle = modalMessageStyle
+   modality.activeWebView = nil
+   modality.modalMenuMessage = title .. "\n\n"
+
+   modality.alertStyle = {
+      fillColor = {
+         white = 0.45,
+         alpha = 1,
+      },
+      strokeWidth = 10,
+      fadeInDuration = 0,
+      fadeOutDuration = 0,
+   }
 
    -- define an explicit way out
    modality.triggerKey:bind({}, "escape", function() triggerKey:exit() end)
@@ -103,20 +187,23 @@ module.new = function(triggerKey, actionList, modalMessageStyle, modalMessagePre
       end)
    end
 
+   modality.webViewMenuMessage = modalWebViewMenuHtml(title, actionList)
+
    modality.triggerKey.exitWithMessage = function(self, message)
-      hs.alert.show(modalMessagePrefix .. "\n\n" .. message, modality.alertStyle)
+      hs.alert.show(title .. "\n\n" .. message, modality.alertStyle)
       self:exit()
    end
 
    modality.triggerKey.entered = function(self)
       self._eventtap = suppressKeysOtherThanOurs(self):start()
-      modality.activeAlert = hs.alert.show(modality.modalMenuMessage, modality.alertStyle, hs.screen.mainScreen(), "forever")
+      modality.activeWebView = modalWebView(modality.webViewMenuMessage)
+      modality.activeWebView:show()
    end
 
    modality.triggerKey.exited = function(self)
       self._eventtap:stop()
       self._eventtap = nil
-      hs.alert.closeSpecific(modality.activeAlert)
+      modality.activeWebView:hide()
    end
 
    modality.start = function(self)
