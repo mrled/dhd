@@ -1,8 +1,8 @@
-hammerSpoonEmoji = "🔨🥄"
+local hammerSpoonEmoji = "🔨🥄"
 
 -- reload the configs automatically if anything changes in the config dir
-function reloadConfig(files)
-  doReload = false
+local function reloadConfig(files)
+  local doReload = false
   for _, file in pairs(files) do
     if file:sub(-4) == ".lua" then
       doReload = true
@@ -13,8 +13,8 @@ function reloadConfig(files)
   end
 end
 
-hsWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
-dhdWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/", reloadConfig):start()
+local hsWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
+local dhdWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/", reloadConfig):start()
 
 package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/?.lua"
 
@@ -23,14 +23,14 @@ hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
 
 animationDuration = 0
 
-ShiftIt = require('shiftIt')
+local shiftIt = require('shiftIt')
 
 ---
 -- Swapp, my SWitcher of APPs.
 ---
 
-modalHotKey = dofile(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/modalHotKey.lua")
-appModal = modalHotKey.new(
+local modalHotKey = dofile(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/modalHotKey.lua")
+local appModal = modalHotKey.new(
   hs.hotkey.modal.new({ "cmd", "ctrl" }, "-"),
   {
     modalHotKey.shortcutKey { shortcutKey = 'e', appName = 'Emacs', },
@@ -52,11 +52,10 @@ appModal = modalHotKey.new(
   strokeWidth = 10,
   fadeInDuration = 0,
   fadeOutDuration = 0,
-
 }
 )
 
-function newStigOlBickies()
+local function newStigOlBickies()
   local newSticky = string.format([[
    on run argv
        tell application "Stickies" to activate
@@ -71,7 +70,7 @@ function newStigOlBickies()
    end run
  ]])
   hs.osascript.applescript(newSticky)
-  result = hs.osascript.applescript
+  local result = hs.osascript.applescript
 end
 
 appModal = modalHotKey.new(
@@ -88,9 +87,8 @@ appModal = modalHotKey.new(
   strokeWidth = 10,
   fadeInDuration = 0,
   fadeOutDuration = 0,
-
 }
 )
 
 -- TODO: Convert to better module
-termdraw = require('termdraw')
+local termdraw = require('termdraw')

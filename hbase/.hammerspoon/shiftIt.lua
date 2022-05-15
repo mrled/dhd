@@ -39,8 +39,8 @@ hs.hotkey.bind(mash, 'm', function() hs.window.focusedWindow():move(units.maximu
 ---
 
 
-shiftItMods = { 'ctrl', 'alt', 'cmd' }
-units = {
+local shiftItMods = { 'ctrl', 'alt', 'cmd' }
+local units = {
   bottom = { x = 0.0, y = 0.5, w = 1.0, h = 0.5 },
   left   = { x = 0.0, y = 0.0, w = 0.5, h = 1.0 },
   right  = { x = 0.5, y = 0.0, w = 0.5, h = 1.0 },
