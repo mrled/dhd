@@ -187,7 +187,10 @@ module.new = function(triggerKey, actionList, title)
       end)
    end
 
-   modality.webViewMenuMessage = modalWebViewMenuHtml(title, actionList)
+   -- Create the web view here, and only show/hide it in the callback functions.
+   -- This means it is rendered when new() is called, and show() displays it instantly.
+   local webViewMenuMessage = modalWebViewMenuHtml(title, actionList)
+   modality.activeWebView = modalWebView(webViewMenuMessage)
 
    modality.triggerKey.exitWithMessage = function(self, message)
       hs.alert.show(title .. "\n\n" .. message, modality.alertStyle)
@@ -196,7 +199,6 @@ module.new = function(triggerKey, actionList, title)
 
    modality.triggerKey.entered = function(self)
       self._eventtap = suppressKeysOtherThanOurs(self):start()
-      modality.activeWebView = modalWebView(modality.webViewMenuMessage)
       modality.activeWebView:show()
    end
 
