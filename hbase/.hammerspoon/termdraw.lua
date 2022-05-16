@@ -1,3 +1,6 @@
+local hsMouse = require("hs.mouse")
+local osascript = require("hs.osascript")
+
 local rectanglePreviewColor = '#81ecec' -- cyan
 local rectangleCancelColor = '#f09d9d' -- red
 local rectangleMinWidth = 300
@@ -23,25 +26,45 @@ local function setRectangle(newFrame)
   rectanglePreview:setFillColor({ hex = color, alpha = 0.5 })
 end
 
+local function openItermOriginal()
+  local frame = rectanglePreview:frame()
+  local createItermWithBounds = string.format([[
+    if application "iTerm" is not running then
+      activate application "iTerm"
+    end if
+    tell application "iTerm"
+      set newWindow to (create window with default profile)
+      set the bounds of newWindow to {%i, %i, %i, %i}
+    end tell
+    ]], frame.x, frame.y, frame.x + frame.w, frame.y + frame.h)
+  hs.osascript.applescript(createItermWithBounds)
+end
+
 local function openIterm(bounds)
-  local openItemScript = string.format([[
-   if application "iTerm" is not running then
-     activate application "iTerm"
-   end if
-   tell application "iTerm"
-     set newWindow to (create window with default profile)
-     set the bounds of newWindow to {%i, %i, %i, %i}
-   end tell
- ]], bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax)
-  hs.osascript.applescript(openItemScript)
+  hs.printf("Will open iterm...")
+  local openItermTemplate = [[
+    if application "iTerm" is not running then
+      activate application "iTerm"
+    end if
+    tell application "iTerm"
+      set newWindow to (create window with default profile)
+      set the bounds of newWindow to {%i, %i, %i, %i}
+    end tell
+  ]]
+  local openItermScript = string.format(openItermTemplate, bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax)
+  hs.printf("Running AppleScript to open iTerm window:")
+  hs.printf(openItermScript)
+  local succeeded, resultObj, resultRaw = osascript.applescript(openItermScript)
+  hs.printf("Opened iterm...")
 end
 
 local fromPoint = nil
 
-local drag_event = hs.eventtap.new(
-  { hs.eventtap.event.types.mouseMoved },
-  function(e)
-  toPoint = hs.mouse.getAbsolutePosition()
+local function handleDragEvent(e)
+  if fromPoint == nil then
+    return nil
+  end
+  local toPoint = hsMouse.absolutePosition()
   local newFrame = hs.geometry.new({
     ["x1"] = fromPoint.x,
     ["y1"] = fromPoint.y,
@@ -52,29 +75,35 @@ local drag_event = hs.eventtap.new(
 
   return nil
 end
+
+local dragEvent = hs.eventtap.new(
+  { hs.eventtap.event.types.mouseMoved },
+  handleDragEvent
 )
 
-local flags_event = hs.eventtap.new(
-  { hs.eventtap.event.types.flagsChanged },
-  function(e)
-  local flags = e:getFlags()
+
+local function handleFlagsEvent(event)
+  local flags = event:getFlags()
+
   if flags.ctrl and flags.shift then
-    fromPoint = hs.mouse.getAbsolutePosition()
+    fromPoint = hsMouse.absolutePosition()
+    hs.printf("Starting termdraw drag event from %s,%s", fromPoint.x, fromPoint.y)
     local newFrame = hs.geometry.rect(fromPoint.x, fromPoint.y, 0, 0)
     setRectangle(newFrame)
     rectanglePreview:setFrame(newFrame)
-    drag_event:start()
+    dragEvent:start()
     rectanglePreview:show()
 
   elseif fromPoint ~= nil then
     local frame = rectanglePreview:frame()
+    hs.printf("Ending termdraw drag event at %s,%s", frame.x, frame.y)
     local bounds = { xmin = frame.x, ymin = frame.y, xmax = frame.x + frame.w, ymax = frame.y + frame.h }
     local framedesc = string.format(
       "{%i, %i, %i, %i} (w: %i, h: %i)",
       frame.x, frame.y, frame.x + frame.w, frame.y + frame.h, frame.w, frame.h)
 
     fromPoint = nil
-    drag_event:stop()
+    dragEvent:stop()
 
     if frame.w < rectangleMinWidth or frame.h < rectangleMinHeight then
       -- sometimes you press the keys accidentally and invisible terms get created
@@ -86,8 +115,16 @@ local flags_event = hs.eventtap.new(
     end
 
     rectanglePreview:hide(rectangleFadeDuration)
+
+  else
+    fromPoint = nil
   end
+
   return nil
 end
+
+local flagsEvent = hs.eventtap.new(
+  { hs.eventtap.event.types.flagsChanged },
+  handleFlagsEvent
 )
-flags_event:start()
+flagsEvent:start()
