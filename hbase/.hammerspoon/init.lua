@@ -27,6 +27,45 @@ animationDuration = 0
 
 local shiftIt = require('shiftIt')
 
+
+hs.loadSpoon("SpoonInstall")
+spoon.SpoonInstall.use_syncinstall = true
+
+spoon.SpoonInstall:andUse("TextClipboardHistory",
+  {
+  disable = false,
+  config = {
+    show_in_menubar = false,
+  },
+  hotkeys = {
+    toggle_clipboard = { { "cmd", "shift" }, "v" } },
+  start = true,
+}
+)
+
+spoon.SpoonInstall:andUse("KSheet",
+  {
+  hotkeys = {
+    toggle = { { "cmd", "alt", "ctrl" }, "/" }
+  } })
+
+spoon.SpoonInstall:andUse("Seal",
+  {
+  hotkeys = { toggle = { { "alt" }, "space" } },
+  fn = function(s)
+    s:loadPlugins({ "apps", "calc", "useractions" })
+    s.plugins.useractions.actions = {
+      ["Hammerspoon docs webpage"] = {
+        url = "http://hammerspoon.org/docs/",
+        icon = hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon),
+      },
+    }
+    s:refreshAllCommands()
+  end,
+  start = true,
+}
+)
+
 ---
 -- Swapp, my SWitcher of APPs.
 ---
@@ -39,9 +78,10 @@ local appModal = modalHotKey.new(
     modalHotKey.shortcutKey { shortcutKey = 'c', appName = 'Google Chrome', },
     modalHotKey.shortcutKey { shortcutKey = 'f', appName = 'Finder', },
     modalHotKey.shortcutKey { shortcutKey = 'k', appName = 'Keychain Access', },
-    modalHotKey.shortcutKey { shortcutKey = 'n', appName = 'Numi', },
+    modalHotKey.shortcutKey { shortcutKey = 'n', appName = 'nvAlt', },
     modalHotKey.shortcutKey { shortcutKey = 's', appName = 'Safari', },
     modalHotKey.shortcutKey { shortcutKey = 't', appName = 'Terminal', },
+    modalHotKey.shortcutKey { shortcutKey = 'u', appName = 'Numi', },
     modalHotKey.shortcutKey { shortcutKey = 'v', appName = 'Visual Studio Code', },
     modalHotKey.shortcutKey { shortcutKey = 'w', appName = 'Brave Browser', },
     modalHotKey.shortcutKey { shortcutKey = 'x', appName = 'Firefox', },
@@ -69,7 +109,8 @@ end
 appModal = modalHotKey.new(
   hs.hotkey.modal.new({ "cmd", "ctrl" }, "="),
   {
-    modalHotKey.shortcutKey { shortcutKey = 'n', actionDesc = "New stig ol' bickies", action = newStigOlBickies }
+    modalHotKey.shortcutKey { shortcutKey = 'n', actionDesc = "New stig ol' bickies", action = newStigOlBickies },
+    modalHotKey.shortcutKey { shortcutKey = 'r', actionDesc = "Reload Hammerspoon configuration", action = hs.reload },
   },
   hammerSpoonEmoji .. " Special functions"
 )
