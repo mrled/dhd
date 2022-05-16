@@ -64,7 +64,6 @@ local function newStigOlBickies()
    end run
  ]])
   hs.osascript.applescript(newSticky)
-  local result = hs.osascript.applescript
 end
 
 appModal = modalHotKey.new(
