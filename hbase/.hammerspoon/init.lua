@@ -81,7 +81,7 @@ local appModal = modalHotKey.new(
     modalHotKey.shortcutKey { shortcutKey = 'n', appName = 'nvAlt', },
     modalHotKey.shortcutKey { shortcutKey = 's', appName = 'Safari', },
     modalHotKey.shortcutKey { shortcutKey = 't', appName = 'Terminal', },
-    modalHotKey.shortcutKey { shortcutKey = 'u', appName = 'Numi', },
+    modalHotKey.shortcutKey { shortcutKey = 'u', appName = 'Soulver 3', },
     modalHotKey.shortcutKey { shortcutKey = 'v', appName = 'Visual Studio Code', },
     modalHotKey.shortcutKey { shortcutKey = 'w', appName = 'Brave Browser', },
     modalHotKey.shortcutKey { shortcutKey = 'x', appName = 'Firefox', },
