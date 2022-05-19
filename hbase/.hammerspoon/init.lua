@@ -33,37 +33,37 @@ spoon.SpoonInstall.use_syncinstall = true
 
 spoon.SpoonInstall:andUse("TextClipboardHistory",
   {
-  disable = false,
-  config = {
-    show_in_menubar = false,
-  },
-  hotkeys = {
-    toggle_clipboard = { { "cmd", "shift" }, "v" } },
-  start = true,
-}
+    disable = false,
+    config = {
+      show_in_menubar = false,
+    },
+    hotkeys = {
+      toggle_clipboard = { { "cmd", "shift" }, "v" } },
+    start = true,
+  }
 )
 
 spoon.SpoonInstall:andUse("KSheet",
   {
-  hotkeys = {
-    toggle = { { "cmd", "alt", "ctrl" }, "/" }
-  } })
+    hotkeys = {
+      toggle = { { "cmd", "alt", "ctrl" }, "/" }
+    } })
 
 spoon.SpoonInstall:andUse("Seal",
   {
-  hotkeys = { toggle = { { "alt" }, "space" } },
-  fn = function(s)
-    s:loadPlugins({ "apps", "calc", "useractions" })
-    s.plugins.useractions.actions = {
-      ["Hammerspoon docs webpage"] = {
-        url = "http://hammerspoon.org/docs/",
-        icon = hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon),
-      },
-    }
-    s:refreshAllCommands()
-  end,
-  start = true,
-}
+    hotkeys = { toggle = { { "alt" }, "space" } },
+    fn = function(s)
+      s:loadPlugins({ "apps", "calc", "useractions" })
+      s.plugins.useractions.actions = {
+        ["Hammerspoon docs webpage"] = {
+          url = "http://hammerspoon.org/docs/",
+          icon = hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon),
+        },
+      }
+      s:refreshAllCommands()
+    end,
+    start = true,
+  }
 )
 
 ---
@@ -109,6 +109,7 @@ end
 appModal = modalHotKey.new(
   hs.hotkey.modal.new({ "cmd", "ctrl" }, "="),
   {
+    modalHotKey.shortcutKey { shortcutKey = 'l', actionDesc = "Lock screen", action = hs.caffeinate.lockScreen },
     modalHotKey.shortcutKey { shortcutKey = 'n', actionDesc = "New stig ol' bickies", action = newStigOlBickies },
     modalHotKey.shortcutKey { shortcutKey = 'r', actionDesc = "Reload Hammerspoon configuration", action = hs.reload },
   },
