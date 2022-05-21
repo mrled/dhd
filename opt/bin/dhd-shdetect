@@ -59,6 +59,7 @@ ${HOME}/opt/npmglobal/bin
 ${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
 ${HOME}/Library/Python/3.9/bin
+${HOME}/.fly/bin
 /opt/homebrew/bin
 /opt/homebrew/sbin
 /usr/pkg/bin
