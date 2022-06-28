@@ -182,6 +182,7 @@ esac
 # Can test for them with
 #    test "${DHD_CMDAVAIL#*cmd_name}" != "$DHD_CMDAVAIL"
 DHD_CMDAVAIL=
+cmdavail rainbow && DHD_CMDAVAIL="$DHD_CMDAVAIL rainbow"
 cmdavail lolcatjs && DHD_CMDAVAIL="$DHD_CMDAVAIL lolcatjs"
 cmdavail figlet && DHD_CMDAVAIL="$DHD_CMDAVAIL figlet"
 cmdavail fortune && DHD_CMDAVAIL="$DHD_CMDAVAIL fortune"
