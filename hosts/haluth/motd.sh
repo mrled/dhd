@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if dhd_cmdavail lolcatjs; then
-    alias outfilter=lolcatjs
+if dhd_cmdavail rainbow; then
+    alias outfilter=rainbow
 else
     alias outfilter=cat
 fi
