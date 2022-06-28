@@ -67,8 +67,7 @@ __dbhist_sqlite() {
 
 # Initialize dbhist file, create table
 __db_hist_init() {
-  if [[ ! -f "$(__dbhist_file)" ]]; then
-    local __sql='CREATE TABLE history (
+  local __sql='CREATE TABLE IF NOT EXISTS history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   hist_id INTEGER,
   cmd TEXT,
@@ -77,8 +76,7 @@ __db_hist_init() {
   pwd TEXT,
   salt INTEGER
 );'
-    echo "${__sql}" | __dbhist_sqlite
-  fi
+  echo "${__sql}" | __dbhist_sqlite
 }
 
 # Execute it with bash PROMPT
