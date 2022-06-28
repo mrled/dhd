@@ -6,3 +6,4 @@ __pycache__
 opt/vscodeuser/workspaceStorage
 hbase/known_hosts.bak
 .vscode/
+*.swp
