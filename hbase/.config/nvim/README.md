@@ -14,3 +14,13 @@ git clone --depth 1 https://github.com/wbthomason/packer.nvim\
 Then launch nvim and run `:PackerSync` and then `:PackerInstall`
 
 Now quit and relaunch neovim
+
+## Installing language servers
+
+Then you have to install a language server for all the languages you care about.
+
+`:MasonInstall bash-language-server` for example.
+
+This installs to `~/.local/share/nvim/mason`,
+which avoids using the execrable `npm -g` that every fool recommends in their readme files.
+
