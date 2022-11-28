@@ -11,9 +11,15 @@ git clone --depth 1 https://github.com/wbthomason/packer.nvim\
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 ```
 
-Then launch nvim and run `:PackerSync` and then `:PackerInstall`
+Then launch nvim and run `:PackerSync`.
 
 Now quit and relaunch neovim
+
+## Adding new plugins
+
+* Add the plugin to `./lua/plugins.lua`.
+* Source `init.lua`.
+* Run `:PackerSync`
 
 ## Installing language servers
 

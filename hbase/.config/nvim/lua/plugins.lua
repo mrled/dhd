@@ -16,10 +16,17 @@ return require('packer').startup(function(use)
   use "sharkdp/fd"
   use "nvim-tree/nvim-web-devicons"
   use "tpope/vim-sensible"
+  use "tpope/vim-commentary"
   use "sainnhe/edge"
   use "sheerun/vim-polyglot"
 
   use {'nvim-telescope/telescope.nvim', branch = '0.1.x', requires = { {'nvim-lua/plenary.nvim'} }}
+
+  use {'nvim-tree/nvim-tree.lua',
+    -- requires = {
+    --   'nvim-tree/nvim-web-devicons', -- optional, for file icons
+    -- },
+  }
 
   use "vim-airline/vim-airline"
 
