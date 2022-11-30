@@ -75,6 +75,8 @@ ${HOME}/env/bin
 /sbin
 /Applications/FontForge.app/Contents/Resources/opt/local/bin
 /Applications/QMK Toolbox.app/Contents/Resources
+/Applications/Neovide.app/Contents/MacOS
+/Applications/VimR.app/Contents/MacOS
 /c/WINDOWS
 /c/WINDOWS/system32/Wbem
 /c/WINDOWS/system32
