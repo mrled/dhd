@@ -307,6 +307,8 @@ export DOCKER_SCAN_SUGGEST=false
 # Disable it:
 if test "$MRL_INDEED_ENV_SETUP_GUNK"; then
 
+echo ".bashrc: enabling Indeed env setup gunk"
+
 # BEGIN env Setup -- Managed by Ansible DO NOT EDIT.
 
 # Setup INDEED_ENV_DIR earlier.
@@ -320,10 +322,10 @@ if [ -e "${INDEED_ENV_DIR}/etc/indeedrc" ]; then
 fi
 # END env Setup -- Managed by Ansible DO NOT EDIT.
 
+else
+    # Allow re-importing bashrc with the above enabled:
+    alias indeedgunk="export MRL_INDEED_ENV_SETUP_GUNK=yes; . ~/.profile; . ~/.bashrc"
+
+    # Add some indeed-specific nice-to-haves without requiring the gunk
+    alias cdi="cd ~/indeed"
 fi
-
-# Allow re-importing bashrc with the above enabled:
-alias indeedgunk="export MRL_INDEED_ENV_SETUP_GUNK=yes; . ~/.profile; . ~/.bashrc"
-
-# Add some indeed-specific nice-to-haves without requiring the gunk
-alias cdi="cd ~/indeed"

@@ -63,6 +63,8 @@ export MSDK_HOME=$INDEED_PROJECT_DIR/business-automation/deathstar/server/src/ma
 # Disable it:
 if test "$MRL_INDEED_ENV_SETUP_GUNK"; then
 
+echo ".profile: enabling Indeed env setup gunk"
+
 # BEGIN env Setup -- Managed by Ansible DO NOT EDIT.
 
 # Homebrew uses a /opt/homebrew on Apple Silicon.
