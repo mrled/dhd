@@ -131,6 +131,8 @@ alias canhazip='curl icanhazip.com'
 # some hotspots fuck with udp/53; you might try dig +tcp if that happens
 alias dnsip='dig myip.opendns.com  @resolver1.opendns.com +short'
 
+alias k=kubectl
+
 # Colorize man pages
 # See: http://boredzo.org/blog/archives/2016-08-15/colorized-man-pages-understood-and-customized
 man() {
