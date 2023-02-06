@@ -19,7 +19,7 @@ https://github.com/git/git/blob/master/Documentation/date-formats.txt
 ENDUSAGE
 }
 
-if test "$1" = "-h" || test "$1" = "--help"; then
+if test $# -lt 1 || test "$1" = "-h" || test "$1" = "--help"; then
     usage
     exit
 fi
