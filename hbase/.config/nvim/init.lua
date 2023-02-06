@@ -62,6 +62,7 @@ if vim.g.neovide then
   vim.g.neovide_cursor_vfx_mode = "pixiedust"
   vim.g.neovide_cursor_vfx_particle_density = 50.0
   vim.g.neovide_cursor_vfx_particle_lifetime = 1.2
+  vim.g.neovide_padding_left = 25
 end
 
 require("nvim-tree").setup()
