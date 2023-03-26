@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    cat <<EOF
+$0: Launch QuickLook from the command line (^c will kill it and return to prompt)
+EOF
+}
+
+qlmanage -p "$@" 2>/dev/null

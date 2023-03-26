@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    cat <<EOF
+$0: View manpages in Preview.app on macOS
+EOF
+}
+
+man -t "$@" | open -g -f -a /Applications/Preview.app

@@ -51,6 +51,8 @@ fi
 if test "$DHD_SHDETECT_INCLUDED"; then
     if test -z "$MRL_BASHRC_GUARD" && test "$BASH_VERSION"; then
         . "$DHD/hbase/.bashrc"
+    elif test -z "$MRL_ZSHRC_GUARD" && test "$ZSH_NAME"; then
+        . "$DHD/hbase/.zshrc"
     fi
 fi
 

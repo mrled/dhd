@@ -15,7 +15,7 @@
 # This file may be sourced multiple times; all settings should be idempotent
 
 # For fuck's sake, Apple
-export BASH_SILENCE_DEPRECATION_WARNING=1
+# export BASH_SILENCE_DEPRECATION_WARNING=1
 
 # We use this to find paths inside dhd
 export DHD=${DHD:-"$HOME/.dhd"}
@@ -71,32 +71,21 @@ alias lsli='lsl -i' # lsl+inodes
 alias l1='ls -1'
 alias llm='lsl -r -t' # lsl+ sort by modified time (lastest at bottom)
 
-# View manpages in Preview.app on macOS
-test -e "/Applications/Preview.app" && alias previewman='man -t "$@" | open -g -f -a /Applications/Preview.app'
+if test "$DHD_DF_H"; then
+    alias df="df -h"
+fi
 
-# OniVim
-test -e "/Applications/OniVim2.app" && alias oni2='/Applications/Onivim2.app/Contents/MacOS/Oni2'
-
-# Launch QuickLook from the command line (^c will kill it and return to prompt)
-cmdavail qlmanage && alias ql='qlmanage -p 2>/dev/null'
-
-# Debian has weird ideas about things sometimes
-cmdavail 'ack-grep' && alias ack='ack-grep'
-
-df -h / >/dev/null 2>&1 && alias df="df -h"
 alias ..="cd .."
 alias c=clear
 alias h=history
 alias wcl="wc -l"
 alias omg="echo wtf"
 alias .b='. $HOME/.profile; . $HOME/.bashrc'
-cmdavail "xscreensaver-command" && alias xslock="xscreensaver-command -lock"
 alias xttitle='printf "\e]2;""$@""\007"'
 alias ddate="date +%Y%m%d"
 
 alias m=more
 alias l=less
-cmdavail zless && alias zl=zless
 export LESS="-icdMR"
 
 alias wh="type -a"  # type -a is a bashism
@@ -187,8 +176,8 @@ HISTTIMEFORMAT="%s "
 # Completion settings
 # on macOS, 'brew install bash-completion' is required
 test -e $HOMEBREWDIR/etc/bash_completion && source $HOMEBREWDIR/etc/bash_completion
-cmdavail doctl && source <(doctl completion bash)
-cmdavail aws aws_completer && complete -C aws_completer aws
+dhd_cmdavail doctl && source <(doctl completion bash)
+dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
 
 # Prompt
 # NOTE: The bash prompt keeps track of its length, in characters, in order to
