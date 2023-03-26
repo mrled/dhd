@@ -17,8 +17,8 @@ umask 077
 # We use this to find paths inside dhd
 export DHD=${DHD:-"$HOME/.dhd"}
 
-LANG=en_US.UTF-8
-LC_ALL="${LANG}"
+export LANG=en_US.UTF-8
+export LC_ALL="${LANG}"
 
 export GOPATH="${HOME}/Documents/Go"
 
