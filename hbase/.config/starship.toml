@@ -1,0 +1,36 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Don't add an extra newline after all command output
+add_newline = false
+
+format = """\
+$time\
+$hostname\
+$jobs\
+$directory\
+$shlvl\
+$character\
+"""
+
+[time]
+disabled = false
+format = '[$time]($style) '
+style = 'bold white'
+
+[hostname]
+ssh_only = false
+format = '[$ssh_symbol$hostname]($style) '
+
+[jobs]
+symbol_threshold = 0
+number_threshold = 1
+
+[directory]
+
+[shlvl]
+disabled = false
+# The default symbol is an emoji which looks too cartoony
+symbol = '⇳ '
+
+[character]

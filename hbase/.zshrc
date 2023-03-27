@@ -154,8 +154,8 @@ dhd_cmdavail doctl && source <(compdef _doctl doctl)
 dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
 dhd_cmdavail kubectl && source <(kubectl completion zsh)
 
-# Prompt stuff
-# Just using a basic one for now, not as fancy as my bash prompt
+# A basic prompt
+# If starship is installed, it may override this
 if [[ $EUID == 0 ]]; then
     lcop="%B%F{red}☭%f%b"
 else
@@ -193,6 +193,7 @@ fi
 # Jesus fucking christ these people are just so fucking tacky
 export DOCKER_SCAN_SUGGEST=false
 
+dhd_cmdavail starship && eval "$(starship init zsh)"
 
 # Indeed setup gunk.
 # update-managed-repos adds this line, but it runs a lot of code on every shell launch, which is slow.
