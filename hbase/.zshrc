@@ -41,6 +41,15 @@ fi
 # Use Emacs line editing
 bindkey -e
 
+# zsh forward-word does something different than bash and emacs do by default.
+# The simplest example of the difference: zsh treats words with hyphens like
+# "select-word-style" as a single word, so alt-f jumps from the beginning to the end,
+# while bash/emacs treats this as 3 separate words, so alt-f jumps from
+# the beginning of 'select' to the dash between 'select' and 'word'.
+# Here we make zfs work like bash, since that's where I'm coming from.
+autoload -U select-word-style
+select-word-style bash
+
 export CDPATH="$HOME:$HOME/Documents:$HOME/Documents/Repositories"
 
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
