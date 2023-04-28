@@ -202,7 +202,7 @@ fi
 # Jesus fucking christ these people are just so fucking tacky
 export DOCKER_SCAN_SUGGEST=false
 
-dhd_cmdavail starship && eval "$(starship init zsh)"
+# dhd_cmdavail starship && eval "$(starship init zsh)"
 
 # Indeed setup gunk.
 # update-managed-repos adds this line, but it runs a lot of code on every shell launch, which is slow.
