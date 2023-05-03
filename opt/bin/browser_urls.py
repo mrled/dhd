@@ -4,6 +4,7 @@
 import argparse
 import collections
 import collections.abc
+import configparser
 import dataclasses
 import datetime
 import json
@@ -11,9 +12,9 @@ import logging
 import os
 import pdb
 import plistlib
+import re
 import shutil
 import sqlite3
-import subprocess
 import sys
 import tempfile
 import traceback
@@ -69,6 +70,9 @@ class BrowserBookmarkEntry:
         return f"{self.url} ({self.title}) @{self.bookmarked}"
 
 
+BrowserUrlContainer = typing.Union[BrowserBookmarkEntry, BrowserHistoryEntry]
+
+
 @dataclasses.dataclass
 class BrowserProfile:
     browser: str
@@ -77,47 +81,213 @@ class BrowserProfile:
     bookmarks: typing.List[BrowserBookmarkEntry]
 
 
-def get_safari_urls(newerthan=None) -> typing.List[BrowserProfile]:
-    """Get URLs from Safari profiles
+@dataclasses.dataclass
+class ExpressionV:
+    """An expression that matches URLs to be omitted, like 'grep -v'"""
 
-    Actually I think Safari just has one profile, but still return a list so this works the same as for other browsers
+    omit: re.Pattern
+
+    def __str__(self) -> str:
+        return f"v:{self.omit.pattern}"
+
+    def apply(self, url) -> str:
+        if self.omit.search(url):
+            logging.debug(f"Omitting {url}")
+            return None
+        logging.debug(f"Keeping {url}")
+        return url
+
+
+@dataclasses.dataclass
+class ExpressionS:
+    """An expression that matches URLs to be modified, like 'sed s/.../.../'"""
+
+    pattern: re.Pattern
+    replace: str
+    splitchar: str = "@"
+
+    def apply(self, url: str) -> str:
+        """Apply the expression to a URL"""
+        newurl = self.pattern.sub(self.replace, url)
+        logging.debug(f"Replacing {url} with {newurl}")
+        return newurl
+
+    def __str__(self) -> str:
+        return f"s{self.splitchar}{self.pattern.pattern}{self.splitchar}{self.replace}"
+
+
+Expression = typing.Union[ExpressionV, ExpressionS]
+
+
+def parse_filters_config_file(configfile: str) -> list[Expression]:
+    """Return a function that filters out URLs based on the config file
+
+    Format example:
+
+    v:^https?://(www\.)?kagi.com/
+    s@^https?://(www\.)?reddit.com@https://old.reddit.com
+
+    The 'v' lines (like 'grep -v') are omitted, and the 's' lines are modified.
+    The 's' lines (like 'sed s/.../.../') are split on the first character after the 's';
+    the first part is the pattern, and the second part is the replacement.
+    """
+
+    expressions: list[Expression] = []
+
+    with open(configfile) as fp:
+        for idx, line in enumerate(fp):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("v:"):
+                logging.debug(f"Adding omit expression {line}")
+                expressions.append(ExpressionV(re.compile(line[2:])))
+            elif line.startswith("s"):
+                splitchar = line[1]
+                splitchar_count = line.count(splitchar)
+                if splitchar_count != 2:
+                    raise Exception(
+                        f"Bad config line #{idx}: {line} (expected 2 '{splitchar}' characters, got {splitchar_count})"
+                    )
+                _, patternstr, replace = line.split(splitchar)
+                logging.debug(f"Adding replace expression {line}")
+                expressions.append(
+                    ExpressionS(re.compile(patternstr), replace, splitchar)
+                )
+            else:
+                raise Exception(f"Unknown config line #{idx}: {line}")
+
+    for exp in expressions:
+        logging.info(f"Expression from config file: {exp}")
+
+    return expressions
+
+
+def filter_browser_urls_from_expressions(
+    expressions: list[Expression], items: list[BrowserUrlContainer]
+) -> list[str]:
+    """Filter URLs based on a list of expressions"""
+    filtered: list[BrowserUrlContainer] = []
+    for item in items:
+        omit = False
+        for exp in expressions:
+            item.url = exp.apply(item.url)
+            if item.url is None:
+                omit = True
+                break
+        if not omit:
+            filtered.append(item)
+    return filtered
+
+
+# def filter_urls_from_expressions(
+#     expressions: list[Expression], urls: list[str]
+# ) -> list[str]:
+#     """Filter URLs based on a list of expressions"""
+#     for url in urls:
+#         for exp in expressions:
+#             url = exp.apply(url)
+#             if url is None:
+#                 break
+
+#     for exp in expressions:
+#         urls = [exp.apply(url) for url in urls]
+#         urls = [url for url in urls if url is not None]
+#     return urls
+
+
+def discover_safari_profiles() -> typing.List[str]:
+    """Find Safari profiles in the home directory
+
+    (This will only ever discover a single profile, but we add this for completeness.)
     """
     profile_dir = resolvepath("~/Library/Safari")
-    with tempfile.TemporaryDirectory() as tmpdir:
-        history = []
-        histfile = os.path.join(profile_dir, "History.db")
-        if os.path.exists(histfile):
-            histfile2 = os.path.join(tmpdir, "Safari.History.db")
-            shutil.copy(histfile, histfile2)
+    if os.path.exists(profile_dir):
+        return [profile_dir]
+    return []
 
-            con = sqlite3.connect(histfile2)
-            con.row_factory = sqlite3.Row
 
-            cur = con.cursor()
+def discover_chrome_profiles() -> typing.List[str]:
+    """Find Chrome profiles in the home directory"""
+    chrome_profiles_parent = resolvepath("~/Library/Application Support/Google/Chrome")
 
-            history_sql = f"SELECT url, title, datetime(visit_time + 978307200, 'unixepoch', 'localtime') as parseddate FROM history_visits  INNER JOIN history_items ON history_items.id = history_visits.history_item"
-            if newerthan:
-                history_sql += f" WHERE parseddate > '{newerthan}'"
-            history_result = cur.execute(history_sql)
-            history = [
-                BrowserHistoryEntry(h["url"], h["title"], h["parseddate"])
-                for h in history_result
-            ]
-            logger.info(f"{profile_dir} profile has {len(history)} history items")
+    result = []
 
-        bookmarks = []
-        marksfile = os.path.join(profile_dir, "Bookmarks.plist")
-        if os.path.exists(marksfile):
-            with open(marksfile, "rb") as fp:
-                marksdata = plistlib.load(fp)
-            bookmarks = [
-                BrowserBookmarkEntry(i["URLString"], i["URIDictionary"]["title"], None)
-                for i in marksdata["Children"]
-                if i["WebBookmarkType"] == "WebBookmarkTypeLeaf"
-            ]
+    for child in os.listdir(chrome_profiles_parent):
+        if not (child == "Default" or child.startswith("Profile")):
+            continue
+        resolvedchild = os.path.join(chrome_profiles_parent, child)
+        if not os.path.isdir(resolvedchild):
+            continue
+        history = os.path.join(resolvedchild, "History")
+        if not os.path.exists(history):
+            continue
+        result += [resolvedchild]
+    return result
 
-    profile = BrowserProfile("Safari", profile_dir, history, bookmarks)
-    return [profile]
+
+def discover_firefox_profiles() -> typing.List[str]:
+    """Find Firefox profiles in the home directory"""
+    ff_profiles_parent = resolvepath("~/Library/Application Support/Firefox/Profiles")
+
+    result = []
+
+    for child in os.listdir(ff_profiles_parent):
+        resolvedchild = os.path.join(ff_profiles_parent, child)
+        if not os.path.isdir(resolvedchild):
+            continue
+        places = os.path.join(resolvedchild, "places.sqlite")
+        if not os.path.exists(places):
+            continue
+        result += [resolvedchild]
+    return result
+
+
+def get_safari_urls(
+    profilepaths: list[str], newerthan=None
+) -> typing.List[BrowserProfile]:
+    """Get URLs from Safari profiles"""
+
+    profilepath = resolvepath("~/Library/Safari")
+    profiles = []
+    for profilepath in profilepaths:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            history = []
+            histfile = os.path.join(profilepath, "History.db")
+            if os.path.exists(histfile):
+                histfile2 = os.path.join(tmpdir, "Safari.History.db")
+                shutil.copy(histfile, histfile2)
+
+                con = sqlite3.connect(histfile2)
+                con.row_factory = sqlite3.Row
+
+                cur = con.cursor()
+
+                history_sql = f"SELECT url, title, datetime(visit_time + 978307200, 'unixepoch', 'localtime') as parseddate FROM history_visits  INNER JOIN history_items ON history_items.id = history_visits.history_item"
+                if newerthan:
+                    history_sql += f" WHERE parseddate > '{newerthan}'"
+                history_result = cur.execute(history_sql)
+                history = [
+                    BrowserHistoryEntry(h["url"], h["title"], h["parseddate"])
+                    for h in history_result
+                ]
+                logger.info(f"{profilepath} profile has {len(history)} history items")
+
+            bookmarks = []
+            marksfile = os.path.join(profilepath, "Bookmarks.plist")
+            if os.path.exists(marksfile):
+                with open(marksfile, "rb") as fp:
+                    marksdata = plistlib.load(fp)
+                bookmarks = [
+                    BrowserBookmarkEntry(
+                        i["URLString"], i["URIDictionary"]["title"], None
+                    )
+                    for i in marksdata["Children"]
+                    if i["WebBookmarkType"] == "WebBookmarkTypeLeaf"
+                ]
+
+        profiles.append(BrowserProfile("Safari", profilepath, history, bookmarks))
+    return profiles
 
 
 def chrome_bookmarks_extractor(d: dict) -> typing.List[BrowserBookmarkEntry]:
@@ -143,21 +313,16 @@ def chrome_bookmarks_extractor(d: dict) -> typing.List[BrowserBookmarkEntry]:
     return BrowserBookmarkEntry(d["url"], d["name"], d["date_added"])
 
 
-def get_chrome_urls(newerthan=None) -> typing.List[BrowserProfile]:
+def get_chrome_urls(
+    profilepaths: list[str], newerthan=None
+) -> typing.List[BrowserProfile]:
     """Get URLs from all Chrome profiles"""
-    profiles_parent = resolvepath("~/Library/Application Support/Google/Chrome")
     result = []
     with tempfile.TemporaryDirectory() as tmpdir:
 
-        for child in os.listdir(profiles_parent):
-            if not (child == "Default" or child.startswith("Profile")):
-                continue
-            resolvedchild = os.path.join(profiles_parent, child)
-            if not os.path.isdir(resolvedchild):
-                continue
-
+        for profilepath in profilepaths:
             history = []
-            histfile = os.path.join(resolvedchild, "History")
+            histfile = os.path.join(profilepath, "History")
             if os.path.exists(histfile):
                 histfile2 = os.path.join(tmpdir, "history.sqlite")
                 shutil.copy(histfile, histfile2)
@@ -174,24 +339,25 @@ def get_chrome_urls(newerthan=None) -> typing.List[BrowserProfile]:
                     BrowserHistoryEntry(h["url"], h["title"], h["parseddate"])
                     for h in history_result
                 ]
-                logger.info(f"{resolvedchild} profile has {len(history)} history items")
+                logger.info(f"{profilepath} profile has {len(history)} history items")
 
             bookmarks = []
-            bookmarksfile = os.path.join(resolvedchild, "Bookmarks")
+            bookmarksfile = os.path.join(profilepath, "Bookmarks")
             if os.path.exists(bookmarksfile):
-                logger.info(f"Bookmarks for profile {resolvedchild}:")
+                logger.info(f"Bookmarks for profile {profilepath}:")
                 with open(bookmarksfile) as bkmkfp:
                     bookmarks_data = json.load(bkmkfp)
                 bookmarks = chrome_bookmarks_extractor(bookmarks_data)
 
-            result += [BrowserProfile("Chrome", resolvedchild, history, bookmarks)]
+            result += [BrowserProfile("Chrome", profilepath, history, bookmarks)]
 
     return result
 
 
-def get_firefox_urls(newerthan=None) -> typing.List[BrowserProfile]:
+def get_firefox_urls(
+    profilepaths: list[str], newerthan=None
+) -> typing.List[BrowserProfile]:
     """Get URLs from all Firefox profiles"""
-    ff_profiles_parent = resolvepath("~/Library/Application Support/Firefox/Profiles")
 
     result = []
 
@@ -200,14 +366,8 @@ def get_firefox_urls(newerthan=None) -> typing.List[BrowserProfile]:
     # So we cheat and just copy the database. lol
     with tempfile.TemporaryDirectory() as tmpdir:
 
-        for child in os.listdir(ff_profiles_parent):
-            resolvedchild = os.path.join(ff_profiles_parent, child)
-            if not os.path.isdir(resolvedchild):
-                continue
-            places = os.path.join(resolvedchild, "places.sqlite")
-            if not os.path.exists(places):
-                continue
-
+        for profilepath in profilepaths:
+            places = os.path.join(profilepath, "places.sqlite")
             places2 = os.path.join(tmpdir, "places2.sqlite")
             shutil.copy(places, places2)
 
@@ -225,17 +385,9 @@ def get_firefox_urls(newerthan=None) -> typing.List[BrowserProfile]:
                 BrowserHistoryEntry(h["url"], h["title"], h["parsedlvd"])
                 for h in history_result
             ]
-            logger.info(f"{resolvedchild} profile has {len(history)} history items")
-            # for h in history:
-            #     print(h)
+            logger.info(f"{profilepath} profile has {len(history)} history items")
 
-            # history_strs = [
-            #     f"{h['url']} ({h['title']}) @{h['parsedlvd']}" for h in history
-            # ]
-            # history_input = "\n".join(history_strs[0:10]).encode()
-            # subprocess.run(["archivebox", "add"], input=history_input)
-
-            logger.info(f"Bookmarks for profile {resolvedchild}:")
+            logger.info(f"Bookmarks for profile {profilepath}:")
             bookmarks_result = cur.execute(
                 "SELECT b.dateAdded, b.title, f.url FROM moz_bookmarks as b JOIN moz_places AS f ON f.id = b.fk;"
             )
@@ -243,13 +395,28 @@ def get_firefox_urls(newerthan=None) -> typing.List[BrowserProfile]:
                 BrowserBookmarkEntry(b["url"], b["title"], b["dateAdded"])
                 for b in bookmarks_result
             ]
-            logger.debug(f"{resolvedchild} profile has {len(bookmarks)} bookmarks")
-            # for b in bookmarks:
-            #     print(f"{b['url']} ({b['title']}) @{b['dateAdded']}")
+            logger.debug(f"{profilepath} profile has {len(bookmarks)} bookmarks")
 
-            result += [BrowserProfile("Firefox", resolvedchild, history, bookmarks)]
+            result += [BrowserProfile("Firefox", profilepath, history, bookmarks)]
 
     return result
+
+
+def get_file_urls(filename: str) -> BrowserProfile:
+    """Get URLS from a list of files.
+
+    Return a BrowserProfile object with bookmarks only (no history).
+    """
+    bookmarks: list[BrowserBookmarkEntry] = []
+    with open(filename) as fp:
+        for line in fp.readlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith("#"):
+                continue
+            bookmarks.append(BrowserBookmarkEntry(line, f"No title: {line}", None))
+    return [BrowserProfile("File", filename, [], bookmarks)]
 
 
 def profiles_html(
@@ -377,6 +544,58 @@ def profiles_urls_domainstats(
     return "\n".join(result)
 
 
+@dataclasses.dataclass
+class Cfg:
+    ignore_firefoxes: list[str]
+    ignore_chromes: list[str]
+    urlfilters: list[Expression]
+
+
+def parseconfig(configfile: str):
+    """Parse the config file and return a Cfg object"""
+
+    config = Cfg([], [], [])
+
+    cfgfile = configparser.ConfigParser()
+    cfgfile.read(configfile)
+
+    for line in cfgfile.get("DEFAULT", "ignoreprofiles").split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        browser, igpro = line.split(" ", maxsplit=1)
+        if browser == "firefox":
+            config.ignore_firefoxes.append(igpro)
+        elif browser == "chrome":
+            config.ignore_chromes.append(igpro)
+        else:
+            raise ValueError(f"Unknown browser {browser}")
+
+    for idx, line in enumerate(cfgfile.get("DEFAULT", "urlfilters").split("\n")):
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("v:"):
+            logging.debug(f"Adding omit expression {line}")
+            config.urlfilters.append(ExpressionV(re.compile(line[2:])))
+        elif line.startswith("s"):
+            splitchar = line[1]
+            splitchar_count = line.count(splitchar)
+            if splitchar_count != 2:
+                raise Exception(
+                    f"Bad URL filter #{idx}: {line} (expected 2 '{splitchar}' characters, got {splitchar_count})"
+                )
+            _, patternstr, replace = line.split(splitchar)
+            logging.debug(f"Adding replace expression {line}")
+            config.urlfilters.append(
+                ExpressionS(re.compile(patternstr), replace, splitchar)
+            )
+        else:
+            raise ValueError(f"Unknown URL filter #{idx}: {line}")
+
+    return config
+
+
 def parseargs(arguments: typing.List[str]):
     """Parse program arguments"""
     parser = argparse.ArgumentParser(
@@ -386,37 +605,60 @@ def parseargs(arguments: typing.List[str]):
         "--debug",
         "-d",
         action="store_true",
-        help="Launch a debugger on unhandled exception",
+        help="Launch a debugger on unhandled exception and log verbose output",
     )
     parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Log verbose output"
+    )
+    cfgfile = os.path.join(os.path.expanduser("~"), ".browser_urls.conf")
+    parser.add_argument(
+        "--config",
+        "-c",
+        default=cfgfile,
+        help=f"Config file to use. Default is {cfgfile}.",
+    )
+    subparsers = parser.add_subparsers(dest="subcmd", required=True)
+
+    sub_profiles = subparsers.add_parser(name="profiles", help="List browser profiles")
+
+    sub_urls = subparsers.add_parser(
+        name="urls", help="List URLs from browser profiles"
+    )
+
+    browsers = ["firefox", "chrome", "safari", "file", "all"]
+    sub_urls.add_argument(
         "--browsers",
         default="all",
-        choices=["firefox", "chrome", "safari", "all"],
-        help="Which browsers to get history from",
+        choices=browsers,
+        help=f"Which browsers to get history from, one of {browsers}. Default is all. 'file' requires the --url-file option.",
     )
-    parser.add_argument(
+    sub_urls.add_argument(
         "--history-newer-than",
         help="Only look at browser history newer than this date. Has no effect on bookmarks. Could slowly move this back as more and more history gets archived with time.",
     )
-    parser.add_argument(
+    sub_urls.add_argument(
         "--history",
         default=True,
         action=argparse.BooleanOptionalAction,
         help="Return history (default True)",
     )
-    parser.add_argument(
+    sub_urls.add_argument(
         "--bookmarks",
         default=True,
         action=argparse.BooleanOptionalAction,
         help="Return bookmarks (default True)",
     )
-    parser.add_argument(
+    sub_urls.add_argument("--url-file", help="Read URLs from this file")
+    sub_urls.add_argument(
         "--format",
         default="html",
         choices=["html", "markdown", "urls", "urls-dedup", "domainstats"],
         help="The output format. html: A list with <a href='http://...'>Title @ date</a>. markdown: A list with [Title @ date](http://...) urls: Just the URLs, one per line. urls-dedup: Like 'urls', but with duplicates removed. domainstats: Calculate number of times each domain is present (calculated separately per profile).",
     )
+
     parsed = parser.parse_args(arguments)
+    if parsed.subcmd == "urls" and parsed.browsers == "file" and not parsed.url_file:
+        parser.error("--browsers file requires --url-file")
     return parsed
 
 
@@ -429,31 +671,93 @@ def main(*arguments: typing.List[str]) -> int:
     parsed = parseargs(arguments[1:])
     if parsed.debug:
         sys.excepthook = idb_excepthook
+    if parsed.debug or parsed.verbose:
         logger.setLevel(logging.DEBUG)
 
-    profiles = []
+    config = parseconfig(parsed.config)
 
-    if parsed.browsers in ["firefox", "all"]:
-        profiles += get_firefox_urls(newerthan=parsed.history_newer_than)
-    if parsed.browsers in ["chrome", "all"]:
-        profiles += get_chrome_urls(newerthan=parsed.history_newer_than)
-    if parsed.browsers in ["safari", "all"]:
-        profiles += get_safari_urls(newerthan=parsed.history_newer_than)
+    safaris = discover_safari_profiles()
+    all_firefoxes = discover_firefox_profiles()
+    all_chromes = discover_chrome_profiles()
 
-    if parsed.format == "html":
-        print(profiles_html(profiles, parsed.bookmarks, parsed.history))
-    elif parsed.format == "markdown":
-        print(profiles_markdown(profiles, parsed.bookmarks, parsed.history))
-    elif parsed.format == "urls-dedup":
-        print(profiles_urls_txt(profiles, parsed.bookmarks, parsed.history, dedup=True))
-    elif parsed.format == "urls":
-        print(
-            profiles_urls_txt(profiles, parsed.bookmarks, parsed.history, dedup=False)
-        )
-    elif parsed.format == "domainstats":
-        print(profiles_urls_domainstats(profiles, parsed.bookmarks, parsed.history))
+    firefoxes = [
+        ff
+        for ff in all_firefoxes
+        if not any([ff.endswith(ig) for ig in config.ignore_firefoxes])
+    ]
+    chromes = [
+        ch
+        for ch in all_chromes
+        if not any([ch.endswith(ig) for ig in config.ignore_chromes])
+    ]
+
+    if parsed.subcmd == "profiles":
+        if safaris:
+            print("Safari profiles:")
+            for profile in safaris:
+                print(f"  {profile}")
+        else:
+            print("No Safari profiles found")
+        if all_firefoxes:
+            print("Firefox profiles:")
+            for profile in all_firefoxes:
+                line = f"  {profile}"
+                if profile not in firefoxes:
+                    line += " (ignored per config)"
+                print(line)
+        else:
+            print("No Firefox profiles found")
+        if all_chromes:
+            print("Chrome profiles:")
+            for profile in all_chromes:
+                line = f"  {profile}"
+                if profile not in chromes:
+                    line += " (ignored per config)"
+                print(line)
+        else:
+            print("No Chrome profiles found")
+    elif parsed.subcmd == "urls":
+        profiles = []
+
+        if parsed.browsers in ["firefox", "all"]:
+            profiles += get_firefox_urls(firefoxes, newerthan=parsed.history_newer_than)
+        if parsed.browsers in ["chrome", "all"]:
+            profiles += get_chrome_urls(chromes, newerthan=parsed.history_newer_than)
+        if parsed.browsers in ["safari", "all"]:
+            profiles += get_safari_urls(safaris, newerthan=parsed.history_newer_than)
+        if parsed.browsers in ["file", "all"] and parsed.url_file:
+            profiles += get_file_urls(parsed.url_file)
+
+        for profile in profiles:
+            profile.bookmarks = filter_browser_urls_from_expressions(
+                config.urlfilters, profile.bookmarks
+            )
+            profile.history = filter_browser_urls_from_expressions(
+                config.urlfilters, profile.history
+            )
+
+        if parsed.format == "html":
+            print(profiles_html(profiles, parsed.bookmarks, parsed.history))
+        elif parsed.format == "markdown":
+            print(profiles_markdown(profiles, parsed.bookmarks, parsed.history))
+        elif parsed.format == "urls-dedup":
+            print(
+                profiles_urls_txt(
+                    profiles, parsed.bookmarks, parsed.history, dedup=True
+                )
+            )
+        elif parsed.format == "urls":
+            print(
+                profiles_urls_txt(
+                    profiles, parsed.bookmarks, parsed.history, dedup=False
+                )
+            )
+        elif parsed.format == "domainstats":
+            print(profiles_urls_domainstats(profiles, parsed.bookmarks, parsed.history))
+        else:
+            raise Exception(f"Unknown value for --format: {parsed.format}")
     else:
-        raise Exception(f"Unknown value for --format: {parsed.format}")
+        raise Exception(f"Unknown subcommand: {parsed.subcmd}")
 
     return 0
 
