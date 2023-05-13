@@ -39,6 +39,11 @@ vim.opt.hlsearch = true
 vim.opt.termguicolors = true
 vim.opt.background = "dark"
 
+-- Use left-most colum to do things like report errors.
+-- Without this, it will insert a column whenever your lang server
+-- wants to display that a line has an error, shifting everything right.
+vim.opt.signcolumn = "yes"
+
 -- allow mouse scroll
 vim.opt.mouse = "a"
 
@@ -67,6 +72,5 @@ end
 
 require("nvim-tree").setup()
 
-require ('mrl-telescope')
+require('mrl-telescope')
 require("mrl-mason")
-
