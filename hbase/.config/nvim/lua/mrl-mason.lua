@@ -51,7 +51,7 @@ require("lspconfig").dockerls.setup {on_attach=lsp_on_attach, flags=lsp_flags}
 require("lspconfig").jsonls.setup {on_attach=lsp_on_attach, flags=lsp_flags}
 require("lspconfig").marksman.setup {on_attach=lsp_on_attach, flags=lsp_flags}
 require("lspconfig").salt_ls.setup {on_attach=lsp_on_attach, flags=lsp_flags}
-require("lspconfig").sumneko_lua.setup {
+require("lspconfig").lua_ls.setup {
   on_attach=lsp_on_attach,
   flags=lsp_flags,
   settings = {
