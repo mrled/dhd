@@ -25,6 +25,8 @@ vim.opt.smartcase = true
 vim.opt.autoindent = true
 vim.opt.expandtab = true
 
+vim.opt.guifont="FiraCode Nerd Font Mono:h10:w57"
+
 local indent = 4
 vim.opt.tabstop = indent
 vim.opt.shiftwidth = indent
@@ -70,7 +72,6 @@ if vim.g.neovide then
   vim.g.neovide_padding_left = 25
 end
 
-require("nvim-tree").setup()
-
 require('mrl-telescope')
 require("mrl-mason")
+require("mrl-keymap")
