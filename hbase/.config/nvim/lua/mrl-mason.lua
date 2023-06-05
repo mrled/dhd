@@ -55,13 +55,16 @@ require("lspconfig").lua_ls.setup {
   on_attach=lsp_on_attach,
   flags=lsp_flags,
   settings = {
-      Lua = {
-          diagnostics = {
-              globals = {
-                  'vim'
-              }
-          }
-      }
+    Lua = {
+      diagnostics = {
+        globals = {
+          'vim'
+        }
+      },
+      telemetry = {
+        enable = false,
+      },
+    }
   }
 }
 --require("lspconfig").tailwindcss.setup {}
