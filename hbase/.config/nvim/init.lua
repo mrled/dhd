@@ -31,14 +31,13 @@ local indent = 4
 vim.opt.tabstop = indent
 vim.opt.shiftwidth = indent
 
-vim.opt.list = true
-vim.opt.listchars = "tab:␉·,trail:␠,nbsp:⎵"
+--vim.opt.list = true
+--vim.opt.listchars = "tab:␉·,trail:␠,nbsp:⎵"
 
 vim.opt.showmatch = true
 vim.opt.errorbells = false
 
 vim.opt.hlsearch = true
-vim.opt.termguicolors = true
 vim.opt.background = "dark"
 
 -- Use left-most colum to do things like report errors.
