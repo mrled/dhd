@@ -233,3 +233,5 @@ else
     # Add some indeed-specific nice-to-haves without requiring the gunk
     alias cdi="cd ~/indeed"
 fi
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
