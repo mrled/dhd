@@ -25,7 +25,7 @@ vim.opt.smartcase = true
 vim.opt.autoindent = true
 vim.opt.expandtab = true
 
-vim.opt.guifont="FiraCode Nerd Font Mono:h10:w57"
+vim.opt.guifont="FiraCode Nerd Font Mono:h12:w57"
 
 local indent = 4
 vim.opt.tabstop = indent
