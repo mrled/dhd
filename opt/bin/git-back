@@ -1,0 +1,46 @@
+#!/bin/sh
+
+set -e
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat << ENDUSAGE
+git-back: [-h|--help] <date> <args...>
+Run a git command as if on a certain date.
+
+ARGUMENTS
+
+    date: A date in git format, like "Sun Aug 30 19:48:32 2020 -0500"
+    args: Arguments to send to git.
+
+EXAMPLES
+
+    git-back "Sun Aug 30 19:48:32 2020 -0500" commit -a -m "Fix bug #123"
+    git-back "Sun Aug 30 19:48:32 2020 -0500" merge upstream/master
+
+IMPLEMENTATION
+
+    All this does is set the GIT_COMMITTER_DATE and GIT_AUTHOR_DATE
+    and run a git command.
+
+    Note that running the simple 'git commit --date <date>' is not sufficient,
+    as it only sets one of those values.
+    There is also no --date option for 'git merge', which creates a commit.
+
+    The final word on date formatting comes from the
+    https://github.com/git/git/blob/master/Documentation/date-formats.txt
+
+ENDUSAGE
+}
+
+if test $# -lt 1 || test "$1" = "-h" || test "$1" = "--help"; then
+    usage
+    exit
+fi
+date="$1"
+shift
+
+export GIT_COMMITTER_DATE="$date"
+export GIT_AUTHOR_DATE="$date"
+git "$@"
