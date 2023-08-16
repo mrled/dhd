@@ -61,9 +61,9 @@ shopt -s checkwinsize
 shopt -s histappend
 
 case "$DHD_LS_TYPE" in
-    gnu) alias ls="ls -LFhN --color=always";;
-    bsd) alias ls="ls -LFhG";;
-    *) alias ls="ls -LF";;
+    gnu) alias ls="ls -FhN --color=always";;
+    bsd) alias ls="ls -FhG";;
+    *) alias ls="ls -F";;
 esac
 alias lsa='ls -a'
 alias lsl='ls -a -l'

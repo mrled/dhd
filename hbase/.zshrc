@@ -69,9 +69,9 @@ unsetopt CASE_GLOB
 setopt APPEND_HISTORY
 
 case "$DHD_LS_TYPE" in
-    gnu) alias ls="ls -LFhN --color=always";;
-    bsd) alias ls="ls -LFhG";;
-    *) alias ls="ls -LF";;
+    gnu) alias ls="ls -FhN --color=always";;
+    bsd) alias ls="ls -FhG";;
+    *) alias ls="ls -F";;
 esac
 alias lsa='ls -a'
 alias lsl='ls -a -l'
@@ -201,6 +201,7 @@ fi
 
 # Jesus fucking christ these people are just so fucking tacky
 export DOCKER_SCAN_SUGGEST=false
+export DOCKER_CLI_HINTS=false
 
 # dhd_cmdavail starship && eval "$(starship init zsh)"
 
@@ -235,3 +236,10 @@ else
 fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# First this environment variable is set in /etc/zshrc
+# Then we go and reset our path because of dhd-shdetect
+# Now I'm unsetting this variable so that this script will run
+# TODO: fix this the right way
+unset __ETC_PROFILE_NIX_SOURCED
+. '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
