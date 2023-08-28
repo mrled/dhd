@@ -53,6 +53,7 @@ ${HOME}/.local/sbin
 ${HOME}/.poetry/bin
 ${DHD}/opt/bin
 ${DHD}/opt/bash/bin
+${HOME}/.config/emacs/bin
 ${HOME}/opt/homebrew/bin
 ${HOME}/opt/homebrew/sbin
 ${HOME}/opt/npmglobal/bin
