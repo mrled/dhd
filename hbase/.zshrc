@@ -241,5 +241,7 @@ fi
 # Then we go and reset our path because of dhd-shdetect
 # Now I'm unsetting this variable so that this script will run
 # TODO: fix this the right way
-unset __ETC_PROFILE_NIX_SOURCED
-. '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+if test -e "/nix"; then
+    unset __ETC_PROFILE_NIX_SOURCED
+    . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
