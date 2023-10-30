@@ -58,6 +58,8 @@ fi
 
 export MSDK_HOME=$INDEED_PROJECT_DIR/business-automation/deathstar/server/src/main/webapp/JPMC_MSDK_1.5.0
 
+export DOCKER_CLI_HINTS=false
+
 # Indeed setup gunk.
 # update-managed-repos adds this line, but it runs a lot of code on every shell launch, which is slow.
 # Here, we disable it, but we define an alias to allow importing it if necessary

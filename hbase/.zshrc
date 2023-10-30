@@ -77,7 +77,6 @@ alias lsa='ls -a'
 alias lsl='ls -a -l'
 alias lsli='lsl -i' # lsl+inodes
 alias l1='ls -1'
-alias llm='lsl -r -t' # lsl+ sort by modified time (lastest at bottom)
 
 if test "$DHD_DF_H"; then
     alias df="df -h"
@@ -162,6 +161,7 @@ autoload -Uz promptinit && promptinit
 dhd_cmdavail doctl && source <(compdef _doctl doctl)
 dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
 dhd_cmdavail kubectl && source <(kubectl completion zsh)
+dhd_cmdavail bun && source /Users/mrled/.bun/_bun
 
 # A basic prompt
 # If starship is installed, it may override this
