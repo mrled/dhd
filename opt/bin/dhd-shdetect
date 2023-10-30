@@ -60,6 +60,7 @@ ${HOME}/opt/npmglobal/bin
 ${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
 ${HOME}/Library/Python/3.9/bin
+${HOME}/Library/Python/3.11/bin
 ${HOME}/.fly/bin
 ${HOME}/.krew/bin
 ${HOME}/env/bin
@@ -74,6 +75,7 @@ ${HOME}/env/bin
 /usr/sbin
 /bin
 /sbin
+/usr/local/texlive/2023basic/bin/universal-darwin
 /Applications/FontForge.app/Contents/Resources/opt/local/bin
 /Applications/QMK Toolbox.app/Contents/Resources
 /Applications/Neovide.app/Contents/MacOS
@@ -122,10 +124,16 @@ NPM_PACKAGES=
 if cmdavail npm; then
     NPM_PACKAGES="${HOME}/.npm-packages"
     npm config set update-notifier false
-    npm config set send-metrics false
     npm config set prefix "${HOME}/.npm-packages"
     export PATH="$(pathsetup "${PATH}:${NPM_PACKAGES}/bin")"
     export MANPATH="${MANPATH}:${NPM_PACKAGES}/share/man"
+fi
+
+# Bun
+BUN_INSTALL=
+if test -d "$HOME/.bun"; then
+    export BUN_INSTALL="$HOME/.bun"
+    export PATH="${PATH}:${BUN_INSTALL}/bin"
 fi
 
 RUBY_GEMS_PATHS=
@@ -223,6 +231,7 @@ export MANPATH="$MANPATH"
 export GOROOT="$GOROOT"
 export GOPATH="$GOPATH"
 export NPM_PACKAGES="$NPM_PACKAGES"
+export BUN_INSTALL="$BUN_INSTALL"
 export RUBY_GEMS_PATHS="$RUBY_GEMS_PATHS"
 export ANDROID_HOME="$ANDROID_HOME"
 export EDITOR="$EDITOR"
