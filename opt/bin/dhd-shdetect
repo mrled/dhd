@@ -126,6 +126,10 @@ if cmdavail brew; then
     # fi
 fi
 
+if test -d "$HOME/.nvm"; then
+    export NVM_DIR="$HOME/.nvm"
+fi
+
 NPM_PACKAGES=
 if cmdavail npm; then
     NPM_PACKAGES="${HOME}/.npm-packages"
@@ -251,6 +255,7 @@ export DHD_CMDAVAIL="$DHD_CMDAVAIL"
 export DHD_FIGLET_FONTS="$DHD_FIGLET_FONTS"
 export FORTUNATE_CHECKOUT="$FORTUNATE_CHECKOUT"
 export HOMEBREWDIR="$HOMEBREWDIR"
+export NVM_DIR="$NVM_DIR"
 
 # Very fast way to test precomputed command availability
 dhd_cmdavail() {

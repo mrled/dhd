@@ -162,6 +162,8 @@ dhd_cmdavail doctl && source <(compdef _doctl doctl)
 dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
 dhd_cmdavail kubectl && source <(kubectl completion zsh)
 dhd_cmdavail bun && source /Users/mrled/.bun/_bun
+test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
+
 
 # A basic prompt
 # If starship is installed, it may override this
@@ -245,3 +247,6 @@ if test -e "/nix"; then
     unset __ETC_PROFILE_NIX_SOURCED
     . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 fi
+
+# Node Version Manager gunk
+test "$NVM_DIR" && . "$NVM_DIR/nvm.sh" || echo NO
