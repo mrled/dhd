@@ -10,6 +10,7 @@ decommissioner_export() {
     export JENKINS_TOKEN="$(gopass cat mledbetter/jenkins_token)"
     export DD_API_KEY="$(gopass cat indeed/datadog_api_key_sre)"
     export DD_APP_KEY="$(gopass cat mledbetter/datadog_app_key)"
+    export DATA_WORLD_TOKEN=""
 }
 
 # This is for prod; see also <https://wiki.indeed.com/display/ITSYS/Vault>
