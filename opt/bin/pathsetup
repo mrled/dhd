@@ -1,25 +1,60 @@
 #!/bin/sh
 
+pathsetuplog() {
+    true
+}
+
 set -e
-PATHSETUPLOG=${PATHSETUPLOG:-}
+if test "$PATHSETUPTRACE"; then
+    set -x
+fi
+if test "$PATHSETUPLOG"; then
+    if ! test -e "$PATHSETUPLOG"; then
+        touch "$PATHSETUPLOG"
+    fi
+    pathsetuplog() {
+        echo "$@" >> "$PATHSETUPLOG"
+    }
+fi
 set -u
 
 cmdname=`basename "$0"`
 
 usage() {
     cat <<ENDUSAGE
-Usage: $cmdname <PATHSTR>
+Usage: $cmdname <PATHSTR> [EXCLUDE]
 Set up a PATH-like string
 
 ARGUMENTS
-    <PATHSTR>   A PATH-like string
-                That is, a string containing paths separated by colons
-                We also accept paths separated by newlines
+    <PATHSTR>   A string containing paths to check,
+                separated by either colons or newlines.
+    [EXCLUDE]   A string containing paths to exclude,
+                separated by either colons or newlines.
+                This is useful for excluding paths which are managed by other tools,
+                like /Users/YOU/.nvm.
+                Paths are matched with case statements,
+                so use globs to do things like match all children of a directory.
 
 VARIABLES
+    \$PATHSETUPTRACE
+        If set, set -x will be enabled.
     \$PATHSETUPLOG
         If set, assume it points to a file path, and log debugging information
         to that file.
+        Each log line will have a prefix.
+        Basic messages:
+            +   Path added to the output
+            -   Path excluded from output based on EXCLUDE
+            *   Path specified twice in PATHSTR
+            !   Path does not exist
+            x   The exclusion list as passed to the command (printed once before execution)
+            <   The path list as passed to the command (printed once before execution)
+            >   The output of the command (printed once after execution)
+        Verbose messages:
+            ___p   The path from input being processed
+            __xx   The exclusion pattern matched the path
+            __x!   The exclusion pattern didn't match the path
+            ___>   The output of the command at this point in time
 
 OUTPUTS
     Return a string continaing only the existing directories from PATHSTR,
@@ -38,53 +73,84 @@ EXAMPLES
 ENDUSAGE
 }
 
-pathsetuplog() {
-    if test "$PATHSETUPLOG"; then
-        echo "$@" >> "$PATHSETUPLOG"
-    fi
+# Convert pathlike variables to newline separated patterns,
+# and strip all leading or trailing separators.
+pathlike2linesep() {
+    echo "$1" | tr ':' '\n' | sed 's/^|*//;s/|*$//'
 }
 
-if test $# != 1; then
-    echo "Found $# arguments but expected only 1"
-    usage
-    exit 1
-elif test "$1" = "-h"; then
-    usage
-    exit 0
-fi
+# Test whether a path-like variable contains a specific path.
+# Only consider colon-separated paths, not newline-separated paths.
+# Usage: pathcontains "$PATH" "/bin"
+pathcontains() {
+    pathlike=":$1:"
+    p="$2"
+    test "${pathlike#*":$p:"}" != "$pathlike"
+}
 
-if test "$PATHSETUPLOG"; then
-    touch "$PATHSETUPLOG"
-fi
-
-pathlike=$1
-outpath=
-initialifs=$IFS
-
-# Set IFS to be only newlines or the colon character
-# Oddly, I have seen IFS=$'\n:' work on some systems,
-# but fail on others. Unclear why, but this seems to fix it
-IFS=$'
-:'
-
-for path in $pathlike; do
-    if test -d "$path"; then
-        pathsetuplog "Found path: $path"
-        foundexisting=
-        for existingpath in $outpath; do
-            if test "$path" = "$existingpath"; then
-                pathsetuplog "... however, '$path' was already in output, skipping..."
-                foundexisting=1
-                break
+pathlike=
+exclude=
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help ) usage; exit 0;;
+        *)
+            if test -z "$pathlike"; then
+                pathlike="$(pathlike2linesep "$1")"
+            elif test -z "$exclude"; then
+                exclude="$(pathlike2linesep "$1")"
             else
-                pathsetuplog "... and it did not match with existing path '$existingpath'"
+                echo "Unknown argument: $1"
+                usage
+                exit 1
             fi
-        done
-        test $foundexisting || outpath="${outpath}${path}:"
+            shift
+            ;;
+    esac
+done
+
+pathsetuplog "$(echo "$pathlike" | tr ':' '\n' | sed 's/^/< /g')"
+pathsetuplog "$(echo "$exclude" | tr ':' '\n' | sed 's/^/x /g')"
+
+outpath=
+
+initialifs="$IFS"
+IFS='
+'
+for path in $pathlike; do
+    if test -z "$path"; then
+        continue
+    elif ! test -d "$path"; then
+        pathsetuplog "! $path"
+        continue
+    fi
+    pathsetuplog "___p $path"
+    pathsetuplog "$(echo "$outpath" | tr ':' '\n' | sed 's/^/___> /g')"
+    ignore=
+    if pathcontains "$outpath" "$path"; then
+        pathsetuplog "* $path"
     else
-        pathsetuplog "Nonexistent path: $path"
+        ignore=
+        set -f # Disable file globbing so that the shell doesn't expand * characters in the for statement
+        for pattern in $exclude; do
+            case "$path" in
+                # Because we disable globbing above, case will see any * characters and use them for pattern matching instead of file globbing
+                $pattern)
+                    pathsetuplog "__xx $path $pattern"
+                    ignore=1
+                    break
+                    ;;
+                *)
+                    pathsetuplog "__x! $path $pattern"
+            esac
+        done
+        set +f # Re-enable file globbing
+        if test -z "$ignore"; then
+            pathsetuplog "+ $path"
+            outpath="${outpath}:${path}"
+        fi
     fi
 done
-IFS=$initialifs
-unset pathlike initialifs
+IFS="$initialifs"
+
+pathsetuplog "$(echo "$outpath" | tr ':' '\n' | sed 's/^/> /g')"
 echo "$outpath"

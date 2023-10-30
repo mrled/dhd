@@ -24,10 +24,11 @@ This command also applies basic configuration to e.g. git and npm.
 EOF
 }
 
-
+debug=
 while test $# -gt 0; do
     case "$1" in
         -h | --help ) usage; exit 0;;
+        -d | --debug) debug=1; set -x; shift;;
         *) usage; exit 1;;
     esac
 done
@@ -76,6 +77,7 @@ ${HOME}/env/bin
 /bin
 /sbin
 /usr/local/texlive/2023basic/bin/universal-darwin
+/Applications/Emacs.app/Contents/MacOS
 /Applications/FontForge.app/Contents/Resources/opt/local/bin
 /Applications/QMK Toolbox.app/Contents/Resources
 /Applications/Neovide.app/Contents/MacOS
@@ -91,7 +93,11 @@ ${GOPATH:-""}/bin
 ${PATH}
 "
 
-export PATH=$("$DHD/opt/bin/pathsetup" "$POSSIBLE_PATHS")
+IGNORE_PATHS="
+${HOME}/.nvm/*
+"
+
+export PATH=$("$DHD/opt/bin/pathsetup" "$POSSIBLE_PATHS" "$IGNORE_PATHS")
 
 if ! test "$MANPATH"; then
     if cmdavail manpath; then
