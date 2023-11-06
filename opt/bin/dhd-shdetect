@@ -128,13 +128,20 @@ fi
 
 if test -d "$HOME/.nvm"; then
     export NVM_DIR="$HOME/.nvm"
+    # To load NVM, we must make sure that npm doesn't have any incompatible settings.
+    grep -v '^\s*prefix\s*=' "$HOME/.npmrc" > "$HOME/.npmrc.tmp"
+    mv "$HOME/.npmrc.tmp" "$HOME/.npmrc"
+    # Load NVM, which may add `npm` to the PATH
+    . "$NVM_DIR/nvm.sh"
 fi
 
 NPM_PACKAGES=
 if cmdavail npm; then
     NPM_PACKAGES="${HOME}/.npm-packages"
     npm config set update-notifier false
-    npm config set prefix "${HOME}/.npm-packages"
+    # this is apparently not compatible with nvm which we use at work
+    # npm config set prefix "${HOME}/.npm-packages"
+    npm config set fund false
     export PATH="$(pathsetup "${PATH}:${NPM_PACKAGES}/bin")"
     export MANPATH="${MANPATH}:${NPM_PACKAGES}/share/man"
 fi

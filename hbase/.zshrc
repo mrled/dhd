@@ -249,4 +249,4 @@ if test -e "/nix"; then
 fi
 
 # Node Version Manager gunk
-test "$NVM_DIR" && . "$NVM_DIR/nvm.sh" || echo NO
+test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
