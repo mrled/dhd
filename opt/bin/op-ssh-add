@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    cat <<ENDUSAGE
+$0: A wrapper around ssh-add that uses the 1Password SSH_AUTH_SOCK
+
+See https://support.1password.com/ssh-socket/#use-the-ssh-agent-with-1password
+for more information about 1Password as an SSH agent.
+
+See the ssh-add manual page for more information about ssh-add.
+
+If the 1Password agent is not running, this script will fail.
+
+For op-ssh-help (this message) simply run the command with no arguments.
+
+All arguments are passed directly to ssh-add.
+ENDUSAGE
+}
+
+export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+if test $# -eq 0; then
+    usage
+    exit 1
+fi
+if ! test -S "$SSH_AUTH_SOCK"; then
+    echo "ERROR: $SSH_AUTH_SOCK is not a socket, is 1Password running and configured as an SSH agent?" >&2
+    exit 1
+fi
+
+ssh-add "$@"
