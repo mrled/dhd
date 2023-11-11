@@ -207,7 +207,9 @@ export DOCKER_CLI_HINTS=false
 
 # dhd_cmdavail starship && eval "$(starship init zsh)"
 
-# Indeed setup gunk.
+####
+#### Indeed setup gunk
+####
 # update-managed-repos adds this line, but it runs a lot of code on every shell launch, which is slow.
 # Here, we disable it, but we define an alias to allow importing it if necessary
 
@@ -236,6 +238,9 @@ else
     # Add some indeed-specific nice-to-haves without requiring the gunk
     alias cdi="cd ~/indeed"
 fi
+####
+#### End Indeed setup gunk
+####
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
