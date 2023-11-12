@@ -33,6 +33,19 @@ while test $# -gt 0; do
     esac
 done
 
+#### Pre-calculate some versioned directories
+
+# Python versions installed from python.org go into /Library/Frameworks/Python.framework/Versions,
+# and there is a Current symlink pointing to the latest version.
+# (Note that in the user's ~/Library/Python, there is no Current symlink, only specific versions.)
+py3fwk=
+if test -e /Library/Frameworks/Python.framework/Versions/Current; then
+    # py3fwk=$(find /Library/Frameworks/Python.framework/Versions -maxdepth 1 -type d -name '3.1?' | sort | tail -n 1)
+    py3vers=$(ls -l /Library/Frameworks/Python.framework/Versions/Current | awk '{print $NF}')
+    py3fwk="/Library/Frameworks/Python.framework/Versions/$py3vers"
+else
+    py3vers=$(/usr/bin/python3 -c 'import sys;print(f"{sys.version_info.major}.{sys.version_info.minor}");')
+fi
 
 # A list of all the paths which MIGHT exist and contain binaries we
 # want in our $PATH
@@ -42,9 +55,7 @@ done
 # * Homebrew python should be preempted by a Python installation from python.org
 #   <https://justinmayer.com/posts/homebrew-python-is-not-for-you/>
 POSSIBLE_PATHS="
-/Library/Frameworks/Python.framework/Versions/3.11/bin
-/Library/PostgreSQL/13/bin
-${HOME}/opt/lib/miniconda3/bin
+$py3fwk/bin
 ${HOME}/opt/bin
 ${HOME}/opt/sbin
 ${HOME}/.cabal/bin
@@ -60,8 +71,7 @@ ${HOME}/opt/homebrew/sbin
 ${HOME}/opt/npmglobal/bin
 ${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
-${HOME}/Library/Python/3.9/bin
-${HOME}/Library/Python/3.11/bin
+${HOME}/Library/Python/$py3vers/bin
 ${HOME}/.fly/bin
 ${HOME}/.krew/bin
 ${HOME}/env/bin
@@ -81,6 +91,7 @@ ${HOME}/env/bin
 /Applications/FontForge.app/Contents/Resources/opt/local/bin
 /Applications/QMK Toolbox.app/Contents/Resources
 /Applications/Neovide.app/Contents/MacOS
+/Applications/Inkscape.app/Contents/MacOS
 /c/WINDOWS
 /c/WINDOWS/system32/Wbem
 /c/WINDOWS/system32
