@@ -50,7 +50,7 @@ bindkey -e
 autoload -U select-word-style
 select-word-style bash
 
-export CDPATH="$HOME:$HOME/Documents:$HOME/Documents/Repositories"
+export CDPATH="$HOME:$HOME/Documents:$HOME/Documents/Repositories:$HOME/mrldata/Repositories"
 
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
 set -o pipefail
