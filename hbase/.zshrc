@@ -163,7 +163,7 @@ dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
 dhd_cmdavail kubectl && source <(kubectl completion zsh)
 dhd_cmdavail bun && source /Users/mrled/.bun/_bun
 test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
-
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
 # A basic prompt
 # If starship is installed, it may override this
