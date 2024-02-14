@@ -285,4 +285,4 @@ ENDRESULTS
 }
 genresults > "$SHDETECT_RESULTS"
 echo "Generated data saved to $SHDETECT_RESULTS"
-echo "Now log in again, or run the '.b' alias"
+echo "Now log in again, or run the '.z' alias"
