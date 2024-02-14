@@ -26,5 +26,8 @@ matches:
         params:
           format: "%Y%d%m"
 
+  - trigger: ":rituals"
+    replace: "ALL RITUALS RESTRICTED. ALL RITES RESERVED."
+
 # Stop telling me every fucking time I focus on a password field
 secure_input_notification: false
