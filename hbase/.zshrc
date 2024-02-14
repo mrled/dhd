@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # .zshrc expects that shdetect has already been run.
 # .zshrc expects a working ~/.dhd checkout and will dot-source dhd's .profile
@@ -175,6 +175,9 @@ else
     lcop="%B%F{magenta}∴%f%b"
 fi
 PROMPT="%B%F{white}%*%f%b E%? %B%F{blue}%m%f%b %F{green}%1~%f $lcop "
+
+# Turn off Apple's zsh session restore gunk
+SHELL_SESSIONS_DISABLE=1
 
 # Enable dbhist
 DBHISTORY=true

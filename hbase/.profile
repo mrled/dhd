@@ -32,6 +32,9 @@ fi
 
 export PYTHONSTARTUP=$DHD/hbase/python.profile
 
+# Disable Apple's zsh session restore gunk
+export SHELL_SESSIONS_DISABLE=1
+
 # rustup configures this
 test -e "$HOME/.cargo/env" && . "$HOME/.cargo/env"
 
