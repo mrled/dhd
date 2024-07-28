@@ -50,7 +50,10 @@ bindkey -e
 autoload -U select-word-style
 select-word-style bash
 
-export CDPATH="$HOME:$HOME/Documents:$HOME/Documents/Repositories:$HOME/mrldata/Repositories"
+# Directory shortcuts
+# These even show up in the prompt!
+hash -d r=$HOME/mrldata/Repositories
+hash -d s=$HOME/mrldata/Syncthing
 
 # A pipeline with a failing command at the beginning will set $? to a failure even if later piped commands succeed
 set -o pipefail
