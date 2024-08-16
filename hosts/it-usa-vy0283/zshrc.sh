@@ -13,6 +13,12 @@ decommissioner_export() {
     export DATA_WORLD_TOKEN=""
 }
 
+# For running 'terraform plan' locally
+tfplan_export() {
+    export DATADOG_API_KEY="$(gopass cat indeed/datadog_api_key_sre)"
+    export DATADOG_APP_KEY="$(gopass cat mledbetter/datadog_app_key)"
+}
+
 # This is for prod; see also <https://wiki.indeed.com/display/ITSYS/Vault>
 export VAULT_ADDR='https://vault.indeed.tech'
 
