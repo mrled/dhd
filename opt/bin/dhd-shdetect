@@ -108,6 +108,13 @@ IGNORE_PATHS="
 ${HOME}/.nvm/*
 "
 
+if test "$KREW_ROOT"; then
+    POSSIBLE_PATHS="
+$POSSIBLE_PATHS
+$KREW_ROOT/bin
+"
+fi
+
 export PATH=$("$DHD/opt/bin/pathsetup" "$POSSIBLE_PATHS" "$IGNORE_PATHS")
 
 if ! test "$MANPATH"; then
