@@ -19,9 +19,18 @@
   "vim_mode": true,
   "ui_font_size": 14,
   "buffer_font_size": 14,
+  "soft_wrap": "editor_width",
   "theme": {
     "mode": "dark",
     "light": "One Light",
-    "dark": "One Dark"
+    // "dark": "One Dark"
+    "dark": "Andromeda"
+  },
+  "prettier": {
+    "allowed": true,
+    "tabWidth": 2
+  },
+  "css": {
+    "tabWidth": 2
   }
 }
