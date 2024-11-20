@@ -168,6 +168,8 @@ dhd_cmdavail bun && source /Users/mrled/.bun/_bun
 test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
+dhd_cmdavail atuin && eval "$(atuin init zsh)"
+
 # A basic prompt
 # If starship is installed, it may override this
 if [[ $EUID == 0 ]]; then
