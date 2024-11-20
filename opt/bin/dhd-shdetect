@@ -63,6 +63,7 @@ ${HOME}/.cabal/sbin
 ${HOME}/.local/bin
 ${HOME}/.local/sbin
 ${HOME}/.poetry/bin
+${HOME}/.cargo/bin
 ${DHD}/opt/bin
 ${DHD}/opt/bash/bin
 ${HOME}/.config/emacs/bin
