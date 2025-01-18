@@ -322,4 +322,5 @@ else
 fi
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
-. "$HOME/.cargo/env"
+text -e "$HOME"/.cargo/env && . "$HOME/.cargo/env"
+
