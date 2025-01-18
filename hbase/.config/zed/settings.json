@@ -34,6 +34,24 @@
     // "dark": "Andromeda"
     "dark": "Ayu Dark"
   },
+  "file_types": {
+    "HTML": ["tmpl", "gohtml", "html"]
+  },
+  "languages": {
+    "HTML": {
+      "format_on_save": {
+        "external": {
+          "command": "prettier",
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}",
+            "--plugin",
+            "/Users/mrled/.bun/install/global/node_modules/prettier-plugin-go-template/lib/index.js"
+          ]
+        }
+      }
+    }
+  },
   "prettier": {
     "allowed": true,
     "tabWidth": 2
@@ -45,6 +63,7 @@
     }
   },
   "html": {
+    "tab_size": 2,
     "tabWidth": 2
   },
   "inline_completions": {
