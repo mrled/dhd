@@ -80,6 +80,7 @@ alias lsa='ls -a'
 alias lsl='ls -a -l'
 alias lsli='lsl -i' # lsl+inodes
 alias l1='ls -1'
+alias lslm='lsl -r -t' # lsl+ sort by modified time (lastest at bottom)
 
 if test "$DHD_DF_H"; then
     alias df="df -h"
