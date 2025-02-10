@@ -19,6 +19,11 @@ tfplan_export() {
     export DATADOG_APP_KEY="$(gopass cat mledbetter/datadog_app_key)"
 }
 
+# For AI Tools CLI
+aitools_export() {
+    export INDEED_LLM_PROXY_API_KEY="$(gopass cat mledbetter/llm-proxy-prod)"
+}
+
 # This is for prod; see also <https://wiki.indeed.com/display/ITSYS/Vault>
 export VAULT_ADDR='https://vault.indeed.tech'
 
