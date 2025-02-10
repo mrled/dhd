@@ -52,6 +52,16 @@
       }
     }
   },
+  "lsp": {
+    "pyright": {
+      "settings": {
+        "python.analysis": {
+          "diagnosticMode": "workspace"
+          // "typeCheckingMode": "strict"
+        }
+      }
+    }
+  },
   "prettier": {
     "allowed": true,
     "tabWidth": 2
