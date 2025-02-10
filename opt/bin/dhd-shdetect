@@ -181,6 +181,17 @@ if cmdavail ruby; then
     export PATH="$(pathsetup "$PATH:$RUBY_GEMS_PATHS")"
 fi
 
+# On macOS, the system ruby is ancient.
+# If Homebrew has installed one, add its gem bin path,
+# but don't add its ruby bin path so it doesn't conflict with the system one.
+if test "$HOMEBREWDIR"; then
+    if test -d "$HOMEBREWDIR/opt/ruby/bin"; then
+        # List gems versions in order from newest to oldest, and take the first one.
+        export LATEST_GEMS_PATH=$(ls -1dt "$HOMEBREWDIR/lib/ruby/gems/"* | head -n 1)
+        export PATH="$(pathsetup "$PATH:$LATEST_GEMS_PATH/bin")"
+    fi
+fi
+
 if test -e "$HOME/Library/Android/sdk"; then
     export ANDROID_HOME="$HOME/Library/Android/sdk"
     export PATH="$PATH:$ANDROID_HOME/emulator"
