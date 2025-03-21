@@ -166,6 +166,7 @@ dhd_cmdavail doctl && source <(compdef _doctl doctl)
 dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
 dhd_cmdavail kubectl && source <(kubectl completion zsh)
 dhd_cmdavail bun && source /Users/mrled/.bun/_bun
+dhd_cmdavail flux && source <(flux completion zsh)
 test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
