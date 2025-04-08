@@ -24,15 +24,19 @@
     }
   },
   "vim_mode": true,
-  "ui_font_size": 14,
-  "buffer_font_size": 14,
+  // "buffer_font_family": "Zed Plex Mono",
+  // "ui_font_family": "Zed Plex Sans",
+  "buffer_font_family": "Dank Mono",
+  "ui_font_size": 15,
+  "buffer_font_size": 15,
   "soft_wrap": "editor_width",
   "theme": {
     "mode": "dark",
-    "light": "One Light",
+    // "light": "One Light",
     // "dark": "One Dark"
-    // "dark": "Andromeda"
-    "dark": "Ayu Dark"
+    "dark": "Ayu Mirage",
+    // "dark": "Ayu Dark",
+    "light": "One Light"
   },
   "file_types": {
     "HTML": ["tmpl", "gohtml", "html"]
@@ -49,7 +53,17 @@
             "/Users/mrled/.bun/install/global/node_modules/prettier-plugin-go-template/lib/index.js"
           ]
         }
-      }
+      },
+      "tab_size": 2
+    },
+    "CSS": {
+      "tab_size": 2
+    },
+    "JavaScript": {
+      "tab_size": 2
+    },
+    "TypeScript": {
+      "tab_size": 2
     }
   },
   "lsp": {
@@ -62,21 +76,7 @@
       }
     }
   },
-  "prettier": {
-    "allowed": true,
-    "tabWidth": 2
-  },
-  "css": {
-    "tabWidth": 2,
-    "lint": {
-      "enabled": true
-    }
-  },
-  "html": {
-    "tab_size": 2,
-    "tabWidth": 2
-  },
-  "inline_completions": {
+  "edit_predictions": {
     "disabled_globs": ["*.md"]
   }
 }
