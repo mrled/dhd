@@ -187,14 +187,6 @@ PROMPT="%B%F{white}%*%f%b E%? %B%F{blue}%m%f%b %F{green}%1~%f $lcop "
 # Turn off Apple's zsh session restore gunk
 SHELL_SESSIONS_DISABLE=1
 
-# Enable dbhist
-DBHISTORY=true
-# Location of dbhist database
-DBHISTORYFILE=$HOME/.dbhist
-# Dot-source dbhist
-# This must happen _after_ bashprompt is set
-source $DHD/opt/bash/dbhist.sh
-
 
 if test -d "$HOME/.zshrc.d"; then
     for script in $(find "$HOME/.zshrc.d" -type f); do
