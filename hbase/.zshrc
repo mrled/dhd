@@ -106,6 +106,9 @@ alias dush='du -sh' # du -h is a POSIX extension
 # I haven't used tcsh in over a decade jesus christ
 alias rehash='hash -r'
 
+# Work nicely with venvs
+alias uvenv="test -e .venv || uv venv --quiet; . .venv/bin/activate;"
+
 # Test for a grep that supports --color=auto, which includes GNU, FreeBSD, and macOS greps
 if test "$DHD_LS_SUPPORTS_COLOR_AUTO"; then
     alias grep="grep --color=auto"
