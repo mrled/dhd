@@ -64,14 +64,19 @@
     },
     "TypeScript": {
       "tab_size": 2
+    },
+    "Python": {
+      // "language_servers": ["pyrite", "!pylsp"],
+      "preferred_line_length": 120
     }
   },
   "lsp": {
-    "pyright": {
+    "pylsp": {
       "settings": {
-        "python.analysis": {
-          "diagnosticMode": "workspace"
-          // "typeCheckingMode": "strict"
+        "plugins": {
+          "pycodestyle": {
+            "maxLineLength": 120
+          }
         }
       }
     }
