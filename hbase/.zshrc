@@ -173,9 +173,6 @@ dhd_cmdavail flux && source <(flux completion zsh)
 test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
-# Use ctrl-r for atuin
-dhd_cmdavail atuin && eval "$(atuin init zsh --disable-up-arrow)"
-
 # A basic prompt
 # If starship is installed, it may override this
 if [[ $EUID == 0 ]]; then
@@ -272,3 +269,6 @@ fi
 # Node Version Manager gunk
 test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
 
+# Must configure this after Indeed setup gunk,
+# because something in there it takes over ctrl-r.
+dhd_cmdavail atuin && eval "$(atuin init zsh --disable-up-arrow)"
