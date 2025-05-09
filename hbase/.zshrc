@@ -237,6 +237,15 @@ if [ -e "${INDEED_ENV_DIR}/etc/indeedrc" ]; then
 fi
 # END env Setup -- Managed by Ansible DO NOT EDIT.
 
+. "/Users/mledbetter/.indeed-kube-profile"
+
+# pnpm
+export PNPM_HOME="/Users/mledbetter/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
 else
     # Allow re-importing zshrc with the above enabled:
     alias indeedgunk="export MRL_INDEED_ENV_SETUP_GUNK=yes; . ~/.profile; . ~/.zshrc"
@@ -244,6 +253,7 @@ else
     # Add some indeed-specific nice-to-haves without requiring the gunk
     alias cdi="cd ~/indeed"
 fi
+
 ####
 #### End Indeed setup gunk
 ####
@@ -261,3 +271,4 @@ fi
 
 # Node Version Manager gunk
 test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
+
