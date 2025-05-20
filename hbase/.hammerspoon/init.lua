@@ -80,6 +80,3 @@ appModal = modalHotKey.new(
   },
   hammerSpoonEmoji .. " Special functions"
 )
-
--- TODO: Convert to better module
-local termdraw = require('termdraw')
