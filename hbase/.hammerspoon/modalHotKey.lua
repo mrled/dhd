@@ -2,7 +2,7 @@
 Adapted from https://github.com/asmagill/hammerspoon-config/blob/master/_scratch/modalSuppression.lua
 see https://github.com/Hammerspoon/hammerspoon/issues/1505
 
-save file somewhere then type `modalHotKey = dofile("modalHotKey.lua")` to load it
+save file somewhere then type `modalHotKey = require("modalHotKey.lua")` to load it
 
 *only* the recognized key sequences will be allowed through -- this means you can't even quit hammerspoon with Cmd-Q
 without tapping escape first.
@@ -36,11 +36,11 @@ local suppressKeysOtherThanOurs = function(modal)
   }, function(event)
     -- check only the flags we care about and filter the rest
     local flags = event:getRawEventData().CGEventData.flags & (
-        hs.eventtap.event.rawFlagMasks.command |
-            hs.eventtap.event.rawFlagMasks.control |
-            hs.eventtap.event.rawFlagMasks.alternate |
-            hs.eventtap.event.rawFlagMasks.shift
-        )
+      hs.eventtap.event.rawFlagMasks.command |
+      hs.eventtap.event.rawFlagMasks.control |
+      hs.eventtap.event.rawFlagMasks.alternate |
+      hs.eventtap.event.rawFlagMasks.shift
+    )
     if passThroughKeys[event:getKeyCode()] == flags then
       hs.printf("passing:     %3d 0x%08x", event:getKeyCode(), flags)
       return false -- pass it through so hotkey can catch it
@@ -59,7 +59,6 @@ end
    Works like hs.alert, but with complete control over the layout in HTML.
 ]]
 local modalWebView = function(content)
-
   -- The screen with the currently focused window
   local mainScreen = hs.screen.mainScreen()
 
@@ -90,7 +89,6 @@ end
    Lists shortcut keys and the description for the function they execute.
 ]]
 local modalWebViewMenuHtml = function(title, actionList)
-
   local modalItemTable = ""
   for _, action in pairs(actionList) do
     modalItemTable = string.format(
@@ -180,7 +178,9 @@ module.new = function(triggerKey, actionList, title)
 
   local doubleTab = ""
   for _, action in pairs(actionList) do
-    modality.modalMenuMessage = modality.modalMenuMessage .. "\n" .. string.upper(action.shortcutKey) .. ": " .. doubleTab .. action.actionDesc
+    modality.modalMenuMessage = modality.modalMenuMessage ..
+        "\n" .. string.upper(action.shortcutKey) .. ": " .. doubleTab .. action.actionDesc
+
     modality.triggerKey:bind({}, action.shortcutKey, function()
       action.action()
       modality.triggerKey:exit()
