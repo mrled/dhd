@@ -7,10 +7,11 @@
 // custom settings, run `zed: open default settings` from the
 // command palette
 {
-  "assistant": {
+  "agent": {
+    "always_allow_tool_actions": true,
     "default_model": {
       "provider": "copilot_chat",
-      "model": "gpt-4o"
+      "model": "claude-3-7-sonnet"
     },
     "version": "2"
   },
@@ -26,16 +27,16 @@
   "vim_mode": true,
   // "buffer_font_family": "Zed Plex Mono",
   // "ui_font_family": "Zed Plex Sans",
-  "buffer_font_family": "Dank Mono",
-  "ui_font_size": 15,
-  "buffer_font_size": 15,
+  // "buffer_font_family": "Dank Mono",
+  // "ui_font_size": 15,
+  // "buffer_font_size": 15,
   "soft_wrap": "editor_width",
   "theme": {
     "mode": "dark",
     // "light": "One Light",
-    // "dark": "One Dark"
-    "dark": "Ayu Mirage",
-    // "dark": "Ayu Dark",
+    // "dark": "One Dark",
+    // "dark": "Ayu Mirage",
+    "dark": "Ayu Dark",
     "light": "One Light"
   },
   "file_types": {
