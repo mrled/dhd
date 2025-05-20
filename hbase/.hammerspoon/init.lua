@@ -28,10 +28,8 @@ package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammers
 hs.printf("======== config file reloaded ========")
 hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
 
-local animationDuration = 0
-
 local shiftIt = require('shiftIt')
-
+shiftIt.config.animationDuration = 0
 
 ---
 -- Swapp, my SWitcher of APPs.

@@ -38,6 +38,12 @@ hs.hotkey.bind(mash, 'm', function() hs.window.focusedWindow():move(units.maximu
 -- ctrl+alt+cmd + m: Maximize the current window
 ---
 
+local M = {
+  config = {
+    animationDuration = 0.25,
+  }
+}
+
 
 local shiftItMods = { 'ctrl', 'alt', 'cmd' }
 local units = {
@@ -46,22 +52,24 @@ local units = {
   right  = { x = 0.5, y = 0.0, w = 0.5, h = 1.0 },
   top    = { x = 0.0, y = 0.0, w = 1.0, h = 0.5 },
 }
-function createMoveWindow(rect)
+function M.createMoveWindow(rect)
   return function()
-    hs.window.focusedWindow():move(rect, nil, true, animationDuration)
+    hs.window.focusedWindow():move(rect, nil, true, M.config.animationDuration)
   end
 end
 
-hs.hotkey.bind(shiftItMods, 'down', createMoveWindow(units.bottom))
-hs.hotkey.bind(shiftItMods, 'left', createMoveWindow(units.left))
-hs.hotkey.bind(shiftItMods, 'right', createMoveWindow(units.right))
-hs.hotkey.bind(shiftItMods, 'up', createMoveWindow(units.top))
+hs.hotkey.bind(shiftItMods, 'down', M.createMoveWindow(units.bottom))
+hs.hotkey.bind(shiftItMods, 'left', M.createMoveWindow(units.left))
+hs.hotkey.bind(shiftItMods, 'right', M.createMoveWindow(units.right))
+hs.hotkey.bind(shiftItMods, 'up', M.createMoveWindow(units.top))
 
-hs.hotkey.bind(shiftItMods, 'j', createMoveWindow(units.bottom))
-hs.hotkey.bind(shiftItMods, 'h', createMoveWindow(units.left))
-hs.hotkey.bind(shiftItMods, 'l', createMoveWindow(units.right))
-hs.hotkey.bind(shiftItMods, 'k', createMoveWindow(units.top))
+hs.hotkey.bind(shiftItMods, 'j', M.createMoveWindow(units.bottom))
+hs.hotkey.bind(shiftItMods, 'h', M.createMoveWindow(units.left))
+hs.hotkey.bind(shiftItMods, 'l', M.createMoveWindow(units.right))
+hs.hotkey.bind(shiftItMods, 'k', M.createMoveWindow(units.top))
 
 hs.hotkey.bind(shiftItMods, 'm', function()
-  hs.window.focusedWindow():maximize(animationDuration)
+  hs.window.focusedWindow():maximize(M.config.animationDuration)
 end)
+
+return M
