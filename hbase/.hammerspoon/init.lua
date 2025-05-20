@@ -1,5 +1,10 @@
 local hammerSpoonEmoji = "🔨🥄"
 
+if not hs then
+  print(hammerSpoonEmoji .. " Hammerspoon not running, exiting...")
+  return
+end
+
 -- reload the configs automatically if anything changes in the config dir
 local function reloadConfig(files)
   local doReload = false
@@ -23,48 +28,10 @@ package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammers
 hs.printf("======== config file reloaded ========")
 hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
 
-animationDuration = 0
+local animationDuration = 0
 
 local shiftIt = require('shiftIt')
 
-
-hs.loadSpoon("SpoonInstall")
-spoon.SpoonInstall.use_syncinstall = true
-
-spoon.SpoonInstall:andUse("TextClipboardHistory",
-  {
-    disable = false,
-    config = {
-      show_in_menubar = false,
-    },
-    hotkeys = {
-      toggle_clipboard = { { "cmd", "shift" }, "v" } },
-    start = true,
-  }
-)
-
-spoon.SpoonInstall:andUse("KSheet",
-  {
-    hotkeys = {
-      toggle = { { "cmd", "alt", "ctrl" }, "/" }
-    } })
-
-spoon.SpoonInstall:andUse("Seal",
-  {
-    hotkeys = { toggle = { { "alt" }, "space" } },
-    fn = function(s)
-      s:loadPlugins({ "apps", "calc", "useractions" })
-      s.plugins.useractions.actions = {
-        ["Hammerspoon docs webpage"] = {
-          url = "http://hammerspoon.org/docs/",
-          icon = hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon),
-        },
-      }
-      s:refreshAllCommands()
-    end,
-    start = true,
-  }
-)
 
 ---
 -- Swapp, my SWitcher of APPs.
