@@ -54,28 +54,10 @@ local appModal = modalHotKey.new(
   hammerSpoonEmoji .. " Swapp"
 )
 
-local function newStigOlBickies()
-  local newSticky = string.format([[
-   on run argv
-       tell application "Stickies" to activate
-       tell application "System Events"
-       tell process "Stickies"
-               tell window 1
-                   delay 0.5
-                   keystroke "n" using command down
-               end tell
-           end tell
-       end tell
-   end run
- ]])
-  hs.osascript.applescript(newSticky)
-end
-
 appModal = modalHotKey.new(
   hs.hotkey.modal.new({ "cmd", "ctrl" }, "="),
   {
     modalHotKey.shortcutKey { shortcutKey = 'l', actionDesc = "Lock screen", action = hs.caffeinate.lockScreen },
-    modalHotKey.shortcutKey { shortcutKey = 'n', actionDesc = "New stig ol' bickies", action = newStigOlBickies },
     modalHotKey.shortcutKey { shortcutKey = 'r', actionDesc = "Reload Hammerspoon configuration", action = hs.reload },
   },
   hammerSpoonEmoji .. " Special functions"
