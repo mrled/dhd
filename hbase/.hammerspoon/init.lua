@@ -35,7 +35,7 @@ shiftIt.config.animationDuration = 0
 -- Swapp, my SWitcher of APPs.
 ---
 
-local modalHotKey = dofile(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/modalHotKey.lua")
+local modalHotKey = require("modalHotKey")
 local appModal = modalHotKey.new(
   hs.hotkey.modal.new({ "cmd", "ctrl" }, "-"),
   {
