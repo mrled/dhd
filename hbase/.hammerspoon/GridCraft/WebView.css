@@ -21,6 +21,7 @@ td {
   text-align: center;
   vertical-align: middle;
   border-radius: 6px;
+  border: 2px solid rgb(172, 172, 172);
   background-color: rgba(36, 36, 36, 0.9);
 }
 
