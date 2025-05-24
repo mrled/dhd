@@ -74,7 +74,7 @@ local leader = GridCraft.modal(
       GridCraft.action { key = "`", empty = true },
       GridCraft.action { key = "q", appName = "Messages" },
       GridCraft.action { key = "w", appName = "Mattermost" },
-      GridCraft.action { key = "e", appName = "Visual Studio Code" },
+      GridCraft.action { key = "e", appName = "Visual Studio Code", actionDesc = "VS Code" },
       GridCraft.action { key = "r", appName = "Bear" },
       GridCraft.action { key = "t", appName = "Terminal" },
     },
