@@ -56,44 +56,44 @@ appModal = modalHotKey.new(
 -- leader:bind('', 'escape', function() leader:exit() end)
 -- leader:bind('', 'f11', function() leader:exit() end)
 
-local WarcraftGrid = require("WarcraftGrid")
+local GridCraft = require("GridCraft")
 
-local leader = WarcraftGrid.modal(
+local leader = GridCraft.modal(
   { "ctrl" },
   "f11",
   {
     {
-      WarcraftGrid.action { key = "=", empty = true },
-      WarcraftGrid.action { key = "1", appName = "1Password" },
-      WarcraftGrid.action { key = "2", appName = "Day One" },
-      WarcraftGrid.action { key = "3", appName = "Photos" },
-      WarcraftGrid.action { key = "4", appName = "Fantastical" },
-      WarcraftGrid.action { key = "5", empty = true },
+      GridCraft.action { key = "=", empty = true },
+      GridCraft.action { key = "1", appName = "1Password" },
+      GridCraft.action { key = "2", appName = "Day One" },
+      GridCraft.action { key = "3", appName = "Photos" },
+      GridCraft.action { key = "4", appName = "Fantastical" },
+      GridCraft.action { key = "5", empty = true },
     },
     {
-      WarcraftGrid.action { key = "`", empty = true },
-      WarcraftGrid.action { key = "q", appName = "Messages" },
-      WarcraftGrid.action { key = "w", appName = "Mattermost" },
-      WarcraftGrid.action { key = "e", appName = "Visual Studio Code" },
-      WarcraftGrid.action { key = "r", appName = "Bear" },
-      WarcraftGrid.action { key = "t", appName = "Terminal" },
+      GridCraft.action { key = "`", empty = true },
+      GridCraft.action { key = "q", appName = "Messages" },
+      GridCraft.action { key = "w", appName = "Mattermost" },
+      GridCraft.action { key = "e", appName = "Visual Studio Code" },
+      GridCraft.action { key = "r", appName = "Bear" },
+      GridCraft.action { key = "t", appName = "Terminal" },
     },
 
     {
-      WarcraftGrid.action { key = nil, empty = true },
-      WarcraftGrid.action { key = "a", appName = "Slack" },
-      WarcraftGrid.action { key = "s", appName = "Discord" },
-      WarcraftGrid.action { key = "d", appName = "OmniFocus" },
-      WarcraftGrid.action { key = "f", appName = "Finder" },
-      WarcraftGrid.action { key = "g", appName = "ChatGPT" },
+      GridCraft.action { key = nil, empty = true },
+      GridCraft.action { key = "a", appName = "Slack" },
+      GridCraft.action { key = "s", appName = "Discord" },
+      GridCraft.action { key = "d", appName = "OmniFocus" },
+      GridCraft.action { key = "f", appName = "Finder" },
+      GridCraft.action { key = "g", appName = "ChatGPT" },
     },
     {
-      WarcraftGrid.action { key = "[", appName = "Claude" },
-      WarcraftGrid.action { key = "z", appName = "Mail" },
-      WarcraftGrid.action { key = "x", appName = "Firefox" },
-      WarcraftGrid.action { key = "c", appName = "Google Chrome" },
-      WarcraftGrid.action { key = "v", appName = "Safari" },
-      WarcraftGrid.action { key = "b", appName = "BBEdit" },
+      GridCraft.action { key = "[", appName = "Claude" },
+      GridCraft.action { key = "z", appName = "Mail" },
+      GridCraft.action { key = "x", appName = "Firefox" },
+      GridCraft.action { key = "c", appName = "Google Chrome" },
+      GridCraft.action { key = "v", appName = "Safari" },
+      GridCraft.action { key = "b", appName = "BBEdit" },
     },
   },
   "Leader Grid"

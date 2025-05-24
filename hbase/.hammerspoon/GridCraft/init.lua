@@ -1,13 +1,13 @@
 --[[
-  WarcraftGrid: a Warcraft 3 grid for Hammerspoon actions
+  GridCraft: an action menu based on Starcraft 2 Grid Hotkeys
 ]]
 
 if not hs then
   print("Hammerspoon not running, exiting...")
   return
 end
-local Util = require("WarcraftGrid.Util")
-local WebView = require("WarcraftGrid.WebView")
+local Util = require("GridCraft.Util")
+local WebView = require("GridCraft.WebView")
 
 
 local M = {}
@@ -93,19 +93,19 @@ Parameters:
     Map keys from the keyGrid to action tables, like:
     {
       {
-        WarcraftGrid.action { key = "1", appName = "1Password" },
-        WarcraftGrid.action { key = "2", appName = "Day One" },
-        WarcraftGrid.action { key = "3", appName = "Photos" },
-        WarcraftGrid.action { key = "4", empty = true },
-        WarcraftGrid.action { key = "5", empty = true },
+        GridCraft.action { key = "1", appName = "1Password" },
+        GridCraft.action { key = "2", appName = "Day One" },
+        GridCraft.action { key = "3", appName = "Photos" },
+        GridCraft.action { key = "4", empty = true },
+        GridCraft.action { key = "5", empty = true },
       },
       {
-        WarcraftGrid.action { key = "q", empty = true },
-        -- WarcraftGrid.action { key = "q", appName = "Messages"},
-        WarcraftGrid.action { key = "w", appName = "Mattermost" },
-        WarcraftGrid.action { key = "e", appName = "Visual Studio Code" },
-        WarcraftGrid.action { key = "r", appName = "Bear" },
-        WarcraftGrid.action { key = "t", appName = "Terminal" },
+        GridCraft.action { key = "q", empty = true },
+        -- GridCraft.action { key = "q", appName = "Messages"},
+        GridCraft.action { key = "w", appName = "Mattermost" },
+        GridCraft.action { key = "e", appName = "Visual Studio Code" },
+        GridCraft.action { key = "r", appName = "Bear" },
+        GridCraft.action { key = "t", appName = "Terminal" },
       },
     }
     Note that we are constrained to using array tables rather than key-value tobles

@@ -2,7 +2,7 @@
    A centered web view for displaying HTML content.
 ]]
 
-local Util = require "WarcraftGrid.Util"
+local Util = require "GridCraft.Util"
 
 local M = {}
 

@@ -25,7 +25,7 @@ M.getApplicationIconDataUri = function(appName, application)
 end
 
 --[[
-  Get the path to a file relative to the WarcraftGrid module root
+  Get the path to a file relative to the GridCraft module root
 ]]
 M.moduleFilePath = function(relPath)
   local debugInfo = debug.getinfo(1, "S")
@@ -37,7 +37,7 @@ end
 
 
 --[[
-  Get file contains for a path relative to the WarcraftGrid module root
+  Get file contains for a path relative to the GridCraft module root
 ]]
 M.moduleFileContents = function(relPath)
   local fullPath = M.moduleFilePath(relPath)
