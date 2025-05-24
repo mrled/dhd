@@ -51,7 +51,9 @@ td a {
   font-size: 0.65rem;
 }
 
-img {
+img,
+svg {
   width: 64px;
   height: 64px;
+  margin-top: 6px;
 }

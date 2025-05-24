@@ -49,18 +49,17 @@ local itemTableHtml = function(actionTable)
         [[
           <td class="key">
             <a href="%s">
-              <img src="%s" alt="%s" width="64" height="64">
+              %s
               <br/>
               <span class="hotkey">%s</span>
               <span class="description">%s</span>
             </a>
           </td>
           ]],
-        action.url or "",  -- href value
-        action.icon,       -- data: URI for an icon
-        action.actionDesc, -- img alt
-        hotkeyLabel,       -- hotkey
-        action.actionDesc  -- visible description
+        action.url or "", -- href value
+        action.icon,
+        hotkeyLabel,      -- hotkey
+        action.actionDesc -- visible description
       )
     end
     tableHtml = tableHtml .. rowHtml .. "</tr>"
@@ -70,27 +69,53 @@ end
 
 
 --[[
+  Load Phosphor icons from a local file
+]]
+local getPhosphorSvg = function()
+  local phosphorSvgRaw = Util.moduleFileContents("img/Phosphor.svg")
+  if phosphorSvgRaw then
+    -- Remove the XML declaration and DOCTYPE if present
+    local phosphorSvg = phosphorSvgRaw:gsub("^<%?xml.-%?>%s*\n<!DOCTYPE.-%>\n?", "")
+    -- The result should be a single giant SVG element with all icons
+    return phosphorSvg
+  else
+    return ""
+  end
+end
+
+
+--[[
   HTML for the entire web view
 ]]
 local webViewHtml = function(title, itemTable)
   local webViewMenuMessageTemplate = [[
-      <html>
+    <html>
       <head>
-         <title>%s</title>
-         <style>%s</style>
+        <title>%s</title>
+        <style>%s</style>
+        %s
+        <!--<script src="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2"></script>-->
+        <style>
+          @font-face {
+            font-family: 'Phosphor';
+            src: url('data:font/woff2;base64,%s') format('woff2');
+          }
+        </style>
       </head>
       <body>
-      <table>
-      %s
-      </table>
+        <table>
+        %s
+        </table>
       </body>
-      </html>
+    </html>
    ]]
 
   return string.format(
     webViewMenuMessageTemplate,
     title,
     M.css,
+    getPhosphorSvg(),
+    Util.moduleFileContents("img/Phosphor.woff2"), -- Base64-encoded WOFF2 font
     itemTable
   )
 end

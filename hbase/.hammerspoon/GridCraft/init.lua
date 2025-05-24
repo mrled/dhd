@@ -35,12 +35,7 @@ M.action = function(arg)
   if arg.empty then
     action.action = function() end
     action.actionDesc = "No action"
-    -- This is a transparent PNG image, lol
-    action.icon =
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
-
-    -- Or use one of the macOS built in icons (just a random one, not a good choice)
-    -- action.icon = hs.image.imageFromName(hs.image.systemImageNames.InvalidDataFreestandingTemplate)
+    action.icon = M.emptyIcon()
     return action
   end
 
@@ -58,27 +53,100 @@ M.action = function(arg)
   end
 
   -- action.icon = hs.image.imageFromName(hs.image.systemImageNames.InvalidDataFreestandingTemplate):encodeAsURLString(false, "png")
-  action.icon = "data:image/svg+xml;base64," .. Util.base64(Util.moduleFileContents("img/app-window.svg"))
-  if arg.icon then
+  -- action.icon = "data:image/svg+xml;base64," .. Util.base64(Util.moduleFileContents("img/app-window.svg"))
+  action.icon = nil
+  if arg.icon ~= nil then
     action.icon = arg.icon
   elseif arg.appName then
     -- Don't use hs.application.find() -- that only works for running apps!
     -- local app = hs.application.find(arg.appName)
     local appPath = Util.findApplicationPath(arg.appName)
-    if appPath then
-      -- local icon = Util.getApplicationIconDataUri(arg.appName, appPath)
-      local icon = hs.image.iconForFile(appPath)
-      if icon then
-        action.icon = icon:encodeAsURLString()
-      else
-        print("No icon found for " .. arg.appName)
-      end
-    else
-      print("No app found for " .. arg.appName)
+    local appIcon = M.iconMacFile(appPath)
+    if appIcon then
+      action.icon = appIcon
     end
   end
 
+  if action.icon == nil then
+    print("No icon found for " .. action.key)
+    action.icon = M.iconPhosphor("app-window", "regular")
+  end
+
   return action
+end
+
+
+--[[
+  Create an icon from the contents of a file
+
+  Returns an <img> tag with a data URI for the icon
+]]
+M.iconFile = function(filePath)
+  local iconData = Util.moduleFileContents(filePath)
+  if not iconData then
+    print("No icon found for " .. filePath)
+    return nil
+  end
+  local iconB64 = Util.base64(iconData)
+  local imgElement = string.format(
+    [[<img src="data:image/svg+xml;base64,%s" alt="Icon" width="64" height="64"]],
+    iconB64
+  )
+  return imgElement
+end
+
+
+--[[
+  Create an icon from a Phosphor icon name
+
+  Returns an <svg> tag with the icon
+]]
+M.iconPhosphor = function(name, weight)
+  if not weight then
+    weight = "regular"
+  end
+  local iconPath = string.format("phosphor/node_modules/@phosphor-icons/core/assets/%s/%s.svg", weight, name)
+  local iconData = Util.moduleFileContents(iconPath)
+  if not iconData then
+    print(
+      string.format(
+        "No Phosphor icon found for %s (%s) - you may need to run `npm install` in the phosphor directory",
+        name,
+        weight
+      )
+    )
+    return nil
+  end
+  return iconData
+end
+
+
+--[[
+  Create an icon from the icon of a macOS file (including folders, applications, etc)
+
+  Returns an <img> tag with a data URI for the icon
+]]
+M.iconMacFile = function(filePath)
+  local icon = hs.image.iconForFile(filePath)
+  local pngData = icon:encodeAsURLString(false, "png") -- base64-encoded PNG
+  local imgElement = string.format(
+    [[<img src="%s" alt="Icon" width="64" height="64">]],
+    pngData
+  )
+  return imgElement
+end
+
+
+--[[
+  Return an empty icon
+]]
+M.emptyIcon = function()
+  local transparentPng =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
+  return string.format(
+    [[<img src="%s" alt="Empty" width="64" height="64">]],
+    transparentPng
+  )
 end
 
 

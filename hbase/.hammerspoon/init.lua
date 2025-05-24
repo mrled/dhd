@@ -63,7 +63,12 @@ local leader = GridCraft.modal(
   "f11",
   {
     {
-      GridCraft.action { key = "=", empty = true },
+      GridCraft.action {
+        key = "=",
+        action = hs.caffeinate.lockScreen,
+        actionDesc = "Lock screen",
+        icon = GridCraft.iconPhosphor("lock", "regular")
+      },
       GridCraft.action { key = "1", appName = "1Password" },
       GridCraft.action { key = "2", appName = "Day One" },
       GridCraft.action { key = "3", appName = "Photos" },
@@ -71,7 +76,12 @@ local leader = GridCraft.modal(
       GridCraft.action { key = "5", empty = true },
     },
     {
-      GridCraft.action { key = "`", empty = true },
+      GridCraft.action {
+        key = "`",
+        action = hs.reload,
+        actionDesc = "hs.reload",
+        icon = GridCraft.iconPhosphor("arrows-clockwise", "regular")
+      },
       GridCraft.action { key = "q", appName = "Messages" },
       GridCraft.action { key = "w", appName = "Mattermost" },
       GridCraft.action { key = "e", appName = "Visual Studio Code", actionDesc = "VS Code" },
