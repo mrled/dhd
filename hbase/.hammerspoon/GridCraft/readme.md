@@ -37,9 +37,9 @@ GridCraft.modal(
   { "ctrl", "shift" },
   "f11",
   -- Now we have a table of tables to represent the grid.
-  -- (Lua has a data structure called "tables" which can be either array-like,
-  -- as they are here ,or associative key=value.)
-  -- Our 3x3 grid has 3 rows, and each row has a list of keys
+  -- (Lua has a data structure called "tables" which can array-like, as we have them here.
+  -- They can also be associative key=value tables, but we don't need to know about those to configure GridCraft.)
+  -- Our 3x3 grid has 3 rows, and each row has 3 keys
   {
     -- The table for the top row
     {
@@ -49,7 +49,9 @@ GridCraft.modal(
       -- Here's a more complicated action
       GridCraft.action {
         key = "r",
-        -- You can make custom actions by passing any Lua function to the action parameter
+        -- You can make custom actions by passing any Lua function to the action parameter,
+        -- even one you define yourself!
+        -- Here we use one that is built in to Hammerspoon that will lock the screen.
         action = hs.caffeinate.lockScreen,
         actionDesc = "Lock screen",
         -- To use a Phosphor icon, pass the icon name and weight.
@@ -74,8 +76,8 @@ GridCraft.modal(
         actionDesc = "hs.reload",
         -- The icon can be anything that returns a <svg> or <img> tag.
         -- This one is using a raw Phosphor icon to show how it works.
-        -- It isn't set to
-        -- (In lua, strings starting with [[ and ending with ]] can include single and double quotes and newlines.)
+        -- (In lua, strings starting with [[ and ending with ]] can include single and double quotes,
+        -- as well as newlines, so they are convenient for HTML/SVG elements.)
         icon = [[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"/><polyline points="184 104 232 104 232 56" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><path d="M188.4,192a88,88,0,1,1,1.83-126.23L232,104" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/></svg>]]
       },
     },
