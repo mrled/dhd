@@ -68,61 +68,159 @@ appModal = modalHotKey.new(
   hammerSpoonEmoji .. " Special functions"
 )
 
--- local leader = hs.hotkey.modal.new("", "f11")
--- leader.entered = function() print 'Entered leader mode' end
--- leader.exited = function() print 'Exited leader mode' end
--- leader:bind('', 'escape', function() leader:exit() end)
--- leader:bind('', 'f11', function() leader:exit() end)
+hs.loadSpoon("GridCraft")
 
-local GridCraft = require("GridCraft")
-
-local leader = GridCraft.modal(
-  { "ctrl" },
-  "f11",
+local fiveMenu = {
   {
-    {
-      GridCraft.action {
-        key = "=",
-        action = hs.caffeinate.lockScreen,
-        actionDesc = "Lock screen",
-        icon = GridCraft.iconPhosphor("lock", "regular")
-      },
-      GridCraft.action { key = "1", appName = "1Password" },
-      GridCraft.action { key = "2", appName = "Day One" },
-      GridCraft.action { key = "3", appName = "Photos" },
-      GridCraft.action { key = "4", appName = "Fantastical" },
-      GridCraft.action { key = "5", empty = true },
+    spoon.GridCraft.action { key = "=", empty = true },
+    spoon.GridCraft.action { key = "1", empty = true },
+    spoon.GridCraft.action { key = "2", empty = true },
+    spoon.GridCraft.action { key = "3", empty = true },
+    spoon.GridCraft.action { key = "4", empty = true },
+    spoon.GridCraft.action { key = "5", empty = true },
+  },
+  {
+    spoon.GridCraft.action { key = "`", empty = true },
+    spoon.GridCraft.action { key = "q", empty = true },
+    spoon.GridCraft.action { key = "w", empty = true },
+    spoon.GridCraft.action { key = "e", empty = true },
+    spoon.GridCraft.action { key = "r", empty = true },
+    spoon.GridCraft.action { key = "t", empty = true },
+  },
+  {
+    spoon.GridCraft.action { key = nil, empty = true },
+    spoon.GridCraft.action { key = "a", empty = true },
+    -- spoon.GridCraft.action { key = "s", empty = true },
+    spoon.GridCraft.action { key = "s", application = "Slack" },
+    spoon.GridCraft.action { key = "d", empty = true },
+    spoon.GridCraft.action { key = "f", empty = true },
+    spoon.GridCraft.action { key = "g", empty = true },
+  },
+  {
+    spoon.GridCraft.action { key = "[", empty = true },
+    spoon.GridCraft.action {
+      key = "z",
+      handler = function()
+        hs.caffeinate.lockScreen()
+      end,
+      description = "Lock screen",
+      icon = spoon.GridCraft.iconPhosphor("lock", "regular")
     },
-    {
-      GridCraft.action {
-        key = "`",
-        action = hs.reload,
-        actionDesc = "hs.reload",
-        icon = GridCraft.iconPhosphor("arrows-clockwise", "regular")
-      },
-      GridCraft.action { key = "q", appName = "Messages" },
-      GridCraft.action { key = "w", appName = "Mattermost" },
-      GridCraft.action { key = "e", appName = "Visual Studio Code", actionDesc = "VS Code" },
-      GridCraft.action { key = "r", appName = "Bear" },
-      GridCraft.action { key = "t", appName = "Terminal" },
+    spoon.GridCraft.action {
+      key = "x",
+      handler = hs.reload,
+      description = "hs.reload",
+      icon = spoon.GridCraft.iconPhosphor("arrows-clockwise", "regular")
     },
+    spoon.GridCraft.action {
+      key = "c",
+      handler = hs.openConsole,
+      description = "Console",
+      icon = spoon.GridCraft.iconPhosphor("terminal-window", "regular")
+    },
+    spoon.GridCraft.action { key = "v", empty = true },
+    spoon.GridCraft.action { key = "b", empty = true },
+  }
+}
 
-    {
-      GridCraft.action { key = nil, empty = true },
-      GridCraft.action { key = "a", appName = "Slack" },
-      GridCraft.action { key = "s", appName = "Discord" },
-      GridCraft.action { key = "d", appName = "OmniFocus" },
-      GridCraft.action { key = "f", appName = "Finder" },
-      GridCraft.action { key = "g", appName = "ChatGPT" },
+local mainMenu = {
+  {
+    spoon.GridCraft.action {
+      key = "=",
+      empty = true,
     },
-    {
-      GridCraft.action { key = "[", appName = "Claude" },
-      GridCraft.action { key = "z", appName = "Mail" },
-      GridCraft.action { key = "x", appName = "Firefox" },
-      GridCraft.action { key = "c", appName = "Google Chrome" },
-      GridCraft.action { key = "v", appName = "Safari" },
-      GridCraft.action { key = "b", appName = "BBEdit" },
+    spoon.GridCraft.action { key = "1", application = "1Password" },
+    spoon.GridCraft.action { key = "2", application = "Day One" },
+    spoon.GridCraft.action { key = "3", application = "Photos" },
+    spoon.GridCraft.action { key = "4", application = "Fantastical" },
+    spoon.GridCraft.action {
+      key = "5",
+      description = "Special",
+      icon = spoon.GridCraft.iconPhosphor("star", "regular"),
+      submenu = fiveMenu
     },
   },
+  {
+    spoon.GridCraft.action {
+      key = "`",
+      handler = function()
+        print("ASDFASDFASDFAS"); hs.reload()
+      end,
+      description = "hs.reload",
+      icon = spoon.GridCraft.iconPhosphor("arrows-clockwise", "regular")
+    },
+    spoon.GridCraft.action { key = "q", application = "Messages" },
+    spoon.GridCraft.action { key = "w", application = "Mattermost" },
+    spoon.GridCraft.action { key = "e", application = "Visual Studio Code", description = "VS Code" },
+    spoon.GridCraft.action { key = "r", application = "Bear" },
+    spoon.GridCraft.action { key = "t", application = "Terminal" },
+  },
+
+  {
+    spoon.GridCraft.action { key = nil, empty = true },
+    spoon.GridCraft.action { key = "a", application = "Slack" },
+    spoon.GridCraft.action { key = "s", application = "Discord" },
+    spoon.GridCraft.action { key = "d", application = "OmniFocus" },
+    spoon.GridCraft.action { key = "f", application = "Finder" },
+    spoon.GridCraft.action { key = "g", application = "ChatGPT" },
+  },
+  {
+    spoon.GridCraft.action { key = "[", application = "Claude", icon = [[<span class="icon">💬</span>]] },
+    spoon.GridCraft.action { key = "z", application = "Mail", icon = [[<span class="icon">M</span>]] },
+    spoon.GridCraft.action { key = "x", application = "Firefox" },
+    spoon.GridCraft.action { key = "c", application = "Google Chrome" },
+    spoon.GridCraft.action { key = "v", application = "Safari" },
+    spoon.GridCraft.action { key = "b", application = "BBEdit" },
+  },
+}
+
+local leader = spoon.GridCraft.grid(
+  { "ctrl" },
+  "f11",
+  mainMenu,
   "Leader Grid"
 )
+
+--[[
+Empty submenu for copy/pasting:
+
+spoon.GridCraft.action {
+  key = "5",
+  description = "Special",
+  icon = spoon.GridCraft.iconPhosphor("star", "regular"),
+  submenu = {
+    {
+      spoon.GridCraft.action { key = "=", empty = true },
+      spoon.GridCraft.action { key = "1", empty = true },
+      spoon.GridCraft.action { key = "2", empty = true },
+      spoon.GridCraft.action { key = "3", empty = true },
+      spoon.GridCraft.action { key = "4", empty = true },
+      spoon.GridCraft.action { key = "5", empty = true },
+    },
+    {
+      spoon.GridCraft.action { key = "`", empty = true },
+      spoon.GridCraft.action { key = "q", empty = true },
+      spoon.GridCraft.action { key = "w", empty = true },
+      spoon.GridCraft.action { key = "e", empty = true },
+      spoon.GridCraft.action { key = "r", empty = true },
+      spoon.GridCraft.action { key = "t", empty = true },
+    },
+    {
+      spoon.GridCraft.action { key = nil, empty = true },
+      spoon.GridCraft.action { key = "a", empty = true },
+      spoon.GridCraft.action { key = "s", empty = true },
+      spoon.GridCraft.action { key = "d", empty = true },
+      spoon.GridCraft.action { key = "f", empty = true },
+      spoon.GridCraft.action { key = "g", empty = true },
+    },
+    {
+      spoon.GridCraft.action { key = "[", empty = true },
+      spoon.GridCraft.action { key = "z", empty = true },
+      spoon.GridCraft.action { key = "x", empty = true },
+      spoon.GridCraft.action { key = "c", empty = true },
+      spoon.GridCraft.action { key = "v", empty = true },
+      spoon.GridCraft.action { key = "b", empty = true },
+    }
+  }
+},
+]]
