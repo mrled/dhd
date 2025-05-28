@@ -1,0 +1,17 @@
+theme = "3024 Night"
+
+font-family = "Dank Mono"
+font-size = 16
+
+cursor-style = block
+cursor-style-blink = false
+# Disable cursor shell integration stuff,
+# or else the shell seems t ooverride my cursor-style and cursor-style-blink settings
+shell-integration-features = no-cursor
+
+mouse-hide-while-typing = true
+
+keybind = page_up=scroll_page_up
+keybind = page_down=scroll_page_down
+keybind = home=scroll_to_top
+keybind = end=scroll_to_bottom
