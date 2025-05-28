@@ -5,10 +5,28 @@ if not hs then
   return
 end
 
--- Enabling both of these seems to break automatic reloading...
--- maybe because .hammerspoon/ is a symlink to .dhd/hbase/.hammerspoon/ ?
--- local hsWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
+--[[
+  Reload Hammerspoon configuration when files change.
+
+  Ignore certain changes:
+  - .git directories, to avoid reloading on git operations.
+    Without this, any git operation in a watched directory would trigger a reload, even 'git status'.
+]]
+local function reloadConfig(files)
+  local doReload = false
+  for _, file in ipairs(files or {}) do
+    if string.find(file, "/%.git/") == nil then
+      doReload = true
+    end
+  end
+  if doReload then
+    hs.reload()
+  end
+end
+
+-- Reloads cannot have any path components that are symlinks.
 local dhdWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/", hs.reload):start()
+local gcWatcher = hs.pathwatcher.new("/Volumes/DataDisk/mrldata/Repositories/GridCraft", reloadConfig):start()
 
 package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/?.lua"
 
