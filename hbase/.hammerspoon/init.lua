@@ -65,109 +65,109 @@ hs.loadSpoon("GridCraft")
 
 local fiveMenu = {
   {
-    spoon.GridCraft.action { key = "=", empty = true },
-    spoon.GridCraft.action { key = "1", empty = true },
-    spoon.GridCraft.action { key = "2", empty = true },
-    spoon.GridCraft.action { key = "3", empty = true },
-    spoon.GridCraft.action { key = "4", empty = true },
-    spoon.GridCraft.action { key = "5", empty = true },
+    spoon.GridCraft.Action.new { key = "=", empty = true },
+    spoon.GridCraft.Action.new { key = "1", empty = true },
+    spoon.GridCraft.Action.new { key = "2", empty = true },
+    spoon.GridCraft.Action.new { key = "3", empty = true },
+    spoon.GridCraft.Action.new { key = "4", empty = true },
+    spoon.GridCraft.Action.new { key = "5", empty = true },
   },
   {
-    spoon.GridCraft.action { key = "`", empty = true },
-    spoon.GridCraft.action { key = "q", empty = true },
-    spoon.GridCraft.action { key = "w", empty = true },
-    spoon.GridCraft.action { key = "e", empty = true },
-    spoon.GridCraft.action { key = "r", empty = true },
-    spoon.GridCraft.action { key = "t", empty = true },
+    spoon.GridCraft.Action.new { key = "`", empty = true },
+    spoon.GridCraft.Action.new { key = "q", empty = true },
+    spoon.GridCraft.Action.new { key = "w", empty = true },
+    spoon.GridCraft.Action.new { key = "e", empty = true },
+    spoon.GridCraft.Action.new { key = "r", empty = true },
+    spoon.GridCraft.Action.new { key = "t", empty = true },
   },
   {
-    spoon.GridCraft.action { key = nil, empty = true },
-    spoon.GridCraft.action { key = "a", empty = true },
-    -- spoon.GridCraft.action { key = "s", empty = true },
-    spoon.GridCraft.action { key = "s", application = "Slack" },
-    spoon.GridCraft.action { key = "d", empty = true },
-    spoon.GridCraft.action { key = "f", empty = true },
-    spoon.GridCraft.action { key = "g", empty = true },
+    spoon.GridCraft.Action.new { key = nil, empty = true },
+    spoon.GridCraft.Action.new { key = "a", empty = true },
+    -- spoon.GridCraft.Action.new { key = "s", empty = true },
+    spoon.GridCraft.Action.new { key = "s", application = "Slack" },
+    spoon.GridCraft.Action.new { key = "d", empty = true },
+    spoon.GridCraft.Action.new { key = "f", empty = true },
+    spoon.GridCraft.Action.new { key = "g", empty = true },
   },
   {
-    spoon.GridCraft.action { key = "[", empty = true },
-    spoon.GridCraft.action {
+    spoon.GridCraft.Action.new { key = "[", empty = true },
+    spoon.GridCraft.Action.new {
       key = "z",
       handler = function()
         hs.caffeinate.lockScreen()
       end,
       description = "Lock screen",
-      icon = spoon.GridCraft.iconPhosphor("lock", "regular")
+      icon = spoon.GridCraft.Icon.phosphor("lock", "regular")
     },
-    spoon.GridCraft.action {
+    spoon.GridCraft.Action.new {
       key = "x",
       handler = hs.reload,
       description = "hs.reload",
-      icon = spoon.GridCraft.iconPhosphor("arrows-clockwise", "regular")
+      icon = spoon.GridCraft.Icon.phosphor("arrows-clockwise", "regular")
     },
-    spoon.GridCraft.action {
+    spoon.GridCraft.Action.new {
       key = "c",
       handler = hs.openConsole,
       description = "Console",
-      icon = spoon.GridCraft.iconPhosphor("terminal-window", "regular")
+      icon = spoon.GridCraft.Icon.phosphor("terminal-window", "regular")
     },
-    spoon.GridCraft.action { key = "v", empty = true },
-    spoon.GridCraft.action { key = "b", empty = true },
+    spoon.GridCraft.Action.new { key = "v", empty = true },
+    spoon.GridCraft.Action.new { key = "b", empty = true },
   }
 }
 
 local mainMenu = {
   {
-    spoon.GridCraft.action {
+    spoon.GridCraft.Action.new {
       key = "=",
       empty = true,
     },
-    spoon.GridCraft.action { key = "1", application = "1Password" },
-    spoon.GridCraft.action { key = "2", application = "Day One" },
-    spoon.GridCraft.action { key = "3", application = "Photos" },
-    spoon.GridCraft.action { key = "4", application = "Fantastical" },
-    spoon.GridCraft.action {
+    spoon.GridCraft.Action.new { key = "1", application = "1Password" },
+    spoon.GridCraft.Action.new { key = "2", application = "Day One" },
+    spoon.GridCraft.Action.new { key = "3", application = "Photos" },
+    spoon.GridCraft.Action.new { key = "4", application = "Fantastical" },
+    spoon.GridCraft.Action.new {
       key = "5",
       description = "Special",
-      icon = spoon.GridCraft.iconPhosphor("star", "regular"),
+      icon = spoon.GridCraft.Icon.phosphor("star", "regular"),
       submenu = fiveMenu
     },
   },
   {
-    spoon.GridCraft.action {
+    spoon.GridCraft.Action.new {
       key = "`",
       handler = function()
         print("ASDFASDFASDFAS"); hs.reload()
       end,
       description = "hs.reload",
-      icon = spoon.GridCraft.iconPhosphor("arrows-clockwise", "regular")
+      icon = spoon.GridCraft.Icon.phosphor("arrows-clockwise", "regular")
     },
-    spoon.GridCraft.action { key = "q", application = "Messages" },
-    spoon.GridCraft.action { key = "w", application = "Mattermost" },
-    spoon.GridCraft.action { key = "e", application = "Visual Studio Code", description = "VS Code" },
-    spoon.GridCraft.action { key = "r", application = "Bear" },
-    spoon.GridCraft.action { key = "t", application = "Terminal" },
+    spoon.GridCraft.Action.new { key = "q", application = "Messages" },
+    spoon.GridCraft.Action.new { key = "w", application = "Mattermost" },
+    spoon.GridCraft.Action.new { key = "e", application = "Visual Studio Code", description = "VS Code" },
+    spoon.GridCraft.Action.new { key = "r", application = "Bear" },
+    spoon.GridCraft.Action.new { key = "t", application = "Terminal" },
   },
 
   {
-    spoon.GridCraft.action { key = nil, empty = true },
-    spoon.GridCraft.action { key = "a", application = "Slack" },
-    spoon.GridCraft.action { key = "s", application = "Discord" },
-    spoon.GridCraft.action { key = "d", application = "OmniFocus" },
-    spoon.GridCraft.action { key = "f", application = "Finder" },
-    spoon.GridCraft.action { key = "g", application = "ChatGPT" },
+    spoon.GridCraft.Action.new { key = nil, empty = true },
+    spoon.GridCraft.Action.new { key = "a", application = "Slack" },
+    spoon.GridCraft.Action.new { key = "s", application = "Discord" },
+    spoon.GridCraft.Action.new { key = "d", application = "OmniFocus" },
+    spoon.GridCraft.Action.new { key = "f", application = "Finder" },
+    spoon.GridCraft.Action.new { key = "g", application = "ChatGPT" },
   },
   {
-    spoon.GridCraft.action { key = "[", application = "Claude", icon = [[<span class="icon">💬</span>]] },
-    spoon.GridCraft.action { key = "z", application = "Mail", icon = [[<span class="icon">M</span>]] },
-    spoon.GridCraft.action { key = "x", application = "Firefox" },
-    spoon.GridCraft.action { key = "c", application = "Google Chrome" },
-    spoon.GridCraft.action { key = "v", application = "Safari" },
-    spoon.GridCraft.action { key = "b", application = "BBEdit" },
+    spoon.GridCraft.Action.new { key = "[", application = "Claude" },
+    spoon.GridCraft.Action.new { key = "z", application = "Mail" },
+    spoon.GridCraft.Action.new { key = "x", application = "Firefox" },
+    spoon.GridCraft.Action.new { key = "c", application = "Google Chrome" },
+    spoon.GridCraft.Action.new { key = "v", application = "Safari" },
+    spoon.GridCraft.Action.new { key = "b", application = "BBEdit" },
   },
 }
 
-local leader = spoon.GridCraft.grid(
+local leader = spoon.GridCraft.Grid.new(
   { "ctrl" },
   "f11",
   mainMenu,
@@ -176,44 +176,43 @@ local leader = spoon.GridCraft.grid(
 
 --[[
 Empty submenu for copy/pasting:
-
-spoon.GridCraft.action {
-  key = "5",
-  description = "Special",
-  icon = spoon.GridCraft.iconPhosphor("star", "regular"),
-  submenu = {
+  {
     {
-      spoon.GridCraft.action { key = "=", empty = true },
-      spoon.GridCraft.action { key = "1", empty = true },
-      spoon.GridCraft.action { key = "2", empty = true },
-      spoon.GridCraft.action { key = "3", empty = true },
-      spoon.GridCraft.action { key = "4", empty = true },
-      spoon.GridCraft.action { key = "5", empty = true },
+      spoon.GridCraft.Action.new { key = "=", empty = true },
+      spoon.GridCraft.Action.new { key = "1", empty = true },
+      spoon.GridCraft.Action.new { key = "2", empty = true },
+      spoon.GridCraft.Action.new { key = "3", empty = true },
+      spoon.GridCraft.Action.new { key = "4", empty = true },
+      spoon.GridCraft.Action.new { key = "5", empty = true },
     },
     {
-      spoon.GridCraft.action { key = "`", empty = true },
-      spoon.GridCraft.action { key = "q", empty = true },
-      spoon.GridCraft.action { key = "w", empty = true },
-      spoon.GridCraft.action { key = "e", empty = true },
-      spoon.GridCraft.action { key = "r", empty = true },
-      spoon.GridCraft.action { key = "t", empty = true },
+      spoon.GridCraft.Action.new { key = "`", empty = true },
+      spoon.GridCraft.Action.new { key = "q", empty = true },
+      spoon.GridCraft.Action.new { key = "w", empty = true },
+      spoon.GridCraft.Action.new { key = "e", empty = true },
+      spoon.GridCraft.Action.new { key = "r", empty = true },
+      spoon.GridCraft.Action.new { key = "t", empty = true },
     },
     {
-      spoon.GridCraft.action { key = nil, empty = true },
-      spoon.GridCraft.action { key = "a", empty = true },
-      spoon.GridCraft.action { key = "s", empty = true },
-      spoon.GridCraft.action { key = "d", empty = true },
-      spoon.GridCraft.action { key = "f", empty = true },
-      spoon.GridCraft.action { key = "g", empty = true },
+      spoon.GridCraft.Action.new { key = nil, empty = true },
+      spoon.GridCraft.Action.new { key = "a", empty = true },
+      spoon.GridCraft.Action.new { key = "s", empty = true },
+      spoon.GridCraft.Action.new { key = "d", empty = true },
+      spoon.GridCraft.Action.new { key = "f", empty = true },
+      spoon.GridCraft.Action.new { key = "g", empty = true },
     },
     {
-      spoon.GridCraft.action { key = "[", empty = true },
-      spoon.GridCraft.action { key = "z", empty = true },
-      spoon.GridCraft.action { key = "x", empty = true },
-      spoon.GridCraft.action { key = "c", empty = true },
-      spoon.GridCraft.action { key = "v", empty = true },
-      spoon.GridCraft.action { key = "b", empty = true },
+      spoon.GridCraft.Action.new { key = "[", empty = true },
+      spoon.GridCraft.Action.new { key = "z", empty = true },
+      spoon.GridCraft.Action.new { key = "x", empty = true },
+      spoon.GridCraft.Action.new { key = "c", empty = true },
+      spoon.GridCraft.Action.new { key = "v", empty = true },
+      spoon.GridCraft.Action.new { key = "b", empty = true },
     }
   }
-},
 ]]
+
+
+-- Load GridCraft example config files.
+-- For testing the GridCraft examples.
+-- dofile("/Volumes/DataDisk/mrldata/Repositories/GridCraft/site/content/docs/examples/simple-submenu/example.lua")
