@@ -33,6 +33,31 @@ package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammers
 hs.printf("======== config file reloaded ========")
 hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
 
+-- Required for hs command-line tool
+local function hsCliInstall()
+  local hsIpc = require("hs.ipc") -- Required per hs.ipc docs
+  local homeOpt = os.getenv("HOME") .. "/opt"
+  hs.fs.mkdir(homeOpt)
+  hs.fs.mkdir(homeOpt .. "/bin")
+  hs.fs.mkdir(homeOpt .. "/share")
+  hs.fs.mkdir(homeOpt .. "/share/man")
+  hs.fs.mkdir(homeOpt .. "/share/man/man1")
+
+  -- Attempt to install and hide errors
+  local ok = hs.ipc.cliInstall(homeOpt, false)
+  if not ok then
+    -- If we got an error, uninstall first (as suggested by the docs)
+    hs.ipc.cliUninstall(homeOpt, false)
+    -- This time, try to install but print errors to the console
+    ok = hs.ipc.cliInstall(homeOpt, false)
+    if not ok then
+      print("hs tool install FAILED")
+      return
+    end
+  end
+end
+hsCliInstall()
+
 local shiftIt = require('shiftIt')
 shiftIt.config.animationDuration = 0
 
