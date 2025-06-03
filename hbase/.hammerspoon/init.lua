@@ -63,7 +63,7 @@ shiftIt.config.animationDuration = 0
 
 hs.loadSpoon("GridCraft")
 
-local fiveMenu = {
+local f11sub5 = {
   {
     spoon.GridCraft.Action.new { key = "=", empty = true },
     spoon.GridCraft.Action.new { key = "1", application = "Day One" },
@@ -115,7 +115,7 @@ local fiveMenu = {
   }
 }
 
-local mainMenu = {
+local f11main = {
   {
     spoon.GridCraft.Action.new { key = "=", application = "The Archive" },
     spoon.GridCraft.Action.new { key = "1", application = "1Password" },
@@ -126,7 +126,7 @@ local mainMenu = {
       key = "5",
       description = "Special",
       icon = spoon.GridCraft.Icon.phosphor("star", "regular"),
-      submenu = fiveMenu
+      submenu = f11sub5
     },
   },
   {
@@ -156,11 +156,66 @@ local mainMenu = {
   },
 }
 
-local leader = spoon.GridCraft.Grid.new(
+local f11config = spoon.GridCraft.Configuration.new()
+f11config.animationMs = 50
+
+local f11grid = spoon.GridCraft.Grid.new(
   { "ctrl" },
   "f11",
-  mainMenu,
-  "Leader Grid"
+  f11main,
+  "F11 Grid",
+  f11config
+)
+
+local f10config = spoon.GridCraft.Configuration.new()
+f10config.animationMs = 0
+
+local f10main = {
+  {
+    spoon.GridCraft.Action.new { key = "q", empty = true },
+    spoon.GridCraft.Action.new { key = "w", empty = true },
+    spoon.GridCraft.Action.new { key = "e", empty = true },
+    spoon.GridCraft.Action.new { key = "r", empty = true },
+    spoon.GridCraft.Action.new { key = "t", empty = true },
+  },
+  {
+    spoon.GridCraft.Action.new { key = "a", empty = true },
+    spoon.GridCraft.Action.new { key = "s", empty = true },
+    spoon.GridCraft.Action.new { key = "d", empty = true },
+    spoon.GridCraft.Action.new { key = "f", empty = true },
+
+    spoon.GridCraft.Action.new {
+      key = "g",
+      handler = function()
+        -- hs.application.frontmostApplication():hide()
+        -- local app = hs.application.frontmostApplication()
+        -- print("Hiding frontmost application: " .. (app and app:name() or "None"))
+        -- if app then
+        --   app:hide()
+        -- else
+        --   hs.alert.show("No frontmost application to hide")
+        -- end
+        hs.eventtap.keyStroke({ "cmd" }, "h")
+      end,
+      description = "Hide",
+      icon = spoon.GridCraft.Icon.phosphor("eye-slash", "regular")
+    },
+  },
+  {
+    spoon.GridCraft.Action.new { key = "z", empty = true },
+    spoon.GridCraft.Action.new { key = "x", empty = true },
+    spoon.GridCraft.Action.new { key = "c", empty = true },
+    spoon.GridCraft.Action.new { key = "v", empty = true },
+    spoon.GridCraft.Action.new { key = "b", empty = true },
+  }
+}
+
+local f10grid = spoon.GridCraft.Grid.new(
+  { "ctrl" },
+  "f10",
+  f10main,
+  "F10 Grid",
+  f10config
 )
 
 --[[
