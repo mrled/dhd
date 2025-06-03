@@ -66,8 +66,8 @@ hs.loadSpoon("GridCraft")
 local fiveMenu = {
   {
     spoon.GridCraft.Action.new { key = "=", empty = true },
-    spoon.GridCraft.Action.new { key = "1", empty = true },
-    spoon.GridCraft.Action.new { key = "2", empty = true },
+    spoon.GridCraft.Action.new { key = "1", application = "Day One" },
+    spoon.GridCraft.Action.new { key = "2", application = "Photos" },
     spoon.GridCraft.Action.new { key = "3", empty = true },
     spoon.GridCraft.Action.new { key = "4", empty = true },
     spoon.GridCraft.Action.new { key = "5", empty = true },
@@ -83,8 +83,7 @@ local fiveMenu = {
   {
     spoon.GridCraft.Action.new { key = nil, empty = true },
     spoon.GridCraft.Action.new { key = "a", empty = true },
-    -- spoon.GridCraft.Action.new { key = "s", empty = true },
-    spoon.GridCraft.Action.new { key = "s", application = "Slack" },
+    spoon.GridCraft.Action.new { key = "s", empty = true },
     spoon.GridCraft.Action.new { key = "d", empty = true },
     spoon.GridCraft.Action.new { key = "f", empty = true },
     spoon.GridCraft.Action.new { key = "g", empty = true },
@@ -118,13 +117,10 @@ local fiveMenu = {
 
 local mainMenu = {
   {
-    spoon.GridCraft.Action.new {
-      key = "=",
-      empty = true,
-    },
+    spoon.GridCraft.Action.new { key = "=", application = "The Archive" },
     spoon.GridCraft.Action.new { key = "1", application = "1Password" },
-    spoon.GridCraft.Action.new { key = "2", application = "Day One" },
-    spoon.GridCraft.Action.new { key = "3", application = "Photos" },
+    spoon.GridCraft.Action.new { key = "2", application = "Marked 2", description = "Marked" },
+    spoon.GridCraft.Action.new { key = "3", empty = true },
     spoon.GridCraft.Action.new { key = "4", application = "Fantastical" },
     spoon.GridCraft.Action.new {
       key = "5",
@@ -134,14 +130,7 @@ local mainMenu = {
     },
   },
   {
-    spoon.GridCraft.Action.new {
-      key = "`",
-      handler = function()
-        print("ASDFASDFASDFAS"); hs.reload()
-      end,
-      description = "hs.reload",
-      icon = spoon.GridCraft.Icon.phosphor("arrows-clockwise", "regular")
-    },
+    spoon.GridCraft.Action.new { key = "`", empty = true },
     spoon.GridCraft.Action.new { key = "q", application = "Messages" },
     spoon.GridCraft.Action.new { key = "w", application = "Mattermost" },
     spoon.GridCraft.Action.new { key = "e", application = "Visual Studio Code", description = "VS Code" },
