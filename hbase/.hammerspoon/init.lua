@@ -184,17 +184,10 @@ local f10main = {
     spoon.GridCraft.Action.new { key = "d", empty = true },
     spoon.GridCraft.Action.new { key = "f", empty = true },
 
+    -- A key to hide applications from the left hand
     spoon.GridCraft.Action.new {
       key = "g",
       handler = function()
-        -- hs.application.frontmostApplication():hide()
-        -- local app = hs.application.frontmostApplication()
-        -- print("Hiding frontmost application: " .. (app and app:name() or "None"))
-        -- if app then
-        --   app:hide()
-        -- else
-        --   hs.alert.show("No frontmost application to hide")
-        -- end
         hs.eventtap.keyStroke({ "cmd" }, "h")
       end,
       description = "Hide",
