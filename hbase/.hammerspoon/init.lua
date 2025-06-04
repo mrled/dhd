@@ -156,8 +156,11 @@ local f11main = {
   },
 }
 
+local gridKeysDisplayScreen = "mouse"
+
 local f11config = spoon.GridCraft.Configuration.new()
 f11config.animationMs = 50
+f11config.displayScreen = gridKeysDisplayScreen
 
 local f11grid = spoon.GridCraft.Grid.new(
   { "ctrl" },
@@ -169,6 +172,7 @@ local f11grid = spoon.GridCraft.Grid.new(
 
 local f10config = spoon.GridCraft.Configuration.new()
 f10config.animationMs = 0
+f10config.displayScreen = gridKeysDisplayScreen
 
 local f10main = {
   {
