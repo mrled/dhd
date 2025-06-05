@@ -1,7 +1,5 @@
-local hammerSpoonEmoji = "🔨🥄"
-
 if not hs then
-  print(hammerSpoonEmoji .. " Hammerspoon not running, exiting...")
+  print("Hammerspoon not running, exiting...")
   return
 end
 
@@ -31,7 +29,7 @@ local gcWatcher = hs.pathwatcher.new("/Volumes/DataDisk/mrldata/Repositories/Gri
 package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/?.lua"
 
 hs.printf("======== config file reloaded ========")
-hs.alert.show(hammerSpoonEmoji .. " Config Loaded")
+hs.alert.show("HammerSpoon Config Loaded")
 
 -- Required for hs command-line tool
 local function hsCliInstall()
