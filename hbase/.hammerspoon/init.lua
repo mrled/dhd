@@ -25,7 +25,25 @@ end
 -- Reloads cannot have any path components that are symlinks.
 -- Keep reload objects as global variables to make sure they don't get garbage collected.
 DhdWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/", hs.reload):start()
-GcWatcher = hs.pathwatcher.new("/Volumes/DataDisk/mrldata/Repositories/GridCraft", reloadConfig):start()
+
+-- Load host-specific configuration if it exists
+HostConfig = {}
+local hostname = string.lower(hs.host.localizedName())
+local hostConfigFile = string.format("%s/.dhd/hosts/%s/hammerspoon.lua", os.getenv("HOME"), hostname)
+if hs.fs.attributes(hostConfigFile) then
+  print("Found host-specific configuration: " .. hostConfigFile)
+  HostConfig = dofile(hostConfigFile)
+end
+
+-- Add path watchers for directories specified in the host configuration.
+PathWatchers = {}
+for _, dir in ipairs(HostConfig.watchDirs or {}) do
+  if hs.fs.attributes(dir) then
+    print("Adding path watcher for: " .. dir)
+    local watcher = hs.pathwatcher.new(dir, reloadConfig):start()
+    table.insert(PathWatchers, watcher)
+  end
+end
 
 package.path = package.path .. ";" .. os.getenv("HOME") .. "/.dhd/hbase/.hammerspoon/?.lua"
 
