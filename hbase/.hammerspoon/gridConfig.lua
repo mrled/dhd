@@ -105,51 +105,6 @@ local f11grid = spoon.GridCraft.Grid.new(
     f11config
 )
 
-local f10config = spoon.GridCraft.Configuration.new()
-f10config.animationMs = 0
-f10config.displayScreen = gridKeysDisplayScreen
-
-local f10main = {
-    {
-        spoon.GridCraft.Action.new { key = "q", empty = true },
-        spoon.GridCraft.Action.new { key = "w", empty = true },
-        spoon.GridCraft.Action.new { key = "e", empty = true },
-        spoon.GridCraft.Action.new { key = "r", empty = true },
-        spoon.GridCraft.Action.new { key = "t", empty = true },
-    },
-    {
-        spoon.GridCraft.Action.new { key = "a", empty = true },
-        spoon.GridCraft.Action.new { key = "s", empty = true },
-        spoon.GridCraft.Action.new { key = "d", empty = true },
-        spoon.GridCraft.Action.new { key = "f", empty = true },
-
-        -- A key to hide applications from the left hand
-        spoon.GridCraft.Action.new {
-            key = "g",
-            handler = function()
-                hs.eventtap.keyStroke({ "cmd" }, "h")
-            end,
-            description = "Hide",
-            icon = spoon.GridCraft.Icon.phosphor("eye-slash", "regular")
-        },
-    },
-    {
-        spoon.GridCraft.Action.new { key = "z", empty = true },
-        spoon.GridCraft.Action.new { key = "x", empty = true },
-        spoon.GridCraft.Action.new { key = "c", empty = true },
-        spoon.GridCraft.Action.new { key = "v", empty = true },
-        spoon.GridCraft.Action.new { key = "b", empty = true },
-    }
-}
-
-local f10grid = spoon.GridCraft.Grid.new(
-    { "ctrl" },
-    "f10",
-    f10main,
-    "F10 Grid",
-    f10config
-)
-
 --[[
 Empty submenu for copy/pasting:
   {
