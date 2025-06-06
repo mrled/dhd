@@ -121,10 +121,6 @@ shift-minus = 'resize smart -128'
 shift-equal = 'resize smart +128'
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
-u = 'workspace prev'
-i = 'workspace next'
-shift-u = 'move-node-to-workspace prev'
-shift-i = 'move-node-to-workspace next'
 1 = 'workspace 1'
 2 = 'workspace 2'
 3 = 'workspace 3'
@@ -135,6 +131,10 @@ shift-i = 'move-node-to-workspace next'
 8 = 'workspace 8'
 9 = 'workspace 9'
 0 = 'workspace 10'
+u = 'workspace prev'
+i = 'workspace next'
+shift-u = 'move-node-to-workspace prev'
+shift-i = 'move-node-to-workspace next'
 p = ['focus-monitor prev', 'move-mouse window-force-center']
 n = ['focus-monitor next', 'move-mouse window-force-center']
 shift-p = 'move-workspace-to-monitor prev'
@@ -166,6 +166,7 @@ shift-f = [
 ] # Toggle between floating and tiling layout
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
+e = 'mode execute'
 r = 'mode resize'
 w = 'mode workspace'
 
@@ -195,10 +196,38 @@ shift-l = ['move-node-to-workspace next']
 shift-k = ['move-node-to-monitor prev']
 shift-j = ['move-node-to-monitor next']
 
+shift-1 = ['move-workspace-to-monitor --workspace 1 --wrap-around next']
+shift-2 = ['move-workspace-to-monitor --workspace 2 --wrap-around next']
+shift-3 = ['move-workspace-to-monitor --workspace 3 --wrap-around next']
+shift-4 = ['move-workspace-to-monitor --workspace 4 --wrap-around next']
+shift-5 = ['move-workspace-to-monitor --workspace 5 --wrap-around next']
+shift-6 = ['move-workspace-to-monitor --workspace 6 --wrap-around next']
+shift-7 = ['move-workspace-to-monitor --workspace 7 --wrap-around next']
+shift-8 = ['move-workspace-to-monitor --workspace 8 --wrap-around next']
+shift-9 = ['move-workspace-to-monitor --workspace 9 --wrap-around next']
+shift-0 = ['move-workspace-to-monitor --workspace 10 --wrap-around next']
+
+# Execute mode - run commands, open apps, etc
+[mode.execute.binding]
+ctrl-f10 = 'mode alt'
+esc = 'mode main'
+e = 'mode alt'
+
+# Open a new Terminal.app window
+# via <https://nikitabobko.github.io/AeroSpace/goodies#open-a-new-window-with-applescript>
+t = '''exec-and-forget osascript -e '
+tell application "Terminal"
+    do script
+    activate
+end tell'
+'''
+
 #
 # Application-specific configurations (optional)
 #
 
-# [[on-window-detected]]
-# if.app-id = 'com.apple.reminders'
-# run = 'layout floating'
+# Quick access modal, always uses `Quick Access` for title string.
+[[on-window-detected]]
+if.app-id = "com.1password.1password"
+if.window-title-regex-substring = "^Quick Access"
+run = "layout floating"
