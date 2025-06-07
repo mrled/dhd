@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    cat <<EOF
+Usage: $0 <MODE>
+Set the indicator for the AeroSpace display mode.
+
+ARGUMENTS
+    MODE        The mode to set.
+                When this is "main", the indicator is black,
+                to show that keyboard input is processed normally.
+                Otherwise, the indicator is red.
+EOF
+    echo "Usage: $0 <MODE>"
+}
+
+if [ $# -eq 0 ]; then
+    usage
+    exit 1
+fi
+
+color=orange
+case "$1" in
+    "main") color=black;;
+    *) color=green;;
+esac
+
+/bin/echo -n "$color" | nc -4u -w0 localhost 1738

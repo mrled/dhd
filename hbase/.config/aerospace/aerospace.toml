@@ -4,12 +4,15 @@
 # You can use it to add commands that run after login to macOS user session.
 # 'start-at-login' needs to be 'true' for 'after-login-command' to work
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
-after-login-command = []
+after-login-command = ['exec-and-forget open -na "AnyBar"']
 
 # You can use it to add commands that run after AeroSpace startup.
 # 'after-startup-command' is run after 'after-login-command'
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
-after-startup-command = ['exec-and-forget /opt/homebrew/bin/borders']
+after-startup-command = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'exec-and-forget /opt/homebrew/bin/borders',
+]
 
 # Start AeroSpace at login
 start-at-login = true
@@ -79,13 +82,26 @@ outer.right = 16
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 # 'main' binding mode must be always presented
 [mode.main.binding]
-ctrl-f10 = 'mode alt'
+ctrl-f10 = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode alt',
+    'mode alt',
+]
 
 # 'alt' binding mode declaration
 [mode.alt.binding]
-ctrl-f10 = 'mode alt'
-esc = 'mode main'
-backtick = ['reload-config', 'mode main']
+ctrl-f10 = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode alt',
+    'mode alt',
+]
+esc = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+backtick = [
+    'reload-config',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
 
 slash = 'layout tiles horizontal vertical'
 comma = 'layout accordion horizontal vertical'
@@ -96,7 +112,8 @@ j = ['focus --boundaries-action stop down', 'move-mouse window-force-center']
 k = ['focus --boundaries-action stop up', 'move-mouse window-force-center']
 l = ['focus --boundaries-action stop right', 'move-mouse window-force-center']
 
-c = ['move-mouse window-force-center']
+c = ['close']                                # Close the focused window
+shift-c = ['move-mouse window-force-center']
 
 # move: "Move the focused window in the given direction"
 # https://nikitabobko.github.io/AeroSpace/commands#move
@@ -109,10 +126,10 @@ shift-l = 'move right'
 # join-with: "Put the focused window and the nearest node in the specified direction under a common parent container"
 # https://nikitabobko.github.io/AeroSpace/commands#join-with
 # Place the window inside the directionally adjacent container
-ctrl-h = ['join-with left', 'mode alt']
-ctrl-j = ['join-with down', 'mode alt']
-ctrl-k = ['join-with up', 'mode alt']
-ctrl-l = ['join-with right', 'mode alt']
+ctrl-h = ['join-with left']
+ctrl-j = ['join-with down']
+ctrl-k = ['join-with up']
+ctrl-l = ['join-with right']
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#resize
 minus = 'resize smart -64'
@@ -170,23 +187,37 @@ tab = 'workspace-back-and-forth'
 shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
 # shift-r = ['flatten-workspace-tree'] # reset layout
-x = ['flatten-workspace-tree'] # reset layout
-#s = ['layout sticky tiling', 'mode alt'] # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
-f = ['fullscreen'] # Toggle between fullscreen
-shift-f = [
-    'layout floating tiling',
-    'mode alt',
-] # Toggle between floating and tiling layout
+x = ['flatten-workspace-tree']       # reset layout
+f = ['fullscreen']                   # Toggle between fullscreen
+shift-f = ['layout floating tiling'] # Toggle between floating and tiling layout
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
-g = 'mode execute'
-a = 'mode resize'
-s = 'mode workspace'
+g = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode execute',
+    'mode execute',
+]
+a = [ # "adjust", but "a" is already the abbreviation for "alt" mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+    'mode resize',
+]
+s = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode workspace',
+    'mode workspace',
+]
 
-[mode.adjust.binding]
-ctrl-f10 = 'mode alt'
-esc = 'mode main'
-a = 'mode alt'
+[mode.resize.binding]
+ctrl-f10 = [ # "adjust", but "a" is already the abbreviation for "alt" mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+    'mode alt',
+]
+esc = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+a = [ # "adjust", but "a" is already the abbreviation for "alt" mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+    'mode alt',
+]
 h = ['resize width -64']
 j = ['resize height -64']
 k = ['resize height +64']
@@ -197,9 +228,19 @@ shift-k = ['resize height +8']
 shift-l = ['resize width +8']
 
 [mode.workspace.binding]
-ctrl-f10 = 'mode alt'
-esc = 'mode main'
-s = 'mode alt'
+ctrl-f10 = [ # "adjust", but "a" is already the abbreviation for "alt" mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+    'mode alt',
+]
+esc = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+s = [ # "adjust", but "a" is already the abbreviation for "alt" mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+    'mode alt',
+]
+
 h = ['workspace prev']
 l = ['workspace next']
 j = ['focus-monitor next']
@@ -228,18 +269,45 @@ shift-t = ['move-workspace-to-monitor --workspace pw --wrap-around next']
 
 # Execute mode - run commands, open apps, etc
 [mode.execute.binding]
-ctrl-f10 = 'mode alt'
-esc = 'mode main'
-g = 'mode alt'
+ctrl-f10 = [ # "adjust", but "a" is already the abbreviation for "alt" mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+    'mode alt',
+]
+esc = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+g = [ # "adjust", but "a" is already the abbreviation for "alt" mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+    'mode alt',
+]
 
 # Open a new Terminal.app window
 # via <https://nikitabobko.github.io/AeroSpace/goodies#open-a-new-window-with-applescript>
-t = '''exec-and-forget osascript -e '
+t = [
+    '''exec-and-forget osascript -e '
 tell application "Terminal"
     do script
     activate
 end tell'
-'''
+''',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+
+# Open a new Firefox window
+x = [
+    'exec-and-forget open -na "Firefox" --args --new-window',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+
+# Open a new VS Code window
+v = [
+    'exec-and-forget open -na "Visual Studio Code" --args --new-window',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
 
 #
 # Application-specific configurations (optional)
@@ -257,3 +325,16 @@ run = "layout floating"
 [[on-window-detected]]
 if.app-id = "com.1password.1password"
 run = ["layout floating", "move-node-to-workspace pw"]
+
+[[on-window-detected]]
+if.app-id = "com.apple.ActivityMonitor"
+run = ["move-node-to-workspace 3"]
+
+[[on-window-detected]]
+if.app-id = "org.hammerspoon.Hammerspoon"
+if.window-title-regex-substring = "^Hammerspoon Console"
+run = ["move-node-to-workspace 3"]
+
+[[on-window-detected]]
+if.app-id = "org.deskflow.deskflow"
+run = ["move-node-to-workspace 3"]
