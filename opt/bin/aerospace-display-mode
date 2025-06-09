@@ -20,10 +20,12 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-color=orange
+anybarcolor=orange
+active_color=0xffff8100
 case "$1" in
-    "main") color=black;;
-    *) color=green;;
+    "main") anybarcolor=green active_color=0xff00d414;;
+    *) anybarcolor=red active_color=0xffe60101;;
 esac
 
-/bin/echo -n "$color" | nc -4u -w0 localhost 1738
+/bin/echo -n "$anybarcolor" | nc -4u -w0 localhost 1738
+borders active_color="$active_color"
