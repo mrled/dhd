@@ -27,7 +27,7 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 accordion-padding = 30
 
 # Possible values: tiles|accordion
-default-root-container-layout = 'accordion'
+default-root-container-layout = 'tiles'
 
 # Possible values: horizontal|vertical|auto
 # 'auto' means: wide monitor (anything wider than high) gets horizontal orientation,
@@ -112,8 +112,7 @@ j = ['focus --boundaries-action stop down', 'move-mouse window-force-center']
 k = ['focus --boundaries-action stop up', 'move-mouse window-force-center']
 l = ['focus --boundaries-action stop right', 'move-mouse window-force-center']
 
-c = ['close']                                # Close the focused window
-shift-c = ['move-mouse window-force-center']
+c = ['close']
 
 # move: "Move the focused window in the given direction"
 # https://nikitabobko.github.io/AeroSpace/commands#move
@@ -250,7 +249,7 @@ shift-l = ['move-node-to-workspace next']
 shift-k = ['move-node-to-monitor prev']
 shift-j = ['move-node-to-monitor next']
 
-# Move the specified workspace to the next monitorvvvvvvvvv
+# Move the specified workspace to the next monitor
 shift-1 = ['move-workspace-to-monitor --workspace 1 --wrap-around next']
 shift-2 = ['move-workspace-to-monitor --workspace 2 --wrap-around next']
 shift-3 = ['move-workspace-to-monitor --workspace 3 --wrap-around next']
