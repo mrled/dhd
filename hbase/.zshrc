@@ -213,7 +213,7 @@ export DOCKER_CLI_HINTS=false
 ####
 #### Indeed setup gunk
 ####
-# update-managed-repos adds this line, but it runs a lot of code on every shell launch, which is slow.
+# system-setup adds this line, but it runs a lot of code on every shell launch, which is slow.
 # Here, we disable it, but we define an alias to allow importing it if necessary
 
 # Disable it:
