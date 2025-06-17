@@ -60,5 +60,6 @@ matches:
 secure_input_notification: false
 
 # The packages don't sync, so we just list them here:
-# all-emojis
+# actually-all-emojis
+# named-html-entities
 # supersubscript
