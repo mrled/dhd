@@ -7,17 +7,14 @@
 # Matches are the substitution rules, when you type the "trigger" string
 # it gets replaced by the "replace" string.
 matches:
-  # Simple text replacement
-  - trigger: ":espanso"
-    replace: "Hi there!"
-
+  # Time stuff
   - trigger: ":dtime"
     replace: "{{dtime}}"
     vars:
       - name: dtime
         type: date
         params:
-          format: "%Y%d%m:%H%M%S"
+          format: "%Y%d%m-%H%M%S"
   - trigger: ":date"
     replace: "{{mydate}}"
     vars:
@@ -29,5 +26,39 @@ matches:
   - trigger: ":rituals"
     replace: "ALL RITUALS RESTRICTED. ALL RITES RESERVED."
 
+  - trigger: ":@"
+    replace: "me@micahrl.com"
+
+  - trigger: ":github"
+    replace: "https://github.com/mrled/"
+
+  # https://hub.espanso.org/shruggie
+  - trigger: ":shrug"
+    replace: "¯\\_(ツ)_/¯"
+
+  # Base64 stuff from <https://hub.espanso.org/base64-encoder-decoder>
+  - trigger: ":b64e"
+    replace: "{{output}}"
+    vars:
+      - name: clipboard
+        type: clipboard
+      - name: output
+        type: shell
+        params:
+          cmd: "echo -n \"{{clipboard}}\" | base64"
+  - trigger: ":b64d"
+    replace: "{{output}}"
+    vars:
+      - name: clipboard
+        type: clipboard
+      - name: output
+        type: shell
+        params:
+          cmd: "echo -n \"{{clipboard}}\" | base64 -d"
+
 # Stop telling me every fucking time I focus on a password field
 secure_input_notification: false
+
+# The packages don't sync, so we just list them here:
+# all-emojis
+# supersubscript
