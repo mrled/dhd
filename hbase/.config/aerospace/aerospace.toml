@@ -113,7 +113,7 @@ j = ['focus --boundaries-action stop down', 'move-mouse window-force-center']
 k = ['focus --boundaries-action stop up', 'move-mouse window-force-center']
 l = ['focus --boundaries-action stop right', 'move-mouse window-force-center']
 
-c = ['close']
+opt-w = ['close']
 
 # move: "Move the focused window in the given direction"
 # https://nikitabobko.github.io/AeroSpace/commands#move
@@ -187,7 +187,7 @@ tab = 'workspace-back-and-forth'
 shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
 # shift-r = ['flatten-workspace-tree'] # reset layout
-x = ['flatten-workspace-tree']       # reset layout
+opt-f = ['flatten-workspace-tree']   # reset layout
 f = ['fullscreen']                   # Toggle between fullscreen
 shift-f = ['layout floating tiling'] # Toggle between floating and tiling layout
 
