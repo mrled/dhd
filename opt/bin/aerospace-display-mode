@@ -28,4 +28,4 @@ case "$1" in
 esac
 
 /bin/echo -n "$anybarcolor" | nc -4u -w0 localhost 1738
-borders active_color="$active_color"
+borders active_color="$active_color" style=round width=12.0 hidpi=on inactive_color=0xff666666
