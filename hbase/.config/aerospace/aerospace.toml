@@ -4,14 +4,13 @@
 # You can use it to add commands that run after login to macOS user session.
 # 'start-at-login' needs to be 'true' for 'after-login-command' to work
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
-after-login-command = ['exec-and-forget open -na "AnyBar"']
+after-login-command = []
 
 # You can use it to add commands that run after AeroSpace startup.
 # 'after-startup-command' is run after 'after-login-command'
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
 after-startup-command = [
-    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
-    'exec-and-forget open -a "AnyBar"',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode init',
 ]
 
 # Start AeroSpace at login

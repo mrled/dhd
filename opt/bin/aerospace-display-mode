@@ -7,10 +7,19 @@ Usage: $0 <MODE>
 Set the indicator for the AeroSpace display mode.
 
 ARGUMENTS
-    MODE        The mode to set.
-                When this is "main", the indicator is black,
-                to show that keyboard input is processed normally.
-                Otherwise, the indicator is red.
+    MODE    The mode to set.
+            init:
+                Launch the required applications and set the indicators to orange.
+                This is used when AeroSpace starts up.
+            main:
+                Set the indicator to green, indicating the main mode,
+                where keyboard input is processed normally.
+            other:
+                Set the indicator to red, indicating one of the alternative modes.
+
+Note that only the "init" mode will launch AnyBar and pass all params to borders.
+borders in particular is noticeably slower to process all its arguments,
+but passing just the active_color is fast enough to not cause any noticeable delay.
 EOF
     echo "Usage: $0 <MODE>"
 }
@@ -23,9 +32,13 @@ fi
 anybarcolor=orange
 active_color=0xffff8100
 case "$1" in
+    "init")
+        ANYBAR_INIT="$anybarcolor" open -a "AnyBar"
+        borders active_color="$active_color" style=round width=12.0 hidpi=on inactive_color=0xff666666
+        ;;
     "main") anybarcolor=green active_color=0xff00d414;;
     *) anybarcolor=red active_color=0xffe60101;;
 esac
 
 /bin/echo -n "$anybarcolor" | nc -4u -w0 localhost 1738
-borders active_color="$active_color" style=round width=12.0 hidpi=on inactive_color=0xff666666
+borders active_color="$active_color"
