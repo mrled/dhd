@@ -226,16 +226,16 @@ shift-k = ['resize height +8']
 shift-l = ['resize width +8']
 
 [mode.workspace.binding]
-ctrl-f10 = [ # "adjust", but "a" is already the abbreviation for "alt" mode
-    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+ctrl-f10 = [ # Return to "alt" mode with the regular alt mode key
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode alt',
     'mode alt',
 ]
 esc = [
     'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
     'mode main',
 ]
-s = [ # "adjust", but "a" is already the abbreviation for "alt" mode
-    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+s = [ # Return to "alt" mode with the key that entered this mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode alt',
     'mode alt',
 ]
 
@@ -267,16 +267,16 @@ shift-t = ['move-workspace-to-monitor --workspace pw --wrap-around next']
 
 # Execute mode - run commands, open apps, etc
 [mode.execute.binding]
-ctrl-f10 = [ # "adjust", but "a" is already the abbreviation for "alt" mode
-    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+ctrl-f10 = [ # Return to "alt" mode with the regular alt mode key
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode alt',
     'mode alt',
 ]
-esc = [
+esc = [ # Return to "main" mode with esc
     'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
     'mode main',
 ]
-g = [ # "adjust", but "a" is already the abbreviation for "alt" mode
-    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
+g = [ # Return to "alt" mode with the key that entered this mode
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode alt',
     'mode alt',
 ]
 
