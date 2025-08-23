@@ -311,12 +311,15 @@ v = [
 # Application-specific configurations (optional)
 #
 
-# Quick access modal, always uses `Quick Access` for title string.
+# 1Password
 [[on-window-detected]]
 if.app-id = "com.1password.1password"
-if.window-title-regex-substring = "^Quick Access"
+if.window-title-regex-substring = "^Quick Access" # The quick access modal
 run = "layout floating"
-
+[[on-window-detected]]
+if.app-id = "com.1password.1password"
+if.window-title-regex-substring = "^1Password$" # The unlock modal
+run = "layout floating"
 # Any other 1Password window should go to the 1p workspace
 # You really want this on its own workspace because when the secure text entry is focused,
 # all hotkeys are disabled.
@@ -324,19 +327,55 @@ run = "layout floating"
 if.app-id = "com.1password.1password"
 run = ["layout floating", "move-node-to-workspace pw"]
 
+# Misc floating windows
 [[on-window-detected]]
 if.app-id = "com.superduper.superwhisper"
 run = ["layout floating"]
 
+# System apps on workspace 0
 [[on-window-detected]]
 if.app-id = "com.apple.ActivityMonitor"
-run = ["move-node-to-workspace 3"]
-
+run = ["move-node-to-workspace 0"]
 [[on-window-detected]]
 if.app-id = "org.hammerspoon.Hammerspoon"
 if.window-title-regex-substring = "^Hammerspoon Console"
-run = ["move-node-to-workspace 3"]
-
+run = ["move-node-to-workspace 0"]
 [[on-window-detected]]
 if.app-id = "org.deskflow.deskflow"
+run = ["move-node-to-workspace 0"]
+
+# Virtual Machines on workspace 9
+[[on-window-detected]]
+if.app-id = "com.utmapp.UTM"
+run = ["move-node-to-workspace 9"]
+
+# Communication apps on workspace 3
+[[on-window-detected]]
+if.app-id = "com.apple.mail"
 run = ["move-node-to-workspace 3"]
+[[on-window-detected]]
+if.app-id = "com.apple.MobileSMS"  # Messages
+run = ["move-node-to-workspace 3"]
+[[on-window-detected]]
+if.app-id = "com.tinyspeck.slackmacgap"
+run = ["move-node-to-workspace 3"]
+[[on-window-detected]]
+if.app-id = "com.hnc.Discord"
+run = ["move-node-to-workspace 3"]
+[[on-window-detected]]
+if.app-id = "org.whispersystems.signal-desktop"
+run = ["move-node-to-workspace 3"]
+[[on-window-detected]]
+if.app-id = "Mattermost.Desktop"
+run = ["move-node-to-workspace 3"]
+
+# Calendar/tasks on workspace 5
+[[on-window-detected]]
+if.app-id = "com.omnigroup.OmniFocus4"
+run = ["move-node-to-workspace 5"]
+[[on-window-detected]]
+if.app-id = "com.apple.iCal"
+run = ["move-node-to-workspace 5"]
+[[on-window-detected]]
+if.app-id = "com.flexibits.fantastical2.mac"
+run = ["move-node-to-workspace 5"]
