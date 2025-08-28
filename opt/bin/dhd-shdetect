@@ -261,6 +261,7 @@ cmdavail kubectl && DHD_CMDAVAIL="$DHD_CMDAVAIL kubectl"
 cmdavail starship && DHD_CMDAVAIL="$DHD_CMDAVAIL starship"
 cmdavail atuin && DHD_CMDAVAIL="$DHD_CMDAVAIL atuin"
 cmdavail flux && DHD_CMDAVAIL="$DHD_CMDAVAIL flux"
+cmdavail jj && DHD_CMDAVAIL="$DHD_CMDAVAIL jj"
 
 # motd stuff
 figlet_font_dir="$HOME/Documents/Repositories/psyops/docker/setup/figlet-fonts"
