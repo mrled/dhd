@@ -3,3 +3,10 @@ M-n: history-search-forward
 set completion-ignore-case on
 set bell-style none
 set show-all-if-ambiguous on
+
+# treat symbolic links to directories as if they were directories in tab completion
+set mark-symlinked-directories on
+
+# forget any random edits I did to past history lines when I hit Return to finally do something:
+set revert-all-at-newline on
+
