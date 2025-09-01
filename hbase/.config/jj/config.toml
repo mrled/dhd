@@ -4,12 +4,6 @@
 name = "Micah R Ledbetter"
 email = "me@micahrl.com"
 
-# To get my familiar git / delta style diffs, use:
-#   [ui]
-#   pager = "delta"
-#   diff-formatter = ":git"
-# delta has the very nice feature of language syntax highlighting in the terminal for diffs.
-
 [colors]
 # By default the :builtin pager uses underlines and green/red foreground colors
 # to indicated added/removed text.
@@ -28,3 +22,11 @@ pager = ":builtin"
 # than 2 seconds to finish. Similar but not identical to `less -F -+X`.
 interface = "quit-quickly-or-clear-output"
 
+[aliases]
+# Delta for diff and show
+# Delta has the very nice feature of language syntax highlighting in the terminal for diffs.
+ddiff = ["diff", "--config=ui.pager=delta", "--config=ui.diff-formatter=:git"]
+dshow = ["show", "--config=ui.pager=delta", "--config=ui.diff-formatter=:git"]
+
+# A 'git log' like experience
+gitlog = ["log", "-r", "all()", "-T", "builtin_log_detailed"]
