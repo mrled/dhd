@@ -111,7 +111,7 @@ if [ -e "${INDEED_ENV_DIR}/etc/indeed_profile" ]; then
     . "${INDEED_ENV_DIR}/etc/indeed_profile"
 fi
 
-# Add ~/env/bin to your PATH to use the shared shell scripts from delivery/env
+# Add ~/env/bin to your PATH to use the shared shell scripts from dev-envs/env
 if [ -d "${INDEED_ENV_DIR}/bin" ]; then
     PATH="${INDEED_ENV_DIR}/bin:$PATH"
 fi
