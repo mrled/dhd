@@ -1,30 +1,17 @@
-local f11sub5 = {
+local f11main = {
     {
-        spoon.GridCraft.Action.new { key = "=", empty = true },
-        spoon.GridCraft.Action.new { key = "1", application = "Day One" },
-        spoon.GridCraft.Action.new { key = "2", application = "Photos" },
-        spoon.GridCraft.Action.new { key = "3", empty = true },
-        spoon.GridCraft.Action.new { key = "4", empty = true },
-        spoon.GridCraft.Action.new { key = "5", empty = true },
-    },
-    {
-        spoon.GridCraft.Action.new { key = "`", empty = true },
         spoon.GridCraft.Action.new { key = "q", empty = true },
         spoon.GridCraft.Action.new { key = "w", empty = true },
         spoon.GridCraft.Action.new { key = "e", empty = true },
         spoon.GridCraft.Action.new { key = "r", empty = true },
-        spoon.GridCraft.Action.new { key = "t", empty = true },
     },
     {
-        spoon.GridCraft.Action.new { key = nil, empty = true },
         spoon.GridCraft.Action.new { key = "a", empty = true },
         spoon.GridCraft.Action.new { key = "s", empty = true },
         spoon.GridCraft.Action.new { key = "d", empty = true },
         spoon.GridCraft.Action.new { key = "f", empty = true },
-        spoon.GridCraft.Action.new { key = "g", empty = true },
     },
     {
-        spoon.GridCraft.Action.new { key = "[", empty = true },
         spoon.GridCraft.Action.new {
             key = "z",
             handler = function()
@@ -45,50 +32,34 @@ local f11sub5 = {
             description = "Console",
             icon = spoon.GridCraft.Icon.phosphor("terminal-window", "regular")
         },
-        spoon.GridCraft.Action.new { key = "v", empty = true },
-        spoon.GridCraft.Action.new { key = "b", empty = true },
-    }
-}
-
-local f11main = {
-    {
-        spoon.GridCraft.Action.new { key = "=", application = "The Archive" },
-        spoon.GridCraft.Action.new { key = "1", application = "1Password" },
-        spoon.GridCraft.Action.new { key = "2", application = "Marked 2", description = "Marked" },
-        spoon.GridCraft.Action.new { key = "3", empty = true },
-        spoon.GridCraft.Action.new { key = "4", application = "Fantastical" },
         spoon.GridCraft.Action.new {
-            key = "5",
-            description = "Special",
-            icon = spoon.GridCraft.Icon.phosphor("star", "regular"),
-            submenu = f11sub5
-        },
-    },
-    {
-        spoon.GridCraft.Action.new { key = "`", empty = true },
-        spoon.GridCraft.Action.new { key = "q", application = "Messages" },
-        spoon.GridCraft.Action.new { key = "w", application = "Mattermost" },
-        spoon.GridCraft.Action.new { key = "e", application = "Visual Studio Code", description = "VS Code" },
-        spoon.GridCraft.Action.new { key = "r", application = "Bear" },
-        spoon.GridCraft.Action.new { key = "t", application = "Terminal" },
-    },
+            key = "v",
+            handler = function()
+                -- Copy the rich data of the current pasteboard to a temp pasteboard
+                local richPb = hs.pasteboard.uniquePasteboard()
+                hs.pasteboard.writeAllData(richPb, hs.pasteboard.readAllData(nil))
 
-    {
-        spoon.GridCraft.Action.new { key = nil, empty = true },
-        spoon.GridCraft.Action.new { key = "a", application = "Slack" },
-        spoon.GridCraft.Action.new { key = "s", application = "Discord" },
-        spoon.GridCraft.Action.new { key = "d", application = "OmniFocus" },
-        spoon.GridCraft.Action.new { key = "f", application = "Finder" },
-        spoon.GridCraft.Action.new { key = "g", application = "ChatGPT" },
-    },
-    {
-        spoon.GridCraft.Action.new { key = "[", application = "Claude" },
-        spoon.GridCraft.Action.new { key = "z", application = "Mail" },
-        spoon.GridCraft.Action.new { key = "x", application = "Firefox" },
-        spoon.GridCraft.Action.new { key = "c", application = "Google Chrome" },
-        spoon.GridCraft.Action.new { key = "v", application = "Safari" },
-        spoon.GridCraft.Action.new { key = "b", application = "BBEdit" },
-    },
+                -- Overwrite the main pasteboard with the plain text data only
+                local plainData = hs.pasteboard.readString()
+                hs.pasteboard.writeObjects(plainData)
+
+                -- Wait briefly to ensure the modal is dismissed,
+                -- then simulate cmd-v to paste.
+
+                -- We have to wait briefly before simulating cmd-v,
+                -- because we want to make sure the modal is dismissed first.
+                hs.timer.doAfter(0.2, function()
+                    hs.eventtap.keyStroke({ 'cmd' }, 'v')
+
+                    -- Restore the original rich clipboard data
+                    hs.pasteboard.writeAllData(nil, hs.pasteboard.readAllData(richPb))
+                    hs.pasteboard.deletePasteboard(richPb)
+                end)
+            end,
+            description = "Plain Paste",
+            icon = spoon.GridCraft.Icon.phosphor("clipboard", "regular")
+        },
+    }
 }
 
 local gridKeysDisplayScreen = "mouse"
