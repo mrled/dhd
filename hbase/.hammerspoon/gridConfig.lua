@@ -6,10 +6,59 @@ local f11main = {
         spoon.GridCraft.Action.new { key = "r", empty = true },
     },
     {
-        spoon.GridCraft.Action.new { key = "a", empty = true },
-        spoon.GridCraft.Action.new { key = "s", empty = true },
-        spoon.GridCraft.Action.new { key = "d", empty = true },
-        spoon.GridCraft.Action.new { key = "f", empty = true },
+        spoon.GridCraft.Action.new {
+            key = "a",
+            handler = function()
+                -- Not sure why this works with hs.execute osascript but not hs.applescript.exec
+                hs.execute([[
+                    osascript -e 'tell application "Finder" to make new Finder window'
+                ]])
+                -- hs.applescript.exec([[
+                --     tell application "Finder" to make new Finder window
+                -- ]])
+            end,
+            description = "Finder",
+            icon = spoon.GridCraft.Icon.fromMacIcon("/System/Library/CoreServices/Finder.app"),
+        },
+        spoon.GridCraft.Action.new {
+            key = "s",
+            handler = function()
+                hs.execute([[
+                    open -na "Firefox" --args --new-window
+                ]])
+            end,
+            description = "Firefox",
+            icon = spoon.GridCraft.Icon.fromMacIcon("/Applications/Firefox.app"),
+        },
+        spoon.GridCraft.Action.new {
+            key = "d",
+            handler = function()
+                hs.execute([[
+                    osascript -e 'tell application "Terminal"
+                        do script
+                        activate
+                    end tell'
+                ]])
+                -- hs.applescript.exec([[
+                --     tell application "Terminal"
+                --         do script
+                --         activate
+                --     end tell'
+                -- ]])
+            end,
+            description = "Terminal",
+            icon = spoon.GridCraft.Icon.fromMacIcon("/System/Applications/Utilities/Terminal.app"),
+        },
+        spoon.GridCraft.Action.new {
+            key = "f",
+            handler = function()
+                hs.execute([[
+                    open -na "Visual Studio Code" --args --new-window
+                ]])
+            end,
+            description = "VS Code",
+            icon = spoon.GridCraft.Icon.fromMacIcon("/Applications/Visual Studio Code.app"),
+        },
     },
     {
         spoon.GridCraft.Action.new {
