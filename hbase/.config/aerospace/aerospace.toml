@@ -335,14 +335,14 @@ run = ["layout floating"]
 # System apps on workspace 0
 [[on-window-detected]]
 if.app-id = "com.apple.ActivityMonitor"
-run = ["move-node-to-workspace 0"]
+run = ["move-node-to-workspace 10"]
 [[on-window-detected]]
 if.app-id = "org.hammerspoon.Hammerspoon"
 if.window-title-regex-substring = "^Hammerspoon Console"
-run = ["move-node-to-workspace 0"]
+run = ["move-node-to-workspace 10"]
 [[on-window-detected]]
 if.app-id = "org.deskflow.deskflow"
-run = ["move-node-to-workspace 0"]
+run = ["move-node-to-workspace 10"]
 
 # Virtual Machines on workspace 9
 [[on-window-detected]]
