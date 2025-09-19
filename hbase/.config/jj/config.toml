@@ -66,3 +66,7 @@ gitlog = ["log", "-r", "all()", "-T", "builtin_log_detailed"]
 
 # Use the custom template with file statistics
 statlog = ["log", "-r", "all()", "-T", "log_detailed_with_stats"]
+
+pushmaster = ["util", "exec", "--", "sh", "-c", """
+jj new && jj bookmark move master -t @- && jj git push
+"""]
