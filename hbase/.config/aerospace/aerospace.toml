@@ -150,7 +150,7 @@ q = 'workspace q'
 w = 'workspace w'
 e = 'workspace e'
 r = 'workspace r'
-t = 'workspace pw'
+t = 'workspace t'
 
 u = 'workspace prev'
 i = 'workspace next'
@@ -176,7 +176,7 @@ shift-q = 'move-node-to-workspace q'
 shift-w = 'move-node-to-workspace w'
 shift-e = 'move-node-to-workspace e'
 shift-r = 'move-node-to-workspace r'
-shift-t = 'move-node-to-workspace pw'
+shift-t = 'move-node-to-workspace t'
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
 tab = 'workspace-back-and-forth'
@@ -263,7 +263,7 @@ shift-q = ['move-workspace-to-monitor --workspace q --wrap-around next']
 shift-w = ['move-workspace-to-monitor --workspace w --wrap-around next']
 shift-e = ['move-workspace-to-monitor --workspace e --wrap-around next']
 shift-r = ['move-workspace-to-monitor --workspace r --wrap-around next']
-shift-t = ['move-workspace-to-monitor --workspace pw --wrap-around next']
+shift-t = ['move-workspace-to-monitor --workspace t --wrap-around next']
 
 # Execute mode - run commands, open apps, etc
 [mode.execute.binding]
@@ -325,14 +325,14 @@ run = "layout floating"
 # all hotkeys are disabled.
 [[on-window-detected]]
 if.app-id = "com.1password.1password"
-run = ["layout floating", "move-node-to-workspace pw"]
+run = ["layout floating", "move-node-to-workspace 9"]
 
 # Misc floating windows
 [[on-window-detected]]
 if.app-id = "com.superduper.superwhisper"
 run = ["layout floating"]
 
-# System apps on workspace 0
+# System apps on workspace 10
 [[on-window-detected]]
 if.app-id = "com.apple.ActivityMonitor"
 run = ["move-node-to-workspace 10"]
@@ -344,7 +344,7 @@ run = ["move-node-to-workspace 10"]
 if.app-id = "org.deskflow.deskflow"
 run = ["move-node-to-workspace 10"]
 
-# Virtual Machines on workspace 9
+# Virtual Machines on workspace 8
 [[on-window-detected]]
 if.app-id = "com.utmapp.UTM"
 run = ["move-node-to-workspace 9"]
