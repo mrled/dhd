@@ -111,8 +111,6 @@ j = ['focus --boundaries-action stop down', 'move-mouse window-force-center']
 k = ['focus --boundaries-action stop up', 'move-mouse window-force-center']
 l = ['focus --boundaries-action stop right', 'move-mouse window-force-center']
 
-alt-w = ['close']
-
 # move: "Move the focused window in the given direction"
 # https://nikitabobko.github.io/AeroSpace/commands#move
 # Move the window to the directionally adjacent container; if there is something there already, swap
@@ -178,11 +176,33 @@ shift-e = 'move-node-to-workspace e'
 shift-r = 'move-node-to-workspace r'
 shift-t = 'move-node-to-workspace t'
 
+# Set up specific workspaces with alt-<key>
 alt-7 = [
     'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-workspace.sh dhd',
     'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
     'mode main',
 ]
+alt-q = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-workspace.sh understatement-web',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+alt-w = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-workspace.sh understatement-dev-1',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+alt-e = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-workspace.sh understatement-dev-2',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+alt-t = [
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-workspace.sh me.micahrl.com',
+    'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode main',
+    'mode main',
+]
+
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
 tab = 'workspace-back-and-forth'
