@@ -145,7 +145,9 @@ workspace_understatement_dev_1() {
     vscode_move_or_open w \
         'understatement1 \[SSH: chineseroom.micahrl.com' \
         'vscode://vscode-remote/ssh-remote+chineseroom.micahrl.com/home/callista/work/understatement1?windowId=_blank'
-    terminal_move_or_open w "${termglyph} understatement1" "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement1 && exec \$SHELL -l'"
+    terminal_move_or_open w \
+        "${termglyph} understatement1" \
+        "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement1 && exec \$SHELL -l'"
     terminal_move_or_open w \
         "${llmglyph} undersetatement1" \
         "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement1 && exec \$SHELL -l -i -c /home/callista/.local/bin/claude --dangerously-skip-permissions'"
@@ -156,8 +158,10 @@ workspace_understatement_dev_2() {
     vscode_move_or_open e \
         'understatement2 \[SSH: chineseroom.micahrl.com' \
         'vscode://vscode-remote/ssh-remote+chineseroom.micahrl.com/home/callista/work/understatement2?windowId=_blank'
-    terminal_move_or_open w "${termglyph} understatement2" "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement2 && exec \$SHELL -l'"
-    terminal_move_or_open w \
+    terminal_move_or_open e \
+        "${termglyph} understatement2" \
+        "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement2 && exec \$SHELL -l'"
+    terminal_move_or_open e \
         "${llmglyph} undersetatement2" \
         "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement2 && exec \$SHELL -l -i -c /home/callista/.local/bin/claude --dangerously-skip-permissions'"
 }
@@ -165,8 +169,12 @@ workspace_understatement_dev_2() {
 workspace_me_micahrl_com() {
     aerospace workspace t
     vscode_move_or_open t 'me\.micahrl\.com$' "vscode://file/${HOME}/mrldata/Repositories/me.micahrl.com"
-    terminal_move_or_open t "${termglyph} me.micahrl.com" "cd '${HOME}/mrldata/Repositories/me.micahrl.com'"
-    terminal_move_or_open t "${llmglyph} me.micahrl.com" "cd '${HOME}/mrldata/Repositories/me.micahrl.com'; /Users/mrled/.bun/bin/claude;"
+    terminal_move_or_open t \
+        "${termglyph} me.micahrl.com" \
+        "cd '${HOME}/mrldata/Repositories/me.micahrl.com'"
+    terminal_move_or_open t \
+        "${llmglyph} me.micahrl.com" \
+        "cd '${HOME}/mrldata/Repositories/me.micahrl.com'; /Users/mrled/.bun/bin/claude;"
 }
 
 case "$1" in
