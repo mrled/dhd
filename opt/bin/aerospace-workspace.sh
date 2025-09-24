@@ -97,7 +97,7 @@ terminal_move_or_open() {
 
     # Create a temp file to hold the script to run.
     # This gets around quoting issues with osascript.
-    # The script will delete itself when done ---
+    # The script will delete itself before doing any work ---
     # it's better to do it that way than try to do it from the parent shell
     # where we might delete it before Terminal has a chance to run it.
     # TMPDIR on macOS is guaranteed to exist and be writable, and allow no other users.
@@ -106,9 +106,9 @@ terminal_move_or_open() {
 #!/bin/sh
 # Run with set -x so the cmd is shown to the user when the terminal opens.
 set -x
+rm -f $tmpfile
 printf '\033]0;%s\007' '$title'
 $cmd
-rm -f $tmpfile
 set +x
 ENDSCRIPT
 
@@ -150,7 +150,7 @@ workspace_understatement_dev_1() {
         "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement1 && exec \$SHELL -l'"
     terminal_move_or_open w \
         "${llmglyph} undersetatement1" \
-        "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement1 && exec \$SHELL -l -i -c /home/callista/.local/bin/claude --dangerously-skip-permissions'"
+        "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement1 && exec \$SHELL -l -i -c \"/home/callista/.local/bin/claude --dangerously-skip-permissions\"'"
 }
 
 workspace_understatement_dev_2() {
@@ -163,7 +163,7 @@ workspace_understatement_dev_2() {
         "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement2 && exec \$SHELL -l'"
     terminal_move_or_open e \
         "${llmglyph} undersetatement2" \
-        "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement2 && exec \$SHELL -l -i -c /home/callista/.local/bin/claude --dangerously-skip-permissions'"
+        "ssh chineseroom.micahrl.com -t 'cd ~/work/understatement2 && exec \$SHELL -l -i -c \"/home/callista/.local/bin/claude --dangerously-skip-permissions\"'"
 }
 
 workspace_me_micahrl_com() {
