@@ -25,33 +25,34 @@ interface = "quit-quickly-or-clear-output"
 [template-aliases]
 'format_field(key, value)' = 'label("log", key ++ ": ") ++ value'
 
-'log_detailed_with_stats' = '''
-if(root,
-  format_root_commit(self),
-  concat(
-    if(current_working_copy, "@", if(immutable, "◆", if(conflict, "x", "○"))) ++
-    if(!mine, " ~", ""),
-    "\n" ++ format_field("Commit ID", commit_id),
-    if(divergent,
-      "\n" ++ label("divergent",
-        format_field("Change ID", concat(change_id, " !divergence!")))
-    , "\n" ++ format_field("Change ID", change_id)),
-    if(bookmarks, "\n" ++ format_field("Bookmarks", bookmarks)),
-    if(git_head, " " ++ label("git_head", "git_head()")),
-    "\n" ++ format_field("Author", author),
-    "\n" ++ format_field("Committer", committer),
-    if(!empty,
-      "\n" ++ format_field("Changes",
-        concat(
-          self.diff().files().len() ++ " file" ++ if(self.diff().files().len() != 1, "s") ++ ", " ++
-          self.diff().stat().total_added() ++ " insertion" ++ if(self.diff().stat().total_added() != 1, "s") ++ "(+), " ++
-          self.diff().stat().total_removed() ++ " deletion" ++ if(self.diff().stat().total_removed() != 1, "s") ++ "(-)"
-        )
+# Adapted from the builtin_log_detailed template
+# https://github.com/jj-vcs/jj/blob/main/cli/src/config/templates.toml#L255
+# but with a line that shows added/removed lines of code
+log_detailed_with_stats = 'log_detailed_with_stats(self)'
+'log_detailed_with_stats(commit)' = '''
+concat(
+  "Commit ID: " ++ commit.commit_id() ++ "\n",
+  "Change ID: " ++ commit.change_id() ++ "\n",
+  surround("Bookmarks: ", "\n", separate(" ", commit.local_bookmarks(), commit.remote_bookmarks())),
+  surround("Tags     : ", "\n", commit.tags()),
+  "Author   : " ++ format_detailed_signature(commit.author()) ++ "\n",
+  "Committer: " ++ format_detailed_signature(commit.committer())  ++ "\n",
+  if(config("ui.show-cryptographic-signatures").as_boolean(),
+    "Signature: " ++ format_detailed_cryptographic_signature(commit.signature()) ++ "\n"),
+  "Changes  : " ++
+    if(commit.empty(), "empty",
+      concat(
+        commit.diff().files().len() ++ " file" ++ if(commit.diff().files().len() != 1, "s") ++ ", ",
+        commit.diff().stat().total_added() ++ " insertion" ++ if(commit.diff().stat().total_added() != 1, "s") ++ "(+), ",
+        commit.diff().stat().total_removed() ++ " deletion" ++ if(commit.diff().stat().total_removed() != 1, "s") ++ "(-)"
       )
-    ),
-    if(description, "\n\n" ++ indent("    ", description)),
-    if(!description, "\n\n" ++ indent("    ", label("empty", "(no description set)")))
-  )
+    ) ++ "\n",
+  "\n",
+  indent("    ",
+    if(commit.description(),
+      commit.description().trim_end(),
+      label(if(commit.empty(), "empty"), description_placeholder)) ++ "\n"),
+  "\n",
 )
 '''
 
