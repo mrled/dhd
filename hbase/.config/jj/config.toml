@@ -22,6 +22,9 @@ pager = ":builtin"
 # than 2 seconds to finish. Similar but not identical to `less -F -+X`.
 interface = "quit-quickly-or-clear-output"
 
+[revset-aliases]
+'closest_bookmark(to)' = 'heads(::to & bookmarks())'
+
 [template-aliases]
 'format_field(key, value)' = 'label("log", key ++ ": ") ++ value'
 
@@ -68,6 +71,6 @@ gitlog = ["log", "-r", "all()", "-T", "builtin_log_detailed"]
 # Use the custom template with file statistics
 statlog = ["log", "-r", "all()", "-T", "log_detailed_with_stats"]
 
-pushmaster = ["util", "exec", "--", "sh", "-c", """
-jj new && jj bookmark move master -t @- && jj git push
-"""]
+# Move the closest bookmark of @- to @-
+# https://zerowidth.com/2025/jj-tips-and-tricks/#bookmarks-and-branches
+tug = ["bookmark", "move", "--from", "closest_bookmark(@)", "-t", "@-"]
