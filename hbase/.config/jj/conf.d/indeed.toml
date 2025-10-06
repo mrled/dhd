@@ -2,5 +2,5 @@
 
 --when.repositories = ["~/indeed"]
 
-[--scope.user]
+[user]
 email = "mledbetter@indeed.com"
