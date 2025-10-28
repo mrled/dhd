@@ -221,17 +221,14 @@ tab = 'workspace-back-and-forth'
 shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
 backspace = ['flatten-workspace-tree'] # reset layout
-cmd-f = ['fullscreen']                 # Toggle between fullscreen
+alt-z = ['fullscreen']                 # Toggle between fullscreen
+alt-x = ['layout floating tiling']     # Toggle between floating and tiling layout
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
 leftSquareBracket = [ # "adjust", but "a" is already the abbreviation for "alt" mode
     'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode resize',
     'mode resize',
 ]
-# s = [
-#     'exec-and-forget ${HOME}/.dhd/opt/bin/aerospace-display-mode workspace',
-#     'mode workspace',
-# ]
 
 [mode.resize.binding]
 ctrl-f10 = [ # "adjust", but "a" is already the abbreviation for "alt" mode
@@ -273,7 +270,7 @@ run = "layout floating"
 # all hotkeys are disabled.
 [[on-window-detected]]
 if.app-id = "com.1password.1password"
-run = ["layout floating", "move-node-to-workspace 9"]
+run = ["move-node-to-workspace 9"]
 
 # Misc floating windows
 [[on-window-detected]]
