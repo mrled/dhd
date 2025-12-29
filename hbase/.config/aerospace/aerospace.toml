@@ -292,7 +292,7 @@ run = ["move-node-to-workspace 10"]
 # Virtual Machines on workspace 8
 [[on-window-detected]]
 if.app-id = "com.utmapp.UTM"
-run = ["move-node-to-workspace 9"]
+run = ["move-node-to-workspace 8"]
 
 # Communication apps on workspace 3
 [[on-window-detected]]
