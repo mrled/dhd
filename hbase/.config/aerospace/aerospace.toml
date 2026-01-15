@@ -286,8 +286,19 @@ if.app-id = "org.hammerspoon.Hammerspoon"
 if.window-title-regex-substring = "^Hammerspoon Console"
 run = ["move-node-to-workspace 10"]
 [[on-window-detected]]
+if.app-id = "com.electron.dockerdesktop"
+run = ["move-node-to-workspace 10"]
+[[on-window-detected]]
 if.app-id = "org.deskflow.deskflow"
 run = ["move-node-to-workspace 10"]
+
+# Journaling and other notes on workspace 2
+[[on-window-detected]]
+if.app-id = "com.apple.Notes"
+run = ["move-node-to-workspace 2"]
+[[on-window-detected]]
+if.app-id = "com.bloombuilt.dayone-mac"
+run = ["move-node-to-workspace 2"]
 
 # Virtual Machines on workspace 8
 [[on-window-detected]]
@@ -296,23 +307,28 @@ run = ["move-node-to-workspace 8"]
 
 # Communication apps on workspace 3
 [[on-window-detected]]
-if.app-id = "com.apple.mail"
-run = ["move-node-to-workspace 3"]
-[[on-window-detected]]
-if.app-id = "com.apple.MobileSMS"  # Messages
-run = ["move-node-to-workspace 3"]
-[[on-window-detected]]
 if.app-id = "com.tinyspeck.slackmacgap"
 run = ["move-node-to-workspace 3"]
 [[on-window-detected]]
 if.app-id = "com.hnc.Discord"
 run = ["move-node-to-workspace 3"]
 [[on-window-detected]]
-if.app-id = "org.whispersystems.signal-desktop"
-run = ["move-node-to-workspace 3"]
-[[on-window-detected]]
 if.app-id = "Mattermost.Desktop"
 run = ["move-node-to-workspace 3"]
+
+# Email / texting on workspace 4
+[[on-window-detected]]
+if.app-id = "com.apple.mail"
+run = ["move-node-to-workspace 4"]
+[[on-window-detected]]
+if.app-id = "com.fastmail.mac.Fastmail"
+run = ["move-node-to-workspace 4"]
+[[on-window-detected]]
+if.app-id = "com.apple.MobileSMS"  # Messages
+run = ["move-node-to-workspace 4"]
+[[on-window-detected]]
+if.app-id = "org.whispersystems.signal-desktop"
+run = ["move-node-to-workspace 4"]
 
 # Calendar/tasks on workspace 5
 [[on-window-detected]]
