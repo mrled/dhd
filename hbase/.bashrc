@@ -211,19 +211,6 @@ bashprompt() {
         eval $(tmux show-env -s SSH_AUTH_SOCK 2>/dev/null)
     fi
 
-    # Fix SSH_TTY in tmux sessions to match the current attach context
-    # This allows SSH config "Match exec" tests on SSH_TTY to work correctly
-    if [ -n "$TMUX" ]; then
-        local tmux_env=$(tmux show-env SSH_TTY 2>/dev/null)
-        if [[ "$tmux_env" == -SSH_TTY ]]; then
-            # Explicitly removed in tmux, unset in shell
-            unset SSH_TTY
-        elif [[ "$tmux_env" == SSH_TTY=* ]]; then
-            # Set in tmux, sync to shell
-            eval "export $tmux_env"
-        fi
-    fi
-
     # Save the shell's history
     history -a
 

@@ -234,19 +234,3 @@ fix_ssh_auth_sock() {
     fi
 }
 precmd_functions+=(fix_ssh_auth_sock)
-
-# Fix SSH_TTY in tmux sessions to match the current attach context
-# This allows SSH config "Match exec" tests on SSH_TTY to work correctly
-fix_ssh_tty() {
-    if [ -n "$TMUX" ]; then
-        local tmux_env=$(tmux show-env SSH_TTY 2>/dev/null)
-        if [[ "$tmux_env" == -SSH_TTY ]]; then
-            # Explicitly removed in tmux, unset in shell
-            unset SSH_TTY
-        elif [[ "$tmux_env" == SSH_TTY=* ]]; then
-            # Set in tmux, sync to shell
-            eval "export $tmux_env"
-        fi
-    fi
-}
-precmd_functions+=(fix_ssh_tty)
