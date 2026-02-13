@@ -1,7 +1,7 @@
 -- Disable smooth scrolling
 return {
   {
-    "echasnovski/mini.animate",
+    "nvim-mini/mini.animate",
     enabled = false,
   },
   {
