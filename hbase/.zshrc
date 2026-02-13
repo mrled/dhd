@@ -226,27 +226,36 @@ test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
 
 dhd_cmdavail atuin && eval "$(atuin init zsh --disable-up-arrow)"
 
-# Fix stale SSH_AUTH_SOCK in tmux sessions
-# When SSH'ing with agent forwarding, the auth sock can become stale in existing tmux sessions
-fix_ssh_auth_sock() {
-    if [ -n "$TMUX" ] && [ -n "$SSH_AUTH_SOCK" ] && [ ! -S "$SSH_AUTH_SOCK" ]; then
+# Sync SSH environment variables from tmux
+# This ensures existing shells reflect the current attach context for both SSH agent forwarding
+# and local 1password agent usage
+sync_ssh_env() {
+    if [ -z "$TMUX" ]; then
+        return
+    fi
+
+    # Fix stale SSH_AUTH_SOCK when agent forwarding is in use
+    if [ -n "$SSH_AUTH_SOCK" ] && [ ! -S "$SSH_AUTH_SOCK" ]; then
         eval $(tmux show-env -s SSH_AUTH_SOCK 2>/dev/null)
     fi
-}
-precmd_functions+=(fix_ssh_auth_sock)
 
-# Fix SSH_TTY in tmux sessions to match the current attach context
-# This allows SSH config "Match exec" tests on SSH_TTY to work correctly
-fix_ssh_tty() {
-    if [ -n "$TMUX" ]; then
-        local tmux_env=$(tmux show-env SSH_TTY 2>/dev/null)
-        if [[ "$tmux_env" == -SSH_TTY ]]; then
-            # Explicitly removed in tmux, unset in shell
-            unset SSH_TTY
-        elif [[ "$tmux_env" == SSH_TTY=* ]]; then
-            # Set in tmux, sync to shell
-            eval "export $tmux_env"
-        fi
+    # Sync SSH_TTY from tmux's environment
+    local ssh_tty="$SSH_TTY"
+    local tmux_env=$(tmux show-env SSH_TTY 2>/dev/null)
+    if [[ "$tmux_env" == -SSH_TTY ]]; then
+        unset SSH_TTY
+        ssh_tty=""
+    elif [[ "$tmux_env" == SSH_TTY=* ]]; then
+        eval "export $tmux_env"
+        ssh_tty="${tmux_env#SSH_TTY=}"
+    fi
+
+    # Set SSH_1P_AGENT for SSH config IdentityAgent
+    # Only set when not logged in over SSH (so 1password agent is used locally)
+    if [ -z "$ssh_tty" ]; then
+        export SSH_1P_AGENT="/Users/mrled/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+    else
+        unset SSH_1P_AGENT
     fi
 }
-precmd_functions+=(fix_ssh_tty)
+precmd_functions+=(sync_ssh_env)
