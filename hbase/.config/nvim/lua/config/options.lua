@@ -11,10 +11,10 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.hlsearch = true
 
--- Indentation (4 spaces)
+-- Indentation (2 spaces)
 vim.opt.autoindent = true
 vim.opt.expandtab = true
-local indent = 4
+local indent = 2
 vim.opt.tabstop = indent
 vim.opt.shiftwidth = indent
 
