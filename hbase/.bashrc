@@ -205,6 +205,12 @@ bashprompt() {
     # Gather the exit code first, in case something resets it
     exitcoderaw="$?"
 
+    # Fix stale SSH_AUTH_SOCK in tmux sessions
+    # When SSH'ing with agent forwarding, the auth sock can become stale in existing tmux sessions
+    if [ -n "$TMUX" ] && [ -n "$SSH_AUTH_SOCK" ] && [ ! -S "$SSH_AUTH_SOCK" ]; then
+        eval $(tmux show-env -s SSH_AUTH_SOCK 2>/dev/null)
+    fi
+
     # Save the shell's history
     history -a
 
