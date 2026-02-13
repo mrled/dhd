@@ -291,36 +291,5 @@ PERL_MM_OPT="INSTALL_BASE=/Users/mrled/perl5"; export PERL_MM_OPT;
 export DOCKER_SCAN_SUGGEST=false
 
 
-# Indeed setup gunk.
-# system-setup adds this line, but it runs a lot of code on every shell launch, which is slow.
-# Here, we disable it, but we define an alias to allow importing it if necessary
-
-# Disable it:
-if test "$MRL_INDEED_ENV_SETUP_GUNK"; then
-
-echo ".bashrc: enabling Indeed env setup gunk"
-
-# BEGIN env Setup -- Managed by Ansible DO NOT EDIT.
-
-# Setup INDEED_ENV_DIR earlier.
-if [ -z "${INDEED_ENV_DIR}" ]; then
-    export INDEED_ENV_DIR="/Users/mledbetter/env"
-fi
-
-# Single-brace syntax because this is required in bash and sh alike
-if [ -e "${INDEED_ENV_DIR}/etc/indeedrc" ]; then
-    . "${INDEED_ENV_DIR}/etc/indeedrc"
-fi
-# END env Setup -- Managed by Ansible DO NOT EDIT.
-
-else
-    # Allow re-importing bashrc with the above enabled:
-    alias indeedgunk="export MRL_INDEED_ENV_SETUP_GUNK=yes; . ~/.profile; . ~/.bashrc"
-
-    # Add some indeed-specific nice-to-haves without requiring the gunk
-    alias cdi="cd ~/indeed"
-fi
-
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 test -e "$HOME"/.cargo/env && . "$HOME/.cargo/env"
-

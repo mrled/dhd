@@ -209,52 +209,6 @@ fi
 export DOCKER_SCAN_SUGGEST=false
 export DOCKER_CLI_HINTS=false
 
-# dhd_cmdavail starship && eval "$(starship init zsh)"
-
-####
-#### Indeed setup gunk
-####
-# system-setup adds this line, but it runs a lot of code on every shell launch, which is slow.
-# Here, we disable it, but we define an alias to allow importing it if necessary
-
-# Disable it:
-if test "$MRL_INDEED_ENV_SETUP_GUNK"; then
-
-echo ".zshrc: enabling Indeed env setup gunk"
-
-# BEGIN env Setup -- Managed by Ansible DO NOT EDIT.
-
-# Setup INDEED_ENV_DIR earlier.
-if [ -z "${INDEED_ENV_DIR}" ]; then
-    export INDEED_ENV_DIR="/Users/mledbetter/env"
-fi
-
-# Single-brace syntax because this is required in bash and sh alike
-if [ -e "${INDEED_ENV_DIR}/etc/indeedrc" ]; then
-    . "${INDEED_ENV_DIR}/etc/indeedrc"
-fi
-# END env Setup -- Managed by Ansible DO NOT EDIT.
-
-. "/Users/mledbetter/.indeed-kube-profile"
-
-# pnpm
-export PNPM_HOME="/Users/mledbetter/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
-else
-    # Allow re-importing zshrc with the above enabled:
-    alias indeedgunk="export MRL_INDEED_ENV_SETUP_GUNK=yes; . ~/.profile; . ~/.zshrc"
-
-    # Add some indeed-specific nice-to-haves without requiring the gunk
-    alias cdi="cd ~/indeed"
-fi
-
-####
-#### End Indeed setup gunk
-####
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -270,6 +224,4 @@ fi
 # Node Version Manager gunk
 test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
 
-# Must configure this after Indeed setup gunk,
-# because something in there it takes over ctrl-r.
 dhd_cmdavail atuin && eval "$(atuin init zsh --disable-up-arrow)"

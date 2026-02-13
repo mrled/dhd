@@ -1,6 +1,0 @@
-# Indeed jj configuration
-
---when.repositories = ["~/indeed"]
-
-[user]
-email = "mledbetter@indeed.com"
