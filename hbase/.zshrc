@@ -189,12 +189,6 @@ PROMPT="%B%F{white}%*%f%b E%? %B%F{blue}%m%f%b %F{green}%1~%f $lcop "
 SHELL_SESSIONS_DISABLE=1
 
 
-if test -d "$HOME/.zshrc.d"; then
-    for script in $(find "$HOME/.zshrc.d" -type f); do
-        . "$script"
-    done
-fi
-
 if test -e "$DHD/hosts/$DHD_HOSTNAME/motd.sh"; then
     . "$DHD/hosts/$DHD_HOSTNAME/motd.sh"
 else
@@ -202,6 +196,12 @@ else
 fi
 if test -e "$DHD/hosts/$DHD_HOSTNAME/zshrc.sh"; then
     . "$DHD/hosts/$DHD_HOSTNAME/zshrc.sh"
+fi
+
+if test -d "$HOME/.zshrc.d"; then
+    for script in "$HOME/.zshrc.d"/*; do
+        test -f "$script" && . "$script"
+    done
 fi
 
 

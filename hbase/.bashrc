@@ -271,12 +271,6 @@ DBHISTORYFILE=$HOME/.dbhist
 source $DHD/opt/bash/dbhist.sh
 
 
-if test -d "$HOME/.bashrc.d"; then
-    for script in $(find "$HOME/.bashrc.d" -type f); do
-        . "$script"
-    done
-fi
-
 if test -e "$DHD/hosts/$DHD_HOSTNAME/motd.sh"; then
     . "$DHD/hosts/$DHD_HOSTNAME/motd.sh"
 else
@@ -284,6 +278,12 @@ else
 fi
 if test -e "$DHD/hosts/$DHD_HOSTNAME/bashrc.sh"; then
     . "$DHD/hosts/$DHD_HOSTNAME/bashrc.sh"
+fi
+
+if test -d "$HOME/.bashrc.d"; then
+    for script in "$HOME/.bashrc.d"/*; do
+        test -f "$script" && . "$script"
+    done
 fi
 
 

@@ -62,3 +62,9 @@ fi
 export MSDK_HOME=$INDEED_PROJECT_DIR/business-automation/deathstar/server/src/main/webapp/JPMC_MSDK_1.5.0
 
 export DOCKER_CLI_HINTS=false
+
+if test -d "$HOME/.profile.d"; then
+    for script in "$HOME/.profile.d"/*; do
+        test -f "$script" && . "$script"
+    done
+fi
