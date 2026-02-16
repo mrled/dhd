@@ -71,14 +71,16 @@ ${HOME}/Library/Python/$py3vers/bin
 ${HOME}/.fly/bin
 ${HOME}/.krew/bin
 ${HOME}/env/bin
+${GOPATH:-""}/bin
 /opt/homebrew/bin
 /opt/homebrew/sbin
 /opt/homebrew/opt/libpq/bin
 /home/linuxbrew/.linuxbrew/bin
 /home/linuxbrew/.linuxbrew/sbin
+${GOROOT:-""}/bin
+/usr/local/go/bin
 /usr/pkg/bin
 /usr/pkg/sbin
-/usr/local/go/bin
 /usr/local/bin
 /usr/local/sbin
 /usr/bin
@@ -90,8 +92,6 @@ ${HOME}/env/bin
 /Applications/QMK Toolbox.app/Contents/Resources
 /Applications/Neovide.app/Contents/MacOS
 /Applications/Inkscape.app/Contents/MacOS
-${GOROOT:-""}/bin
-${GOPATH:-""}/bin
 ${PATH}
 "
 
