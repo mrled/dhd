@@ -69,6 +69,8 @@ ${DHD}/opt/bash/bin
 ${HOME}/.config/emacs/bin
 ${HOME}/opt/homebrew/bin
 ${HOME}/opt/homebrew/sbin
+${HOME}/.linuxbrew/bin
+${HOME}/.linuxbrew/sbin
 ${HOME}/opt/npmglobal/bin
 ${HOME}/opt/npmglobal/sbin
 ${HOME}/test spaces in path
@@ -79,6 +81,8 @@ ${HOME}/env/bin
 /opt/homebrew/bin
 /opt/homebrew/sbin
 /opt/homebrew/opt/libpq/bin
+/home/linuxbrew/.linuxbrew/bin
+/home/linuxbrew/.linuxbrew/sbin
 /usr/pkg/bin
 /usr/pkg/sbin
 /usr/local/go/bin
