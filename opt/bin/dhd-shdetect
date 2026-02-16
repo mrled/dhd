@@ -58,22 +58,15 @@ POSSIBLE_PATHS="
 $py3fwk/bin
 ${HOME}/opt/bin
 ${HOME}/opt/sbin
-${HOME}/.cabal/bin
-${HOME}/.cabal/sbin
 ${HOME}/.local/bin
 ${HOME}/.local/sbin
 ${HOME}/.poetry/bin
 ${HOME}/.cargo/bin
 ${DHD}/opt/bin
-${DHD}/opt/bash/bin
-${HOME}/.config/emacs/bin
 ${HOME}/opt/homebrew/bin
 ${HOME}/opt/homebrew/sbin
 ${HOME}/.linuxbrew/bin
 ${HOME}/.linuxbrew/sbin
-${HOME}/opt/npmglobal/bin
-${HOME}/opt/npmglobal/sbin
-${HOME}/test spaces in path
 ${HOME}/Library/Python/$py3vers/bin
 ${HOME}/.fly/bin
 ${HOME}/.krew/bin
@@ -92,7 +85,6 @@ ${HOME}/env/bin
 /usr/sbin
 /bin
 /sbin
-/usr/local/texlive/2023basic/bin/universal-darwin
 /Applications/Emacs.app/Contents/MacOS
 /Applications/FontForge.app/Contents/Resources/opt/local/bin
 /Applications/QMK Toolbox.app/Contents/Resources
