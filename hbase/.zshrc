@@ -154,24 +154,7 @@ export HISTSIZE="50000"
 # The number of lines to save to _disk_ in a history list
 export SAVEHIST="5000"
 
-# Completion settings
-# case-insensitive completion
-zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
-# Work like bash with show-all-if-ambiguous in .inputrc
-setopt no_auto_menu
-# We have to enable bash-compatible completion for at least aws
-autoload bashcompinit && bashcompinit
-# I don't understand what these do, lol
-autoload -Uz compinit && compinit
-autoload -Uz promptinit && promptinit
-# Command-specific completion
-dhd_cmdavail doctl && source <(compdef _doctl doctl)
-dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
-dhd_cmdavail kubectl && source <(kubectl completion zsh)
-dhd_cmdavail bun && source /Users/mrled/.bun/_bun
-dhd_cmdavail flux && source <(flux completion zsh)
-dhd_cmdavail jj && source <(jj util completion zsh)
-test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
+
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
 # A basic prompt
@@ -188,6 +171,9 @@ PROMPT="%B%F{white}%*%f%b E%? %B%F{blue}%m%f%b %F{green}%1~%f $lcop "
 # Turn off Apple's zsh session restore gunk
 SHELL_SESSIONS_DISABLE=1
 
+# Pre per-host defaults
+zsh_compinit_unsafe=
+
 
 if test -e "$DHD/hosts/$DHD_HOSTNAME/motd.sh"; then
     . "$DHD/hosts/$DHD_HOSTNAME/motd.sh"
@@ -203,6 +189,32 @@ if test -d "$HOME/.zshrc.d"; then
         test -f "$script" && . "$script"
     done
 fi
+
+
+# Completion settings
+# case-insensitive completion
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+# Work like bash with show-all-if-ambiguous in .inputrc
+setopt no_auto_menu
+# We have to enable bash-compatible completion for at least aws
+autoload bashcompinit && bashcompinit
+
+if test "$zsh_compinit_unsafe"; then
+    autoload -Uz compinit && compinit -u
+else
+    autoload -Uz compinit && compinit
+fi
+
+autoload -Uz promptinit && promptinit
+
+# Command-specific completion
+dhd_cmdavail doctl && source <(compdef _doctl doctl)
+dhd_cmdavail aws && dhd_cmdavail aws_completer && complete -C aws_completer aws
+dhd_cmdavail kubectl && source <(kubectl completion zsh)
+dhd_cmdavail bun && source /Users/mrled/.bun/_bun
+dhd_cmdavail flux && source <(flux completion zsh)
+dhd_cmdavail jj && source <(jj util completion zsh)
+test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
 
 
 # Jesus fucking christ these people are just so fucking tacky
