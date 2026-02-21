@@ -58,6 +58,9 @@ POSSIBLE_PATHS="
 $py3fwk/bin
 ${HOME}/opt/bin
 ${HOME}/opt/sbin
+${HOME}/.ghcup/bin
+${HOME}/.cabal/bin
+${HOME}/.cabal/sbin
 ${HOME}/.local/bin
 ${HOME}/.local/sbin
 ${HOME}/.poetry/bin
