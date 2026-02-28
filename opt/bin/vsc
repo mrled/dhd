@@ -34,24 +34,17 @@ abspath() {
     fi
 }
 
-# Emit an OSC 8 hyperlink, handling tmux passthrough if needed.
-# Usage: osc8_link URL TEXT
+# Emit an OSC 8 hyperlink.
+# In tmux, use DCS passthrough so the outer terminal renders the link.
+# Requires allow-passthrough on in tmux.conf.
 osc8_link() {
-    _url="$1"
-    _text="$2"
     if test "${TMUX:-}"; then
-        # tmux DCS passthrough: ESC P tmux ; ESC ESC <seq-with-doubled-ESCs> ESC \
-        # OSC 8 open:  ESC ] 8 ; ; URL ESC \  -> doubled: ESC ESC ] 8 ; ; URL ESC ESC \
-        # OSC 8 close: ESC ] 8 ; ;     ESC \  -> doubled: ESC ESC ] 8 ; ;     ESC ESC \
-        printf '\033Ptmux;\033\033]8;;%s\033\033\\\033\\' "$_url"
-        printf '%s' "$_text"
-        printf '\033Ptmux;\033\033]8;;\033\033\\\033\\'
+        printf '\033Ptmux;\033\033]8;;%s\007\033\\' "$1"
+        printf '%s' "$2"
+        printf '\033Ptmux;\033\033]8;;\007\033\\\n'
     else
-        printf '\033]8;;%s\033\\' "$_url"
-        printf '%s' "$_text"
-        printf '\033]8;;\033\\'
+        printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$1" "$2"
     fi
-    printf '\n'
 }
 
 patharg=
