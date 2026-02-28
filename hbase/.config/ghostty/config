@@ -1,17 +1,34 @@
-theme = "3024 Night"
+#theme = "3024 Night"
+#theme = "Abernathy"
+theme = "Cyberpunk"
+#theme = "Synthwave"
+#theme = "Builtin Pastel Dark"
 
-font-family = "Dank Mono"
-font-size = 16
+font-family = "Inconsolata Nerd Font"
+font-size = 14
 
-cursor-style = block
-cursor-style-blink = false
-# Disable cursor shell integration stuff,
-# or else the shell seems t ooverride my cursor-style and cursor-style-blink settings
-shell-integration-features = no-cursor
+# Shell integration
+shell-integration-features = ssh-terminfo,ssh-env
 
+# Default cursor style is a blinking line.
+# To get a static block, add no-cursor to shell-integration-features and uncomment:
+# cursor-style = block
+# cursor-style-blink = false
+
+# Make the mouse cursor disappear when typing
 mouse-hide-while-typing = true
 
-keybind = page_up=scroll_page_up
-keybind = page_down=scroll_page_down
-keybind = home=scroll_to_top
-keybind = end=scroll_to_bottom
+# Open new windows in a predictable place
+window-inherit-working-directory = false
+
+# Open new windows at the same size, regardless of the size of the last window
+window-inherit-font-size = false
+
+# shift + navkeys to scroll
+# apparently ghostty doesn't support the Apple Terminal behavior I prefer
+# where it scrolls the terminal in normal mode
+# and sends the key to the program in alternate mode
+keybind = shift+page_up=scroll_page_up
+keybind = shift+page_down=scroll_page_down
+keybind = shift+home=scroll_to_top
+keybind = shift+end=scroll_to_bottom
