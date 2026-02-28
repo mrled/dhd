@@ -1,0 +1,80 @@
+#!/bin/sh
+set -eu
+
+cmdname=`basename "$0"`
+
+usage() {
+    cat <<ENDUSAGE
+Usage: $cmdname [-h] [-d] [PATH]
+
+Open a file or directory in VS Code.
+
+If not run over SSH, runs 'code PATH'.
+If run over SSH, emits a clickable vscode:// URI to open the path remotely.
+Works inside and outside of tmux.
+
+ARGUMENTS
+    -h | --help:  Print help and exit
+    -d | --debug: Show debug messages
+    PATH:         File or directory to open (default: current directory)
+ENDUSAGE
+}
+
+abspath() {
+    _p="$1"
+    if test -d "$_p"; then
+        (cd "$_p" && pwd)
+    elif test -e "$_p"; then
+        _dir=`dirname "$_p"`
+        _base=`basename "$_p"`
+        echo "`(cd "$_dir" && pwd)`/$_base"
+    else
+        echo "$cmdname: path does not exist: $_p" >&2
+        exit 1
+    fi
+}
+
+# Emit an OSC 8 hyperlink.
+# In tmux, use DCS passthrough so the outer terminal renders the link.
+# Requires allow-passthrough on in tmux.conf.
+osc8_link() {
+    if test "${TMUX:-}"; then
+        printf '\033Ptmux;\033\033]8;;%s\007\033\\' "$1"
+        printf '%s' "$2"
+        printf '\033Ptmux;\033\033]8;;\007\033\\\n'
+    else
+        printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$1" "$2"
+    fi
+}
+
+patharg=
+
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help ) usage; exit 0 ;;
+        -d | --debug ) set -x; shift ;;
+        * )
+            if test "$patharg"; then
+                echo "$cmdname: too many arguments: $1" >&2
+                usage >&2
+                exit 1
+            fi
+            patharg="$1"
+            shift
+            ;;
+    esac
+done
+
+if test -z "$patharg"; then
+    patharg="."
+fi
+
+p=`abspath "$patharg"`
+
+if test "${SSH_CONNECTION:-}" || test "${SSH_CLIENT:-}"; then
+    host=`hostname`
+    uri="vscode://vscode-remote/ssh-remote+${host}${p}?windowId=_blank"
+    osc8_link "$uri" "$uri"
+else
+    code --new-window "$p"
+fi
