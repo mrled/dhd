@@ -45,7 +45,7 @@ export LESSOPEN=
 # Support a shared SSH agent socket.
 # This is useful for mosh connections.
 # If ~/.ssh/sharedagent.sock exists and points to a valid socket, use it
-if tset -S "$HOME/.ssh/sharedagent.sock"; then
+if test -S "$HOME/.ssh/sharedagent.sock"; then
     export SSH_AUTH_SOCK="$HOME/.ssh/sharedagent.sock"
 fi
 
