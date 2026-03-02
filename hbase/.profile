@@ -42,6 +42,13 @@ test -e "$HOME/.cargo/env" && . "$HOME/.cargo/env"
 # See also: https://marc.info/?l=full-disclosure&m=141678420425808&w=2
 export LESSOPEN=
 
+# Support a shared SSH agent socket.
+# This is useful for mosh connections.
+# If ~/.ssh/sharedagent.sock exists and points to a valid socket, use it
+if tset -S "$HOME/.ssh/sharedagent.sock"; then
+    export SSH_AUTH_SOCK="$HOME/.ssh/sharedagent.sock"
+fi
+
 # fucking Perl/CPAN
 export PERL_MM_USE_DEFAULT=1
 
