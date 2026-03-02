@@ -39,9 +39,10 @@ abspath() {
 # Requires allow-passthrough on in tmux.conf.
 osc8_link() {
     if test "${TMUX:-}"; then
-        printf '\033Ptmux;\033\033]8;;%s\007\033\\' "$1"
+        # Use ST (\033\\) as terminator, doubled to \033\033\\ inside DCS passthrough
+        printf '\033Ptmux;\033\033]8;;%s\033\033\\\033\\' "$1"
         printf '%s' "$2"
-        printf '\033Ptmux;\033\033]8;;\007\033\\\n'
+        printf '\033Ptmux;\033\033]8;;\033\033\\\033\\\n'
     else
         printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$1" "$2"
     fi
