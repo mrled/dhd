@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+# Send stdin to the OS paste buffer via OSC 52
+encoded=$(cat | base64 | tr -d '\n')
+printf '\033]52;c;%s\007' "$encoded"
