@@ -238,11 +238,13 @@ test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
 
 dhd_cmdavail atuin && eval "$(atuin init zsh --disable-up-arrow)"
 
-# Fix stale SSH_AUTH_SOCK in tmux sessions
-# When SSH'ing with agent forwarding, the auth sock can become stale in existing tmux sessions
-fix_ssh_auth_sock() {
-    if [ -n "$TMUX" ] && [ -n "$SSH_AUTH_SOCK" ] && [ ! -S "$SSH_AUTH_SOCK" ]; then
-        eval $(tmux show-env -s SSH_AUTH_SOCK 2>/dev/null)
-    fi
+# Make sure that SSH_CONNECTION and SSH_AUTH_SOCK are set to the values from the tmux environment, if they exist
+# This fixes stale SSH_AUTH_SOCK issues in tmux sessions when connecting with agent forwarding.
+# It also lets us detect in ~/.ssh/config when we're in a tmux session with SSH agent forwarding
+# which we can use to conditionally use the 1p SSH agent if we are local
+fix_tmux_ssh_auth_sock() {
+    test -n "$TMUX" || return
+    eval $(tmux show-env -s SSH_CONNECTION 2>/dev/null)
+    eval $(tmux show-env -s SSH_AUTH_SOCK 2>/dev/null)
 }
-precmd_functions+=(fix_ssh_auth_sock)
+precmd_functions+=(fix_tmux_ssh_auth_sock)
