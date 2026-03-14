@@ -237,9 +237,8 @@ dhd_cmdavail atuin && eval "$(atuin init zsh --disable-up-arrow)"
 # This fixes stale SSH_AUTH_SOCK issues in tmux sessions when connecting with agent forwarding.
 # It also lets us detect in ~/.ssh/config when we're in a tmux session with SSH agent forwarding
 # which we can use to conditionally use the 1p SSH agent if we are local
-fix_tmux_ssh_auth_sock() {
-    test -n "$TMUX" || return
-    eval $(tmux show-env -s SSH_CONNECTION 2>/dev/null)
-    eval $(tmux show-env -s SSH_AUTH_SOCK 2>/dev/null)
+tmux_update_environment() {
+    test -n "$TMUX" && test -z "$TMUX_NO_UPDATE_ENVIRONMENT" || return
+    eval $(tmux show-environment -s)
 }
-precmd_functions+=(fix_tmux_ssh_auth_sock)
+preexec_functions+=(tmux_update_environment)
