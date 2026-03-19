@@ -231,7 +231,6 @@ fi
 DHD_HOSTNAME=
 uname_n_lower="$(uname -n | tr '[:upper:]' '[:lower:]')"
 case "$uname_n_lower" in
-    "virtu’s-macbook-pro*") DHD_HOSTNAME=virtumbp;;
     *) DHD_HOSTNAME="${uname_n_lower%%.*}";;
 esac
 
