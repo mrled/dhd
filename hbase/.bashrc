@@ -170,8 +170,6 @@ export HISTFILESIZE="5000"
 export HISTCONTROL="ignorespace"
 # Add a timestamp to history entry
 #export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
-# Add an epoch-based timestamp to history entry (required for dbhist)
-HISTTIMEFORMAT="%s "
 
 # Completion settings
 # on macOS, 'brew install bash-completion' is required
@@ -200,7 +198,6 @@ ansi_fg_green=$(ansi fg=green)
 ansi_fg_gray=$(ansi mode=unbold fg=white)
 ansi_fg_red=$(ansi fg=red)
 ansi_fg_blue=$(ansi fg=blue)
-ansi_fg_magenta=$(ansi fg=magenta)
 bashprompt() {
     # Gather the exit code first, in case something resets it
     exitcoderaw="$?"
@@ -235,14 +232,6 @@ bashprompt() {
     hostnameraw="${PROMPT_HOSTNAME_OVERRIDE:-"\\h"}"
     hostname="\[${ansi_bold}${ansi_fg_blue}\]$hostnameraw\[$ansi_reset\]"
 
-    jobcountraw=$(jobs | wc -l | sed 's/ *//g')
-    if test "$jobcountraw" -gt 0 2> /dev/null; then
-        jobcountcolor="$ansi_fg_magenta"
-    else
-        jobcountcolor="$ansi_fg_gray"
-    fi
-    jobcount="\[${jobcountcolor}\]J${jobcountraw}\[${ansi_reset}\]"
-
     workdirraw='\W'
     workdir="\[${ansi_fg_green}\]${workdirraw}\[${ansi_reset}\]"
 
@@ -254,21 +243,13 @@ bashprompt() {
     fi
     lcop="\[${ansi_bold}${ansi_fg_blue}\]${lcopraw}\[${ansi_reset}\]"
 
-    export PS1="${init}${date} ${exitcode} ${hostname} ${jobcount} ${workdir} ${lcop} "
+    export PS1="${init}${date} ${exitcode} ${hostname} ${workdir} ${lcop} "
 }
 
 # Currently, Warp can't handle PROMPT_COMMAND
 if test "$TERM_PROGRAM" != "WarpTerminal"; then
     export PROMPT_COMMAND=bashprompt
 fi
-
-# Enable dbhist
-DBHISTORY=true
-# Location of dbhist database
-DBHISTORYFILE=$HOME/.dbhist
-# Dot-source dbhist
-# This must happen _after_ bashprompt is set
-source $DHD/opt/bash/dbhist.sh
 
 
 if test -e "$DHD/hosts/$DHD_HOSTNAME/motd.sh"; then
