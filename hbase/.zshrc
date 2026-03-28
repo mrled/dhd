@@ -210,6 +210,7 @@ dhd_cmdavail bun && source /Users/mrled/.bun/_bun
 dhd_cmdavail flux && source <(flux completion zsh)
 dhd_cmdavail jj && source <(jj util completion zsh)
 test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
+dhd_cmdavail limactl && source <(limactl completion zsh)
 
 
 # Jesus fucking christ these people are just so fucking tacky
