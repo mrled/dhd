@@ -7,6 +7,7 @@
   - SSH to that git host via `gitea@gitea.dreadnaught.backchannel.younix.us:2222`
   - SSH is configured so that `dreadgit` is an alias for the above (e.g. `ssh dreadgit` should just work)
   - Access to the `tea` command line, which should already be logged in
+  - You also have an API key at `~/.config/gitea/token` which you can use to make direct API calls if you need to
 - Work like this
   - On dreadgit, the `mirror` org contains repositories mirrored from elsewhere
   - The repos are named `SOURCE--OWNER--REPO` like `github--mrled--dhd`
