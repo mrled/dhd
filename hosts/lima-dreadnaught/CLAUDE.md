@@ -24,3 +24,8 @@
   - After making changes, you must run `sudo /usr/local/bin/regen-nginx-mappings.sh` (no password required)
   - These are served at `https://SUBDOMAIN.sandbox.dreadnaught.backchannel.younix.us`
   - If you need to create a new service, you should create a systemd user unit for it that listens on an unused port on localhost
+
+## Writing code
+
+- Shell scripts always default to POSIX sh. No bashisms.
+  If we need non-POSIX functionality like arrays, we should consider a different language altogether.
