@@ -193,12 +193,9 @@ zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=
 setopt no_auto_menu
 # We have to enable bash-compatible completion for at least aws
 autoload bashcompinit && bashcompinit
-
-if test "$zsh_compinit_unsafe"; then
-    autoload -Uz compinit && compinit -u
-else
-    autoload -Uz compinit && compinit
-fi
+test -e "$HOME/.docker/completions" && fpath=(/Users/mrled/.docker/completions $fpath)
+autoload -Uz compinit
+test "$zsh_compinit_unsafe" && compinit -u || compinit
 
 autoload -Uz promptinit && promptinit
 
