@@ -80,6 +80,7 @@ ${GOPATH:-""}/bin
 /opt/homebrew/opt/libpq/bin
 /home/linuxbrew/.linuxbrew/bin
 /home/linuxbrew/.linuxbrew/sbin
+/opt/podman/bin
 ${GOROOT:-""}/bin
 /usr/local/go/bin
 /usr/pkg/bin
