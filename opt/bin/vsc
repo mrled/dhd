@@ -1,11 +1,9 @@
 #!/bin/sh
 set -eu
 
-cmdname=`basename "$0"`
-
 usage() {
     cat <<ENDUSAGE
-Usage: $cmdname [-h] [-d] [PATH]
+Usage: $0 [-h] [-d] [PATH]
 
 Open a file or directory in VS Code.
 
@@ -20,20 +18,6 @@ ARGUMENTS
 ENDUSAGE
 }
 
-abspath() {
-    _p="$1"
-    if test -d "$_p"; then
-        (cd "$_p" && pwd)
-    elif test -e "$_p"; then
-        _dir=`dirname "$_p"`
-        _base=`basename "$_p"`
-        echo "`(cd "$_dir" && pwd)`/$_base"
-    else
-        echo "$cmdname: path does not exist: $_p" >&2
-        exit 1
-    fi
-}
-
 # Emit an OSC 8 hyperlink.
 # For this to work in tmux, requires tmux 3.4+ with
 #   set -g allow-passthrough on
@@ -42,15 +26,14 @@ osc8_link() {
     printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$1" "$2"
 }
 
-patharg=
-
+patharg="."
 while test $# -gt 0; do
     case "$1" in
         -h | --help ) usage; exit 0 ;;
         -d | --debug ) set -x; shift ;;
         * )
-            if test "$patharg"; then
-                echo "$cmdname: too many arguments: $1" >&2
+            if test "$patharg" != "."; then
+                echo "$0: too many arguments: $1" >&2
                 usage >&2
                 exit 1
             fi
@@ -60,16 +43,18 @@ while test $# -gt 0; do
     esac
 done
 
-if test -z "$patharg"; then
-    patharg="."
+if test -d "$patharg"; then
+    cd "$patharg"
+    abspath="$(pwd -P)"
+else
+    cd "$(dirname "$patharg")"
+    abspath="$(pwd -P)/$(basename "$patharg")"
 fi
-
-p=`abspath "$patharg"`
 
 if test "${SSH_CONNECTION:-}" || test "${SSH_CLIENT:-}"; then
     host=`hostname`
-    uri="vscode://vscode-remote/ssh-remote+${host}${p}?windowId=_blank"
+    uri="vscode://vscode-remote/ssh-remote+${host}${abspath}?windowId=_blank"
     osc8_link "$uri" "$uri"
 else
-    code --new-window "$p"
+    code --new-window "$abspath"
 fi
