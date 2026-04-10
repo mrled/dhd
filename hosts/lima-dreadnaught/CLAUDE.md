@@ -13,9 +13,11 @@
   - The repos are named `SOURCE--OWNER--REPO` like `github--mrled--dhd`
   - These repos are automatically kept up to date with the upstream repo
   - You can read them but not commit to them
-  - When asked to change them, use your own fork of the repo, make the change there, and issue a pull request
+  - When asked to change them, use your own fork of the repo, make the change there, and issue a pull request to gitea with the `tea` command
+  - When checking out new repos, follow the pattern of forking, cloning the fork as `origin`, and adding a remote of the base repo on gitea as `upstream`.
   - Check out repos to `/mnt/aiworkspace`
   - Many repos are already checked out there --- check that directory first before making a new clone
+  - Periodically check if there are any updates with `git fetch upstream`
 - You can put any port listening on localhost behind a reverse proxy with real HTTPS
   - Drop files in `/etc/chineseroom/domainmap.sandbox.d/`
   - Format: `SUBDOMAIN PORT`, one per line
