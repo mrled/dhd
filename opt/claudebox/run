@@ -1,0 +1,60 @@
+#!/bin/sh
+set -eu
+
+CLAUDEDBG=${CLAUDEDBG:-}
+cmdname=$(basename "$0")
+reporoot="$(cd "$(dirname "$0")/../.." && pwd)"
+homedir="$reporoot/opt/claudebox/home"
+localtag=dhd-claudebox:local
+
+usage() {
+    cat <<ENDUSAGE
+Usage: $cmdname [-h] [-d] [-s] [-- CLAUDE_ARGS...]
+Build the claudebox container locally and run Claude Code in it.
+
+ARGUMENTS
+    -h | --help:        Print help and exit
+    -d | --debug:       Show debug messages (set -x)
+    -s | --skip-build:  Skip building images (use existing local images)
+    -- CLAUDE_ARGS:     Arguments passed to claude
+
+VARIABLES
+    \$ANTHROPIC_API_KEY: API key auth (alternative to subscription login)
+
+NOTES
+    Subscription credentials are persisted by mounting $HOME as a volume from:
+    $homedir
+ENDUSAGE
+}
+
+skip_build=
+while test $# -gt 0; do
+    case "$1" in
+        -h | --help) usage; exit 0 ;;
+        -d | --debug) set -x; CLAUDEDBG=1; shift ;;
+        -s | --skip-build) skip_build=1; shift ;;
+        --) shift; break ;;
+        *) echo "Unknown argument: $1" >&2; usage; exit 1 ;;
+    esac
+done
+
+if test -z "$skip_build"; then
+    echo "==> Building Claude image..."
+    docker build \
+        --progress=plain \
+        --tag "$localtag" \
+        --file "$reporoot/opt/claudebox/Containerfile" \
+        "$reporoot/opt/claudebox"
+fi
+
+echo "==> Running Claude..."
+exec docker run \
+    --rm \
+    --interactive \
+    --tty \
+    --volume "$reporoot:/src" \
+    --volume "$reporoot/.git:/src/.git:ro" \
+    --volume "$homedir:/home/claude" \
+    --env ANTHROPIC_API_KEY \
+    "$localtag" \
+    claude --dangerously-skip-permissions "$@"

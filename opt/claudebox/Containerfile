@@ -1,0 +1,33 @@
+FROM debian:stable-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        file \
+        git \
+        gzip \
+        jq \
+        procps \
+        python3 \
+        ruby \
+        sudo \
+        zsh \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -u 1000 -s /bin/zsh claude \
+    && mkdir -p /home/linuxbrew \
+    && chown claude:claude /home/linuxbrew \
+    && echo "claude ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER claude
+
+ENV HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew
+ENV PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+
+RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+RUN brew install --cask claude-code
+
+WORKDIR /src
