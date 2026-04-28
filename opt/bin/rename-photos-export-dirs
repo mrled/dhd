@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import calendar
+import os
+from pathlib import Path
+import re
+
+
+MONTHS = {name: f"{i:02d}" for i, name in enumerate(calendar.month_name) if name}
+
+PATTERN = re.compile(
+    r"^(?:(.*), )?"
+    r"(January|February|March|April|May|June|July|August|September|October|November|December) "
+    r"(\d{1,2}), "
+    r"(\d{4})$"
+)
+
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Rename Apple Photos export directories from 'Moment, Month DD, YYYY' to 'YYYYMMDD Moment'.",
+    )
+    p.add_argument(
+        "parent",
+        nargs="?",
+        default=os.getcwd(),
+        help="parent directory whose immediate child directories will be renamed",
+    )
+    p.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        help="show what would be renamed without changing anything",
+    )
+    return p.parse_args()
+
+
+def renamed_child(path: Path) -> Path | None:
+    if not path.is_dir():
+        return None
+    m = PATTERN.match(path.name)
+    if not m:
+        return None
+    place, month, day, year = m.groups()
+    ymd = f"{year}{MONTHS[month]}{int(day):02d}"
+    new_name = ymd if place is None else f"{ymd} {place}"
+    return path.with_name(new_name)
+
+
+def main() -> int:
+    args = parse_args()
+    parent = Path(args.parent)
+
+    for child in sorted(parent.iterdir(), key=lambda p: p.name):
+        new_path = renamed_child(child)
+        if new_path is None or new_path == child:
+            continue
+        if new_path.exists():
+            print(f"skip exists: {child} -> {new_path}")
+            continue
+        print(f"{child} -> {new_path}")
+        if not args.dry_run:
+            child.rename(new_path)
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
