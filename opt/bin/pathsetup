@@ -111,6 +111,10 @@ done
 pathsetuplog "$(echo "$pathlike" | tr ':' '\n' | sed 's/^/< /g')"
 pathsetuplog "$(echo "$exclude" | tr ':' '\n' | sed 's/^/x /g')"
 
+resolve_path() {
+    (cd -P "$1" 2>/dev/null && pwd) || echo "$1"
+}
+
 outpath=
 
 initialifs="$IFS"
@@ -123,10 +127,11 @@ for path in $pathlike; do
         pathsetuplog "! $path"
         continue
     fi
+    resolved="$(resolve_path "$path")"
     pathsetuplog "___p $path"
     pathsetuplog "$(echo "$outpath" | tr ':' '\n' | sed 's/^/___> /g')"
     ignore=
-    if pathcontains "$outpath" "$path"; then
+    if pathcontains "$outpath" "$resolved"; then
         pathsetuplog "* $path"
     else
         ignore=
@@ -145,8 +150,8 @@ for path in $pathlike; do
         done
         set +f # Re-enable file globbing
         if test -z "$ignore"; then
-            pathsetuplog "+ $path"
-            outpath="${outpath}:${path}"
+            pathsetuplog "+ $resolved"
+            outpath="${outpath}:${resolved}"
         fi
     fi
 done

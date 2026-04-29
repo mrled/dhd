@@ -33,6 +33,16 @@ while test $# -gt 0; do
     esac
 done
 
+#### Detect Go paths
+
+GOPATH="${GOPATH:-"${HOME}/Documents/Go"}"
+
+GOROOT=
+if test -d /usr/local/go; then
+    GOROOT=/usr/local/go
+fi
+# Homebrew go may override the above; detected below after brew is in PATH
+
 #### Pre-calculate some versioned directories
 
 # Python versions installed from python.org go into /Library/Frameworks/Python.framework/Versions,
@@ -96,7 +106,6 @@ ${GOROOT:-""}/bin
 /Applications/QMK Toolbox.app/Contents/Resources
 /Applications/Neovide.app/Contents/MacOS
 /Applications/Inkscape.app/Contents/MacOS
-${PATH}
 "
 
 IGNORE_PATHS="
@@ -121,7 +130,6 @@ if ! test "$MANPATH"; then
 fi
 
 HOMEBREWDIR=
-GOROOT=
 if cmdavail brew; then
     # This is NOT a standard environment variable, for some reason
     HOMEBREWDIR=$(dirname "$(dirname "$(command -v brew)")")
@@ -271,7 +279,21 @@ genresults() {
 # GENERATED $(date +%Y%m%d-%H%M%S)
 
 export DHD_SHDETECT_INCLUDED=1
-export PATH="$PATH"
+_dhd_path="$PATH"
+_dhd_new=""
+_dhd_ifs="\$IFS"; IFS=':'
+for _dhd_e in \$_dhd_path; do
+    case ":\$PATH:" in
+        *":\$_dhd_e:"*) ;;
+        *) case ":\$_dhd_new:" in
+               *":\$_dhd_e:"*) ;;
+               *) _dhd_new="\${_dhd_new:+\$_dhd_new:}\$_dhd_e";;
+           esac;;
+    esac
+done
+IFS="\$_dhd_ifs"
+export PATH="\${_dhd_new:+\$_dhd_new:}\$PATH"
+unset _dhd_path _dhd_new _dhd_ifs _dhd_e
 export MANPATH="$MANPATH"
 export GOROOT="$GOROOT"
 export GOPATH="$GOPATH"
