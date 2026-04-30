@@ -137,14 +137,6 @@ if cmdavail brew; then
     if test -d "$HOMEBREWDIR/opt/go" && test -z "$GOROOT"; then
         GOROOT="$HOMEBREWDIR/opt/go/libexec"
     fi
-
-    # I can't remember why I had this in here. Commenting out in case I need to remember later.
-    # if test -d "$HOMEBREWDIR/opt/openssl@1.1"; then
-    #     export PATH="$HOMEBREWDIR/opt/openssl@1.1/bin:$PATH"
-    #     export LDFLAGS="-L$HOMEBREWDIR/opt/openssl@1.1/lib"
-    #     export CPPFLAGS="-I$HOMEBREWDIR/opt/openssl@1.1/include"
-    #     export PKG_CONFIG_PATH="$HOMEBREWDIR/opt/openssl@1.1/lib/pkgconfig"
-    # fi
 fi
 
 if test -d "$HOME/.nvm"; then
