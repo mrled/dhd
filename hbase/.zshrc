@@ -214,6 +214,8 @@ dhd_cmdavail limactl && source <(limactl completion zsh)
 export DOCKER_SCAN_SUGGEST=false
 export DOCKER_CLI_HINTS=false
 
+export CLAUDEBOXPATH="scripts/claudebox/run:scripts/claudebox/run.sh:opt/claudebox/run"
+
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 

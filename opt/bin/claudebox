@@ -1,0 +1,21 @@
+#!/bin/sh
+# claudebox: find and exec the first script in CLAUDEBOXPATH (colon-separated relative paths),
+# searching from git repo root then $PWD, and pass all arguments through.
+set -e
+
+# Find git repo root, or empty string if not in a repo
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+
+IFS=':'
+for rootpath in $repo_root $PWD; do
+    for relpath in $CLAUDEBOXPATH; do
+        test -n "$relpath" || continue
+        candidate="$rootpath/$relpath"
+        if test -f "$candidate" && test -x "$candidate"; then
+            exec "$candidate" "$@"
+        fi
+    done
+done
+
+echo "claudebox: no executable found in CLAUDEBOXPATH='$CLAUDEBOXPATH'" >&2
+exit 1
