@@ -1,0 +1,13 @@
+# Don't keep the databases in git, just the config
+data.db*
+library.db*
+
+# Backup, lock, and defaults files
+*.backup
+*.bak
+*.lock
+*.edit
+*.defaults
+
+# Ignore all the lua that comes with darktable
+lua

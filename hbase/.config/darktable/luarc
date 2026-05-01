@@ -1,0 +1,5 @@
+require "tools/script_manager"
+
+-- Add the userlua directory to the package path so that we can require files from there.
+local home = os.getenv("HOME")
+package.path = home .. "/.config/darktable/userlua/?.lua;" .. package.path
