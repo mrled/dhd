@@ -32,3 +32,12 @@ keybind = shift+page_up=scroll_page_up
 keybind = shift+page_down=scroll_page_down
 keybind = shift+home=scroll_to_top
 keybind = shift+end=scroll_to_bottom
+
+# Don't save and restore window state across launches.
+# On macOS you also want to do this:
+#   defaults write com.mitchellh.ghostty ApplePersistenceIgnoreState -bool true
+window-save-state = never
+
+# Just open terminals with a default size, not whatever it thinks based on the last 47 terminals I resized
+window-height = 25
+window-width = 80
