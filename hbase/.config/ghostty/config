@@ -7,6 +7,11 @@ theme = "Cyberpunk"
 font-family = "Inconsolata Nerd Font"
 font-size = 14
 
+scrollback-limit = 1000000000
+
+# Show a link preview at the bottom of the window
+link-previews = true
+
 # Shell integration
 shell-integration-features = ssh-terminfo,ssh-env
 
@@ -41,3 +46,6 @@ window-save-state = never
 # Just open terminals with a default size, not whatever it thinks based on the last 47 terminals I resized
 window-height = 25
 window-width = 80
+
+config-file = ?config.local
+
