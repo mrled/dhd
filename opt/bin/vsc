@@ -3,7 +3,7 @@ set -eu
 
 usage() {
     cat <<ENDUSAGE
-Usage: $0 [-h] [-d] [PATH]
+Usage: $0 [-h] [-d] [-U USERNAME] [-H HOSTNAME] [PATH]
 
 Open a file or directory in VS Code.
 
@@ -12,9 +12,12 @@ If run over SSH, emits a clickable vscode:// URI to open the path remotely.
 Works inside and outside of tmux.
 
 ARGUMENTS
-    -h | --help:  Print help and exit
-    -d | --debug: Show debug messages
-    PATH:         File or directory to open (default: current directory)
+    -h | --help:        Print help and exit
+    -d | --debug:       Show debug messages
+    -U USERNAME:        Username for the SSH remote URL (default: current user).
+                        Pass empty string to omit user@ from the URL.
+    -H HOSTNAME:        Hostname for the SSH remote URL (default: system hostname)
+    PATH:               File or directory to open (default: current directory)
 ENDUSAGE
 }
 
@@ -27,10 +30,14 @@ osc8_link() {
 }
 
 patharg="."
+username="$(id -un)"
+hostname_arg=""
 while test $# -gt 0; do
     case "$1" in
         -h | --help ) usage; exit 0 ;;
         -d | --debug ) set -x; shift ;;
+        -U ) username="$2"; shift 2 ;;
+        -H ) hostname_arg="$2"; shift 2 ;;
         * )
             if test "$patharg" != "."; then
                 echo "$0: too many arguments: $1" >&2
@@ -52,8 +59,13 @@ else
 fi
 
 if test "${SSH_CONNECTION:-}" || test "${SSH_CLIENT:-}"; then
-    host=`hostname`
-    uri="vscode://vscode-remote/ssh-remote+${host}${abspath}?windowId=_blank"
+    host="${hostname_arg:-$(hostname)}"
+    if test -n "$username"; then
+        userprefix="${username}@"
+    else
+        userprefix=""
+    fi
+    uri="vscode://vscode-remote/ssh-remote+${userprefix}${host}${abspath}?windowId=_blank"
     osc8_link "$uri" "$uri"
 else
     code --new-window "$abspath"
