@@ -1,3 +1,0 @@
-#!/bin/sh
-exec powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -NoLogo -file '.\.git\hooks\pre-commit.ps1'
-exit
