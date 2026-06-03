@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+"""claudebox2: containerized Claude Code runner with per-project overrides."""
+
+import argparse
+import hashlib
+import os
+import shutil
+import subprocess
+import sys
+from dataclasses import dataclass
+from typing import NoReturn
+
+
+def die(msg: str) -> NoReturn:
+    print(f"claudebox2: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def find_container_runtime() -> str:
+    override = os.environ.get("CLAUDEBOX_CONTAINER_RUNTIME")
+    if override:
+        return override
+    for rt in ("docker", "podman"):
+        if shutil.which(rt):
+            return rt
+    die(
+        "no container runtime found (tried docker, podman); set CLAUDEBOX_CONTAINER_RUNTIME"
+    )
+
+
+def find_git_root() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
+def find_claudebox_dir() -> str | None:
+    """Return first .claudebox/ found in PWD then git root, or None."""
+    candidates = [os.getcwd()]
+    git_root = find_git_root()
+    if git_root and os.path.realpath(git_root) != os.path.realpath(os.getcwd()):
+        candidates.append(git_root)
+    for base in candidates:
+        d = os.path.join(base, ".claudebox")
+        if os.path.isdir(d):
+            return os.path.realpath(d)
+    return None
+
+
+def sha256_short(s: str) -> str:
+    return hashlib.sha256(s.encode()).hexdigest()[:16]
+
+
+def sha256_file_short(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        h.update(f.read())
+    return h.hexdigest()[:16]
+
+
+def script_repo_root() -> str:
+    """Derive repo root from this script's location: opt/bin/claudebox2 -> repo root."""
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+
+@dataclass
+class Config:
+    homedir: str
+    containerfile: str
+    build_context: str
+    build_override: str | None
+    run_override: str | None
+    tag: str
+    git_root: str | None
+
+
+def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
+    repo_root = script_repo_root()
+    repo_cf = os.path.join(repo_root, "opt", "claudebox", "Containerfile")
+    user_cf = os.path.expanduser("~/.config/claudebox/Containerfile.default")
+
+    if os.path.isfile(user_cf):
+        default_cf = user_cf
+    elif os.path.isfile(repo_cf):
+        default_cf = repo_cf
+    else:
+        die(f"default Containerfile not found at {user_cf} or {repo_cf}")
+
+    if claudebox_dir:
+        hash_input = claudebox_dir
+    elif git_root:
+        hash_input = os.path.realpath(git_root)
+    else:
+        hash_input = os.path.realpath(os.getcwd())
+    proj_hash = sha256_short(hash_input)
+
+    cf_override: str | None = None
+    build_override: str | None = None
+    run_override: str | None = None
+    home_override: str | None = None
+    tag_override: str | None = None
+
+    if claudebox_dir:
+        p = os.path.join(claudebox_dir, "Containerfile")
+        cf_override = p if os.path.isfile(p) else None
+        p = os.path.join(claudebox_dir, "build.sh")
+        build_override = p if os.path.isfile(p) else None
+        p = os.path.join(claudebox_dir, "run.sh")
+        run_override = p if os.path.isfile(p) else None
+        p = os.path.join(claudebox_dir, "home")
+        home_override = p if os.path.isdir(p) else None
+        p = os.path.join(claudebox_dir, "tag.txt")
+        if os.path.isfile(p):
+            with open(p) as f:
+                tag_override = f.read().strip()
+
+    homedir = home_override or os.path.expanduser(f"~/.config/claudebox/{proj_hash}")
+    containerfile = cf_override or default_cf
+
+    if tag_override:
+        tag = tag_override
+    elif cf_override or build_override:
+        tag = f"claudebox-{proj_hash}"
+    else:
+        tag = f"claudebox-{sha256_file_short(containerfile)}"
+
+    return Config(
+        homedir=homedir,
+        containerfile=containerfile,
+        build_context=os.path.join(repo_root, "opt", "claudebox"),
+        build_override=build_override,
+        run_override=run_override,
+        tag=tag,
+        git_root=git_root,
+    )
+
+
+def image_exists(runtime: str, tag: str) -> bool:
+    result = subprocess.run(
+        [runtime, "image", "inspect", tag],
+        capture_output=True,
+    )
+    return result.returncode == 0
+
+
+def build_image(
+    config: Config, runtime: str, extra_args: list[str] | None = None
+) -> None:
+    args = extra_args or []
+    if config.build_override:
+        subprocess.run([config.build_override] + args, check=True)
+        return
+    subprocess.run(
+        [
+            runtime,
+            "build",
+            "--progress=plain",
+            "--tag",
+            config.tag,
+            "--file",
+            config.containerfile,
+            config.build_context,
+        ]
+        + args,
+        check=True,
+    )
+
+
+def cmd_run(config: Config, runtime: str, extra_args: list[str]) -> NoReturn:
+    if config.run_override:
+        os.execv(config.run_override, [config.run_override] + extra_args)
+
+    if not image_exists(runtime, config.tag):
+        build_image(config, runtime)
+
+    os.makedirs(config.homedir, exist_ok=True)
+
+    project_root = config.git_root or os.getcwd()
+
+    cmd = [
+        runtime,
+        "run",
+        "--rm",
+        "--interactive",
+        "--tty",
+        "--volume",
+        f"{project_root}:/src",
+        "--volume",
+        f"{project_root}/.git:/src/.git:ro",
+        "--volume",
+        f"{config.homedir}:/home/claude",
+        "--env",
+        "ANTHROPIC_API_KEY",
+        config.tag,
+        "claude",
+        "--dangerously-skip-permissions",
+    ] + extra_args
+    os.execvp(cmd[0], cmd)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        prog="claudebox2",
+        description="Containerized Claude Code runner with per-project overrides.",
+    )
+    subparsers = parser.add_subparsers(dest="subcommand")
+    subparsers.add_parser("build", help="Build the container image")
+    subparsers.add_parser("run", help="Run Claude in the container (default)")
+
+    ns, remaining = parser.parse_known_args()
+    subcommand: str = ns.subcommand or "run"
+
+    if remaining and remaining[0] == "--":
+        remaining = remaining[1:]
+    extra_args = remaining
+
+    runtime = find_container_runtime()
+    git_root = find_git_root()
+    claudebox_dir = find_claudebox_dir()
+    config = resolve_config(claudebox_dir, git_root)
+
+    if subcommand == "build":
+        build_image(config, runtime, extra_args)
+    else:
+        cmd_run(config, runtime, extra_args)
+
+
+if __name__ == "__main__":
+    main()
