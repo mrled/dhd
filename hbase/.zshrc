@@ -219,15 +219,6 @@ export CLAUDEBOXPATH="scripts/claudebox/run:scripts/claudebox/run.sh:opt/claudeb
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# First this environment variable is set in /etc/zshrc
-# Then we go and reset our path because of dhd-shdetect
-# Now I'm unsetting this variable so that this script will run
-# TODO: fix this the right way
-if test -e "/nix"; then
-    unset __ETC_PROFILE_NIX_SOURCED
-    . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-fi
-
 # Node Version Manager gunk
 test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
 
