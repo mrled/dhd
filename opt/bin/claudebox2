@@ -214,6 +214,8 @@ def main() -> None:
     subparsers.add_parser("build", help="Build the container image")
     subparsers.add_parser("run", help="Run Claude in the container (default)")
 
+    parser.add_argument("-v", "--verbose", action="store_true", help="Print tag and home volume directory")
+
     ns, remaining = parser.parse_known_args()
     subcommand: str = ns.subcommand or "run"
 
@@ -225,6 +227,10 @@ def main() -> None:
     git_root = find_git_root()
     claudebox_dir = find_claudebox_dir()
     config = resolve_config(claudebox_dir, git_root)
+
+    if ns.verbose:
+        print(f"tag: {config.tag}")
+        print(f"home: {config.homedir}")
 
     if subcommand == "build":
         build_image(config, runtime, extra_args)
