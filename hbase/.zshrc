@@ -66,6 +66,9 @@ unsetopt CASE_GLOB
 # (By default, it will overwrite the history file with commands from this session)
 setopt APPEND_HISTORY
 
+# Don't fucking question me
+setopt RM_STAR_SILENT
+
 case "$DHD_LS_TYPE" in
     gnu) alias ls="ls -FhN --color=always";;
     bsd) alias ls="ls -FhG";;
