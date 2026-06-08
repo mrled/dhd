@@ -121,7 +121,9 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
             with open(p) as f:
                 tag_override = f.read().strip()
 
-    homedir = home_override or os.path.expanduser(f"~/.config/claudebox/{proj_hash}")
+    homedir = home_override or os.path.expanduser(
+        f"~/.local/state/claudebox/{proj_hash}"
+    )
     containerfile = cf_override or default_cf
 
     if tag_override:
@@ -214,7 +216,12 @@ def main() -> None:
     subparsers.add_parser("build", help="Build the container image")
     subparsers.add_parser("run", help="Run Claude in the container (default)")
 
-    parser.add_argument("-v", "--verbose", action="store_true", help="Print tag and home volume directory")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Print tag and home volume directory",
+    )
 
     ns, remaining = parser.parse_known_args()
     subcommand: str = ns.subcommand or "run"
