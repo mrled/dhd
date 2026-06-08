@@ -67,6 +67,9 @@ fi
 
 export DOCKER_CLI_HINTS=false
 
+export HOMEBREW_NO_INSTALL_CLEANUP=1
+export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+
 if test -d "$HOME/.profile.d"; then
     for script in "$HOME/.profile.d"/*; do
         test -f "$script" && . "$script"
