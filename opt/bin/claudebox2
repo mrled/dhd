@@ -175,6 +175,14 @@ def build_image(
     )
 
 
+def cmd_hash(directory: str, literal: bool) -> None:
+    if literal:
+        directory = os.path.abspath(directory)
+    else:
+        directory = os.path.realpath(directory)
+    print(sha256_short(directory))
+
+
 def cmd_run(config: Config, runtime: str, extra_args: list[str]) -> NoReturn:
     if config.run_override:
         os.execv(config.run_override, [config.run_override] + extra_args)
@@ -215,6 +223,9 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="subcommand")
     subparsers.add_parser("build", help="Build the container image")
     subparsers.add_parser("run", help="Run Claude in the container (default)")
+    hash_parser = subparsers.add_parser("hash", help="Show the project hash for a directory")
+    hash_parser.add_argument("dir", nargs="?", default=None, help="Directory to hash (default: cwd)")
+    hash_parser.add_argument("--literal", action="store_true", help="Use the literal path string without resolving realpath")
 
     parser.add_argument(
         "-v",
@@ -229,6 +240,11 @@ def main() -> None:
     if remaining and remaining[0] == "--":
         remaining = remaining[1:]
     extra_args = remaining
+
+    if subcommand == "hash":
+        directory = ns.dir if ns.dir is not None else os.getcwd()
+        cmd_hash(directory, ns.literal)
+        return
 
     runtime = find_container_runtime()
     git_root = find_git_root()
