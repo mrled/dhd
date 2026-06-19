@@ -28,6 +28,6 @@ ENV PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-RUN brew install --cask claude-code
+RUN brew install --cask claude-code codex
 
 WORKDIR /src

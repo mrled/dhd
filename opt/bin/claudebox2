@@ -183,9 +183,18 @@ def cmd_hash(directory: str, literal: bool) -> None:
     print(sha256_short(directory))
 
 
-def cmd_run(config: Config, runtime: str, extra_args: list[str]) -> NoReturn:
+def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
+    """Expand shorthand CMD tokens into their full container command."""
+    if not cmd_args or cmd_args[0] == "claude":
+        return ["claude", "--dangerously-skip-permissions"] + cmd_args[1:]
+    if cmd_args[0] == "codex":
+        return ["codex", "--dangerously-bypass-approvals-and-sandbox"] + cmd_args[1:]
+    return cmd_args
+
+
+def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     if config.run_override:
-        os.execv(config.run_override, [config.run_override] + extra_args)
+        os.execv(config.run_override, [config.run_override] + cmd_args)
 
     if not image_exists(runtime, config.tag):
         build_image(config, runtime)
@@ -194,6 +203,7 @@ def cmd_run(config: Config, runtime: str, extra_args: list[str]) -> NoReturn:
 
     project_root = config.git_root or os.getcwd()
 
+    container_cmd = resolve_container_cmd(cmd_args)
     cmd = [
         runtime,
         "run",
@@ -209,9 +219,7 @@ def cmd_run(config: Config, runtime: str, extra_args: list[str]) -> NoReturn:
         "--env",
         "ANTHROPIC_API_KEY",
         config.tag,
-        "claude",
-        "--dangerously-skip-permissions",
-    ] + extra_args
+    ] + container_cmd
     os.execvp(cmd[0], cmd)
 
 
@@ -222,7 +230,15 @@ def main() -> None:
     )
     subparsers = parser.add_subparsers(dest="subcommand")
     subparsers.add_parser("build", help="Build the container image")
-    subparsers.add_parser("run", help="Run Claude in the container (default)")
+    run_parser = subparsers.add_parser(
+        "run", help="Run a command in the container (default)"
+    )
+    run_parser.add_argument(
+        "CMD",
+        nargs="*",
+        metavar="CMD",
+        help="Command to run: 'claude' (default), 'codex', or arbitrary command+args",
+    )
     hash_parser = subparsers.add_parser("hash", help="Show the project hash for a directory")
     hash_parser.add_argument("dir", nargs="?", default=None, help="Directory to hash (default: cwd)")
     hash_parser.add_argument("--literal", action="store_true", help="Use the literal path string without resolving realpath")
@@ -239,12 +255,14 @@ def main() -> None:
 
     if remaining and remaining[0] == "--":
         remaining = remaining[1:]
-    extra_args = remaining
 
     if subcommand == "hash":
         directory = ns.dir if ns.dir is not None else os.getcwd()
         cmd_hash(directory, ns.literal)
         return
+
+    # ns.CMD (run subparser positionals) + remaining (unrecognised flags) = full cmd.
+    cmd_args = getattr(ns, "CMD", []) + remaining
 
     runtime = find_container_runtime()
     git_root = find_git_root()
@@ -256,9 +274,9 @@ def main() -> None:
         print(f"home: {config.homedir}")
 
     if subcommand == "build":
-        build_image(config, runtime, extra_args)
+        build_image(config, runtime, cmd_args)
     else:
-        cmd_run(config, runtime, extra_args)
+        cmd_run(config, runtime, cmd_args)
 
 
 if __name__ == "__main__":
