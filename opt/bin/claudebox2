@@ -264,6 +264,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="claudebox2",
         description="Containerized Claude Code runner with per-project overrides.",
+        epilog=(
+            "User default: ~/.config/claudebox/Containerfile.default overrides the built-in image.\n"
+            "\n"
+            "Project configuration via .claudebox/ directory (at cwd or git root):\n"
+            "  Containerfile       custom container image definition\n"
+            "  build.sh            replaces the standard 'docker build' invocation\n"
+            "  run.sh              replaces the standard 'docker run' invocation\n"
+            "  home/               bind-mounted as /home/claude inside the container\n"
+            "  tag.txt             override the image tag name\n"
+            "  env                 env var names to pass through (one per line, # comments ok)\n"
+            "  mounts              extra volume mounts: host:container[:opts], one per line;\n"
+            "                      relative host paths resolve from the .claudebox parent dir"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="subcommand")
     subparsers.add_parser("build", help="Build the container image")
