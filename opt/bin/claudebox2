@@ -99,6 +99,8 @@ class Config:
     git_root: str | None
     extra_env: list[str]
     extra_mounts: list[str]
+    hash_input: str | None  # None when home_override is active
+    proj_hash: str | None
 
 
 def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
@@ -152,9 +154,14 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         if os.path.isfile(p):
             extra_mounts = _resolve_mounts(_parse_lines(p), claudebox_parent)
 
-    homedir = home_override or os.path.expanduser(
-        f"~/.local/state/claudebox/{proj_hash}"
-    )
+    if home_override:
+        homedir = home_override
+        stored_hash_input = None
+        stored_proj_hash = None
+    else:
+        homedir = os.path.expanduser(f"~/.local/state/claudebox/{proj_hash}")
+        stored_hash_input = hash_input
+        stored_proj_hash = proj_hash
     containerfile = cf_override or default_cf
 
     if tag_override:
@@ -174,6 +181,8 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         git_root=git_root,
         extra_env=extra_env,
         extra_mounts=extra_mounts,
+        hash_input=stored_hash_input,
+        proj_hash=stored_proj_hash,
     )
 
 
@@ -225,6 +234,35 @@ def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
     return cmd_args
 
 
+def ensure_statedir(config: Config) -> None:
+    """Create the state dir and keep hostpath.txt correct."""
+    if config.hash_input is None:
+        return
+    os.makedirs(config.homedir, exist_ok=True)
+    hostpath_file = os.path.join(config.homedir, "hostpath.txt")
+    if os.path.exists(hostpath_file):
+        with open(hostpath_file) as f:
+            recorded = f.read().strip()
+        if recorded != config.hash_input:
+            print(
+                f"claudebox2: warning: {hostpath_file} contains '{recorded}' but expected '{config.hash_input}'; fixing",
+                file=sys.stderr,
+            )
+            with open(hostpath_file, "w") as f:
+                f.write(config.hash_input + "\n")
+    else:
+        with open(hostpath_file, "w") as f:
+            f.write(config.hash_input + "\n")
+
+
+def cmd_statedir(config: Config) -> None:
+    if config.hash_input is None or config.proj_hash is None:
+        die("statedir is not available when .claudebox/home/ override is active")
+    ensure_statedir(config)
+    print(f"Shortened hash of {config.hash_input} is {config.proj_hash}", file=sys.stderr)
+    print(config.homedir)
+
+
 def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     if config.run_override:
         os.execv(config.run_override, [config.run_override] + cmd_args)
@@ -232,7 +270,19 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     if not image_exists(runtime, config.tag):
         build_image(config, runtime)
 
-    os.makedirs(config.homedir, exist_ok=True)
+    ensure_statedir(config)
+
+    # Pre-create parent dirs for mounts targeting /home/claude/... so Docker can
+    # set up the mountpoint inside the home volume (which doesn't exist yet at bind time).
+    for mount in config.extra_mounts:
+        parts = mount.split(":", 2)
+        container_path = parts[1] if len(parts) >= 2 else ""
+        prefix = "/home/claude/"
+        if container_path.startswith(prefix):
+            rel = container_path[len(prefix):]
+            parent = os.path.dirname(rel)
+            if parent:
+                os.makedirs(os.path.join(config.homedir, parent), exist_ok=True)
 
     project_root = config.git_root or os.getcwd()
 
@@ -290,6 +340,7 @@ def main() -> None:
         metavar="CMD",
         help="Command to run: 'claude' (default), 'codex', or arbitrary command+args",
     )
+    subparsers.add_parser("statedir", help="Show the state directory for the current project")
     hash_parser = subparsers.add_parser("hash", help="Show the project hash for a directory")
     hash_parser.add_argument("dir", nargs="?", default=None, help="Directory to hash (default: cwd)")
     hash_parser.add_argument("--literal", action="store_true", help="Use the literal path string without resolving realpath")
@@ -315,10 +366,15 @@ def main() -> None:
     # ns.CMD (run subparser positionals) + remaining (unrecognised flags) = full cmd.
     cmd_args = getattr(ns, "CMD", []) + remaining
 
-    runtime = find_container_runtime()
     git_root = find_git_root()
     claudebox_dir = find_claudebox_dir()
     config = resolve_config(claudebox_dir, git_root)
+
+    if subcommand == "statedir":
+        cmd_statedir(config)
+        return
+
+    runtime = find_container_runtime()
 
     if ns.verbose:
         print(f"tag: {config.tag}")
