@@ -99,7 +99,7 @@ class Config:
     git_root: str | None
     extra_env: list[str]
     extra_mounts: list[str]
-    hash_input: str | None  # None when home_override is active
+    host_path: str | None  # path written to hostpath.txt; None when home_override is active
     proj_hash: str | None
 
 
@@ -117,10 +117,13 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
 
     if claudebox_dir:
         hash_input = claudebox_dir
+        host_path = os.path.dirname(claudebox_dir)
     elif git_root:
         hash_input = os.path.realpath(git_root)
+        host_path = hash_input
     else:
         hash_input = os.path.realpath(os.getcwd())
+        host_path = hash_input
     proj_hash = sha256_short(hash_input)
 
     cf_override: str | None = None
@@ -156,11 +159,11 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
 
     if home_override:
         homedir = home_override
-        stored_hash_input = None
+        stored_host_path = None
         stored_proj_hash = None
     else:
         homedir = os.path.expanduser(f"~/.local/state/claudebox/{proj_hash}")
-        stored_hash_input = hash_input
+        stored_host_path = host_path
         stored_proj_hash = proj_hash
     containerfile = cf_override or default_cf
 
@@ -181,7 +184,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         git_root=git_root,
         extra_env=extra_env,
         extra_mounts=extra_mounts,
-        hash_input=stored_hash_input,
+        host_path=stored_host_path,
         proj_hash=stored_proj_hash,
     )
 
@@ -236,30 +239,30 @@ def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
 
 def ensure_statedir(config: Config) -> None:
     """Create the state dir and keep hostpath.txt correct."""
-    if config.hash_input is None:
+    if config.host_path is None:
         return
     os.makedirs(config.homedir, exist_ok=True)
     hostpath_file = os.path.join(config.homedir, "hostpath.txt")
     if os.path.exists(hostpath_file):
         with open(hostpath_file) as f:
             recorded = f.read().strip()
-        if recorded != config.hash_input:
+        if recorded != config.host_path:
             print(
-                f"claudebox2: warning: {hostpath_file} contains '{recorded}' but expected '{config.hash_input}'; fixing",
+                f"claudebox2: warning: {hostpath_file} contains '{recorded}' but expected '{config.host_path}'; fixing",
                 file=sys.stderr,
             )
             with open(hostpath_file, "w") as f:
-                f.write(config.hash_input + "\n")
+                f.write(config.host_path + "\n")
     else:
         with open(hostpath_file, "w") as f:
-            f.write(config.hash_input + "\n")
+            f.write(config.host_path + "\n")
 
 
 def cmd_statedir(config: Config) -> None:
-    if config.hash_input is None or config.proj_hash is None:
+    if config.host_path is None or config.proj_hash is None:
         die("statedir is not available when .claudebox/home/ override is active")
     ensure_statedir(config)
-    print(f"Shortened hash of {config.hash_input} is {config.proj_hash}", file=sys.stderr)
+    print(f"Shortened hash of {config.host_path} is {config.proj_hash}", file=sys.stderr)
     print(config.homedir)
 
 
