@@ -70,6 +70,24 @@ def script_repo_root() -> str:
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
+def _parse_lines(path: str) -> list[str]:
+    with open(path) as f:
+        return [l.strip() for l in f if l.strip() and not l.strip().startswith("#")]
+
+
+def _resolve_mounts(lines: list[str], claudebox_parent: str) -> list[str]:
+    result = []
+    for line in lines:
+        parts = line.split(":", 2)
+        host = parts[0]
+        if not os.path.isabs(host) and not host.startswith("~"):
+            host = os.path.join(claudebox_parent, host)
+        else:
+            host = os.path.expanduser(host)
+        result.append(":".join([host] + parts[1:]))
+    return result
+
+
 @dataclass
 class Config:
     homedir: str
@@ -79,6 +97,8 @@ class Config:
     run_override: str | None
     tag: str
     git_root: str | None
+    extra_env: list[str]
+    extra_mounts: list[str]
 
 
 def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
@@ -121,6 +141,17 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
             with open(p) as f:
                 tag_override = f.read().strip()
 
+    extra_env: list[str] = []
+    extra_mounts: list[str] = []
+    if claudebox_dir:
+        claudebox_parent = os.path.dirname(claudebox_dir)
+        p = os.path.join(claudebox_dir, "env")
+        if os.path.isfile(p):
+            extra_env = _parse_lines(p)
+        p = os.path.join(claudebox_dir, "mounts")
+        if os.path.isfile(p):
+            extra_mounts = _resolve_mounts(_parse_lines(p), claudebox_parent)
+
     homedir = home_override or os.path.expanduser(
         f"~/.local/state/claudebox/{proj_hash}"
     )
@@ -141,6 +172,8 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         run_override=run_override,
         tag=tag,
         git_root=git_root,
+        extra_env=extra_env,
+        extra_mounts=extra_mounts,
     )
 
 
@@ -218,8 +251,12 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         f"{config.homedir}:/home/claude",
         "--env",
         "ANTHROPIC_API_KEY",
-        config.tag,
-    ] + container_cmd
+    ]
+    for var in config.extra_env:
+        cmd += ["--env", var]
+    for mount in config.extra_mounts:
+        cmd += ["--volume", mount]
+    cmd += [config.tag] + container_cmd
     os.execvp(cmd[0], cmd)
 
 
