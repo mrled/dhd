@@ -266,6 +266,17 @@ def cmd_statedir(config: Config) -> None:
     print(config.homedir)
 
 
+def _container_name(path: str) -> str:
+    """Return a Docker-safe container name from the basename of path plus a 4-char random suffix."""
+    import re
+    name = os.path.basename(path.rstrip("/")) or "claudebox"
+    name = re.sub(r"[^a-zA-Z0-9_.-]", "_", name)
+    if not name[0].isalnum():
+        name = "c" + name
+    suffix = os.urandom(2).hex()
+    return f"{name}-{suffix}"
+
+
 def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     if config.run_override:
         os.execv(config.run_override, [config.run_override] + cmd_args)
@@ -288,6 +299,7 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
                 os.makedirs(os.path.join(config.homedir, parent), exist_ok=True)
 
     project_root = config.git_root or os.getcwd()
+    container_name = _container_name(project_root)
 
     container_cmd = resolve_container_cmd(cmd_args)
     cmd = [
@@ -297,6 +309,8 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         "--interactive",
         "--tty",
         "--init",
+        "--name",
+        container_name,
         "--volume",
         f"{project_root}:/src",
         "--volume",
