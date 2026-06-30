@@ -296,6 +296,7 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         "--rm",
         "--interactive",
         "--tty",
+        "--init",
         "--volume",
         f"{project_root}:/src",
         "--volume",
