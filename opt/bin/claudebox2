@@ -99,8 +99,8 @@ class Config:
     git_root: str | None
     extra_env: list[str]
     extra_mounts: list[str]
-    host_path: str | None  # path written to hostpath.txt; None when home_override is active
-    proj_hash: str | None
+    host_path: str
+    proj_hash: str
 
 
 def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
@@ -129,7 +129,6 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     cf_override: str | None = None
     build_override: str | None = None
     run_override: str | None = None
-    home_override: str | None = None
     tag_override: str | None = None
 
     if claudebox_dir:
@@ -139,8 +138,6 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         build_override = p if os.path.isfile(p) else None
         p = os.path.join(claudebox_dir, "run.sh")
         run_override = p if os.path.isfile(p) else None
-        p = os.path.join(claudebox_dir, "home")
-        home_override = p if os.path.isdir(p) else None
         p = os.path.join(claudebox_dir, "tag.txt")
         if os.path.isfile(p):
             with open(p) as f:
@@ -157,14 +154,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         if os.path.isfile(p):
             extra_mounts = _resolve_mounts(_parse_lines(p), claudebox_parent)
 
-    if home_override:
-        homedir = home_override
-        stored_host_path = None
-        stored_proj_hash = None
-    else:
-        homedir = os.path.expanduser(f"~/.local/state/claudebox/{proj_hash}")
-        stored_host_path = host_path
-        stored_proj_hash = proj_hash
+    homedir = os.path.expanduser(f"~/.local/state/claudebox/{proj_hash}")
     containerfile = cf_override or default_cf
 
     if tag_override:
@@ -184,8 +174,8 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         git_root=git_root,
         extra_env=extra_env,
         extra_mounts=extra_mounts,
-        host_path=stored_host_path,
-        proj_hash=stored_proj_hash,
+        host_path=host_path,
+        proj_hash=proj_hash,
     )
 
 
@@ -239,8 +229,6 @@ def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
 
 def ensure_statedir(config: Config) -> None:
     """Create the state dir and keep hostpath.txt correct."""
-    if config.host_path is None:
-        return
     os.makedirs(config.homedir, exist_ok=True)
     hostpath_file = os.path.join(config.homedir, "hostpath.txt")
     if os.path.exists(hostpath_file):
@@ -259,8 +247,6 @@ def ensure_statedir(config: Config) -> None:
 
 
 def cmd_statedir(config: Config) -> None:
-    if config.host_path is None or config.proj_hash is None:
-        die("statedir is not available when .claudebox/home/ override is active")
     ensure_statedir(config)
     print(f"Shortened hash of {config.host_path} is {config.proj_hash}", file=sys.stderr)
     print(config.homedir)
@@ -339,7 +325,6 @@ def main() -> None:
             "  Containerfile       custom container image definition\n"
             "  build.sh            replaces the standard 'docker build' invocation\n"
             "  run.sh              replaces the standard 'docker run' invocation\n"
-            "  home/               bind-mounted as /home/claude inside the container\n"
             "  tag.txt             override the image tag name\n"
             "  env                 env var names to pass through (one per line, # comments ok)\n"
             "  mounts              extra volume mounts: host:container[:opts], one per line;\n"
