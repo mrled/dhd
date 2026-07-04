@@ -188,12 +188,16 @@ def image_exists(runtime: str, tag: str) -> bool:
 
 
 def build_image(
-    config: Config, runtime: str, extra_args: list[str] | None = None
+    config: Config, runtime: str, extra_args: list[str] | None = None, force: bool = False
 ) -> None:
     args = extra_args or []
     if config.build_override:
-        subprocess.run([config.build_override] + args, check=True)
+        env = os.environ.copy()
+        if force:
+            env["CLAUDEBOX_FORCE"] = "1"
+        subprocess.run([config.build_override] + args, check=True, env=env)
         return
+    force_args = ["--no-cache"] if force else []
     subprocess.run(
         [
             runtime,
@@ -205,6 +209,7 @@ def build_image(
             config.containerfile,
             config.build_context,
         ]
+        + force_args
         + args,
         check=True,
     )
@@ -333,7 +338,10 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="subcommand")
-    subparsers.add_parser("build", help="Build the container image")
+    build_parser = subparsers.add_parser("build", help="Build the container image")
+    build_parser.add_argument(
+        "-f", "--force", action="store_true", help="Force rebuild (passes --no-cache to the container runtime)"
+    )
     run_parser = subparsers.add_parser(
         "run", help="Run a command in the container (default)"
     )
@@ -384,7 +392,7 @@ def main() -> None:
         print(f"home: {config.homedir}")
 
     if subcommand == "build":
-        build_image(config, runtime, cmd_args)
+        build_image(config, runtime, cmd_args, force=getattr(ns, "force", False))
     else:
         cmd_run(config, runtime, cmd_args)
 
