@@ -289,6 +289,29 @@ def _volume_opt(src: str, dst: str, opts: list[str]) -> str:
     return spec
 
 
+def check_rootless_traversable(path: str) -> None:
+    """Under rootless Podman, crun prepares the nested .git bind mount as
+    container-root and relies on CAP_DAC_OVERRIDE to traverse the project root --
+    but only over a dir whose uid *and* gid are both mapped into the container.
+    The macOS VM maps the user's uid and the VM's primary gid (core), not the
+    dir's macOS group (usually staff/20), so a 0700 project root is untraversable;
+    o+x on the root fixes it while leaving the contents owner-only.
+
+    On Linux rootless the user's own primary gid is mapped, so a dir owned by that
+    gid works without o+x -- skip the check there.
+    """
+    st = os.stat(path)
+    if sys.platform != "darwin" and st.st_gid == os.getgid():
+        return
+    if not st.st_mode & 0o001:
+        die(
+            f"rootless Podman needs the project root traversable by the container "
+            f"user, but '{path}' lacks o+x (other-execute). Fix with:\n"
+            f"    chmod o+x {path}\n"
+            f"This leaves the directory's contents owner-only."
+        )
+
+
 def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     if config.run_override:
         os.execv(config.run_override, [config.run_override] + cmd_args)
@@ -340,6 +363,7 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     idmap_opt = ""
     if os.path.basename(runtime) == "podman":
         if podman_is_rootless(runtime):
+            check_rootless_traversable(project_root)
             cmd += ["--userns=keep-id:uid=1000,gid=1000"]
         else:
             idmap_opt = f"idmap=uids={os.getuid()}-1000-1;gids={os.getgid()}-1000-1"
@@ -354,6 +378,10 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         "ANTHROPIC_API_KEY",
         "--env",
         "ANTHROPIC_AUTH_TOKEN",
+        "--env",
+        "ANTHROPIC_BASE_URL",
+        "--env",
+        "TZ=America/Chicago",
     ]
     for var in config.extra_env:
         cmd += ["--env", var]
