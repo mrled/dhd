@@ -10,7 +10,7 @@ RUN apt-get update \
         gzip \
         iputils-ping \
         jq \
-        node \
+        nodejs \
         procps \
         python3 \
         ruby \
