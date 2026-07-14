@@ -310,6 +310,8 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         f"{config.homedir}:/home/claude",
         "--env",
         "ANTHROPIC_API_KEY",
+        "--env",
+        "ANTHROPIC_AUTH_TOKEN",
     ]
     for var in config.extra_env:
         cmd += ["--env", var]
