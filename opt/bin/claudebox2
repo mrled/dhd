@@ -302,6 +302,15 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         "--init",
         "--name",
         container_name,
+    ]
+    # Rootless Podman puts the container in a user namespace where the host user
+    # maps to container root, so the container's `claude` user (UID 1000) can't
+    # write to bind mounts owned by the host user. keep-id maps the host user to
+    # UID/GID 1000 inside the container so mount ownership lines up. Docker Desktop
+    # already translates bind-mount ownership, so this flag is Podman-only.
+    if os.path.basename(runtime) == "podman":
+        cmd += ["--userns=keep-id:uid=1000,gid=1000"]
+    cmd += [
         "--volume",
         f"{project_root}:/src",
         "--volume",
