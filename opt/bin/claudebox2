@@ -187,6 +187,18 @@ def image_exists(runtime: str, tag: str) -> bool:
     return result.returncode == 0
 
 
+def podman_is_rootless(runtime: str) -> bool:
+    """Whether the connected Podman engine runs rootless. Defaults to False
+    (rootful) if detection fails, since the rootful path (run as UID 0) also
+    works under rootless."""
+    result = subprocess.run(
+        [runtime, "info", "--format", "{{.Host.Security.Rootless}}"],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip() == "true"
+
+
 def build_image(
     config: Config, runtime: str, extra_args: list[str] | None = None, force: bool = False
 ) -> None:
@@ -268,6 +280,15 @@ def _container_name(path: str) -> str:
     return f"{name}-{suffix}"
 
 
+def _volume_opt(src: str, dst: str, opts: list[str]) -> str:
+    """Build a `src:dst[:opt1,opt2,...]` volume spec, dropping empty options."""
+    spec = f"{src}:{dst}"
+    present = [o for o in opts if o]
+    if present:
+        spec += ":" + ",".join(present)
+    return spec
+
+
 def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     if config.run_override:
         os.execv(config.run_override, [config.run_override] + cmd_args)
@@ -303,20 +324,32 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         "--name",
         container_name,
     ]
-    # Rootless Podman puts the container in a user namespace where the host user
-    # maps to container root, so the container's `claude` user (UID 1000) can't
-    # write to bind mounts owned by the host user. keep-id maps the host user to
-    # UID/GID 1000 inside the container so mount ownership lines up. Docker Desktop
-    # already translates bind-mount ownership, so this flag is Podman-only.
+    # Docker Desktop translates bind-mount ownership to the container UID, so the
+    # default `claude` (UID 1000) user works. Podman reports real ownership and
+    # enforces permissions, so the handling depends on the engine mode, keeping a
+    # non-root process in both cases:
+    #   - rootless: the host user maps to container UID 0 by default, so a non-root
+    #     UID can't own the mounts. keep-id remaps the host user to UID/GID 1000
+    #     (the claude user) so ownership lines up.
+    #   - rootful: keep-id is rootless-only (a no-op), but rootful can create
+    #     idmapped mounts. Each host bind mount is idmapped so its owner -- this
+    #     process's UID/GID, since claudebox2 runs on the host -- is presented
+    #     inside the container as UID/GID 1000, i.e. the claude user. Reads/writes
+    #     work and files written back keep the host owner. Requires virtiofs
+    #     idmapped-mount support (Linux 6.12+, which current Podman Desktop ships).
+    idmap_opt = ""
     if os.path.basename(runtime) == "podman":
-        cmd += ["--userns=keep-id:uid=1000,gid=1000"]
+        if podman_is_rootless(runtime):
+            cmd += ["--userns=keep-id:uid=1000,gid=1000"]
+        else:
+            idmap_opt = f"idmap=uids={os.getuid()}-1000-1;gids={os.getgid()}-1000-1"
     cmd += [
         "--volume",
-        f"{project_root}:/src",
+        _volume_opt(project_root, "/src", [idmap_opt]),
         "--volume",
-        f"{project_root}/.git:/src/.git:ro",
+        _volume_opt(f"{project_root}/.git", "/src/.git", ["ro", idmap_opt]),
         "--volume",
-        f"{config.homedir}:/home/claude",
+        _volume_opt(config.homedir, "/home/claude", [idmap_opt]),
         "--env",
         "ANTHROPIC_API_KEY",
         "--env",
@@ -325,7 +358,10 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     for var in config.extra_env:
         cmd += ["--env", var]
     for mount in config.extra_mounts:
-        cmd += ["--volume", mount]
+        src, _, rest = mount.partition(":")
+        dst, _, existing = rest.partition(":")
+        opts = existing.split(",") if existing else []
+        cmd += ["--volume", _volume_opt(src, dst, opts + [idmap_opt])]
     cmd += [config.tag] + container_cmd
     os.execvp(cmd[0], cmd)
 
