@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
     cat >&2 <<EOF
-Usage: vt [-o] [SESSION]
+Usage: vt [-o] [SESSION [DIR]]
        vt -R [SOCKET SESSION_ID]
        vt -l
   -o  Outer mode: use M-t prefix config; SESSION defaults to 'outer'
@@ -11,6 +11,8 @@ Usage: vt [-o] [SESSION]
       inner servers re-read the connection env (SSH_CONNECTION etc).
       SOCKET/SESSION_ID default to the current \$TMUX.
   -l  List sessions on the outer and inner servers.
+  DIR sets the working directory when creating a session; defaults to the
+  caller's current directory. Ignored if the session already exists.
 Without a flag, SESSION is required.
 EOF
     exit 1
@@ -67,61 +69,78 @@ fi
 
 if [ "$outer" -eq 1 ]; then
     session="${1:-outer}"
-    # -L outer uses a separate server socket so -f actually takes effect
-    exec tmux -L outer -f ~/.dhd/hbase/.tmux.outer.conf new-session -A -s "$session"
 else
     [ $# -lt 1 ] && usage
     session="$1"
+fi
+[ $# -gt 2 ] && usage
+dir="$PWD"
+if [ $# -ge 2 ]; then
+    dir=$(cd -- "$2" 2>/dev/null && pwd) \
+        || { echo "vt: no such directory: $2" >&2; exit 1; }
+fi
 
-    # $TMUX is "socket_path,server_pid,session_id"
-    tmux_socket="${TMUX:-}"
-    tmux_socket="${tmux_socket%%,*}"
-
-    if [ -n "${TMUX:-}" ] && [ "$(basename "$tmux_socket")" != "outer" ]; then
-        # Already inside the inner server: just switch this client over.
-        tmux has-session -t "=$session" 2>/dev/null \
-            || tmux -f ~/.dhd/hbase/.tmux.conf new-session -d -s "$session"
-        exec tmux switch-client -t "$session"
+if [ "$outer" -eq 1 ]; then
+    # -L outer uses a separate server socket so -f actually takes effect.
+    # Only pass -c when creating: with -A it would retarget an existing
+    # session's working directory on every reattach.
+    if tmux -L outer has-session -t "=$session" 2>/dev/null; then
+        exec tmux -L outer -f ~/.dhd/hbase/.tmux.outer.conf \
+            new-session -A -s "$session"
     fi
+    exec tmux -L outer -f ~/.dhd/hbase/.tmux.outer.conf \
+        new-session -A -s "$session" -c "$dir"
+fi
 
-    outer_socket=""
-    outer_session=""
-    if [ -n "${TMUX:-}" ]; then
-        outer_socket="$tmux_socket"
-        outer_session="\$${TMUX##*,}"
-    fi
-    unset TMUX
+# $TMUX is "socket_path,server_pid,session_id"
+tmux_socket="${TMUX:-}"
+tmux_socket="${tmux_socket%%,*}"
 
-    # Ensure the inner server and session exist.
-    tmux -f ~/.dhd/hbase/.tmux.conf new-session -d -s "$session" 2>/dev/null || true
+if [ -n "${TMUX:-}" ] && [ "$(basename "$tmux_socket")" != "outer" ]; then
+    # Already inside the inner server: just switch this client over.
+    tmux has-session -t "=$session" 2>/dev/null \
+        || tmux -f ~/.dhd/hbase/.tmux.conf new-session -d -s "$session" -c "$dir"
+    exec tmux switch-client -t "$session"
+fi
 
-    if [ -n "$outer_socket" ]; then
-        # From outer: run the inner attach client directly in an outer window,
-        # with no shell in between. The window process inherits the outer
-        # session environment, which tmux's update-environment refreshes on
-        # every outer attach — so the inner server always sees the current
-        # SSH_CONNECTION/SSH_AUTH_SOCK (or their absence) via its own
-        # update-environment, with no cross-server plumbing.
-        # The outer server sets $TMUX in window environments; unset it or
-        # attach-session will refuse to nest.
-        attach_cmd="unset TMUX; exec tmux attach-session -t '$session'"
-        existing=$(tmux -S "$outer_socket" list-windows -t "$outer_session" \
-                -F '#{window_index} #{window_name}' \
-            | awk -v s="$session" '$2==s{print $1; exit}')
-        if [ -n "$existing" ]; then
-            # Respawn rather than select: replace the old attach client so the
-            # inner server re-reads the connection env, which may have changed
-            # (local vs ssh) since the window was created.
-            tmux -S "$outer_socket" respawn-window -k \
-                -t "$outer_session:$existing" "$attach_cmd"
-            tmux -S "$outer_socket" select-window -t "$outer_session:$existing"
-        else
-            tmux -S "$outer_socket" new-window -t "$outer_session" \
-                -n "$session" "$attach_cmd"
-        fi
+outer_socket=""
+outer_session=""
+if [ -n "${TMUX:-}" ]; then
+    outer_socket="$tmux_socket"
+    outer_session="\$${TMUX##*,}"
+fi
+unset TMUX
+
+# Ensure the inner server and session exist; DIR only applies at creation.
+tmux has-session -t "=$session" 2>/dev/null \
+    || tmux -f ~/.dhd/hbase/.tmux.conf new-session -d -s "$session" -c "$dir"
+
+if [ -n "$outer_socket" ]; then
+    # From outer: run the inner attach client directly in an outer window,
+    # with no shell in between. The window process inherits the outer
+    # session environment, which tmux's update-environment refreshes on
+    # every outer attach — so the inner server always sees the current
+    # SSH_CONNECTION/SSH_AUTH_SOCK (or their absence) via its own
+    # update-environment, with no cross-server plumbing.
+    # The outer server sets $TMUX in window environments; unset it or
+    # attach-session will refuse to nest.
+    attach_cmd="unset TMUX; exec tmux attach-session -t '$session'"
+    existing=$(tmux -S "$outer_socket" list-windows -t "$outer_session" \
+            -F '#{window_index} #{window_name}' \
+        | awk -v s="$session" '$2==s{print $1; exit}')
+    if [ -n "$existing" ]; then
+        # Respawn rather than select: replace the old attach client so the
+        # inner server re-reads the connection env, which may have changed
+        # (local vs ssh) since the window was created.
+        tmux -S "$outer_socket" respawn-window -k \
+            -t "$outer_session:$existing" "$attach_cmd"
+        tmux -S "$outer_socket" select-window -t "$outer_session:$existing"
     else
-        # Standalone (no outer): this client is a fresh login/terminal shell,
-        # so its env is current and update-environment does the rest.
-        exec tmux attach-session -t "$session"
+        tmux -S "$outer_socket" new-window -t "$outer_session" \
+            -n "$session" "$attach_cmd"
     fi
+else
+    # Standalone (no outer): this client is a fresh login/terminal shell,
+    # so its env is current and update-environment does the rest.
+    exec tmux attach-session -t "$session"
 fi
