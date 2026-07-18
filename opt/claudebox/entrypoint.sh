@@ -13,6 +13,7 @@ set -e
 USER_WHITELIST=/run/claudebox/netwhitelist.txt
 
 if [ -z "$CLAUDEBOX_NETRESTRICT" ] && [ ! -f "$USER_WHITELIST" ]; then
+    export CLAUDEBOX_NETWORK=unrestricted
     exec "$@"
 fi
 
@@ -68,6 +69,7 @@ until curl -s -o /dev/null --max-time 2 http://127.0.0.1:3128/; do
     sleep 0.2
 done
 
+export CLAUDEBOX_NETWORK=restricted
 proxy_url=http://127.0.0.1:3128
 export http_proxy="$proxy_url" https_proxy="$proxy_url"
 export HTTP_PROXY="$proxy_url" HTTPS_PROXY="$proxy_url"

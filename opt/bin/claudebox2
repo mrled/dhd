@@ -469,7 +469,8 @@ def main() -> None:
             "                      # comments ok) plus the built-in Claude/ChatGPT endpoints\n"
             "\n"
             "Set CLAUDEBOX_NETRESTRICT=1 to restrict egress to the built-in endpoints even\n"
-            "without a netwhitelist.txt."
+            "without a netwhitelist.txt. Inside the container, CLAUDEBOX_NETWORK reports the\n"
+            "active mode ('restricted' or 'unrestricted')."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
