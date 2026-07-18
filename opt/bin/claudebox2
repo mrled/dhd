@@ -93,6 +93,8 @@ class Config:
     homedir: str
     containerfile: str
     build_context: str
+    base_tag: str
+    project_containerfile: str | None
     build_override: str | None
     run_override: str | None
     tag: str
@@ -160,19 +162,25 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
             netwhitelist = p
 
     homedir = os.path.expanduser(f"~/.local/state/claudebox/{proj_hash}")
-    containerfile = cf_override or default_cf
+    base_tag = f"claudebox-{sha256_file_short(default_cf)}"
 
     if tag_override:
         tag = tag_override
-    elif cf_override or build_override:
+    elif cf_override:
+        # Content-addressed by both layers, so editing either Containerfile
+        # triggers a rebuild.
+        tag = f"claudebox-{sha256_short(sha256_file_short(default_cf) + sha256_file_short(cf_override))}"
+    elif build_override:
         tag = f"claudebox-{proj_hash}"
     else:
-        tag = f"claudebox-{sha256_file_short(containerfile)}"
+        tag = base_tag
 
     return Config(
         homedir=homedir,
-        containerfile=containerfile,
+        containerfile=default_cf,
         build_context=os.path.join(repo_root, "opt", "claudebox"),
+        base_tag=base_tag,
+        project_containerfile=cf_override,
         build_override=build_override,
         run_override=run_override,
         tag=tag,
@@ -216,21 +224,40 @@ def build_image(
         subprocess.run([config.build_override] + args, check=True, env=env)
         return
     force_args = ["--no-cache"] if force else []
-    subprocess.run(
+
+    def run_build(build_args: list[str], extra: list[str]) -> None:
+        subprocess.run(
+            [runtime, "build", "--progress=plain"] + build_args + force_args + extra,
+            check=True,
+        )
+
+    # Always build the base image (cached, so cheap when unchanged); a project
+    # Containerfile is layered on top of it via the CLAUDEBOX_BASE build arg.
+    # Extra CLI args apply to the final image's build only.
+    base_extra = [] if config.project_containerfile else args
+    run_build(
         [
-            runtime,
-            "build",
-            "--progress=plain",
             "--tag",
-            config.tag,
+            config.base_tag,
             "--file",
             config.containerfile,
             config.build_context,
-        ]
-        + force_args
-        + args,
-        check=True,
+        ],
+        base_extra,
     )
+    if config.project_containerfile:
+        run_build(
+            [
+                "--tag",
+                config.tag,
+                "--file",
+                config.project_containerfile,
+                "--build-arg",
+                f"CLAUDEBOX_BASE={config.base_tag}",
+                os.path.dirname(config.project_containerfile),
+            ],
+            args,
+        )
 
 
 def cmd_hash(directory: str, literal: bool) -> None:
@@ -427,7 +454,11 @@ def main() -> None:
             "User default: ~/.config/claudebox/Containerfile.default overrides the built-in image.\n"
             "\n"
             "Project configuration via .claudebox/ directory (at cwd or git root):\n"
-            "  Containerfile       custom container image definition\n"
+            "  Containerfile       extra image layers built on top of the default image;\n"
+            "                      must begin with:\n"
+            "                          ARG CLAUDEBOX_BASE\n"
+            "                          FROM ${CLAUDEBOX_BASE}\n"
+            "                      build context is the .claudebox directory\n"
             "  build.sh            replaces the standard 'docker build' invocation\n"
             "  run.sh              replaces the standard 'docker run' invocation\n"
             "  tag.txt             override the image tag name\n"
