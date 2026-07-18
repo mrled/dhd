@@ -1,0 +1,15 @@
+#!/bin/sh
+# netblocked: show requests squid denied in this restricted claudebox session.
+# -a shows the full access log (allowed and denied) instead.
+log=/var/log/squid/access.log
+
+if [ ! -f "$log" ]; then
+    echo "netblocked: no squid access log; this session is not network-restricted" >&2
+    exit 1
+fi
+
+if [ "$1" = "-a" ]; then
+    exec cat "$log"
+fi
+
+grep DENIED "$log" || echo "netblocked: nothing blocked yet"

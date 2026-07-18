@@ -20,6 +20,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /usr/local/bin/claudebox-entrypoint
+COPY netblocked /usr/local/bin/netblocked
 COPY squid.conf netwhitelist-default.txt /etc/claudebox/
 
 RUN useradd -m -u 1000 -s /bin/zsh claude \

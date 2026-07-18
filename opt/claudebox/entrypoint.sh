@@ -46,6 +46,14 @@ table inet claudebox {
 }
 EOF
 
+# Pre-create the logs world-readable so the claude user can inspect them
+# (see netblocked); squid runs as proxy and preserves existing perms.
+mkdir -p /var/log/squid
+touch /var/log/squid/access.log /var/log/squid/cache.log
+chown -R proxy:proxy /var/log/squid
+chmod 755 /var/log/squid
+chmod 644 /var/log/squid/access.log /var/log/squid/cache.log
+
 squid -f /etc/claudebox/squid.conf
 
 # squid daemonizes before it listens; any HTTP response (even an error page)
