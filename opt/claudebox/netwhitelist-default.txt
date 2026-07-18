@@ -1,0 +1,10 @@
+# Domains always whitelisted in claudebox restricted mode.
+# Entries match the domain and all its subdomains.
+
+# Claude / Anthropic
+anthropic.com
+claude.ai
+
+# ChatGPT / OpenAI (codex)
+openai.com
+chatgpt.com

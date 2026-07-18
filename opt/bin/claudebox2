@@ -99,6 +99,7 @@ class Config:
     git_root: str | None
     extra_env: list[str]
     extra_mounts: list[str]
+    netwhitelist: str | None
     host_path: str
     proj_hash: str
 
@@ -145,6 +146,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
 
     extra_env: list[str] = []
     extra_mounts: list[str] = []
+    netwhitelist: str | None = None
     if claudebox_dir:
         claudebox_parent = os.path.dirname(claudebox_dir)
         p = os.path.join(claudebox_dir, "env")
@@ -153,6 +155,9 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         p = os.path.join(claudebox_dir, "mounts")
         if os.path.isfile(p):
             extra_mounts = _resolve_mounts(_parse_lines(p), claudebox_parent)
+        p = os.path.join(claudebox_dir, "netwhitelist.txt")
+        if os.path.isfile(p):
+            netwhitelist = p
 
     homedir = os.path.expanduser(f"~/.local/state/claudebox/{proj_hash}")
     containerfile = cf_override or default_cf
@@ -174,6 +179,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         git_root=git_root,
         extra_env=extra_env,
         extra_mounts=extra_mounts,
+        netwhitelist=netwhitelist,
         host_path=host_path,
         proj_hash=proj_hash,
     )
@@ -383,6 +389,25 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         "--env",
         "TZ=America/Chicago",
     ]
+    # Restricted network mode: entrypoint needs root + NET_ADMIN to program
+    # nftables and start squid before dropping to the claude user. The
+    # whitelist file is read by container root, so no idmap needed.
+    if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist:
+        cmd += [
+            "--user",
+            "root",
+            "--cap-add",
+            "NET_ADMIN",
+            "--env",
+            "CLAUDEBOX_NETRESTRICT=1",
+        ]
+        if config.netwhitelist:
+            cmd += [
+                "--volume",
+                _volume_opt(
+                    config.netwhitelist, "/run/claudebox/netwhitelist.txt", ["ro"]
+                ),
+            ]
     for var in config.extra_env:
         cmd += ["--env", var]
     for mount in config.extra_mounts:
@@ -408,7 +433,12 @@ def main() -> None:
             "  tag.txt             override the image tag name\n"
             "  env                 env var names to pass through (one per line, # comments ok)\n"
             "  mounts              extra volume mounts: host:container[:opts], one per line;\n"
-            "                      relative host paths resolve from the .claudebox parent dir"
+            "                      relative host paths resolve from the .claudebox parent dir\n"
+            "  netwhitelist.txt    restrict container egress to these domains (one per line,\n"
+            "                      # comments ok) plus the built-in Claude/ChatGPT endpoints\n"
+            "\n"
+            "Set CLAUDEBOX_NETRESTRICT=1 to restrict egress to the built-in endpoints even\n"
+            "without a netwhitelist.txt."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

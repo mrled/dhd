@@ -10,18 +10,21 @@ RUN apt-get update \
         gzip \
         iputils-ping \
         jq \
+        nftables \
         nodejs \
         procps \
         python3 \
         ruby \
-        sudo \
+        squid \
         zsh \
     && rm -rf /var/lib/apt/lists/*
 
+COPY entrypoint.sh /usr/local/bin/claudebox-entrypoint
+COPY squid.conf netwhitelist-default.txt /etc/claudebox/
+
 RUN useradd -m -u 1000 -s /bin/zsh claude \
     && mkdir -p /home/linuxbrew \
-    && chown claude:claude /home/linuxbrew \
-    && echo "claude ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    && chown claude:claude /home/linuxbrew
 
 USER claude
 
@@ -33,3 +36,5 @@ RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.co
 RUN brew install --cask claude-code codex
 
 WORKDIR /src
+
+ENTRYPOINT ["/usr/local/bin/claudebox-entrypoint"]
