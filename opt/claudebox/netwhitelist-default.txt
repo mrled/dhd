@@ -4,6 +4,7 @@
 # Claude / Anthropic
 anthropic.com
 claude.ai
+claude.com
 
 # ChatGPT / OpenAI (codex)
 openai.com
