@@ -36,3 +36,7 @@ static.crates.io
 
 # Homebrew metadata (bottles additionally need ghcr.io, which is pushable and therefore not included)
 formulae.brew.sh
+
+# Debian apt mirrors: read-only, signed-upload pipeline, no self-service writes
+deb.debian.org
+security.debian.org
