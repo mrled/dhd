@@ -227,6 +227,8 @@ test "$NVM_DIR" && . "$NVM_DIR/nvm.sh"
 
 dhd_cmdavail atuin && eval "$(atuin init zsh --disable-up-arrow)"
 
+dhd_cmdavail direnv && eval "$(direnv hook zsh)"
+
 # Make sure that SSH_CONNECTION and SSH_AUTH_SOCK are set to the values from the tmux environment, if they exist
 # This fixes stale SSH_AUTH_SOCK issues in tmux sessions when connecting with agent forwarding.
 # It also lets us detect in ~/.ssh/config when we're in a tmux session with SSH agent forwarding
