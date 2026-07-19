@@ -3,6 +3,7 @@
 
 import argparse
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -277,9 +278,52 @@ def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
     return cmd_args
 
 
+def _merge_json_defaults(path: str, defaults: dict) -> None:
+    """Set missing keys (recursively) in a JSON file, creating it if absent.
+    Existing values always win; unparseable files are left alone."""
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+    except ValueError:
+        return
+
+    def merge(dst: dict, src: dict) -> bool:
+        changed = False
+        for key, val in src.items():
+            if key not in dst:
+                dst[key] = val
+                changed = True
+            elif isinstance(dst[key], dict) and isinstance(val, dict):
+                changed = merge(dst[key], val) or changed
+        return changed
+
+    if merge(data, defaults):
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+            f.write("\n")
+
+
 def ensure_statedir(config: Config) -> None:
     """Create the state dir and keep hostpath.txt correct."""
     os.makedirs(config.homedir, exist_ok=True)
+
+    # Seed Claude Code config so fresh sessions trust /src, skip the
+    # --dangerously-skip-permissions warning, and use the fullscreen TUI.
+    claude_dir = os.path.join(config.homedir, ".claude")
+    os.makedirs(claude_dir, exist_ok=True)
+    _merge_json_defaults(
+        os.path.join(claude_dir, "settings.json"),
+        {"skipDangerousModePermissionPrompt": True, "tui": "fullscreen"},
+    )
+    _merge_json_defaults(
+        os.path.join(config.homedir, ".claude.json"),
+        {
+            "hasCompletedOnboarding": True,
+            "projects": {"/src": {"hasTrustDialogAccepted": True}},
+        },
+    )
     hostpath_file = os.path.join(config.homedir, "hostpath.txt")
     if os.path.exists(hostpath_file):
         with open(hostpath_file) as f:
