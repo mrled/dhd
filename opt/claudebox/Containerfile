@@ -23,6 +23,7 @@ RUN apt-get update \
 COPY entrypoint.sh /usr/local/bin/claudebox-entrypoint
 COPY netblocked /usr/local/bin/netblocked
 COPY apt-install /usr/local/bin/apt-install
+COPY CLAUDE.container.md /etc/claude-code/CLAUDE.md
 COPY squid.conf netwhitelist-default.txt /etc/claudebox/
 
 RUN useradd -m -u 1000 -s /bin/zsh claude \
