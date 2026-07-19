@@ -22,16 +22,17 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# Combine default + user whitelists into squid dstdomain form; a leading dot
-# matches the domain itself and all subdomains. Entries are domains, one per
-# line; blank lines and # comments are ignored.
+# Combine default + user whitelists, passing entries to squid dstdomain
+# as written: 'host.com' matches that host exactly, '.host.com' matches the
+# domain and all subdomains. One entry per line; blank lines and # comments
+# are ignored.
 mkdir -p /run/claudebox
 combined=$(mktemp)
 cat /etc/claudebox/netwhitelist-default.txt > "$combined"
 if [ -f "$USER_WHITELIST" ]; then
     cat "$USER_WHITELIST" >> "$combined"
 fi
-sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' -e 's/^\.//' -e 's/^/./' \
+sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' \
     "$combined" > /run/claudebox/whitelist.txt
 rm -f "$combined"
 

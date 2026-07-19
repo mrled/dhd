@@ -1,11 +1,38 @@
 # Domains always whitelisted in claudebox restricted mode.
-# Entries match the domain and all its subdomains.
+# 'host.com' matches that host exactly; '.host.com' also matches subdomains.
 
 # Claude / Anthropic
-anthropic.com
-claude.ai
-claude.com
+.anthropic.com
+.claude.ai
+.claude.com
 
 # ChatGPT / OpenAI (codex)
-openai.com
-chatgpt.com
+.openai.com
+.chatgpt.com
+
+# Python packages: index + download CDN, exact hosts so upload.pypi.org
+# (publishing, an exfil channel) stays blocked
+pypi.org
+files.pythonhosted.org
+
+# GitHub read-only download hosts; github.com and api.github.com stay blocked
+# (write paths: push, issues, gists). Note release-asset URLs on github.com
+# redirect from github.com itself, so those still fail.
+raw.githubusercontent.com
+objects.githubusercontent.com
+codeload.github.com
+
+# npm: install and publish share this one host, so this is the one entry that
+# permits registry publishing
+#registry.npmjs.org
+
+# Go modules: Google's read-only proxy + checksum db
+proxy.golang.org
+sum.golang.org
+
+# Rust crates: read-only index + CDN; crates.io itself (publish) stays blocked
+index.crates.io
+static.crates.io
+
+# Homebrew metadata (bottles additionally need ghcr.io, which is pushable and therefore not included)
+formulae.brew.sh
