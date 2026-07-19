@@ -1,0 +1,25 @@
+# check=skip=InvalidDefaultArgInFrom
+# Above are check directives for Containerfile linting, which must be at the top of the file.
+#
+# Example project Containerfile extension.
+#
+# Copy to <project>/.claudebox/Containerfile to use with a project.
+# claudebox2 layers it on top of the claudebox base image.
+
+# Every project Containerfile must begin with these two lines;
+# claudebox2 builds the base image first and passes its tag in the CLAUDEBOX_BASE build arg.
+ARG CLAUDEBOX_BASE
+FROM ${CLAUDEBOX_BASE}
+
+# The base image ends as USER claude; the trust store needs root.
+USER root
+
+COPY certs/*.crt /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
+# Node-based tools (including claude itself) use a bundled CA list rather than the system store
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+
+# Always switch back: whatever USER is in effect at the end of this file is what
+# unrestricted sessions run as.
+USER claude
