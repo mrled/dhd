@@ -102,6 +102,7 @@ class Config:
     git_root: str | None
     extra_env: list[str]
     extra_mounts: list[str]
+    claudebox_dir: str | None
     netwhitelist: str | None
     host_path: str
     proj_hash: str
@@ -188,6 +189,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         git_root=git_root,
         extra_env=extra_env,
         extra_mounts=extra_mounts,
+        claudebox_dir=claudebox_dir,
         netwhitelist=netwhitelist,
         host_path=host_path,
         proj_hash=proj_hash,
@@ -451,6 +453,19 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
         _volume_opt(f"{project_root}/.git", "/src/.git", ["ro", idmap_opt]),
         "--volume",
         _volume_opt(config.homedir, "/home/claude", [idmap_opt]),
+    ]
+    # .claudebox configures claudebox2 itself -- netwhitelist.txt widens the
+    # next session's egress, and run.sh/build.sh/mounts execute or take effect
+    # on the host -- so overlay it read-only on the rw /src mount to keep the
+    # containerized agent from tampering with it.
+    if config.claudebox_dir:
+        rel = os.path.relpath(config.claudebox_dir, project_root)
+        if not rel.startswith(".."):
+            cmd += [
+                "--volume",
+                _volume_opt(config.claudebox_dir, f"/src/{rel}", ["ro", idmap_opt]),
+            ]
+    cmd += [
         "--env",
         "ANTHROPIC_API_KEY",
         "--env",
