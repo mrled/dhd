@@ -1,0 +1,39 @@
+#!/bin/sh
+# apt-install: the only command claude may run as root (via sudoers.d).
+# Installs official-repo packages only. The argument validation here is the
+# security boundary: apt itself offers root escapes via option injection
+# (-o Dpkg::Pre-Invoke etc.), local .deb paths, and pager escapes, so
+#   - args must look like Debian package names: first char lowercase alnum,
+#     then [a-z0-9+.-] only -- rejects flags, paths, and metacharacters
+#   - '--' ends apt option parsing as a second line of defense
+#   - repo configuration stays untouchable: /etc/apt is root-owned and no
+#     config arguments are accepted
+set -eu
+
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo /usr/local/bin/apt-install "$@"
+fi
+
+if [ $# -eq 0 ]; then
+    echo "usage: apt-install PACKAGE..." >&2
+    exit 2
+fi
+
+for pkg; do
+    case "$pkg" in
+        "" | [!a-z0-9]* | *[!a-z0-9+.-]*)
+            echo "apt-install: invalid package name: '$pkg'" >&2
+            exit 2
+            ;;
+    esac
+done
+
+# In restricted mode root has no direct egress; route apt through squid.
+# (sudo resets the environment, so the proxy must be set here, not inherited.)
+if curl -s -o /dev/null --max-time 1 http://127.0.0.1:3128/ 2>/dev/null; then
+    export http_proxy=http://127.0.0.1:3128 https_proxy=http://127.0.0.1:3128
+fi
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+exec apt-get install -y --no-install-recommends -- "$@"

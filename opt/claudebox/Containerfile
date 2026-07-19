@@ -16,16 +16,20 @@ RUN apt-get update \
         python3 \
         ruby \
         squid \
+        sudo \
         zsh \
     && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /usr/local/bin/claudebox-entrypoint
 COPY netblocked /usr/local/bin/netblocked
+COPY apt-install /usr/local/bin/apt-install
 COPY squid.conf netwhitelist-default.txt /etc/claudebox/
 
 RUN useradd -m -u 1000 -s /bin/zsh claude \
     && mkdir -p /home/linuxbrew \
-    && chown claude:claude /home/linuxbrew
+    && chown claude:claude /home/linuxbrew \
+    && echo 'claude ALL=(root) NOPASSWD: /usr/local/bin/apt-install' > /etc/sudoers.d/claudebox-apt-install \
+    && chmod 440 /etc/sudoers.d/claudebox-apt-install
 
 USER claude
 
