@@ -1,12 +1,13 @@
 # check=skip=InvalidDefaultArgInFrom
 # Above are check directives for Containerfile linting, which must be at the top of the file.
 #
-# Example project Containerfile extension.
+# Example append layer.
 #
-# Copy to <project>/.claudebox/Containerfile to use with a project.
-# claudebox2 layers it on top of the claudebox base image.
+# Copy to <project>/.claudebox/Containerfile.append (per-project) or
+# ~/.config/claudebox/Containerfile.append (system-wide) to layer it on top of
+# the claudebox base image.
 
-# Every project Containerfile must begin with these two lines;
+# Every Containerfile.append must begin with these two lines;
 # claudebox2 builds the base image first and passes its tag in the CLAUDEBOX_BASE build arg.
 ARG CLAUDEBOX_BASE
 FROM ${CLAUDEBOX_BASE}

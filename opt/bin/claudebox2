@@ -66,6 +66,15 @@ def sha256_file_short(path: str) -> str:
     return h.hexdigest()[:16]
 
 
+def layer_chain_hash(layers: list[tuple[str, str]]) -> str:
+    """Cumulative content hash of an ordered layer chain. Editing any layer's
+    Containerfile changes the result, so the image tag tracks its full recipe."""
+    running = sha256_file_short(layers[0][0])
+    for cf, _ in layers[1:]:
+        running = sha256_short(running + sha256_file_short(cf))
+    return running
+
+
 def script_repo_root() -> str:
     """Derive repo root from this script's location: opt/bin/claudebox2 -> repo root."""
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -92,10 +101,10 @@ def _resolve_mounts(lines: list[str], claudebox_parent: str) -> list[str]:
 @dataclass
 class Config:
     homedir: str
-    containerfile: str
-    build_context: str
-    base_tag: str
-    project_containerfile: str | None
+    # Ordered image layers to build: (containerfile, build_context). The first
+    # is the base image; each subsequent layer is an append built on top of the
+    # previous via the CLAUDEBOX_BASE build arg.
+    layers: list[tuple[str, str]]
     build_override: str | None
     run_override: str | None
     tag: str
@@ -110,15 +119,11 @@ class Config:
 
 def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     repo_root = script_repo_root()
-    repo_cf = os.path.join(repo_root, "opt", "claudebox", "Containerfile")
-    user_cf = os.path.expanduser("~/.config/claudebox/Containerfile.default")
-
-    if os.path.isfile(user_cf):
-        default_cf = user_cf
-    elif os.path.isfile(repo_cf):
-        default_cf = repo_cf
-    else:
-        die(f"default Containerfile not found at {user_cf} or {repo_cf}")
+    builtin_dir = os.path.join(repo_root, "opt", "claudebox")
+    builtin_base = os.path.join(builtin_dir, "Containerfile.base")
+    user_dir = os.path.expanduser("~/.config/claudebox")
+    user_base = os.path.join(user_dir, "Containerfile.base")
+    user_append = os.path.join(user_dir, "Containerfile.append")
 
     if claudebox_dir:
         hash_input = claudebox_dir
@@ -131,14 +136,17 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         host_path = hash_input
     proj_hash = sha256_short(hash_input)
 
-    cf_override: str | None = None
+    project_base: str | None = None
+    project_append: str | None = None
     build_override: str | None = None
     run_override: str | None = None
     tag_override: str | None = None
 
     if claudebox_dir:
-        p = os.path.join(claudebox_dir, "Containerfile")
-        cf_override = p if os.path.isfile(p) else None
+        p = os.path.join(claudebox_dir, "Containerfile.base")
+        project_base = p if os.path.isfile(p) else None
+        p = os.path.join(claudebox_dir, "Containerfile.append")
+        project_append = p if os.path.isfile(p) else None
         p = os.path.join(claudebox_dir, "build.sh")
         build_override = p if os.path.isfile(p) else None
         p = os.path.join(claudebox_dir, "run.sh")
@@ -147,6 +155,24 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         if os.path.isfile(p):
             with open(p) as f:
                 tag_override = f.read().strip()
+
+    # Base layer: most specific base wins (project > user > built-in), replacing
+    # the base image entirely. Appends always stack on top regardless of which
+    # base won, in order of increasing specificity (user then project).
+    if project_base:
+        base_cf, base_ctx = project_base, claudebox_dir
+    elif os.path.isfile(user_base):
+        base_cf, base_ctx = user_base, user_dir
+    elif os.path.isfile(builtin_base):
+        base_cf, base_ctx = builtin_base, builtin_dir
+    else:
+        die(f"base Containerfile not found at {user_base} or {builtin_base}")
+
+    layers: list[tuple[str, str]] = [(base_cf, base_ctx)]
+    if os.path.isfile(user_append):
+        layers.append((user_append, user_dir))
+    if project_append:
+        layers.append((project_append, claudebox_dir))
 
     extra_env: list[str] = []
     extra_mounts: list[str] = []
@@ -164,25 +190,19 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
             netwhitelist = p
 
     homedir = os.path.expanduser(f"~/.local/state/claudebox/{proj_hash}")
-    base_tag = f"claudebox-{sha256_file_short(default_cf)}"
 
     if tag_override:
         tag = tag_override
-    elif cf_override:
-        # Content-addressed by both layers, so editing either Containerfile
-        # triggers a rebuild.
-        tag = f"claudebox-{sha256_short(sha256_file_short(default_cf) + sha256_file_short(cf_override))}"
     elif build_override:
         tag = f"claudebox-{proj_hash}"
     else:
-        tag = base_tag
+        # Content-addressed over the whole layer chain, so editing any layer
+        # triggers a rebuild.
+        tag = f"claudebox-{layer_chain_hash(layers)}"
 
     return Config(
         homedir=homedir,
-        containerfile=default_cf,
-        build_context=os.path.join(repo_root, "opt", "claudebox"),
-        base_tag=base_tag,
-        project_containerfile=cf_override,
+        layers=layers,
         build_override=build_override,
         run_override=run_override,
         tag=tag,
@@ -234,33 +254,25 @@ def build_image(
             check=True,
         )
 
-    # Always build the base image (cached, so cheap when unchanged); a project
-    # Containerfile is layered on top of it via the CLAUDEBOX_BASE build arg.
-    # Extra CLI args apply to the final image's build only.
-    base_extra = [] if config.project_containerfile else args
-    run_build(
-        [
-            "--tag",
-            config.base_tag,
-            "--file",
-            config.containerfile,
-            config.build_context,
-        ],
-        base_extra,
-    )
-    if config.project_containerfile:
-        run_build(
-            [
-                "--tag",
-                config.tag,
-                "--file",
-                config.project_containerfile,
-                "--build-arg",
-                f"CLAUDEBOX_BASE={config.base_tag}",
-                os.path.dirname(config.project_containerfile),
-            ],
-            args,
+    # Build each layer in order. The first is the base image; each subsequent
+    # append layer is built on top of the previous via the CLAUDEBOX_BASE build
+    # arg. Intermediate layers are content-addressed (cached, so cheap when
+    # unchanged); extra CLI args apply only to the final image's build.
+    layers = config.layers
+    last = len(layers) - 1
+    prev_tag: str | None = None
+    for i, (cf, ctx) in enumerate(layers):
+        layer_tag = (
+            config.tag
+            if i == last
+            else f"claudebox-{layer_chain_hash(layers[: i + 1])}"
         )
+        build_args = ["--tag", layer_tag, "--file", cf]
+        if prev_tag is not None:
+            build_args += ["--build-arg", f"CLAUDEBOX_BASE={prev_tag}"]
+        build_args.append(ctx)
+        run_build(build_args, args if i == last else [])
+        prev_tag = layer_tag
 
 
 def cmd_hash(directory: str, literal: bool) -> None:
@@ -510,14 +522,17 @@ def main() -> None:
         prog="claudebox2",
         description="Containerized Claude Code runner with per-project overrides.",
         epilog=(
-            "User default: ~/.config/claudebox/Containerfile.default overrides the built-in image.\n"
+            "The image is built from a base plus append layers. Two files control this,\n"
+            "each available system-wide (~/.config/claudebox/) and per-project (.claudebox/):\n"
+            "  Containerfile.base    replaces the base image entirely. Most specific wins:\n"
+            "                        project > system-wide > built-in.\n"
+            "  Containerfile.append  extra layers built on top of the base. All appends\n"
+            "                        apply, system-wide first then project; each must begin:\n"
+            "                            ARG CLAUDEBOX_BASE\n"
+            "                            FROM ${CLAUDEBOX_BASE}\n"
+            "                        build context is the file's own directory.\n"
             "\n"
-            "Project configuration via .claudebox/ directory (at cwd or git root):\n"
-            "  Containerfile       extra image layers built on top of the default image;\n"
-            "                      must begin with:\n"
-            "                          ARG CLAUDEBOX_BASE\n"
-            "                          FROM ${CLAUDEBOX_BASE}\n"
-            "                      build context is the .claudebox directory\n"
+            "Other project configuration via the .claudebox/ directory (at cwd or git root):\n"
             "  build.sh            replaces the standard 'docker build' invocation\n"
             "  run.sh              replaces the standard 'docker run' invocation\n"
             "  tag.txt             override the image tag name\n"
