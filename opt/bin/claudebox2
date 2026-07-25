@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from typing import NoReturn
 
@@ -237,16 +238,31 @@ def podman_is_rootless(runtime: str) -> bool:
 
 
 def build_image(
-    config: Config, runtime: str, extra_args: list[str] | None = None, force: bool = False
+    config: Config,
+    runtime: str,
+    extra_args: list[str] | None = None,
+    force: bool = False,
+    ai_update: bool = False,
 ) -> None:
     args = extra_args or []
     if config.build_override:
         env = os.environ.copy()
         if force:
             env["CLAUDEBOX_FORCE"] = "1"
+        if ai_update:
+            env["CLAUDEBOX_AIUPDATE"] = "1"
         subprocess.run([config.build_override] + args, check=True, env=env)
         return
     force_args = ["--no-cache"] if force else []
+    # A changing CLAUDEBOX_AI_CACHEBUST value invalidates the base layer's AI
+    # install step, reinstalling the agents while reusing the rest of the cache.
+    # Only the base layer declares the ARG; append layers rebuild automatically
+    # because their FROM parent image changes.
+    ai_build_arg = (
+        ["--build-arg", f"CLAUDEBOX_AI_CACHEBUST={int(time.time())}"]
+        if ai_update
+        else []
+    )
 
     def run_build(build_args: list[str], extra: list[str]) -> None:
         subprocess.run(
@@ -270,6 +286,8 @@ def build_image(
         build_args = ["--tag", layer_tag, "--file", cf]
         if prev_tag is not None:
             build_args += ["--build-arg", f"CLAUDEBOX_BASE={prev_tag}"]
+        if i == 0:
+            build_args += ai_build_arg
         build_args.append(ctx)
         run_build(build_args, args if i == last else [])
         prev_tag = layer_tag
@@ -553,7 +571,14 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="subcommand")
     build_parser = subparsers.add_parser("build", help="Build the container image")
     build_parser.add_argument(
-        "-f", "--force", action="store_true", help="Force rebuild (passes --no-cache to the container runtime)"
+        "--full",
+        action="store_true",
+        help="Full rebuild from scratch (passes --no-cache to the container runtime)",
+    )
+    build_parser.add_argument(
+        "--aiupdate",
+        action="store_true",
+        help="Reinstall just the AI agents (claude-code, codex) to pick up updates, reusing the rest of the cache",
     )
     run_parser = subparsers.add_parser(
         "run", help="Run a command in the container (default)"
@@ -605,7 +630,13 @@ def main() -> None:
         print(f"home: {config.homedir}")
 
     if subcommand == "build":
-        build_image(config, runtime, cmd_args, force=getattr(ns, "force", False))
+        build_image(
+            config,
+            runtime,
+            cmd_args,
+            force=getattr(ns, "full", False),
+            ai_update=getattr(ns, "aiupdate", False),
+        )
     else:
         cmd_run(config, runtime, cmd_args)
 

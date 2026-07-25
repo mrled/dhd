@@ -45,7 +45,12 @@ ENV PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-RUN brew install --cask claude-code codex
+# Bump CLAUDEBOX_AI_CACHEBUST (via `claudebox2 build --aiupdate`) to force this
+# layer to rebuild and reinstall the AI agents without busting the whole cache.
+# The value is referenced in the RUN so a change reliably invalidates its cache.
+ARG CLAUDEBOX_AI_CACHEBUST=0
+RUN echo "ai cachebust: ${CLAUDEBOX_AI_CACHEBUST}" \
+    && brew install --cask claude-code codex
 
 WORKDIR /src
 
