@@ -161,6 +161,8 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     # the base image entirely. Appends always stack on top regardless of which
     # base won, in order of increasing specificity (user then project).
     if project_base:
+        # project_base is only set when claudebox_dir is (see above).
+        assert claudebox_dir is not None
         base_cf, base_ctx = project_base, claudebox_dir
     elif os.path.isfile(user_base):
         base_cf, base_ctx = user_base, user_dir
@@ -173,6 +175,8 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     if os.path.isfile(user_append):
         layers.append((user_append, user_dir))
     if project_append:
+        # project_append is only set when claudebox_dir is (see above).
+        assert claudebox_dir is not None
         layers.append((project_append, claudebox_dir))
 
     extra_env: list[str] = []
@@ -217,10 +221,12 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     )
 
 
-def image_exists(runtime: str, tag: str) -> bool:
+def image_exists(runtime: str, tag: str, connection: str | None = None) -> bool:
+    conn = ["--connection", connection] if connection else []
     result = subprocess.run(
-        [runtime, "image", "inspect", tag],
+        [runtime] + conn + ["image", "inspect", tag],
         capture_output=True,
+        check=False,
     )
     return result.returncode == 0
 
@@ -233,6 +239,7 @@ def podman_is_rootless(runtime: str, connection: str | None = None) -> bool:
         [runtime] + conn + ["info", "--format", "{{.Host.Security.Rootless}}"],
         capture_output=True,
         text=True,
+        check=False,
     )
     return result.stdout.strip() == "true"
 
@@ -244,6 +251,7 @@ def podman_connections(runtime: str) -> list[dict]:
         [runtime, "system", "connection", "list", "--format", "json"],
         capture_output=True,
         text=True,
+        check=False,
     )
     if result.returncode != 0 or not result.stdout.strip():
         return []
@@ -253,17 +261,18 @@ def podman_connections(runtime: str) -> list[dict]:
         return []
 
 
-def select_rootless_podman(runtime: str) -> None:
+def select_rootless_podman(runtime: str) -> str | None:
     """claudebox2 requires a rootless Podman engine: keep-id (which lines up the
     host user with the container's claude user) is rootless-only, and the rootful
     alternative -- idmapped bind mounts -- isn't available on macOS Podman
     machines (libkrun/virtiofs). If the active connection is already rootless,
-    do nothing. Otherwise, when Podman machines expose a rootless connection
-    (macOS/Windows create both `<machine>` rootless and `<machine>-root` rootful),
-    select it for this process only via CONTAINER_CONNECTION -- leaving the user's
-    global default untouched. Die if no rootless engine is reachable."""
+    return None (use the default). Otherwise, when Podman machines expose a
+    rootless connection (macOS/Windows create both `<machine>` rootless and
+    `<machine>-root` rootful), return its name so callers can pass it explicitly
+    via --connection -- leaving the user's global default untouched. Die if no
+    rootless engine is reachable."""
     if podman_is_rootless(runtime):
-        return
+        return None
     conns = podman_connections(runtime)
     # Probe non-default connections, trying podman-machine rootless URIs
     # (ssh://core@) before others.
@@ -272,13 +281,12 @@ def select_rootless_podman(runtime: str) -> None:
     for c in candidates:
         name = c.get("Name")
         if name and podman_is_rootless(runtime, name):
-            os.environ["CONTAINER_CONNECTION"] = name
             print(
                 f"claudebox2: active Podman connection is rootful; using rootless "
                 f"connection '{name}' for this run",
                 file=sys.stderr,
             )
-            return
+            return name
     die(
         "Podman is running rootful and no rootless connection was found. "
         "claudebox2 needs rootless Podman (keep-id).\n"
@@ -295,6 +303,7 @@ def build_image(
     extra_args: list[str] | None = None,
     force: bool = False,
     ai_update: bool = False,
+    connection: str | None = None,
 ) -> None:
     args = extra_args or []
     if config.build_override:
@@ -303,6 +312,10 @@ def build_image(
             env["CLAUDEBOX_FORCE"] = "1"
         if ai_update:
             env["CLAUDEBOX_AIUPDATE"] = "1"
+        # Pass the selected rootless connection to the override script via its own
+        # env only -- without mutating this process's global environment.
+        if connection:
+            env["CONTAINER_CONNECTION"] = connection
         subprocess.run([config.build_override] + args, check=True, env=env)
         return
     force_args = ["--no-cache"] if force else []
@@ -316,9 +329,11 @@ def build_image(
         else []
     )
 
+    conn = ["--connection", connection] if connection else []
+
     def run_build(build_args: list[str], extra: list[str]) -> None:
         subprocess.run(
-            [runtime, "build", "--progress=plain"] + build_args + force_args + extra,
+            [runtime] + conn + ["build", "--progress=plain"] + build_args + force_args + extra,
             check=True,
         )
 
@@ -473,12 +488,22 @@ def check_rootless_traversable(path: str) -> None:
         )
 
 
-def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
+def cmd_run(
+    config: Config,
+    runtime: str,
+    cmd_args: list[str],
+    connection: str | None = None,
+) -> NoReturn:
     if config.run_override:
-        os.execv(config.run_override, [config.run_override] + cmd_args)
+        # Pass the selected rootless connection to the override script via its own
+        # env only -- without mutating this process's global environment.
+        env = os.environ.copy()
+        if connection:
+            env["CONTAINER_CONNECTION"] = connection
+        os.execve(config.run_override, [config.run_override] + cmd_args, env)
 
-    if not image_exists(runtime, config.tag):
-        build_image(config, runtime)
+    if not image_exists(runtime, config.tag, connection):
+        build_image(config, runtime, connection=connection)
 
     ensure_statedir(config)
 
@@ -498,8 +523,10 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     container_name = _container_name(project_root)
 
     container_cmd = resolve_container_cmd(cmd_args)
+    conn = ["--connection", connection] if connection else []
     cmd = [
         runtime,
+        *conn,
         "run",
         "--rm",
         "--interactive",
@@ -673,8 +700,11 @@ def main() -> None:
 
     # Ensure a rootless Podman engine before any build/run/image query, selecting
     # a rootless connection if the default is rootful (or exiting if none exists).
+    # The selected connection (if any) is threaded explicitly to each podman
+    # invocation via --connection rather than through the global environment.
+    connection: str | None = None
     if os.path.basename(runtime) == "podman":
-        select_rootless_podman(runtime)
+        connection = select_rootless_podman(runtime)
 
     if ns.verbose:
         print(f"tag: {config.tag}")
@@ -687,9 +717,10 @@ def main() -> None:
             cmd_args,
             force=getattr(ns, "full", False),
             ai_update=getattr(ns, "aiupdate", False),
+            connection=connection,
         )
     else:
-        cmd_run(config, runtime, cmd_args)
+        cmd_run(config, runtime, cmd_args, connection=connection)
 
 
 if __name__ == "__main__":
