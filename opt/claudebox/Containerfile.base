@@ -26,7 +26,7 @@ RUN arch="$(dpkg --print-architecture)" \
     && curl -fsSL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-${arch}.tar.gz" \
     | tar -xz -C /usr/local/bin hugo
 
-COPY entrypoint.sh /usr/local/bin/claudebox-entrypoint
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/claudebox-entrypoint
 COPY netblocked /usr/local/bin/netblocked
 COPY apt-install /usr/local/bin/apt-install
 COPY CLAUDE.container.md /etc/claude-code/CLAUDE.md
