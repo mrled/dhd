@@ -500,6 +500,115 @@ def check_rootless_traversable(path: str) -> None:
         )
 
 
+def _share_root(path: str) -> str:
+    """Best-guess directory to share into the Podman machine for `path`: the
+    volume root (/Volumes/<name>) for an external/secondary macOS volume,
+    otherwise the path itself."""
+    parts = path.split(os.sep)
+    if len(parts) >= 3 and parts[1] == "Volumes":
+        return os.sep.join(parts[:3])
+    return path
+
+
+def _default_podman_machine(runtime: str) -> str | None:
+    """Name of the default Podman machine (or the sole machine), or None if it
+    can't be determined."""
+    result = subprocess.run(
+        [runtime, "machine", "list", "--format", "json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    try:
+        machines: list[dict[str, Any]] = json.loads(result.stdout)
+    except ValueError:
+        return None
+    if not machines:
+        return None
+    for m in machines:
+        if m.get("Default"):
+            name = m.get("Name")
+            return name if isinstance(name, str) else None
+    name = machines[0].get("Name")
+    return name if isinstance(name, str) else None
+
+
+def _path_in_podman_machine(runtime: str, machine: str, path: str) -> bool | None:
+    """Whether `path` is visible inside the Podman machine's VM. macOS Podman
+    mounts shared host directories at the same path inside the guest, so an
+    existing path there means the project is reachable. Returns None when it
+    can't be told (ssh error/timeout), so callers don't block on uncertainty."""
+    try:
+        result = subprocess.run(
+            [runtime, "machine", "ssh", machine, "test", "-e", path],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=20,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode == 0:
+        return True
+    if result.returncode == 1:  # `test` ran and reported "does not exist"
+        return False
+    return None  # ssh-level failure, not a clean test result
+
+
+def check_podman_machine_share(
+    runtime: str, project_root: str, connection: str | None
+) -> None:
+    """On macOS, Podman runs in a Linux VM that can only bind-mount host
+    directories shared into it (by default just your home). A project on an
+    unshared volume -- e.g. an external disk under /Volumes -- makes `podman run`
+    fail deep in the OCI runtime with an opaque `statfs ... no such file or
+    directory`. Detect that here and explain the fix.
+
+    Conservative: paths under home are assumed shared (skipped); otherwise the
+    project path is probed inside the VM and we only die on a definitive
+    "not present", bailing out on any uncertainty so a working setup is never
+    blocked. (The machine's share list isn't in `podman machine inspect`, so the
+    guest itself is the source of truth.)"""
+    if sys.platform != "darwin":
+        return
+    real = os.path.realpath(project_root)
+    home = os.path.realpath(os.path.expanduser("~"))
+    if real == home or real.startswith(home + os.sep):
+        return  # home is shared into the machine by default
+    # Machine subcommands act on local machine config, so they take a machine
+    # name: the rootless connection name is the machine name; the rootful one is
+    # `<machine>-root`.
+    machine = connection.removesuffix("-root") if connection else _default_podman_machine(runtime)
+    if not machine:
+        return
+    if _path_in_podman_machine(runtime, machine, project_root) is not False:
+        return  # reachable, or couldn't determine -> don't block
+    share = _share_root(project_root)
+    die(
+        "Podman on macOS runs inside a Linux VM that can only bind-mount host\n"
+        f"directories shared into it, and this project isn't visible inside the\n"
+        f"'{machine}' machine, so the container can't mount it:\n"
+        f"    {project_root}\n\n"
+        "The share can only be set when the machine is created (there is no\n"
+        "`podman machine set --volume`), so recreate it with the volume shared.\n"
+        "`--volume` REPLACES the default shares rather than adding to them, so\n"
+        "the defaults have to be repeated or your home directory stops working:\n"
+        f"    podman machine stop\n"
+        f"    podman machine rm {machine}\n"
+        f"    podman machine init \\\n"
+        f"        --volume /Users:/Users \\\n"
+        f"        --volume /private:/private \\\n"
+        f"        --volume /var/folders:/var/folders \\\n"
+        f"        --volume {share}:{share} \\\n"
+        f"        --now\n"
+        "This rebuilds the VM (its images/containers are lost; claudebox images\n"
+        "are content-addressed and rebuild on next use). Alternatively, move the\n"
+        "project under your home directory, which is shared by default."
+    )
+
+
 def cmd_run(
     config: Config,
     runtime: str,
@@ -513,6 +622,14 @@ def cmd_run(
         if connection:
             env["CONTAINER_CONNECTION"] = connection
         os.execve(config.run_override, [config.run_override] + cmd_args, env)
+
+    project_root = config.git_root or os.getcwd()
+
+    # Preflight the project mount before any (possibly lengthy) image build, so an
+    # unshared-volume setup fails fast with guidance instead of deep in podman run.
+    if os.path.basename(runtime) == "podman":
+        check_podman_machine_share(runtime, project_root, connection)
+        check_rootless_traversable(project_root)
 
     if not image_exists(runtime, config.tag, connection):
         build_image(config, runtime, connection=connection)
@@ -531,7 +648,6 @@ def cmd_run(
             if parent:
                 os.makedirs(os.path.join(config.homedir, parent), exist_ok=True)
 
-    project_root = config.git_root or os.getcwd()
     container_name = _container_name(project_root)
 
     container_cmd = resolve_container_cmd(cmd_args)
@@ -559,7 +675,6 @@ def cmd_run(
     #     rootless here. keep-id remaps the host user to UID/GID 1000 (claude).
     idmap_opt = ""
     if os.path.basename(runtime) == "podman":
-        check_rootless_traversable(project_root)
         cmd += ["--userns=keep-id:uid=1000,gid=1000"]
     cmd += [
         "--volume",
