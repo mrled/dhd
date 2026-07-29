@@ -225,16 +225,68 @@ def image_exists(runtime: str, tag: str) -> bool:
     return result.returncode == 0
 
 
-def podman_is_rootless(runtime: str) -> bool:
-    """Whether the connected Podman engine runs rootless. Defaults to False
-    (rootful) if detection fails, since the rootful path (run as UID 0) also
-    works under rootless."""
+def podman_is_rootless(runtime: str, connection: str | None = None) -> bool:
+    """Whether the given Podman connection (or the active default) runs rootless.
+    Defaults to False (rootful) if detection fails."""
+    conn = ["--connection", connection] if connection else []
     result = subprocess.run(
-        [runtime, "info", "--format", "{{.Host.Security.Rootless}}"],
+        [runtime] + conn + ["info", "--format", "{{.Host.Security.Rootless}}"],
         capture_output=True,
         text=True,
     )
     return result.stdout.strip() == "true"
+
+
+def podman_connections(runtime: str) -> list[dict]:
+    """All configured Podman system connections (empty on native Linux podman
+    with no machine, or if the query fails)."""
+    result = subprocess.run(
+        [runtime, "system", "connection", "list", "--format", "json"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+    try:
+        return json.loads(result.stdout)
+    except ValueError:
+        return []
+
+
+def select_rootless_podman(runtime: str) -> None:
+    """claudebox2 requires a rootless Podman engine: keep-id (which lines up the
+    host user with the container's claude user) is rootless-only, and the rootful
+    alternative -- idmapped bind mounts -- isn't available on macOS Podman
+    machines (libkrun/virtiofs). If the active connection is already rootless,
+    do nothing. Otherwise, when Podman machines expose a rootless connection
+    (macOS/Windows create both `<machine>` rootless and `<machine>-root` rootful),
+    select it for this process only via CONTAINER_CONNECTION -- leaving the user's
+    global default untouched. Die if no rootless engine is reachable."""
+    if podman_is_rootless(runtime):
+        return
+    conns = podman_connections(runtime)
+    # Probe non-default connections, trying podman-machine rootless URIs
+    # (ssh://core@) before others.
+    candidates = [c for c in conns if not c.get("Default")]
+    candidates.sort(key=lambda c: 0 if "core@" in c.get("URI", "") else 1)
+    for c in candidates:
+        name = c.get("Name")
+        if name and podman_is_rootless(runtime, name):
+            os.environ["CONTAINER_CONNECTION"] = name
+            print(
+                f"claudebox2: active Podman connection is rootful; using rootless "
+                f"connection '{name}' for this run",
+                file=sys.stderr,
+            )
+            return
+    die(
+        "Podman is running rootful and no rootless connection was found. "
+        "claudebox2 needs rootless Podman (keep-id).\n"
+        "On macOS/Windows, list connections and make the rootless one "
+        "(ssh://core@, not ssh://root@) the default:\n"
+        "    podman system connection list\n"
+        "    podman system connection default <rootless-connection>"
+    )
 
 
 def build_image(
@@ -463,21 +515,11 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     #   - rootless: the host user maps to container UID 0 by default, so a non-root
     #     UID can't own the mounts. keep-id remaps the host user to UID/GID 1000
     #     (the claude user) so ownership lines up.
-    #   - rootful: keep-id is rootless-only (a no-op) and idmapped bind mounts
-    #     require virtiofs idmapped-mount support that macOS Podman machines
-    #     (libkrun/virtiofs) lack, so /src fails to mount. Refuse to run rootful
-    #     and tell the user to switch to the rootless connection.
+    #   - rootful: unsupported -- select_rootless_podman() (called in main) has
+    #     already switched to a rootless connection or exited, so podman is always
+    #     rootless here. keep-id remaps the host user to UID/GID 1000 (claude).
     idmap_opt = ""
     if os.path.basename(runtime) == "podman":
-        if not podman_is_rootless(runtime):
-            die(
-                "Podman is running rootful, which claudebox2 does not support "
-                "(idmapped bind mounts aren't available on macOS Podman machines).\n"
-                "Switch to your rootless connection, e.g.:\n"
-                "    podman system connection list\n"
-                "    podman system connection default <rootless-connection>\n"
-                "The rootless connection uses ssh://core@ (not ssh://root@)."
-            )
         check_rootless_traversable(project_root)
         cmd += ["--userns=keep-id:uid=1000,gid=1000"]
     cmd += [
@@ -628,6 +670,11 @@ def main() -> None:
         return
 
     runtime = find_container_runtime()
+
+    # Ensure a rootless Podman engine before any build/run/image query, selecting
+    # a rootless connection if the default is rootful (or exiting if none exists).
+    if os.path.basename(runtime) == "podman":
+        select_rootless_podman(runtime)
 
     if ns.verbose:
         print(f"tag: {config.tag}")
