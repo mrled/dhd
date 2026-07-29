@@ -463,19 +463,23 @@ def cmd_run(config: Config, runtime: str, cmd_args: list[str]) -> NoReturn:
     #   - rootless: the host user maps to container UID 0 by default, so a non-root
     #     UID can't own the mounts. keep-id remaps the host user to UID/GID 1000
     #     (the claude user) so ownership lines up.
-    #   - rootful: keep-id is rootless-only (a no-op), but rootful can create
-    #     idmapped mounts. Each host bind mount is idmapped so its owner -- this
-    #     process's UID/GID, since claudebox2 runs on the host -- is presented
-    #     inside the container as UID/GID 1000, i.e. the claude user. Reads/writes
-    #     work and files written back keep the host owner. Requires virtiofs
-    #     idmapped-mount support (Linux 6.12+, which current Podman Desktop ships).
+    #   - rootful: keep-id is rootless-only (a no-op) and idmapped bind mounts
+    #     require virtiofs idmapped-mount support that macOS Podman machines
+    #     (libkrun/virtiofs) lack, so /src fails to mount. Refuse to run rootful
+    #     and tell the user to switch to the rootless connection.
     idmap_opt = ""
     if os.path.basename(runtime) == "podman":
-        if podman_is_rootless(runtime):
-            check_rootless_traversable(project_root)
-            cmd += ["--userns=keep-id:uid=1000,gid=1000"]
-        else:
-            idmap_opt = f"idmap=uids={os.getuid()}-1000-1;gids={os.getgid()}-1000-1"
+        if not podman_is_rootless(runtime):
+            die(
+                "Podman is running rootful, which claudebox2 does not support "
+                "(idmapped bind mounts aren't available on macOS Podman machines).\n"
+                "Switch to your rootless connection, e.g.:\n"
+                "    podman system connection list\n"
+                "    podman system connection default <rootless-connection>\n"
+                "The rootless connection uses ssh://core@ (not ssh://root@)."
+            )
+        check_rootless_traversable(project_root)
+        cmd += ["--userns=keep-id:uid=1000,gid=1000"]
     cmd += [
         "--volume",
         _volume_opt(project_root, "/src", [idmap_opt]),
