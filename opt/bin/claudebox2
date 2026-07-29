@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass
-from typing import NoReturn
+from typing import Any, NoReturn, cast
 
 
 def die(msg: str) -> NoReturn:
@@ -83,11 +83,11 @@ def script_repo_root() -> str:
 
 def _parse_lines(path: str) -> list[str]:
     with open(path) as f:
-        return [l.strip() for l in f if l.strip() and not l.strip().startswith("#")]
+        return [x.strip() for x in f if x.strip() and not x.strip().startswith("#")]
 
 
 def _resolve_mounts(lines: list[str], claudebox_parent: str) -> list[str]:
-    result = []
+    result: list[str] = []
     for line in lines:
         parts = line.split(":", 2)
         host = parts[0]
@@ -244,7 +244,7 @@ def podman_is_rootless(runtime: str, connection: str | None = None) -> bool:
     return result.stdout.strip() == "true"
 
 
-def podman_connections(runtime: str) -> list[dict]:
+def podman_connections(runtime: str) -> list[dict[str, Any]]:
     """All configured Podman system connections (empty on native Linux podman
     with no machine, or if the query fails)."""
     result = subprocess.run(
@@ -333,7 +333,12 @@ def build_image(
 
     def run_build(build_args: list[str], extra: list[str]) -> None:
         subprocess.run(
-            [runtime] + conn + ["build", "--progress=plain"] + build_args + force_args + extra,
+            [runtime]
+            + conn
+            + ["build", "--progress=plain"]
+            + build_args
+            + force_args
+            + extra,
             check=True,
         )
 
@@ -377,9 +382,10 @@ def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
     return cmd_args
 
 
-def _merge_json_defaults(path: str, defaults: dict) -> None:
+def _merge_json_defaults(path: str, defaults: dict[str, Any]) -> None:
     """Set missing keys (recursively) in a JSON file, creating it if absent.
     Existing values always win; unparseable files are left alone."""
+    data: dict[str, Any]
     try:
         with open(path) as f:
             data = json.load(f)
@@ -388,14 +394,17 @@ def _merge_json_defaults(path: str, defaults: dict) -> None:
     except ValueError:
         return
 
-    def merge(dst: dict, src: dict) -> bool:
+    def merge(dst: dict[str, Any], src: dict[str, Any]) -> bool:
         changed = False
         for key, val in src.items():
             if key not in dst:
                 dst[key] = val
                 changed = True
             elif isinstance(dst[key], dict) and isinstance(val, dict):
-                changed = merge(dst[key], val) or changed
+                changed = (
+                    merge(cast("dict[str, Any]", dst[key]), cast("dict[str, Any]", val))
+                    or changed
+                )
         return changed
 
     if merge(data, defaults):
@@ -441,13 +450,16 @@ def ensure_statedir(config: Config) -> None:
 
 def cmd_statedir(config: Config) -> None:
     ensure_statedir(config)
-    print(f"Shortened hash of {config.host_path} is {config.proj_hash}", file=sys.stderr)
+    print(
+        f"Shortened hash of {config.host_path} is {config.proj_hash}", file=sys.stderr
+    )
     print(config.homedir)
 
 
 def _container_name(path: str) -> str:
     """Return a Docker-safe container name from the basename of path plus a 4-char random suffix."""
     import re
+
     name = os.path.basename(path.rstrip("/")) or "claudebox"
     name = re.sub(r"[^a-zA-Z0-9_.-]", "_", name)
     if not name[0].isalnum():
@@ -514,7 +526,7 @@ def cmd_run(
         container_path = parts[1] if len(parts) >= 2 else ""
         prefix = "/home/claude/"
         if container_path.startswith(prefix):
-            rel = container_path[len(prefix):]
+            rel = container_path[len(prefix) :]
             parent = os.path.dirname(rel)
             if parent:
                 os.makedirs(os.path.join(config.homedir, parent), exist_ok=True)
@@ -662,10 +674,20 @@ def main() -> None:
         metavar="CMD",
         help="Command to run: 'claude' (default), 'codex', or arbitrary command+args",
     )
-    subparsers.add_parser("statedir", help="Show the state directory for the current project")
-    hash_parser = subparsers.add_parser("hash", help="Show the project hash for a directory")
-    hash_parser.add_argument("dir", nargs="?", default=None, help="Directory to hash (default: cwd)")
-    hash_parser.add_argument("--literal", action="store_true", help="Use the literal path string without resolving realpath")
+    subparsers.add_parser(
+        "statedir", help="Show the state directory for the current project"
+    )
+    hash_parser = subparsers.add_parser(
+        "hash", help="Show the project hash for a directory"
+    )
+    hash_parser.add_argument(
+        "dir", nargs="?", default=None, help="Directory to hash (default: cwd)"
+    )
+    hash_parser.add_argument(
+        "--literal",
+        action="store_true",
+        help="Use the literal path string without resolving realpath",
+    )
 
     parser.add_argument(
         "-v",
