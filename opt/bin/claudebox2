@@ -244,6 +244,39 @@ def podman_is_rootless(runtime: str, connection: str | None = None) -> bool:
     return result.stdout.strip() == "true"
 
 
+def podman_selinux_enabled(runtime: str, connection: str | None = None) -> bool:
+    """Whether a native Linux Podman engine enforces SELinux container labels.
+
+    Bind mounts need a relabel option when SELinux is enabled or their normal
+    host labels make them inaccessible in the container. Do not add relabeling
+    for Docker, non-Linux Podman clients, or when detection fails.
+    """
+    if sys.platform != "linux":
+        return False
+    conn = ["--connection", connection] if connection else []
+    result = subprocess.run(
+        [runtime] + conn + ["info", "--format", "json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return False
+    try:
+        info: dict[str, Any] = json.loads(result.stdout)
+    except ValueError:
+        return False
+    host = info.get("host", info.get("Host", {}))
+    if not isinstance(host, dict):
+        return False
+    security = host.get("security", host.get("Security", {}))
+    if not isinstance(security, dict):
+        return False
+    return security.get(
+        "selinuxEnabled", security.get("SELinuxEnabled", False)
+    ) is True
+
+
 def podman_connections(runtime: str) -> list[dict[str, Any]]:
     """All configured Podman system connections (empty on native Linux podman
     with no machine, or if the query fails)."""
@@ -477,6 +510,13 @@ def _volume_opt(src: str, dst: str, opts: list[str]) -> str:
     return spec
 
 
+def _bind_mount_opts(opts: list[str], selinux_relabel: bool) -> list[str]:
+    """Add a shared SELinux label unless the mount already specifies one."""
+    if selinux_relabel and not any(opt in ("z", "Z") for opt in opts):
+        return opts + ["z"]
+    return opts
+
+
 def check_rootless_traversable(path: str) -> None:
     """Under rootless Podman, crun prepares the nested .git bind mount as
     container-root and relies on CAP_DAC_OVERRIDE to traverse the project root --
@@ -674,15 +714,31 @@ def cmd_run(
     #     already switched to a rootless connection or exited, so podman is always
     #     rootless here. keep-id remaps the host user to UID/GID 1000 (claude).
     idmap_opt = ""
+    selinux_relabel = False
     if os.path.basename(runtime) == "podman":
         cmd += ["--userns=keep-id:uid=1000,gid=1000"]
+        # `z` gives bind-mounted content a shared container label. Shared is
+        # intentional: claudebox2 can run concurrent containers for one project.
+        selinux_relabel = podman_selinux_enabled(runtime, connection)
     cmd += [
         "--volume",
-        _volume_opt(project_root, "/src", [idmap_opt]),
+        _volume_opt(
+            project_root,
+            "/src",
+            _bind_mount_opts([idmap_opt], selinux_relabel),
+        ),
         "--volume",
-        _volume_opt(f"{project_root}/.git", "/src/.git", ["ro", idmap_opt]),
+        _volume_opt(
+            f"{project_root}/.git",
+            "/src/.git",
+            _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
+        ),
         "--volume",
-        _volume_opt(config.homedir, "/home/claude", [idmap_opt]),
+        _volume_opt(
+            config.homedir,
+            "/home/claude",
+            _bind_mount_opts([idmap_opt], selinux_relabel),
+        ),
     ]
     # .claudebox configures claudebox2 itself -- netwhitelist.txt widens the
     # next session's egress, and run.sh/build.sh/mounts execute or take effect
@@ -693,7 +749,11 @@ def cmd_run(
         if not rel.startswith(".."):
             cmd += [
                 "--volume",
-                _volume_opt(config.claudebox_dir, f"/src/{rel}", ["ro", idmap_opt]),
+                _volume_opt(
+                    config.claudebox_dir,
+                    f"/src/{rel}",
+                    _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
+                ),
             ]
     cmd += [
         "--env",
@@ -721,7 +781,9 @@ def cmd_run(
             cmd += [
                 "--volume",
                 _volume_opt(
-                    config.netwhitelist, "/run/claudebox/netwhitelist.txt", ["ro"]
+                    config.netwhitelist,
+                    "/run/claudebox/netwhitelist.txt",
+                    _bind_mount_opts(["ro"], selinux_relabel),
                 ),
             ]
     for var in config.extra_env:
@@ -730,7 +792,14 @@ def cmd_run(
         src, _, rest = mount.partition(":")
         dst, _, existing = rest.partition(":")
         opts = existing.split(",") if existing else []
-        cmd += ["--volume", _volume_opt(src, dst, opts + [idmap_opt])]
+        cmd += [
+            "--volume",
+            _volume_opt(
+                src,
+                dst,
+                _bind_mount_opts(opts + [idmap_opt], selinux_relabel),
+            ),
+        ]
     cmd += [config.tag] + container_cmd
     os.execvp(cmd[0], cmd)
 
