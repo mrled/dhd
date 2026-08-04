@@ -12,3 +12,7 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = "Show line 
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = "Next diagnostic" })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
+
+-- Edit macro in register q
+-- From https://buttondown.com/hillelwayne/archive/keep-perfecting-your-config/
+vim.keymap.set('n', "<leader>Q", [[:let @q = input("Edit macro:", @q)<CR>]])

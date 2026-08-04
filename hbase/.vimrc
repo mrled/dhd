@@ -47,3 +47,6 @@ if &t_Co > 2 || has("gui_running")
   set hlsearch
 endif
 
+" Edit macro in register q
+" Adapted from https://buttondown.com/hillelwayne/archive/keep-perfecting-your-config/
+nnoremap <leader>Q :let @q = input("Edit macro:", @q)<CR>
