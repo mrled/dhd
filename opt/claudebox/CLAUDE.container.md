@@ -16,5 +16,9 @@ You are running inside claudebox, a containerized sandbox.
     (`host.com` matches exactly; `.host.com` includes subdomains).
   - Tools that ignore `HTTP(S)_PROXY` fail with timeouts or refused
     connections; that is the restriction working, not a service outage.
+- Unless `$CLAUDEBOX_NETWORK` is `unguarded` (container started by hand
+  without root), direct connections into private/link-local address space —
+  the container host (`host.docker.internal` / `host.containers.internal`),
+  its LAN, tailnets — are blocked by design.
 - To install Debian packages, run `apt-install PACKAGE...` — the only
   permitted sudo command. There is no other root access.

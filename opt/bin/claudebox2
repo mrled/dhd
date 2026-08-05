@@ -272,9 +272,7 @@ def podman_selinux_enabled(runtime: str, connection: str | None = None) -> bool:
     security = host.get("security", host.get("Security", {}))
     if not isinstance(security, dict):
         return False
-    return security.get(
-        "selinuxEnabled", security.get("SELinuxEnabled", False)
-    ) is True
+    return security.get("selinuxEnabled", security.get("SELinuxEnabled", False)) is True
 
 
 def podman_connections(runtime: str) -> list[dict[str, Any]]:
@@ -620,7 +618,11 @@ def check_podman_machine_share(
     # Machine subcommands act on local machine config, so they take a machine
     # name: the rootless connection name is the machine name; the rootful one is
     # `<machine>-root`.
-    machine = connection.removesuffix("-root") if connection else _default_podman_machine(runtime)
+    machine = (
+        connection.removesuffix("-root")
+        if connection
+        else _default_podman_machine(runtime)
+    )
     if not machine:
         return
     if _path_in_podman_machine(runtime, machine, project_root) is not False:
@@ -765,15 +767,10 @@ def cmd_run(
         "--env",
         "TZ=America/Chicago",
     ]
-    # Restricted network mode: entrypoint needs root + NET_ADMIN to program
-    # nftables and start squid before dropping to the claude user. The
-    # whitelist file is read by container root, so no idmap needed.
+    # The entrypoint always starts as root with NET_ADMIN so it can program nftables and start squid.
+    cmd += ["--user", "root", "--cap-add", "NET_ADMIN"]
     if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist:
         cmd += [
-            "--user",
-            "root",
-            "--cap-add",
-            "NET_ADMIN",
             "--env",
             "CLAUDEBOX_NETRESTRICT=1",
         ]
@@ -833,7 +830,12 @@ def main() -> None:
             "\n"
             "Set CLAUDEBOX_NETRESTRICT=1 to restrict egress to the built-in endpoints even\n"
             "without a netwhitelist.txt. Inside the container, CLAUDEBOX_NETWORK reports the\n"
-            "active mode ('restricted' or 'unrestricted')."
+            "active mode ('restricted' or 'unrestricted'). In both modes, direct egress to\n"
+            "private/link-local address space -- the container host (host.docker.internal /\n"
+            "host.containers.internal), its LAN, CGNAT/tailnets -- is blocked, except DNS to\n"
+            "the configured resolver. This guard needs the container started as root with\n"
+            "NET_ADMIN (claudebox2 always does); containers run by hand without that warn\n"
+            "and report CLAUDEBOX_NETWORK=unguarded."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
