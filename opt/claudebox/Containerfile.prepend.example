@@ -1,0 +1,27 @@
+# Example prepend layer.
+#
+# Copy to <project>/.claudebox/Containerfile.prepend (per-project) or
+# ~/.config/claudebox/Containerfile.prepend (system-wide) to build it BENEATH
+# the claudebox base image. Prepends build before the base, so this is the
+# place for setup the base build itself depends on -- e.g. trusting a private
+# CA before the base pulls Hugo, Homebrew, and the AI agents from the network.
+# (For trust needed only at runtime, an append layer works too; see
+# Containerfile.append.example.)
+
+# Every Containerfile.prepend must begin with these two lines. The first
+# prepend uses the default (which must match the built-in base's stock image);
+# each later layer receives the previous layer's tag via CLAUDEBOX_BASE.
+ARG CLAUDEBOX_BASE=debian:stable-slim
+FROM ${CLAUDEBOX_BASE}
+
+# Install the CA into the system trust store. Debian's apt sources use plain
+# HTTP with GPG signatures, so this works even behind a TLS-intercepting proxy.
+COPY certs/*.crt /usr/local/share/ca-certificates/
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node-based tools (including claude itself) use a bundled CA list rather than
+# the system store. ENV persists into the base and final image.
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt

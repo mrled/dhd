@@ -6,6 +6,11 @@
 # Copy to <project>/.claudebox/Containerfile.append (per-project) or
 # ~/.config/claudebox/Containerfile.append (system-wide) to layer it on top of
 # the claudebox base image.
+#
+# Appends build AFTER the base, so a cert added here is trusted at runtime but
+# not during the base build's own network fetches (Hugo, Homebrew, AI agents).
+# If those fetches must go through a TLS-intercepting proxy, use a prepend
+# layer instead; see Containerfile.prepend.example.
 
 # Every Containerfile.append must begin with these two lines;
 # claudebox2 builds the base image first and passes its tag in the CLAUDEBOX_BASE build arg.

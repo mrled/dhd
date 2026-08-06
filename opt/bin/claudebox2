@@ -102,10 +102,13 @@ def _resolve_mounts(lines: list[str], claudebox_parent: str) -> list[str]:
 @dataclass
 class Config:
     homedir: str
-    # Ordered image layers to build: (containerfile, build_context). The first
-    # is the base image; each subsequent layer is an append built on top of the
-    # previous via the CLAUDEBOX_BASE build arg.
+    # Ordered image layers to build: (containerfile, build_context). Optional
+    # prepend layers come first, then the base image, then optional append
+    # layers; each layer after the first is built on top of the previous via
+    # the CLAUDEBOX_BASE build arg.
     layers: list[tuple[str, str]]
+    # Index of the base image within layers (prepends precede it).
+    base_index: int
     build_override: str | None
     run_override: str | None
     tag: str
@@ -124,6 +127,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     builtin_base = os.path.join(builtin_dir, "Containerfile.base")
     user_dir = os.path.expanduser("~/.config/claudebox")
     user_base = os.path.join(user_dir, "Containerfile.base")
+    user_prepend = os.path.join(user_dir, "Containerfile.prepend")
     user_append = os.path.join(user_dir, "Containerfile.append")
 
     if claudebox_dir:
@@ -138,6 +142,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     proj_hash = sha256_short(hash_input)
 
     project_base: str | None = None
+    project_prepend: str | None = None
     project_append: str | None = None
     build_override: str | None = None
     run_override: str | None = None
@@ -146,6 +151,8 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     if claudebox_dir:
         p = os.path.join(claudebox_dir, "Containerfile.base")
         project_base = p if os.path.isfile(p) else None
+        p = os.path.join(claudebox_dir, "Containerfile.prepend")
+        project_prepend = p if os.path.isfile(p) else None
         p = os.path.join(claudebox_dir, "Containerfile.append")
         project_append = p if os.path.isfile(p) else None
         p = os.path.join(claudebox_dir, "build.sh")
@@ -171,7 +178,19 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     else:
         die(f"base Containerfile not found at {user_base} or {builtin_base}")
 
-    layers: list[tuple[str, str]] = [(base_cf, base_ctx)]
+    # Prepend layers build BEFORE the base (user then project), for setup the
+    # base build itself depends on -- e.g. trusting a private CA before the base
+    # pulls toolchains from the network. The base's FROM takes the last prepend
+    # via the CLAUDEBOX_BASE build arg, defaulting to a stock image without one.
+    layers: list[tuple[str, str]] = []
+    if os.path.isfile(user_prepend):
+        layers.append((user_prepend, user_dir))
+    if project_prepend:
+        # project_prepend is only set when claudebox_dir is (see above).
+        assert claudebox_dir is not None
+        layers.append((project_prepend, claudebox_dir))
+    base_index = len(layers)
+    layers.append((base_cf, base_ctx))
     if os.path.isfile(user_append):
         layers.append((user_append, user_dir))
     if project_append:
@@ -208,6 +227,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     return Config(
         homedir=homedir,
         layers=layers,
+        base_index=base_index,
         build_override=build_override,
         run_override=run_override,
         tag=tag,
@@ -352,8 +372,8 @@ def build_image(
     force_args = ["--no-cache"] if force else []
     # A changing CLAUDEBOX_AI_CACHEBUST value invalidates the base layer's AI
     # install step, reinstalling the agents while reusing the rest of the cache.
-    # Only the base layer declares the ARG; append layers rebuild automatically
-    # because their FROM parent image changes.
+    # Only the base layer declares the ARG; downstream layers rebuild
+    # automatically because their FROM parent image changes.
     ai_build_arg = (
         ["--build-arg", f"CLAUDEBOX_AI_CACHEBUST={int(time.time())}"]
         if ai_update
@@ -373,10 +393,11 @@ def build_image(
             check=True,
         )
 
-    # Build each layer in order. The first is the base image; each subsequent
-    # append layer is built on top of the previous via the CLAUDEBOX_BASE build
-    # arg. Intermediate layers are content-addressed (cached, so cheap when
-    # unchanged); extra CLI args apply only to the final image's build.
+    # Build each layer in order (prepends, base, appends); each layer after the
+    # first is built on top of the previous via the CLAUDEBOX_BASE build arg
+    # (the first layer's FROM uses its own default). Intermediate layers are
+    # content-addressed (cached, so cheap when unchanged); extra CLI args apply
+    # only to the final image's build.
     layers = config.layers
     last = len(layers) - 1
     prev_tag: str | None = None
@@ -389,7 +410,7 @@ def build_image(
         build_args = ["--tag", layer_tag, "--file", cf]
         if prev_tag is not None:
             build_args += ["--build-arg", f"CLAUDEBOX_BASE={prev_tag}"]
-        if i == 0:
+        if i == config.base_index:
             build_args += ai_build_arg
         build_args.append(ctx)
         run_build(build_args, args if i == last else [])
@@ -806,15 +827,27 @@ def main() -> None:
         prog="claudebox2",
         description="Containerized Claude Code runner with per-project overrides.",
         epilog=(
-            "The image is built from a base plus append layers. Two files control this,\n"
-            "each available system-wide (~/.config/claudebox/) and per-project (.claudebox/):\n"
+            "The image is built from prepend layers, a base, then append layers. Three\n"
+            "files control this, each available system-wide (~/.config/claudebox/) and\n"
+            "per-project (.claudebox/):\n"
+            "  Containerfile.prepend layers built BEFORE the base, for setup the base\n"
+            "                        build itself needs -- e.g. trusting a private CA\n"
+            "                        before the base pulls toolchains from the network.\n"
+            "                        All prepends apply, system-wide first then project;\n"
+            "                        each must begin:\n"
+            "                            ARG CLAUDEBOX_BASE=debian:stable-slim\n"
+            "                            FROM ${CLAUDEBOX_BASE}\n"
+            "                        (the default is used for the first prepend; later\n"
+            "                        layers receive the previous layer's tag).\n"
             "  Containerfile.base    replaces the base image entirely. Most specific wins:\n"
-            "                        project > system-wide > built-in.\n"
+            "                        project > system-wide > built-in. A custom base must\n"
+            "                        use the same ARG/FROM opening as prepends for prepend\n"
+            "                        layers to take effect under it.\n"
             "  Containerfile.append  extra layers built on top of the base. All appends\n"
             "                        apply, system-wide first then project; each must begin:\n"
             "                            ARG CLAUDEBOX_BASE\n"
             "                            FROM ${CLAUDEBOX_BASE}\n"
-            "                        build context is the file's own directory.\n"
+            "For all three, the build context is the file's own directory.\n"
             "\n"
             "Other project configuration via the .claudebox/ directory (at cwd or git root):\n"
             "  build.sh            replaces the standard 'docker build' invocation\n"

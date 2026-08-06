@@ -1,4 +1,7 @@
-FROM debian:stable-slim
+# Prepend layers (Containerfile.prepend) build before this file and are passed
+# in via CLAUDEBOX_BASE; without one, the default applies.
+ARG CLAUDEBOX_BASE=debian:stable-slim
+FROM ${CLAUDEBOX_BASE}
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
