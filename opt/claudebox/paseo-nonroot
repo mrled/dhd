@@ -24,7 +24,9 @@ export PASEO_LISTEN=/tmp/claudebox-paseo.sock
 rm -f "$PASEO_HOME/paseo.pid" "$PASEO_LISTEN"
 
 daemon_pid=
+pairing_error=$(mktemp)
 cleanup() {
+    rm -f "$pairing_error"
     if [ -n "$daemon_pid" ] && kill -0 "$daemon_pid" 2>/dev/null; then
         kill "$daemon_pid" 2>/dev/null || true
         wait "$daemon_pid" 2>/dev/null || true
@@ -39,7 +41,9 @@ paseo daemon start --foreground --relay --no-web-ui &
 daemon_pid=$!
 
 tries=0
-until paseo status --json >/dev/null 2>&1; do
+# The PID/socket status becomes ready before the daemon's WebSocket RPC does.
+# Pairing itself is therefore the authoritative readiness probe.
+until pairing_json=$(paseo daemon pair --relay --json 2>"$pairing_error"); do
     if ! kill -0 "$daemon_pid" 2>/dev/null; then
         echo "claudebox-paseo: foreground daemon exited during startup" >&2
         wait "$daemon_pid" || exit $?
@@ -47,7 +51,8 @@ until paseo status --json >/dev/null 2>&1; do
     fi
     tries=$((tries + 1))
     if [ "$tries" -ge 60 ]; then
-        echo "claudebox-paseo: daemon did not become ready for pairing" >&2
+        echo "claudebox-paseo: daemon did not become ready for pairing:" >&2
+        cat "$pairing_error" >&2
         exit 1
     fi
     sleep 1
@@ -56,8 +61,8 @@ done
 # Docker pseudo-terminals can report no column count to Node even with -it.
 # Paseo then withholds a QR it has already generated. Its JSON output includes
 # that QR without applying the display-width guard, so render the exact payload
-# ourselves instead of inventing a terminal width.
-pairing_json=$(paseo daemon pair --relay --json)
+# ourselves instead of inventing a terminal width. pairing_json was obtained
+# by the readiness loop above.
 pairing_qr=$(printf '%s' "$pairing_json" | jq -er \
     '.qr | select(type == "string" and length > 0)') || {
     echo "claudebox-paseo: Paseo did not return a pairing QR code" >&2
