@@ -143,6 +143,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
 
     project_base: str | None = None
     project_prepend: str | None = None
+    project_prepend_context: str | None = None
     project_append: str | None = None
     build_override: str | None = None
     run_override: str | None = None
@@ -153,6 +154,23 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         project_base = p if os.path.isfile(p) else None
         p = os.path.join(claudebox_dir, "Containerfile.prepend")
         project_prepend = p if os.path.isfile(p) else None
+        p = os.path.join(claudebox_dir, "Containerfile.prepend.path")
+        if os.path.isfile(p):
+            if project_prepend:
+                die(
+                    f"{claudebox_dir} cannot contain both Containerfile.prepend "
+                    "and Containerfile.prepend.path"
+                )
+            with open(p) as f:
+                target = f.read().strip()
+            if not target:
+                die(f"{p} is empty")
+            if not os.path.isabs(target) and not target.startswith("~"):
+                target = os.path.join(claudebox_dir, target)
+            project_prepend = os.path.realpath(os.path.expanduser(target))
+            if not os.path.isfile(project_prepend):
+                die(f"prepend Containerfile not found: {project_prepend}")
+            project_prepend_context = os.path.dirname(project_prepend)
         p = os.path.join(claudebox_dir, "Containerfile.append")
         project_append = p if os.path.isfile(p) else None
         p = os.path.join(claudebox_dir, "build.sh")
@@ -186,9 +204,12 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     if os.path.isfile(user_prepend):
         layers.append((user_prepend, user_dir))
     if project_prepend:
-        # project_prepend is only set when claudebox_dir is (see above).
+        # project_prepend is only set when claudebox_dir is (see above). A
+        # pointer uses the target Containerfile's directory as its context.
         assert claudebox_dir is not None
-        layers.append((project_prepend, claudebox_dir))
+        layers.append(
+            (project_prepend, project_prepend_context or claudebox_dir)
+        )
     base_index = len(layers)
     layers.append((base_cf, base_ctx))
     if os.path.isfile(user_append):
@@ -839,6 +860,9 @@ def main() -> None:
             "                            FROM ${CLAUDEBOX_BASE}\n"
             "                        (the default is used for the first prepend; later\n"
             "                        layers receive the previous layer's tag).\n"
+            "  Containerfile.prepend.path\n"
+            "                        project-relative path to an existing prepend\n"
+            "                        Containerfile; its directory is the build context.\n"
             "  Containerfile.base    replaces the base image entirely. Most specific wins:\n"
             "                        project > system-wide > built-in. A custom base must\n"
             "                        use the same ARG/FROM opening as prepends for prepend\n"
