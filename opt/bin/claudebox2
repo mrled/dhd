@@ -599,20 +599,34 @@ def _container_name(path: str) -> str:
     return f"{name}-{suffix}"
 
 
-def _paseo_hostname() -> str:
+def _paseo_hostname(project_root: str) -> str:
     """Return an RFC-1123-style Paseo display hostname derived on the host.
 
     Paseo reports os.hostname() as its display-name suggestion. Container
-    runtimes require a hostname-safe spelling, so suffix the invoking machine's
-    hostname with `-claudebox`.
+    runtimes require a hostname-safe spelling, so combine the invoking machine
+    and project directory as `HOST-DIRECTORY-claudebox`.
     """
     import re
     import socket
 
-    host = socket.gethostname() or "host"
-    value = re.sub(r"[^a-zA-Z0-9.-]+", "-", f"{host}-claudebox")
-    value = value.strip(".-")[:63].rstrip(".-")
-    return value or "claudebox"
+    def hostname_part(value: str, fallback: str) -> str:
+        cleaned = re.sub(r"[^a-zA-Z0-9.-]+", "-", value).strip(".-")
+        return cleaned or fallback
+
+    host = hostname_part(socket.gethostname(), "host")
+    directory = hostname_part(os.path.basename(project_root.rstrip(os.sep)), "project")
+    suffix = "-claudebox"
+    value = f"{host}-{directory}{suffix}"
+    if len(value) <= 63:
+        return value
+
+    # Preserve recognizable pieces of both fields and the fixed suffix.
+    available = 63 - len(suffix) - 1
+    host_budget = available // 2
+    directory_budget = available - host_budget
+    host = host[:host_budget].rstrip(".-") or "host"
+    directory = directory[:directory_budget].rstrip(".-") or "project"
+    return f"{host}-{directory}{suffix}"
 
 
 def _volume_opt(src: str, dst: str, opts: list[str]) -> str:
@@ -834,7 +848,7 @@ def cmd_run(
     ]
     if paseo_start_mode:
         # Paseo uses os.hostname() as the app's suggested host label.
-        cmd += ["--hostname", _paseo_hostname()]
+        cmd += ["--hostname", _paseo_hostname(project_root)]
     # Docker Desktop translates bind-mount ownership to the container UID, so the
     # default `claude` (UID 1000) user works. Podman reports real ownership and
     # enforces permissions, so the handling depends on the engine mode, keeping a
