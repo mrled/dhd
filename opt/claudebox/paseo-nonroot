@@ -1,0 +1,78 @@
+#!/bin/sh
+set -eu
+
+if [ "$(id -u)" -eq 0 ]; then
+    echo "claudebox-paseo: refusing to run Paseo as root" >&2
+    exit 1
+fi
+
+if [ "$#" -gt 0 ]; then
+    exec paseo "$@"
+fi
+
+# Keep all daemon identity and pairing material in claudebox2's persistent,
+# per-project home bind mount. A Unix socket makes the relay-only mode avoid a
+# local TCP listener entirely.
+: "${PASEO_HOME:=/home/claude/.paseo}"
+export PASEO_HOME
+export PASEO_LISTEN=/tmp/claudebox-paseo.sock
+
+# PIDs are namespace-local and must not survive the container. Paseo keeps its
+# PID record beside its persistent identity, so discard a record from a prior
+# container before starting. claudebox2's deterministic container name ensures
+# that two live Paseo containers cannot race over the same project state.
+rm -f "$PASEO_HOME/paseo.pid" "$PASEO_LISTEN"
+
+daemon_pid=
+cleanup() {
+    if [ -n "$daemon_pid" ] && kill -0 "$daemon_pid" 2>/dev/null; then
+        kill "$daemon_pid" 2>/dev/null || true
+        wait "$daemon_pid" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT HUP INT TERM
+
+# Foreground mode keeps the daemon tied to the container. It runs in the
+# background only relative to this small supervisor so we can wait for it and
+# print a pairing offer once it is ready.
+paseo daemon start --foreground --relay --no-web-ui &
+daemon_pid=$!
+
+tries=0
+until paseo status --json >/dev/null 2>&1; do
+    if ! kill -0 "$daemon_pid" 2>/dev/null; then
+        echo "claudebox-paseo: foreground daemon exited during startup" >&2
+        wait "$daemon_pid" || exit $?
+        exit 1
+    fi
+    tries=$((tries + 1))
+    if [ "$tries" -ge 60 ]; then
+        echo "claudebox-paseo: daemon did not become ready for pairing" >&2
+        exit 1
+    fi
+    sleep 1
+done
+
+# Docker pseudo-terminals can report no column count to Node even with -it.
+# Paseo then withholds a QR it has already generated. Its JSON output includes
+# that QR without applying the display-width guard, so render the exact payload
+# ourselves instead of inventing a terminal width.
+pairing_json=$(paseo daemon pair --relay --json)
+pairing_qr=$(printf '%s' "$pairing_json" | jq -er \
+    '.qr | select(type == "string" and length > 0)') || {
+    echo "claudebox-paseo: Paseo did not return a pairing QR code" >&2
+    exit 1
+}
+pairing_url=$(printf '%s' "$pairing_json" | jq -er \
+    '.url | select(type == "string" and length > 0)') || {
+    echo "claudebox-paseo: Paseo did not return a pairing link" >&2
+    exit 1
+}
+printf '\nScan to pair:\n%s\n\nPairing link:\n%s\n' "$pairing_qr" "$pairing_url"
+if ! kill -0 "$daemon_pid" 2>/dev/null; then
+    echo "claudebox-paseo: foreground daemon exited after pairing" >&2
+    wait "$daemon_pid" || exit $?
+    exit 1
+fi
+echo "claudebox-paseo: relay is active; press Ctrl-C to stop" >&2
+wait "$daemon_pid"

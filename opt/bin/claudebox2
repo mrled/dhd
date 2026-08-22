@@ -328,9 +328,14 @@ def podman_connections(runtime: str) -> list[dict[str, Any]]:
     if result.returncode != 0 or not result.stdout.strip():
         return []
     try:
-        return json.loads(result.stdout)
+        loaded: Any = json.loads(result.stdout)
     except ValueError:
         return []
+    if not isinstance(loaded, list) or not all(
+        isinstance(item, dict) for item in loaded
+    ):
+        return []
+    return cast("list[dict[str, Any]]", loaded)
 
 
 def select_rootless_podman(runtime: str) -> str | None:
@@ -352,7 +357,7 @@ def select_rootless_podman(runtime: str) -> str | None:
     candidates.sort(key=lambda c: 0 if "core@" in c.get("URI", "") else 1)
     for c in candidates:
         name = c.get("Name")
-        if name and podman_is_rootless(runtime, name):
+        if isinstance(name, str) and name and podman_is_rootless(runtime, name):
             print(
                 f"claudebox2: active Podman connection is rootful; using rootless "
                 f"connection '{name}' for this run",
@@ -452,6 +457,10 @@ def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
         return ["claude", "--dangerously-skip-permissions"] + cmd_args[1:]
     if cmd_args[0] == "codex":
         return ["codex", "--dangerously-bypass-approvals-and-sandbox"] + cmd_args[1:]
+    if cmd_args[0] == "paseo":
+        # The wrapper is defense in depth on top of the entrypoint's setpriv:
+        # Paseo and every agent it launches must inherit the unprivileged user.
+        return ["claudebox-paseo"] + cmd_args[1:]
     return cmd_args
 
 
@@ -521,6 +530,55 @@ def ensure_statedir(config: Config) -> None:
             f.write(config.host_path + "\n")
 
 
+def configure_paseo_state(config: Config) -> None:
+    """Persist claudebox2's non-interactive Paseo mode settings.
+
+    Preserve unrelated Paseo configuration, but make the two startup choices
+    owned by this mode explicit: relay on, voice/dictation off.
+    """
+    paseo_dir = os.path.join(config.homedir, ".paseo")
+    os.makedirs(paseo_dir, exist_ok=True)
+    path = os.path.join(paseo_dir, "config.json")
+    try:
+        with open(path) as f:
+            loaded: Any = json.load(f)
+    except FileNotFoundError:
+        loaded = {}
+    except (ValueError, TypeError):
+        die(f"cannot configure Paseo because {path} is not valid JSON")
+
+    if not isinstance(loaded, dict):
+        die(f"cannot configure Paseo because {path} must contain a JSON object")
+    data = cast("dict[str, Any]", loaded)
+
+    def object_field(parent: dict[str, Any], key: str) -> dict[str, Any]:
+        value = parent.get(key)
+        if value is None:
+            child: dict[str, Any] = {}
+            parent[key] = child
+            return child
+        if not isinstance(value, dict):
+            die(
+                f"cannot configure Paseo because {path} field '{key}' "
+                "must be a JSON object"
+            )
+        return cast("dict[str, Any]", value)
+
+    data.setdefault("$schema", "https://paseo.sh/schemas/paseo.config.v1.json")
+    data.setdefault("version", 1)
+    daemon = object_field(data, "daemon")
+    features = object_field(data, "features")
+    relay = object_field(daemon, "relay")
+    dictation = object_field(features, "dictation")
+    voice_mode = object_field(features, "voiceMode")
+    relay["enabled"] = True
+    dictation["enabled"] = False
+    voice_mode["enabled"] = False
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+
+
 def cmd_statedir(config: Config) -> None:
     ensure_statedir(config)
     print(
@@ -539,6 +597,22 @@ def _container_name(path: str) -> str:
         name = "c" + name
     suffix = os.urandom(2).hex()
     return f"{name}-{suffix}"
+
+
+def _paseo_hostname() -> str:
+    """Return an RFC-1123-style Paseo display hostname derived on the host.
+
+    Paseo reports os.hostname() as its display-name suggestion. Container
+    runtimes require a hostname-safe spelling, so suffix the invoking machine's
+    hostname with `-claudebox`.
+    """
+    import re
+    import socket
+
+    host = socket.gethostname() or "host"
+    value = re.sub(r"[^a-zA-Z0-9.-]+", "-", f"{host}-claudebox")
+    value = value.strip(".-")[:63].rstrip(".-")
+    return value or "claudebox"
 
 
 def _volume_opt(src: str, dst: str, opts: list[str]) -> str:
@@ -699,6 +773,8 @@ def cmd_run(
     cmd_args: list[str],
     connection: str | None = None,
 ) -> NoReturn:
+    paseo_mode = bool(cmd_args) and cmd_args[0] == "paseo"
+    paseo_start_mode = cmd_args == ["paseo"]
     if config.run_override:
         # Pass the selected rootless connection to the override script via its own
         # env only -- without mutating this process's global environment.
@@ -719,6 +795,8 @@ def cmd_run(
         build_image(config, runtime, connection=connection)
 
     ensure_statedir(config)
+    if paseo_start_mode:
+        configure_paseo_state(config)
 
     # Pre-create parent dirs for mounts targeting /home/claude/... so Docker can
     # set up the mountpoint inside the home volume (which doesn't exist yet at bind time).
@@ -732,7 +810,14 @@ def cmd_run(
             if parent:
                 os.makedirs(os.path.join(config.homedir, parent), exist_ok=True)
 
-    container_name = _container_name(project_root)
+    # One relay daemon may own a project's persistent Paseo identity at a time.
+    # A stable name lets the container runtime reject a concurrent second start
+    # instead of allowing two PID namespaces to race over paseo.pid and config.
+    container_name = (
+        f"claudebox-paseo-{config.proj_hash}"
+        if paseo_start_mode
+        else _container_name(project_root)
+    )
 
     container_cmd = resolve_container_cmd(cmd_args)
     conn = ["--connection", connection] if connection else []
@@ -747,6 +832,9 @@ def cmd_run(
         "--name",
         container_name,
     ]
+    if paseo_start_mode:
+        # Paseo uses os.hostname() as the app's suggested host label.
+        cmd += ["--hostname", _paseo_hostname()]
     # Docker Desktop translates bind-mount ownership to the container UID, so the
     # default `claude` (UID 1000) user works. Podman reports real ownership and
     # enforces permissions, so the handling depends on the engine mode, keeping a
@@ -809,6 +897,14 @@ def cmd_run(
         "--env",
         "TZ=America/Chicago",
     ]
+    if paseo_mode:
+        # The no-argument wrapper uses a Unix socket and the outbound relay, so
+        # Paseo exposes no host or container TCP port. Its identity and pairing
+        # state live under the already-persistent /home/claude bind mount.
+        cmd += [
+            "--env",
+            "PASEO_HOME=/home/claude/.paseo",
+        ]
     # The entrypoint always starts as root with NET_ADMIN so it can program nftables and start squid.
     cmd += ["--user", "root", "--cap-add", "NET_ADMIN"]
     if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist:
@@ -915,7 +1011,7 @@ def main() -> None:
         "CMD",
         nargs="*",
         metavar="CMD",
-        help="Command to run: 'claude' (default), 'codex', or arbitrary command+args",
+        help="Command to run: 'claude' (default), 'codex', 'paseo', or arbitrary command+args",
     )
     subparsers.add_parser(
         "statedir", help="Show the state directory for the current project"

@@ -52,6 +52,18 @@ ENV PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+# Paseo is installed as a normal CLI in the claudebox image rather than making
+# its Docker image our base. Nothing starts it automatically; claudebox2's
+# explicit `run paseo` mode invokes the non-root guard below. Paseo's own image
+# currently uses Node 22, so keep that runtime versioned instead of relying on
+# Debian's older nodejs package.
+ARG PASEO_VERSION=0.4.0
+RUN brew install node@22 \
+    && brew link --force --overwrite node@22 \
+    && npm install --global "@getpaseo/cli@${PASEO_VERSION}"
+
+COPY --chmod=0755 paseo-nonroot /usr/local/bin/claudebox-paseo
+
 # Bump CLAUDEBOX_AI_CACHEBUST (via `claudebox2 build --aiupdate`) to force this
 # layer to rebuild and reinstall the AI agents without busting the whole cache.
 # The value is referenced in the RUN so a change reliably invalidates its cache.
