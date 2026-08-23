@@ -1,0 +1,6 @@
+# Additional domains allowed when restricted networking is enabled.
+# Built-in AI and package endpoints are allowed automatically.
+# 'host.com' matches exactly; '.host.com' also matches subdomains.
+
+# example.com
+# .example.org

@@ -451,6 +451,36 @@ def cmd_hash(directory: str, literal: bool) -> None:
     print(sha256_short(directory))
 
 
+def cmd_config_add(kind: str, git_root: str | None) -> None:
+    """Add a starter configuration file to the current project."""
+    filenames = {
+        "append": "Containerfile.append",
+        "prepend": "Containerfile.prepend",
+        "env": "env",
+        "mounts": "mounts",
+        "netwhitelist": "netwhitelist.txt",
+    }
+    filename = filenames[kind]
+    builtin_dir = os.path.join(script_repo_root(), "opt", "claudebox")
+    example = os.path.join(builtin_dir, f"{filename}.example")
+    project_root = git_root or os.getcwd()
+    config_dir = os.path.join(project_root, ".claudebox")
+    target = os.path.join(config_dir, filename)
+
+    if os.path.exists(target):
+        die(f"refusing to overwrite existing file: {target}")
+    if not os.path.isfile(example):
+        die(f"built-in example not found: {example}")
+
+    os.makedirs(config_dir, exist_ok=True)
+    try:
+        with open(example, "rb") as src, open(target, "xb") as dst:
+            shutil.copyfileobj(src, dst)
+    except FileExistsError:
+        die(f"refusing to overwrite existing file: {target}")
+    print(f"Created {target}")
+
+
 def resolve_container_cmd(cmd_args: list[str]) -> list[str]:
     """Expand shorthand CMD tokens into their full container command."""
     if not cmd_args or cmd_args[0] == "claude":
@@ -1041,6 +1071,20 @@ def main() -> None:
         action="store_true",
         help="Use the literal path string without resolving realpath",
     )
+    config_parser = subparsers.add_parser(
+        "config", help="Manage configuration for the current project"
+    )
+    config_subparsers = config_parser.add_subparsers(
+        dest="config_subcommand", required=True
+    )
+    config_add_parser = config_subparsers.add_parser(
+        "add", help="Add a starter configuration file"
+    )
+    config_add_parser.add_argument(
+        "kind",
+        choices=("append", "prepend", "env", "mounts", "netwhitelist"),
+        help="Configuration example to add",
+    )
 
     parser.add_argument(
         "-v",
@@ -1064,6 +1108,12 @@ def main() -> None:
     cmd_args = getattr(ns, "CMD", []) + remaining
 
     git_root = find_git_root()
+
+    if subcommand == "config":
+        if ns.config_subcommand == "add":
+            cmd_config_add(ns.kind, git_root)
+        return
+
     claudebox_dir = find_claudebox_dir()
     config = resolve_config(claudebox_dir, git_root)
 

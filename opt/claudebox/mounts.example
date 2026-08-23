@@ -1,0 +1,6 @@
+# Additional bind mounts, one per line:
+#   host-path:container-path[:options]
+# Relative host paths resolve from the project root.
+
+# .cache:/home/claude/.cache
+# /host/path:/container/path:ro
