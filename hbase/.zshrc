@@ -56,6 +56,10 @@ set -o pipefail
 # Required for unsetting CASE_GLOB
 setopt extendedglob
 
+# Treat '#' in interactive shells like comments in scripots.
+# By default in interactive shells with extendedglob, '#' is a repetition operator.
+setopt interactivecomments
+
 # glob filenames in a case-insensitive manner
 # NOT the same as tab-complete case insensitively - you must add
 #   set completion-ignore-case on
