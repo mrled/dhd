@@ -69,7 +69,8 @@ COPY --chmod=0755 paseo-nonroot /usr/local/bin/claudebox-paseo
 # The value is referenced in the RUN so a change reliably invalidates its cache.
 ARG CLAUDEBOX_AI_CACHEBUST=0
 RUN echo "ai cachebust: ${CLAUDEBOX_AI_CACHEBUST}" \
-    && brew install --cask claude-code codex
+    && brew install --cask claude-code codex \
+    && npm install --global --ignore-scripts @earendil-works/pi-coding-agent
 
 WORKDIR /src
 
