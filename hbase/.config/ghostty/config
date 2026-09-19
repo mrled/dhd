@@ -3,9 +3,11 @@
 theme = "Cyberpunk"
 #theme = "Synthwave"
 #theme = "Builtin Pastel Dark"
+theme = "mrlops"
 
-font-family = "Inconsolata Nerd Font"
+font-family = "Inconsolata Nerd Font Mono"
 font-size = 14
+font-thicken = true
 
 scrollback-limit = 10000000000
 
@@ -48,4 +50,3 @@ window-height = 25
 window-width = 80
 
 config-file = ?config.local
-
