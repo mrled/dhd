@@ -1,0 +1,29 @@
+# Ghostty port of opt/macos/mrlops.terminal.
+# These are display-space colors: Terminal.app color-manages the calibrated
+# colors in its profile, so copying the stored component values looks darker.
+palette = 0=#000000
+palette = 1=#C65339
+palette = 2=#3BB612
+palette = 3=#B8B74A
+palette = 4=#7559FF
+palette = 5=#D357DB
+palette = 6=#69C1CF
+palette = 7=#D1D1D1
+palette = 8=#909090
+palette = 9=#EB5A3A
+palette = 10=#4AE41B
+palette = 11=#EFEF53
+palette = 12=#C7BEFF
+palette = 13=#EB5AF7
+palette = 14=#78F1F2
+palette = 15=#EDEDED
+
+background = #000000
+foreground = #FFFFFF
+# Terminal.app's profile uses bright ANSI colors for bold text and pure white
+# for the default bold foreground. A concrete bold color gives Ghostty both.
+bold-color = #FFFFFF
+cursor-color = #49AD10
+cursor-text = #000000
+selection-background = #58824C
+selection-foreground = #FFFFFF
