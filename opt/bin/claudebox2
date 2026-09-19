@@ -566,6 +566,20 @@ def shared_pi_agent_dir() -> str:
     os.makedirs(path, mode=0o700, exist_ok=True)
     # claudebox overlays dhd's managed extension bundle below this directory.
     os.makedirs(os.path.join(path, "extensions", "dhd"), exist_ok=True)
+
+    defaults_path = os.path.join(
+        script_repo_root(), "opt", "pi", "settings.defaults.json"
+    )
+    try:
+        with open(defaults_path) as f:
+            loaded: Any = json.load(f)
+    except (OSError, ValueError) as exc:
+        die(f"cannot load Pi settings defaults from {defaults_path}: {exc}")
+    if not isinstance(loaded, dict):
+        die(f"Pi settings defaults in {defaults_path} must be a JSON object")
+    _merge_json_defaults(
+        os.path.join(path, "settings.json"), cast("dict[str, Any]", loaded)
+    )
     return path
 
 
