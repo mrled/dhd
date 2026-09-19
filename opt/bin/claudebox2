@@ -560,6 +560,15 @@ def ensure_statedir(config: Config) -> None:
             f.write(config.host_path + "\n")
 
 
+def shared_pi_agent_dir() -> str:
+    """Pi configuration shared by all projects; sessions live elsewhere."""
+    path = os.path.expanduser("~/.local/state/claudebox/shared-pi-agent")
+    os.makedirs(path, mode=0o700, exist_ok=True)
+    # claudebox overlays dhd's managed extension bundle below this directory.
+    os.makedirs(os.path.join(path, "extensions", "dhd"), exist_ok=True)
+    return path
+
+
 def configure_paseo_state(config: Config) -> None:
     """Persist claudebox2's non-interactive Paseo mode settings.
 
@@ -839,6 +848,10 @@ def cmd_run(
         build_image(config, runtime, connection=connection)
 
     ensure_statedir(config)
+    # Pi supports a separate session directory, so its complete global agent
+    # directory can be shared without merging project histories. Pre-create the
+    # parent because the nested bind mount sits inside the project home mount.
+    os.makedirs(os.path.join(config.homedir, ".pi"), exist_ok=True)
     if paseo_start_mode:
         configure_paseo_state(config)
 
@@ -915,6 +928,18 @@ def cmd_run(
             "/home/claude",
             _bind_mount_opts([idmap_opt], selinux_relabel),
         ),
+        "--volume",
+        _volume_opt(
+            shared_pi_agent_dir(),
+            "/home/claude/.pi/agent",
+            _bind_mount_opts([idmap_opt], selinux_relabel),
+        ),
+        "--volume",
+        _volume_opt(
+            os.path.join(script_repo_root(), "opt", "pi", "extensions"),
+            "/home/claude/.pi/agent/extensions/dhd",
+            _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
+        ),
     ]
     # .claudebox configures claudebox2 itself -- netwhitelist.txt widens the
     # next session's egress, and run.sh/build.sh/mounts execute or take effect
@@ -938,6 +963,8 @@ def cmd_run(
         "ANTHROPIC_AUTH_TOKEN",
         "--env",
         "ANTHROPIC_BASE_URL",
+        "--env",
+        "PI_CODING_AGENT_SESSION_DIR=/home/claude/.pi-sessions",
         "--env",
         "TZ=America/Chicago",
     ]
@@ -1012,6 +1039,12 @@ def main() -> None:
             "                            ARG CLAUDEBOX_BASE\n"
             "                            FROM ${CLAUDEBOX_BASE}\n"
             "For all three, the build context is the file's own directory.\n"
+            "\n"
+            "Pi's ~/.pi/agent configuration is shared through\n"
+            "~/.local/state/claudebox/shared-pi-agent for every standard run; Pi\n"
+            "sessions remain in each project's separate home directory. Claude and\n"
+            "Codex configuration and history both remain project-specific.\n"
+            "Dhd-managed Pi extensions load from opt/pi/extensions/index.ts.\n"
             "\n"
             "Other project configuration via the .claudebox/ directory (at cwd or git root):\n"
             "  build.sh            replaces the standard 'docker build' invocation\n"
