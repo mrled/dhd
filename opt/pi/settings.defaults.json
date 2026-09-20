@@ -1,3 +1,7 @@
 {
-  "tuiMode": "fullscreen"
+  "tuiMode": "fullscreen",
+  "packages": [
+    "npm:pi-web-search@1.6.0",
+    "npm:pi-sub-agent"
+  ]
 }
