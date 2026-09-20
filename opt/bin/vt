@@ -2,30 +2,37 @@
 set -euo pipefail
 
 usage() {
-    cat >&2 <<EOF
+    local status="${1:-1}"
+    local fd=2
+    [ "$status" -eq 0 ] && fd=1
+    cat >&"$fd" <<EOF
 Usage: vt [-o] [SESSION [DIR]]
        vt -R [SOCKET SESSION_ID]
        vt -l
+       vt -h
   -o  Outer mode: use M-t prefix config; SESSION defaults to 'outer'
   -R  Refresh: respawn every inner attach window in the outer session so the
       inner servers re-read the connection env (SSH_CONNECTION etc).
       SOCKET/SESSION_ID default to the current \$TMUX.
   -l  List sessions on the outer and inner servers.
+  -h  Show this help.
   DIR sets the working directory when creating a session; defaults to the
   caller's current directory. Ignored if the session already exists.
-Without a flag, SESSION is required.
+With no arguments, lists sessions as with -l.
 EOF
-    exit 1
+    exit "$status"
 }
 
 outer=0
 refresh=0
 list=0
-while getopts "oRl" opt; do
+[ $# -eq 0 ] && list=1
+while getopts "oRlh" opt; do
     case "$opt" in
         o) outer=1 ;;
         R) refresh=1 ;;
         l) list=1 ;;
+        h) usage 0 ;;
         *) usage ;;
     esac
 done
