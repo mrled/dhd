@@ -698,6 +698,14 @@ def _bind_mount_opts(opts: list[str], selinux_relabel: bool) -> list[str]:
     return opts
 
 
+def _host_env_passthrough(prefix: str, exclude: set[str] | None = None) -> list[str]:
+    """Host environment variable names with the given prefix to pass through."""
+    blocked = exclude or set()
+    return sorted(
+        name for name in os.environ if name.startswith(prefix) and name not in blocked
+    )
+
+
 def check_rootless_traversable(path: str) -> None:
     """Under rootless Podman, crun prepares the nested .git bind mount as
     container-root and relies on CAP_DAC_OVERRIDE to traverse the project root --
@@ -982,6 +990,10 @@ def cmd_run(
         "--env",
         "TZ=America/Chicago",
     ]
+    for var in _host_env_passthrough(
+        "PI_", exclude={"PI_CODING_AGENT_SESSION_DIR"}
+    ):
+        cmd += ["--env", var]
     if paseo_mode:
         # The no-argument wrapper uses a Unix socket and the outbound relay, so
         # Paseo exposes no host or container TCP port. Its identity and pairing
@@ -1065,6 +1077,8 @@ def main() -> None:
             "  run.sh              replaces the standard 'docker run' invocation\n"
             "  tag.txt             override the image tag name\n"
             "  env                 env var names to pass through (one per line, # comments ok)\n"
+            "                      Host PI_* env vars are passed through automatically\n"
+            "                      (except claudebox2-managed PI_CODING_AGENT_SESSION_DIR).\n"
             "  mounts              extra volume mounts: host:container[:opts], one per line;\n"
             "                      relative host paths resolve from the .claudebox parent dir\n"
             "  netwhitelist.txt    restrict container egress to these domains plus built-in\n"
