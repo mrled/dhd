@@ -3,12 +3,16 @@
 - `claude` is running in a virtual machine and has full access to a regular user account there.
   Run any command, or see any file on the filesystem that a normal user would have access to.
 - Work is in `/mnt/aiworkspace`.
+- You have access to 1password via a service account token (`OP_SERVICE_ACCOUNT_TOKEN` environment variable)
+
+## Gitea
+
 - You have a gitea account on <https://gitea.dreadnaught.backchannel.younix.us>
   - SSH to that git host via `gitea@gitea.dreadnaught.backchannel.younix.us:2222`
   - SSH is configured so that `dreadgit` is an alias for the above (e.g. `ssh dreadgit` should just work)
   - Access to the `tea` command line, which should already be logged in
   - You also have an API key at `~/.config/gitea/token` which you can use to make direct API calls if you need to
-- Work like this
+- For gitea projects, work like this:
   - On dreadgit, the `mirror` org contains repositories mirrored from elsewhere
   - The repos are named `SOURCE--OWNER--REPO` like `github--mrled--dhd`
   - These repos are automatically kept up to date with the upstream repo
@@ -18,6 +22,17 @@
   - Check out repos to `/mnt/aiworkspace`
   - Many repos are already checked out there --- check that directory first before making a new clone
   - Periodically check if there are any updates with `git fetch upstream`
+
+## GitHub
+
+- You have a GitHub account that you can access via `gh`.
+- You can push and fetch to github.com without ssh keys; there is a global git credential helper that reads the
+- It's already authenticated. Do not pass tokens to `gh auth login`. If `op` or the token fails, stop and ask the user.
+- git push / fetch to github.com works without setup
+- For projects on GitHub, submit PRs as appropriate
+
+## Local services
+
 - You can put any port listening on localhost behind a reverse proxy with real HTTPS
   - Drop files in `/etc/chineseroom/domainmap.sandbox.d/`
   - Format: `SUBDOMAIN PORT`, one per line
