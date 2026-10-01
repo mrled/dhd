@@ -4,3 +4,4 @@
 
 # example.com
 # .example.org
+# Docker hostports.txt automatically allows host.docker.internal on its ports.

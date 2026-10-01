@@ -86,6 +86,18 @@ def _parse_lines(path: str) -> list[str]:
         return [x.strip() for x in f if x.strip() and not x.strip().startswith("#")]
 
 
+def _parse_hostports(path: str) -> list[int]:
+    ports: list[int] = []
+    for line in _parse_lines(path):
+        if not line.isascii() or not line.isdecimal() or len(line) > 5:
+            die(f"invalid TCP port in {path}: {line!r}")
+        port = int(line)
+        if not 1 <= port <= 65535:
+            die(f"invalid TCP port in {path}: {line!r}")
+        ports.append(port)
+    return ports
+
+
 def _resolve_mounts(lines: list[str], claudebox_parent: str) -> list[str]:
     result: list[str] = []
     for line in lines:
@@ -117,6 +129,7 @@ class Config:
     extra_mounts: list[str]
     claudebox_dir: str | None
     netwhitelist: str | None
+    hostports: list[int]
     host_path: str
     proj_hash: str
 
@@ -222,6 +235,13 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     extra_env: list[str] = []
     extra_mounts: list[str] = []
     netwhitelist: str | None = None
+    hostports: list[int] = []
+    for directory in (user_dir, claudebox_dir):
+        if directory:
+            p = os.path.join(directory, "hostports.txt")
+            if os.path.isfile(p):
+                hostports.extend(_parse_hostports(p))
+    hostports = list(dict.fromkeys(hostports))
     if claudebox_dir:
         claudebox_parent = os.path.dirname(claudebox_dir)
         p = os.path.join(claudebox_dir, "env")
@@ -257,6 +277,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         extra_mounts=extra_mounts,
         claudebox_dir=claudebox_dir,
         netwhitelist=netwhitelist,
+        hostports=hostports,
         host_path=host_path,
         proj_hash=proj_hash,
     )
@@ -459,6 +480,7 @@ def cmd_config_add(kind: str, git_root: str | None) -> None:
         "env": "env",
         "mounts": "mounts",
         "netwhitelist": "netwhitelist.txt",
+        "hostports": "hostports.txt",
     }
     filename = filenames[kind]
     builtin_dir = os.path.join(script_repo_root(), "opt", "claudebox")
@@ -1004,7 +1026,15 @@ def cmd_run(
         ]
     # The entrypoint always starts as root with NET_ADMIN so it can program nftables and start squid.
     cmd += ["--user", "root", "--cap-add", "NET_ADMIN"]
-    if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist:
+    if config.hostports:
+        if os.path.basename(runtime) != "docker":
+            die("hostports.txt requires Docker")
+        cmd += [
+            "--add-host=host.docker.internal:host-gateway",
+            "--env",
+            "CLAUDEBOX_HOST_PORTS=" + ",".join(map(str, config.hostports)),
+        ]
+    if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist or config.hostports:
         cmd += [
             "--env",
             "CLAUDEBOX_NETRESTRICT=1",
@@ -1081,6 +1111,10 @@ def main() -> None:
             "                      (except claudebox2-managed PI_CODING_AGENT_SESSION_DIR).\n"
             "  mounts              extra volume mounts: host:container[:opts], one per line;\n"
             "                      relative host paths resolve from the .claudebox parent dir\n"
+            "  hostports.txt       Docker: allow HTTP and CONNECT via Squid to the host\n"
+            "                      gateway on listed TCP ports (one per line). Entries\n"
+            "                      combine from ~/.config/claudebox/hostports.txt and\n"
+            "                      .claudebox/hostports.txt; enables restricted mode.\n"
             "  netwhitelist.txt    restrict container egress to these domains plus built-in\n"
             "                      defaults (AI endpoints, read-only package hosts); one per\n"
             "                      line, # comments ok; 'host.com' matches exactly while\n"
@@ -1091,9 +1125,11 @@ def main() -> None:
             "active mode ('restricted' or 'unrestricted'). In both modes, direct egress to\n"
             "private/link-local address space -- the container host (host.docker.internal /\n"
             "host.containers.internal), its LAN, CGNAT/tailnets -- is blocked, except DNS to\n"
-            "the configured resolver. This guard needs the container started as root with\n"
-            "NET_ADMIN (claudebox2 always does); containers run by hand without that warn\n"
-            "and report CLAUDEBOX_NETWORK=unguarded."
+            "the configured resolver. Docker hostports.txt allows access to\n"
+            "host.docker.internal on only those TCP ports via the restricted proxy.\n"
+            "Other private destinations stay blocked. This guard needs the container\n"
+            "started as root with NET_ADMIN (claudebox2 always does); containers run\n"
+            "by hand without that warn and report CLAUDEBOX_NETWORK=unguarded."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -1143,7 +1179,7 @@ def main() -> None:
     )
     config_add_parser.add_argument(
         "kind",
-        choices=("append", "prepend", "env", "mounts", "netwhitelist"),
+        choices=("append", "prepend", "env", "mounts", "netwhitelist", "hostports"),
         help="Configuration example to add",
     )
 

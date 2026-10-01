@@ -1,0 +1,5 @@
+# Docker host services reachable through the restricted proxy.
+# One TCP port per line; host-wide and project ports are combined.
+# host.docker.internal is automatically whitelisted on these ports.
+
+# 8000
