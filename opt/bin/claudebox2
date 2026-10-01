@@ -88,13 +88,17 @@ def _parse_lines(path: str) -> list[str]:
 
 def _parse_hostports(path: str) -> list[int]:
     ports: list[int] = []
-    for line in _parse_lines(path):
-        if not line.isascii() or not line.isdecimal() or len(line) > 5:
-            die(f"invalid TCP port in {path}: {line!r}")
-        port = int(line)
-        if not 1 <= port <= 65535:
-            die(f"invalid TCP port in {path}: {line!r}")
-        ports.append(port)
+    with open(path) as f:
+        for raw in f:
+            line = raw.partition("#")[0].strip()
+            if not line:
+                continue
+            if not line.isascii() or not line.isdecimal() or len(line) > 5:
+                die(f"invalid TCP port in {path}: {line!r}")
+            port = int(line)
+            if not 1 <= port <= 65535:
+                die(f"invalid TCP port in {path}: {line!r}")
+            ports.append(port)
     return ports
 
 
@@ -1112,7 +1116,7 @@ def main() -> None:
             "  mounts              extra volume mounts: host:container[:opts], one per line;\n"
             "                      relative host paths resolve from the .claudebox parent dir\n"
             "  hostports.txt       Docker: allow HTTP and CONNECT via Squid to the host\n"
-            "                      gateway on listed TCP ports (one per line). Entries\n"
+            "                      gateway on listed TCP ports (one per line, # comments). Entries\n"
             "                      combine from ~/.config/claudebox/hostports.txt and\n"
             "                      .claudebox/hostports.txt; enables restricted mode.\n"
             "  netwhitelist.txt    restrict container egress to these domains plus built-in\n"
