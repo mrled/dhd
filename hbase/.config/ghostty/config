@@ -5,6 +5,8 @@ theme = "Cyberpunk"
 #theme = "Builtin Pastel Dark"
 theme = "mrlops"
 
+confirm-close-surface = false
+
 font-family = "Inconsolata Nerd Font Mono"
 font-size = 14
 font-thicken = true
