@@ -88,13 +88,13 @@ ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Paseo is installed as a normal CLI in the claudebox image rather than making
-# its Docker image our base. Nothing starts it automatically; claudebox2's
-# explicit `run paseo` mode invokes the non-root guard below. Paseo's own image
-# currently uses Node 22, so keep that runtime versioned instead of relying on
-# Debian's older nodejs package.
 ARG PASEO_VERSION=0.4.0
-RUN brew install node@22 \
+RUN brew update \
+    && brew install \
+        fd \
+        # Node 22 is what Paseo's official Docker container uses
+        node@22 \
+        ripgrep \
     && brew link --force --overwrite node@22 \
     && npm install --global "@getpaseo/cli@${PASEO_VERSION}"
 
