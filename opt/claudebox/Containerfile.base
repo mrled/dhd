@@ -74,12 +74,6 @@ RUN if command -v hugo >/dev/null; then \
         | tar -xz -C /usr/local/bin hugo; \
     fi
 
-COPY --chmod=0755 entrypoint.sh /usr/local/bin/claudebox-entrypoint
-COPY netblocked /usr/local/bin/netblocked
-COPY apt-install /usr/local/bin/apt-install
-COPY CLAUDE.container.md /etc/claude-code/CLAUDE.md
-COPY squid.conf netwhitelist-default.txt /etc/claudebox/
-
 RUN useradd -m -u 1000 -s /bin/zsh claude \
     && mkdir -p /home/linuxbrew \
     && chown claude:claude /home/linuxbrew \
@@ -104,8 +98,6 @@ RUN brew install node@22 \
     && brew link --force --overwrite node@22 \
     && npm install --global "@getpaseo/cli@${PASEO_VERSION}"
 
-COPY --chmod=0755 paseo-nonroot /usr/local/bin/claudebox-paseo
-
 # Bump CLAUDEBOX_AI_CACHEBUST (via `claudebox2 build --aiupdate`) to force this
 # layer to rebuild and reinstall the AI agents without busting the whole cache.
 # The value is referenced in the RUN so a change reliably invalidates its cache.
@@ -114,6 +106,13 @@ RUN echo "ai cachebust: ${CLAUDEBOX_AI_CACHEBUST}" \
     && brew install --cask claude-code codex \
     && npm install --global --ignore-scripts @earendil-works/pi-coding-agent \
     && npm install --global agent-browser
+
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/claudebox-entrypoint
+COPY netblocked /usr/local/bin/netblocked
+COPY apt-install /usr/local/bin/apt-install
+COPY CLAUDE.container.md /etc/claude-code/CLAUDE.md
+COPY squid.conf netwhitelist-default.txt /etc/claudebox/
+COPY --chmod=0755 paseo-nonroot /usr/local/bin/claudebox-paseo
 
 WORKDIR /src
 
