@@ -1,10 +1,8 @@
 """Hostport command construction regressions; no container runtime required.
 
-Run with: python3 -m unittest discover -s opt/claudebox/tests -v
+Run with: python3 -m unittest discover -s opt/lib/claudebox/tests -v
 """
 
-import importlib.util
-from importlib.machinery import SourceFileLoader
 from pathlib import Path
 import sys
 import tempfile
@@ -13,13 +11,12 @@ from contextlib import ExitStack
 from unittest.mock import patch
 
 
-SCRIPT = Path(__file__).resolve().parents[2] / "bin" / "claudebox2"
-LOADER = SourceFileLoader("claudebox2_hostports_tests", str(SCRIPT))
-SPEC = importlib.util.spec_from_loader(LOADER.name, LOADER)
-claudebox = importlib.util.module_from_spec(SPEC)
-# dataclasses resolves annotations through the importing module's sys.modules entry.
-sys.modules[SPEC.name] = claudebox
-LOADER.exec_module(claudebox)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from claudebox.config import Config
+from claudebox import hashing
+from claudebox import runtime as container_runtime
+from claudebox import run as claudebox
 
 
 class ExecCaptured(Exception):
@@ -28,7 +25,7 @@ class ExecCaptured(Exception):
 
 class HostportsTests(unittest.TestCase):
     def run_container(self, runtime, hostports, connection=None, restricted=False, netwhitelist=None):
-        config = claudebox.Config(
+        config = Config(
             homedir="/test/home",
             layers=[],
             base_index=0,
@@ -60,7 +57,7 @@ class HostportsTests(unittest.TestCase):
             )
             stack.enter_context(
                 patch.object(
-                    claudebox.subprocess,
+                    container_runtime.subprocess,
                     "run",
                     side_effect=AssertionError("unexpected subprocess invocation"),
                 )
@@ -84,7 +81,7 @@ class HostportsTests(unittest.TestCase):
 
     def test_builtin_base_runtime_inputs_invalidate_entire_chain(self):
         with tempfile.TemporaryDirectory() as directory:
-            base_dir = Path(directory) / "opt/claudebox"
+            base_dir = Path(directory) / "opt/lib/claudebox/container"
             base_dir.mkdir(parents=True)
             base = base_dir / "Containerfile.base"
             base.write_text("FROM fixture\n")
@@ -95,17 +92,17 @@ class HostportsTests(unittest.TestCase):
             append = base_dir / "Containerfile.append"
             append.write_text("FROM fixture-append\n")
             layers = [(str(base), str(base_dir)), (str(append), str(base_dir))]
-            with patch.object(claudebox, "script_repo_root", return_value=directory):
-                original_base = claudebox.layer_chain_hash(layers[:1])
-                original_chain = claudebox.layer_chain_hash(layers)
+            with patch.object(hashing, "script_repo_root", return_value=directory):
+                original_base = hashing.layer_chain_hash(layers[:1])
+                original_chain = hashing.layer_chain_hash(layers)
                 for name in inputs:
                     with self.subTest(name=name):
                         (base_dir / name).write_text("changed\n")
-                        self.assertNotEqual(claudebox.layer_chain_hash(layers[:1]), original_base)
-                        self.assertNotEqual(claudebox.layer_chain_hash(layers), original_chain)
+                        self.assertNotEqual(hashing.layer_chain_hash(layers[:1]), original_base)
+                        self.assertNotEqual(hashing.layer_chain_hash(layers), original_chain)
                         (base_dir / name).write_text("original\n")
                 (base_dir / "hostports.txt.example").write_text("unrelated\n")
-                self.assertEqual(claudebox.layer_chain_hash(layers), original_chain)
+                self.assertEqual(hashing.layer_chain_hash(layers), original_chain)
 
     def test_explicit_restriction_with_hostports(self):
         argv = self.run_container("docker", [8080, 5432], restricted=True)

@@ -45,7 +45,7 @@ if [ "$(id -u)" -ne 0 ]; then
     # fail, but say so and report a distinct mode: this path has full network
     # access including the container host.
     echo "claudebox-entrypoint: not started as root; network guard NOT active" \
-        "(start with --user root --cap-add NET_ADMIN, or via claudebox2)" >&2
+        "(start with --user root --cap-add NET_ADMIN, or via claudebox)" >&2
     export CLAUDEBOX_NETWORK=unguarded
     exec "$@"
 fi

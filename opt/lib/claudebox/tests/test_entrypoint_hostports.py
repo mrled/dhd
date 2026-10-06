@@ -1,6 +1,6 @@
 """Entrypoint hostport regressions without root, networking, or a runtime.
 
-Run with: python3 -m unittest discover -s opt/claudebox/tests -v
+Run with: python3 -m unittest discover -s opt/lib/claudebox/tests -v
 """
 
 from pathlib import Path
@@ -9,7 +9,7 @@ import tempfile
 import unittest
 
 
-CLAUDEBOX = Path(__file__).resolve().parents[1]
+CLAUDEBOX = Path(__file__).resolve().parents[1] / "container"
 ENTRYPOINT = CLAUDEBOX / "entrypoint.sh"
 
 # All commands that could change privileges, firewall state, ownership, or
