@@ -1,8 +1,0 @@
-.DS_Store
-._*
-__pycache__/
-*.pyc
-*~
-*.swp
-*.mrlignore.*
-**/.claude/settings.local.json
