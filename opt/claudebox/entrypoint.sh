@@ -8,8 +8,9 @@
 # resolv.conf nameservers, which rootless engines place on such addresses.
 #
 # Restricted mode (CLAUDEBOX_NETRESTRICT set, a netwhitelist.txt mounted at
-# /run/claudebox/netwhitelist.txt, or hostports.txt configured) additionally:
-#   - nftables drops all outbound traffic except loopback and the squid user
+# /run/claudebox/netwhitelist.txt) additionally:
+#   - nftables drops outbound traffic except loopback, IPv6 neighbor discovery,
+#     and the squid user
 #     (which also may not reach the private ranges, DNS aside)
 #   - squid (127.0.0.1:3128) allows egress only to whitelisted domains
 #     (defaults from /etc/claudebox/netwhitelist-default.txt plus the mounted
@@ -17,26 +18,27 @@
 #     refuses private-range destinations so a whitelisted domain that resolves
 #     to the host (DNS rebinding) still can't get there
 #
-# CLAUDEBOX_HOST_PORTS (set by claudebox2 from hostports.txt) allows restricted
-# HTTP/CONNECT through squid to host.docker.internal on listed TCP ports.
+# CLAUDEBOX_HOST_PORTS (set by claudebox2 from hostports.txt) allows
+# HTTP/CONNECT through squid to host.docker.internal / host.containers.internal
+# on listed TCP ports, without enabling public-domain restriction.
 # nftables pins the exception to its IPv4 gateway address; all other private
 # destinations remain blocked.
 #
-# CMD runs as claude via setpriv. Started without root, restricted mode is an
-# error; unrestricted mode execs CMD directly with no guard, warns, and
+# CMD runs as claude via setpriv. Started without root, restriction or hostports
+# is an error; plain unrestricted mode execs CMD directly with no guard, warns, and
 # reports CLAUDEBOX_NETWORK=unguarded.
 set -e
 
 USER_WHITELIST=/run/claudebox/netwhitelist.txt
 
 restricted=
-if [ -n "$CLAUDEBOX_NETRESTRICT" ] || [ -f "$USER_WHITELIST" ] || [ -n "${CLAUDEBOX_HOST_PORTS:-}" ]; then
+if [ -n "${CLAUDEBOX_NETRESTRICT:-}" ] || [ -f "$USER_WHITELIST" ]; then
     restricted=1
 fi
 
 if [ "$(id -u)" -ne 0 ]; then
-    if [ -n "$restricted" ]; then
-        echo "claudebox-entrypoint: network restriction requires starting as root with NET_ADMIN" >&2
+    if [ -n "$restricted" ] || [ -n "${CLAUDEBOX_HOST_PORTS:-}" ]; then
+        echo "claudebox-entrypoint: network restriction or hostports requires starting as root with NET_ADMIN" >&2
         exit 1
     fi
     # No root -> can't program the egress guard; run unguarded rather than
@@ -77,10 +79,14 @@ if [ -n "$host_ports" ]; then
         squid_ports="$squid_ports $port"
         nft_ports="${nft_ports:+$nft_ports, }$port"
     done
-    # --add-host=host.docker.internal:host-gateway is passed by claudebox2.
+    # Docker gets an explicit host-gateway alias from claudebox2; Podman
+    # supplies its own backend-specific aliases (also on Podman Machine).
     host_service_ip=$(getent ahostsv4 host.docker.internal | awk 'NR == 1 { print $1 }')
     if [ -z "$host_service_ip" ]; then
-        echo "claudebox-entrypoint: cannot resolve host.docker.internal" >&2
+        host_service_ip=$(getent ahostsv4 host.containers.internal | awk 'NR == 1 { print $1 }')
+    fi
+    if [ -z "$host_service_ip" ]; then
+        echo "claudebox-entrypoint: cannot resolve an IPv4 container host address (host.docker.internal / host.containers.internal)" >&2
         exit 1
     fi
 fi
@@ -110,31 +116,47 @@ if [ -n "$restricted" ]; then
     sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' \
         "$combined" > /run/claudebox/whitelist.txt
     rm -f "$combined"
-    if [ -n "$host_ports" ]; then
-        echo host.docker.internal >> /run/claudebox/whitelist.txt
-    fi
+fi
 
-    # Only loopback and squid's worker uid may send packets -- and even squid
-    # may not enter the private ranges (its resolver excepted); everything
-    # else in the container has no direct route out.
+# Restricted: only loopback, neighbor discovery and squid may send packets.
+# Unrestricted (including hostports-only): all uids may reach public addresses,
+# but private drops apply to all uids. Only squid gets the exact host-port
+# exception, before those drops. DNS is limited to the configured resolvers.
+policy=accept
+dns_prefix=
+private_prefix=
+proxy_accept=
+export CLAUDEBOX_NETWORK=unrestricted
+if [ -n "$restricted" ]; then
+    policy=drop
     proxy_uid=$(id -u proxy)
-    if [ -n "$host_ports" ]; then
-        host_service_rule="        meta skuid $proxy_uid ip daddr $host_service_ip tcp dport { $nft_ports } accept"
-    fi
-    nft -f /dev/stdin <<EOF
+    dns_prefix="meta skuid $proxy_uid"
+    private_prefix="meta skuid $proxy_uid "
+    proxy_accept="        meta skuid $proxy_uid accept"
+    export CLAUDEBOX_NETWORK=restricted
+fi
+if [ -n "$host_ports" ]; then
+    proxy_uid=$(id -u proxy)
+    host_service_rule="        meta skuid $proxy_uid ip daddr $host_service_ip tcp dport { $nft_ports } accept"
+fi
+# Narrow ICMPv6 allowance keeps neighbor/router discovery working in both modes.
+nft -f /dev/stdin <<EOF
 table inet claudebox {
     chain output {
-        type filter hook output priority 0; policy drop;
+        type filter hook output priority 0; policy $policy;
         oifname "lo" accept
-$(dns_accepts "meta skuid $proxy_uid")
+$(dns_accepts "$dns_prefix")
+        icmpv6 type { nd-router-solicit, nd-neighbor-solicit, nd-neighbor-advert } accept
 $host_service_rule
-        meta skuid $proxy_uid ip daddr { $PRIVATE4 } drop
-        meta skuid $proxy_uid ip6 daddr { $PRIVATE6 } drop
-        meta skuid $proxy_uid accept
+        ${private_prefix}ip daddr { $PRIVATE4 } drop
+        ${private_prefix}ip6 daddr { $PRIVATE6 } drop
+$proxy_accept
     }
 }
 EOF
 
+if [ -n "$restricted" ] || [ -n "$host_ports" ]; then
+    mkdir -p /run/claudebox
     # Pre-create the logs world-readable so the claude user can inspect them
     # (see netblocked); squid runs as proxy and preserves existing perms.
     mkdir -p /var/log/squid
@@ -146,19 +168,26 @@ EOF
     squid_config=/etc/claudebox/squid.conf
     if [ -n "$host_ports" ]; then
         squid_config=/run/claudebox/squid.conf
-        # Docker also advertises an IPv6 gateway that is not reachable from
-        # this container. Give Squid only the IPv4 gateway for this hostname;
-        # nftables pins the actual connection to that same IP and port.
-        printf '%s %s\n' "$host_service_ip" host.docker.internal > /run/claudebox/host-service-hosts
+        # Give both aliases only the selected IPv4 host address, avoiding
+        # unreachable IPv6 gateways. nftables pins the actual connection to
+        # that same IP and port, regardless of the runtime's DNS aliases.
+        printf '%s %s %s\n' "$host_service_ip" host.docker.internal host.containers.internal > /run/claudebox/host-service-hosts
         chmod 644 /run/claudebox/host-service-hosts
-        awk -v ports="$squid_ports" '
+        awk -v ports="$squid_ports" -v restricted="$restricted" '
             BEGIN { print "hosts_file /run/claudebox/host-service-hosts" }
             /^http_access deny CONNECT !SSL_ports$/ {
-                print "acl host_service_host dstdomain host.docker.internal"
+                print "acl host_service_host dstdomain host.docker.internal host.containers.internal"
                 print "acl host_service_port port " ports
                 # Pi tunnels even HTTP requests using CONNECT, so this narrow
                 # allow must precede the general non-443 CONNECT denial.
-                print "http_access allow host_service_host host_service_port whitelisted"
+                print "http_access allow host_service_host host_service_port"
+                print "http_access deny host_service_host"
+                if (!restricted) next
+            }
+            !restricted && /^acl whitelisted / { next }
+            !restricted && /^http_access allow whitelisted$/ {
+                print "http_access allow all"
+                next
             }
             { print }
         ' /etc/claudebox/squid.conf > "$squid_config"
@@ -177,29 +206,10 @@ EOF
         sleep 0.2
     done
 
-    export CLAUDEBOX_NETWORK=restricted
     proxy_url=http://127.0.0.1:3128
     export http_proxy="$proxy_url" https_proxy="$proxy_url"
     export HTTP_PROXY="$proxy_url" HTTPS_PROXY="$proxy_url"
     export no_proxy=localhost,127.0.0.1 NO_PROXY=localhost,127.0.0.1
-else
-    # Unrestricted: full egress except straight into private space. The ICMPv6
-    # accept must precede the drops or neighbor/router discovery (which targets
-    # link-local addresses) breaks and IPv6 dies entirely.
-    nft -f /dev/stdin <<EOF
-table inet claudebox {
-    chain output {
-        type filter hook output priority 0; policy accept;
-        oifname "lo" accept
-$(dns_accepts "")
-        icmpv6 type { nd-router-solicit, nd-neighbor-solicit, nd-neighbor-advert } accept
-        ip daddr { $PRIVATE4 } drop
-        ip6 daddr { $PRIVATE6 } drop
-    }
-}
-EOF
-
-    export CLAUDEBOX_NETWORK=unrestricted
 fi
 
 exec setpriv --reuid=claude --regid=claude --init-groups \

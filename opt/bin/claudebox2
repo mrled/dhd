@@ -68,11 +68,20 @@ def sha256_file_short(path: str) -> str:
 
 
 def layer_chain_hash(layers: list[tuple[str, str]]) -> str:
-    """Cumulative content hash of an ordered layer chain. Editing any layer's
-    Containerfile changes the result, so the image tag tracks its full recipe."""
-    running = sha256_file_short(layers[0][0])
-    for cf, _ in layers[1:]:
-        running = sha256_short(running + sha256_file_short(cf))
+    """Hash the recipes plus the built-in base's copied runtime inputs."""
+    builtin_base = os.path.join(script_repo_root(), "opt", "claudebox", "Containerfile.base")
+
+    def layer_hash(cf: str, context: str) -> str:
+        result = sha256_file_short(cf)
+        if os.path.realpath(cf) == os.path.realpath(builtin_base):
+            for name in ("entrypoint.sh", "netblocked", "apt-install", "CLAUDE.container.md",
+                         "squid.conf", "netwhitelist-default.txt", "paseo-nonroot"):
+                result = sha256_short(result + name + sha256_file_short(os.path.join(context, name)))
+        return result
+
+    running = layer_hash(*layers[0])
+    for cf, context in layers[1:]:
+        running = sha256_short(running + layer_hash(cf, context))
     return running
 
 
@@ -1031,14 +1040,15 @@ def cmd_run(
     # The entrypoint always starts as root with NET_ADMIN so it can program nftables and start squid.
     cmd += ["--user", "root", "--cap-add", "NET_ADMIN"]
     if config.hostports:
-        if os.path.basename(runtime) != "docker":
-            die("hostports.txt requires Docker")
+        # Podman supplies both internal host aliases itself, including on
+        # Podman Machine. Do not override its backend-specific host address.
+        if os.path.basename(runtime) == "docker":
+            cmd += ["--add-host=host.docker.internal:host-gateway"]
         cmd += [
-            "--add-host=host.docker.internal:host-gateway",
             "--env",
             "CLAUDEBOX_HOST_PORTS=" + ",".join(map(str, config.hostports)),
         ]
-    if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist or config.hostports:
+    if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist:
         cmd += [
             "--env",
             "CLAUDEBOX_NETRESTRICT=1",
@@ -1115,10 +1125,10 @@ def main() -> None:
             "                      (except claudebox2-managed PI_CODING_AGENT_SESSION_DIR).\n"
             "  mounts              extra volume mounts: host:container[:opts], one per line;\n"
             "                      relative host paths resolve from the .claudebox parent dir\n"
-            "  hostports.txt       Docker: allow HTTP and CONNECT via Squid to the host\n"
+            "  hostports.txt       Docker/Podman: allow HTTP and CONNECT via Squid to the host\n"
             "                      gateway on listed TCP ports (one per line, # comments). Entries\n"
             "                      combine from ~/.config/claudebox/hostports.txt and\n"
-            "                      .claudebox/hostports.txt; enables restricted mode.\n"
+            "                      .claudebox/hostports.txt; does not restrict public domains.\n"
             "  netwhitelist.txt    restrict container egress to these domains plus built-in\n"
             "                      defaults (AI endpoints, read-only package hosts); one per\n"
             "                      line, # comments ok; 'host.com' matches exactly while\n"
@@ -1129,8 +1139,11 @@ def main() -> None:
             "active mode ('restricted' or 'unrestricted'). In both modes, direct egress to\n"
             "private/link-local address space -- the container host (host.docker.internal /\n"
             "host.containers.internal), its LAN, CGNAT/tailnets -- is blocked, except DNS to\n"
-            "the configured resolver. Docker hostports.txt allows access to\n"
-            "host.docker.internal on only those TCP ports via the restricted proxy.\n"
+            "the configured resolver. hostports.txt allows access to host.docker.internal\n"
+            "or host.containers.internal on only those TCP ports via Squid in either mode.\n"
+            "Hostports alone keeps public egress unrestricted and exports proxy settings.\n"
+            "Host services must listen on an address reachable by the runtime; native\n"
+            "rootless Podman's default network may not reach loopback-only services.\n"
             "Other private destinations stay blocked. This guard needs the container\n"
             "started as root with NET_ADMIN (claudebox2 always does); containers run\n"
             "by hand without that warn and report CLAUDEBOX_NETWORK=unguarded."

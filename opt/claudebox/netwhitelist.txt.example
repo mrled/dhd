@@ -4,4 +4,6 @@
 
 # example.com
 # .example.org
-# Docker hostports.txt automatically allows host.docker.internal on its ports.
+# Docker/Podman hostports.txt allows host.docker.internal and
+# host.containers.internal ONLY on its ports via Squid in either mode.
+# Hostports alone does not restrict public domains; this file does.

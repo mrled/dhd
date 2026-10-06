@@ -1,6 +1,13 @@
-# Docker host services reachable through the restricted proxy.
+# Docker/Podman host services reachable through Squid in either network mode.
+# This does NOT enable a public-domain whitelist restriction. Use netwhitelist.txt
+# or CLAUDEBOX_NETRESTRICT=1 for that; hostports alone stays unrestricted for public
+# destinations (including CONNECT on any port), with proxy settings exported.
 # One TCP port per line; blank lines and # comments (including inline) are ignored.
 # Host-wide and project ports are combined.
-# host.docker.internal is automatically whitelisted on these ports.
+# host.docker.internal and host.containers.internal are allowed ONLY on these ports
+# via the proxy. Direct private egress and other private destinations stay blocked.
+# Services must listen on an address reachable by the runtime. Native rootless
+# Podman's default network may not reach services bound only to 127.0.0.1;
+# use a host interface address instead. This does not enable host networking.
 
 # 8000 # local model server
