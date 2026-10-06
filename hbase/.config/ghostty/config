@@ -52,3 +52,8 @@ window-height = 25
 window-width = 80
 
 config-file = ?config.local
+
+# Don't toggle fullscreen with Cmd+Enter or Ctrl+Enter.
+# Keep these after host-local keybindings so they override them too.
+keybind = super+enter=unbind
+keybind = ctrl+enter=unbind
