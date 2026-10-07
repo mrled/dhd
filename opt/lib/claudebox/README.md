@@ -6,6 +6,15 @@ path, so it also works through an external symlink or from another directory.
 For direct package use, set `PYTHONPATH` to the repository's `opt/lib` and run
 `python3 -m claudebox`.
 
+Use `claudebox run --readonly [CMD ...]` to mount the project at `/src`
+read-only, including extra mounts targeting `/src` or its children. Writable
+`O` overlay mounts there are rejected. The persistent home and unrelated mounts
+remain writable; this is not a read-only container. To bypass a custom `run.sh`,
+use `claudebox run --skip-runsh`, or combine it with `--readonly`. Other project
+configuration (including `build.sh`) still applies. Without `--skip-runsh`, custom
+`run.sh` overrides are unsupported with `--readonly`. Use `--` before child
+arguments to forward flags literally, e.g. `claudebox run -- tool --readonly`.
+
 Modules:
 - `errors`: fatal diagnostics
 - `paths`: repository and project discovery

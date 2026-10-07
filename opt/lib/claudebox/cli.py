@@ -106,6 +106,16 @@ def main() -> None:
         "run", help="Run a command in the container (default)"
     )
     run_parser.add_argument(
+        "--readonly",
+        action="store_true",
+        help="Mount the project read-only (home remains writable; use --skip-runsh for custom run.sh)",
+    )
+    run_parser.add_argument(
+        "--skip-runsh",
+        action="store_true",
+        help="Ignore custom run.sh and use the standard container launcher",
+    )
+    run_parser.add_argument(
         "CMD",
         nargs="*",
         metavar="CMD",
@@ -199,4 +209,8 @@ def main() -> None:
             connection=connection,
         )
     else:
-        cmd_run(config, runtime, cmd_args, connection=connection)
+        cmd_run(
+            config, runtime, cmd_args, connection=connection,
+            readonly=getattr(ns, "readonly", False),
+            skip_runsh=getattr(ns, "skip_runsh", False),
+        )

@@ -1,10 +1,12 @@
 """Claudebox run helpers."""
 
 import os
+import posixpath
 from typing import NoReturn
 
 from .build import build_image
 from .config import Config
+from .errors import die
 from .paths import script_repo_root
 from .runtime import (
     check_podman_machine_share,
@@ -86,6 +88,21 @@ def _bind_mount_opts(opts: list[str], selinux_relabel: bool) -> list[str]:
     return opts
 
 
+def _extra_mount_parts(mount: str, readonly: bool) -> tuple[str, str, list[str]]:
+    """Enforce read-only options on extra mounts within the project tree."""
+    src, _, rest = mount.partition(":")
+    dst, _, existing = rest.partition(":")
+    opts = existing.split(",") if existing else []
+    # Container mount paths treat repeated leading slashes as the root;
+    # posixpath otherwise preserves exactly two leading slashes.
+    normalized = posixpath.normpath("/" + dst.lstrip("/")) if dst.startswith("/") else dst
+    if readonly and (normalized == "/src" or normalized.startswith("/src/")):
+        if "O" in opts:
+            die(f"--readonly cannot use writable overlay option O for project mount: {mount}")
+        opts = [opt for opt in opts if opt not in ("rw", "ro")] + ["ro"]
+    return src, dst, opts
+
+
 def _host_env_passthrough(prefix: str, exclude: set[str] | None = None) -> list[str]:
     """Host environment variable names with the given prefix to pass through."""
     blocked = exclude or set()
@@ -99,10 +116,17 @@ def cmd_run(
     runtime: str,
     cmd_args: list[str],
     connection: str | None = None,
+    readonly: bool = False,
+    skip_runsh: bool = False,
 ) -> NoReturn:
+    if readonly and config.run_override and not skip_runsh:
+        die("--readonly is unsupported with a custom run.sh: use --skip-runsh to enforce read-only project mounts")
+    # Validate mounts before any exec, build, or persistent state changes.
+    extra_mounts = [_extra_mount_parts(mount, readonly) for mount in config.extra_mounts]
+
     paseo_mode = bool(cmd_args) and cmd_args[0] == "paseo"
     paseo_start_mode = cmd_args == ["paseo"]
-    if config.run_override:
+    if config.run_override and not skip_runsh:
         # Pass the selected rootless connection to the override script via its own
         # env only -- without mutating this process's global environment.
         env = os.environ.copy()
@@ -188,7 +212,7 @@ def cmd_run(
         _volume_opt(
             project_root,
             "/src",
-            _bind_mount_opts([idmap_opt], selinux_relabel),
+            _bind_mount_opts(["ro" if readonly else "", idmap_opt], selinux_relabel),
         ),
         "--volume",
         _volume_opt(
@@ -281,10 +305,7 @@ def cmd_run(
             ]
     for var in config.extra_env:
         cmd += ["--env", var]
-    for mount in config.extra_mounts:
-        src, _, rest = mount.partition(":")
-        dst, _, existing = rest.partition(":")
-        opts = existing.split(",") if existing else []
+    for src, dst, opts in extra_mounts:
         cmd += [
             "--volume",
             _volume_opt(
