@@ -214,12 +214,20 @@ def cmd_run(
             "/src",
             _bind_mount_opts(["ro" if readonly else "", idmap_opt], selinux_relabel),
         ),
-        "--volume",
-        _volume_opt(
-            f"{project_root}/.git",
-            "/src/.git",
-            _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
-        ),
+    ]
+    # Worktrees use a .git file instead of a directory. Never bind a missing
+    # source: Docker would create it, while Podman rejects it.
+    git_path = os.path.join(project_root, ".git")
+    if os.path.isfile(git_path) or os.path.isdir(git_path):
+        cmd += [
+            "--volume",
+            _volume_opt(
+                git_path,
+                "/src/.git",
+                _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
+            ),
+        ]
+    cmd += [
         "--volume",
         _volume_opt(
             config.homedir,

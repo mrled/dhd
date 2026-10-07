@@ -6,6 +6,12 @@ path, so it also works through an external symlink or from another directory.
 For direct package use, set `PYTHONPATH` to the repository's `opt/lib` and run
 `python3 -m claudebox`.
 
+No Git repository is required: outside Git, the current working directory is
+mounted at `/src` and used for project state. Local `.claudebox/` configuration
+is still detected. In Git repositories, the Git root is mounted instead, with
+an existing `.git` directory or worktree file overlaid read-only; claudebox
+never creates a missing `.git`.
+
 Use `claudebox run --readonly [CMD ...]` to mount the project at `/src`
 read-only, including extra mounts targeting `/src` or its children. Writable
 `O` overlay mounts there are rejected. The persistent home and unrelated mounts
