@@ -1,5 +1,17 @@
 -- LSP configuration
 return {
+  -- Keep Lua formatting consistent with the editor's two-space indentation.
+  {
+    "stevearc/conform.nvim",
+    opts = {
+      formatters = {
+        stylua = {
+          prepend_args = { "--indent-type", "Spaces", "--indent-width", "2" },
+        },
+      },
+    },
+  },
+
   -- Configure Mason to ensure LSP servers are installed
   {
     "mason-org/mason.nvim",
