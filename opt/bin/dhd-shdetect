@@ -314,6 +314,10 @@ dhd_cmdavail() {
 }
 
 ENDRESULTS
+
+    if test -e "/Applications/Tailscale.app/Contents/MacOS/Tailscale"; then
+        echo 'alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"' >> "$SHDETECT_RESULTS"
+    fi
 }
 genresults > "$SHDETECT_RESULTS"
 echo "Generated data saved to $SHDETECT_RESULTS"

@@ -156,9 +156,6 @@ export HISTSIZE="50000"
 # The number of lines to save to _disk_ in a history list
 export SAVEHIST="5000"
 
-
-alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
-
 # A basic prompt
 # If starship is installed, it may override this
 if [[ $EUID == 0 ]]; then
