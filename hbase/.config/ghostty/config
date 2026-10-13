@@ -26,6 +26,7 @@ shell-integration-features = ssh-terminfo,ssh-env
 # To get a static block, add no-cursor to shell-integration-features and uncomment:
 # cursor-style = block
 # cursor-style-blink = false
+adjust-cursor-thickness = 2
 
 # Make the mouse cursor disappear when typing
 mouse-hide-while-typing = true
