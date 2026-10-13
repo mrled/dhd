@@ -222,6 +222,9 @@ dhd_cmdavail flux && source <(flux completion zsh)
 dhd_cmdavail jj && source <(jj util completion zsh)
 test "$NVM_DIR" && . "$NVM_DIR/bash_completion"
 dhd_cmdavail limactl && source <(limactl completion zsh)
+dhd_cmdavail op && source <(op completion zsh)
+dhd_cmdavail sops && source <(sops completion zsh)
+dhd_cmdavail op && dhd_cmdavail sops && export SOPS_AGE_KEY_CMD="op read op://Private/workstation_sops_keys/notesPlain"
 
 
 # Jesus fucking christ these people are just so fucking tacky
