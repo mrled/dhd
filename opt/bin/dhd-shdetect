@@ -264,6 +264,29 @@ FORTUNATE_CHECKOUT=
 test -e "$fortunate_checkout" && FORTUNATE_CHECKOUT="$fortunate_checkout"
 
 
+# Directory shortcuts
+DHD_DIRECTORIES=""
+namedir() {
+    if test $# -le 2; then
+        return 1
+    fi
+    name="$1"
+    shift
+    local found=0
+    for d in "$@"; do
+        if test -e "$d"; then
+            DHD_DIRECTORIES="$DHD_DIRECTORIES:$name=$d"
+            found=1
+            break
+        fi
+    done
+    if test $found -eq 0; then
+        DHD_DIRECTORIES="$DHD_DIRECTORIES:$name=$1"
+    fi
+}
+namedir r "$HOME"/Repositories "$HOME"/repos "$HOME"/repo
+
+
 test -e "$SHDETECT_RESULTS" && rm "$SHDETECT_RESULTS"
 genresults() {
     cat <<ENDRESULTS
@@ -302,6 +325,7 @@ export DHD_LS_TYPE="$DHD_LS_TYPE"
 export DHD_LS_SUPPORTS_COLOR_AUTO="$DHD_LS_SUPPORTS_COLOR_AUTO"
 export DHD_HOSTNAME="$DHD_HOSTNAME"
 export DHD_CMDAVAIL="$DHD_CMDAVAIL"
+export DHD_DIRECTORIES="$DHD_DIRECTORIES"
 export DHD_FIGLET_FONTS="$DHD_FIGLET_FONTS"
 export FORTUNATE_CHECKOUT="$FORTUNATE_CHECKOUT"
 export HOMEBREWDIR="$HOMEBREWDIR"

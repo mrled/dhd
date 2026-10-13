@@ -108,6 +108,16 @@ alias dush='du -sh' # du -h is a POSIX extension
 # I haven't used tcsh in over a decade jesus christ
 alias rehash='hash -r'
 
+# Named directories
+for entry in ${(s/:/)DHD_DIRECTORIES}; do
+    test "$entry" = "" && continue
+    name="${entry%%=*}"
+    dir="${entry#*=}"
+    if test -e "$dir"; then
+        hash -d "$name"="$dir"
+    fi
+done
+
 # Work nicely with venvs
 alias uvenv="test -e .venv || uv venv --quiet; . .venv/bin/activate;"
 
