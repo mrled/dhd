@@ -257,7 +257,23 @@ cmdavail_add() {
     done
     echo "DHD_CMDAVAIL=$DHD_CMDAVAIL" >&2
 }
-cmdavail_add rainbow lolcatjs figlet fortune doctl aws aws_completer kubectl starship atuin flux jj limactl direnv op sops
+cmdavail_add \
+    atuin \
+    aws \
+    aws_completer \
+    direnv \
+    doctl \
+    figlet \
+    flux \
+    fortune \
+    jj \
+    kubectl \
+    limactl \
+    lolcatjs \
+    op \
+    rainbow \
+    sops \
+    starship
 
 # motd stuff
 figlet_font_dir="$HOME/mrldata/Repositories/psyops/docker/setup/figlet-fonts"
