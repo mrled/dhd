@@ -24,7 +24,7 @@ class ReadonlyTests(unittest.TestCase):
             build_override=None, run_override=None, tag="claudebox:test",
             git_root="/test/project", extra_env=[], extra_mounts=[],
             claudebox_dir="/test/project/.claudebox", netwhitelist=None,
-            hostports=[], host_path="/test/project", proj_hash="test",
+            hostports=[], lanallow=[], host_path="/test/project", proj_hash="test",
         )
         self.stack = ExitStack()
         self.addCleanup(self.stack.close)

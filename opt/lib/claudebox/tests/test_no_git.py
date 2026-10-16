@@ -105,7 +105,7 @@ class NoGitTests(unittest.TestCase):
         with patch.object(cli, "find_container_runtime") as runtime:
             for kind, filename in (("append", "Containerfile.append"), ("prepend", "Containerfile.prepend"),
                                    ("env", "env"), ("mounts", "mounts"),
-                                   ("netwhitelist", "netwhitelist.txt"), ("hostports", "hostports.txt")):
+                                   ("netwhitelist", "netwhitelist.txt"), ("hostports", "hostports.txt"), ("lanallow", "lanallow.txt")):
                 with self.subTest(kind=kind), redirect_stdout(io.StringIO()), \
                      patch.object(sys, "argv", ["claudebox", "config", "add", kind]):
                     cli.main()

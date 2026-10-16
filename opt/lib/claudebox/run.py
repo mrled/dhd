@@ -297,6 +297,11 @@ def cmd_run(
             "--env",
             "CLAUDEBOX_HOST_PORTS=" + ",".join(map(str, config.hostports)),
         ]
+    if config.lanallow:
+        cmd += [
+            "--env",
+            "CLAUDEBOX_LAN_ALLOW=" + ",".join(f"{ip}:{port}" for ip, port in config.lanallow),
+        ]
     if os.environ.get("CLAUDEBOX_NETRESTRICT") or config.netwhitelist:
         cmd += [
             "--env",

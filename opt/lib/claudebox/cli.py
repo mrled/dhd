@@ -69,6 +69,14 @@ def main() -> None:
             "                      gateway on listed TCP ports (one per line, # comments). Entries\n"
             "                      combine from ~/.config/claudebox/hostports.txt and\n"
             "                      .claudebox/hostports.txt; does not restrict public domains.\n"
+            "  lanallow.txt        allow direct TCP and Squid HTTP/CONNECT to IPv4:TCPport pairs;\n"
+            "                      merges ~/.config/claudebox/lanallow.txt and project entries,\n"
+            "                      ignoring comments/blanks and deduplicating pairs. Only\n"
+            "                      10/8, 172.16/12, 192.168/16, 169.254/16, 100.64/10 allowed;\n"
+            "                      e.g. 192.168.1.20:445 for direct SMB. Squid requires literal\n"
+            "                      IPs; direct clients may use names resolving to the exact IP.\n"
+            "                      No CIDRs, IPv6, public IPs, or UDP. Does not restrict\n"
+            "                      public domains; works in both modes, exact pairs only.\n"
             "  netwhitelist.txt    restrict container egress to these domains plus built-in\n"
             "                      defaults (AI endpoints, read-only package hosts); one per\n"
             "                      line, # comments ok; 'host.com' matches exactly while\n"
@@ -79,7 +87,8 @@ def main() -> None:
             "active mode ('restricted' or 'unrestricted'). In both modes, direct egress to\n"
             "private/link-local address space -- the container host (host.docker.internal /\n"
             "host.containers.internal), its LAN, CGNAT/tailnets -- is blocked, except DNS to\n"
-            "the configured resolver. hostports.txt allows access to host.docker.internal\n"
+            "the configured resolver and exact TCP pairs in lanallow.txt (direct or proxy).\n"
+            "hostports.txt allows access to host.docker.internal\n"
             "or host.containers.internal on only those TCP ports via Squid in either mode.\n"
             "Hostports alone keeps public egress unrestricted and exports proxy settings.\n"
             "Host services must listen on an address reachable by the runtime; native\n"
@@ -146,7 +155,7 @@ def main() -> None:
     )
     config_add_parser.add_argument(
         "kind",
-        choices=("append", "prepend", "env", "mounts", "netwhitelist", "hostports"),
+        choices=("append", "prepend", "env", "mounts", "netwhitelist", "hostports", "lanallow"),
         help="Configuration example to add",
     )
 

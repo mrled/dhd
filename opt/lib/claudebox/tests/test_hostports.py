@@ -24,7 +24,7 @@ class ExecCaptured(Exception):
 
 
 class HostportsTests(unittest.TestCase):
-    def run_container(self, runtime, hostports, connection=None, restricted=False, netwhitelist=None):
+    def run_container(self, runtime, hostports, connection=None, restricted=False, netwhitelist=None, lanallow=None):
         config = Config(
             homedir="/test/home",
             layers=[],
@@ -38,6 +38,7 @@ class HostportsTests(unittest.TestCase):
             claudebox_dir=None,
             netwhitelist=netwhitelist,
             hostports=hostports,
+            lanallow=lanallow or [],
             host_path="/test/project",
             proj_hash="test-project",
         )

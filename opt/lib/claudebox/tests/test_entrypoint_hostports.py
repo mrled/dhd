@@ -20,7 +20,7 @@ printf '%s %s\\n' "$command" "$*" >> "$TEST_CAPTURE/commands"
 case "$command" in
     id)
         case "$*" in
-            '-u') printf '0\\n' ;;
+            '-u') printf '%s\\n' "${TEST_UID:-0}" ;;
             '-u proxy') printf '731\\n' ;;
             *) exit 90 ;;
         esac ;;
@@ -84,13 +84,15 @@ class EntrypointHostportsTests(unittest.TestCase):
             text = text.replace(original, replacement)
         return text
 
-    def run_entrypoint(self, ports="8080,5432", docker="172.17.0.1", podman="", restricted=False):
+    def run_entrypoint(self, ports="8080,5432", docker="172.17.0.1", podman="", restricted=False, lanallow="", uid="0"):
         # Do not inherit CLAUDEBOX_* settings or proxy settings from the caller.
         environment = {
             "PATH": f"{self.bin_dir}:/usr/bin:/bin",
             "LC_ALL": "C",
             "TMPDIR": str(self.root),
             "CLAUDEBOX_HOST_PORTS": ports,
+            "CLAUDEBOX_LAN_ALLOW": lanallow,
+            "TEST_UID": uid,
             "CLAUDEBOX_NETRESTRICT": "1" if restricted else "",
             "TEST_CAPTURE": str(self.capture),
             "TEST_DOCKER_IP": docker,

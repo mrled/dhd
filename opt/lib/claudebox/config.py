@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import os
+import ipaddress
 import shutil
 
 from .errors import die
@@ -28,6 +29,7 @@ class Config:
     claudebox_dir: str | None
     netwhitelist: str | None
     hostports: list[int]
+    lanallow: list[tuple[str, int]]
     host_path: str
     proj_hash: str
 
@@ -51,6 +53,34 @@ def _parse_hostports(path: str) -> list[int]:
                 die(f"invalid TCP port in {path}: {line!r}")
             ports.append(port)
     return ports
+
+
+# Match the IPv4 ranges guarded by container/entrypoint.sh, not the broader
+# ipaddress.is_private classification (which also includes loopback, etc.).
+_LAN_NETWORKS = tuple(ipaddress.IPv4Network(cidr) for cidr in (
+    "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16", "100.64.0.0/10",
+))
+
+
+def _parse_lanallow(path: str) -> list[tuple[str, int]]:
+    entries: list[tuple[str, int]] = []
+    with open(path) as f:
+        for raw in f:
+            line = raw.partition("#")[0].strip()
+            if not line:
+                continue
+            try:
+                address, port_text = line.split(":")
+                ip = ipaddress.IPv4Address(address)
+                if not any(ip in network for network in _LAN_NETWORKS):
+                    raise ValueError
+                if (not port_text.isascii() or not port_text.isdecimal()
+                        or len(port_text) > 5 or not 1 <= int(port_text) <= 65535):
+                    raise ValueError
+            except ValueError:
+                die(f"invalid LAN allowance in {path}: {line!r} (expected private IPv4:TCPport)")
+            entries.append((str(ip), int(port_text)))
+    return entries
 
 
 def _resolve_mounts(lines: list[str], claudebox_parent: str) -> list[str]:
@@ -167,12 +197,17 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
     extra_mounts: list[str] = []
     netwhitelist: str | None = None
     hostports: list[int] = []
+    lanallow: list[tuple[str, int]] = []
     for directory in (user_dir, claudebox_dir):
         if directory:
             p = os.path.join(directory, "hostports.txt")
             if os.path.isfile(p):
                 hostports.extend(_parse_hostports(p))
+            p = os.path.join(directory, "lanallow.txt")
+            if os.path.isfile(p):
+                lanallow.extend(_parse_lanallow(p))
     hostports = list(dict.fromkeys(hostports))
+    lanallow = list(dict.fromkeys(lanallow))
     if claudebox_dir:
         claudebox_parent = os.path.dirname(claudebox_dir)
         p = os.path.join(claudebox_dir, "env")
@@ -209,6 +244,7 @@ def resolve_config(claudebox_dir: str | None, git_root: str | None) -> Config:
         claudebox_dir=claudebox_dir,
         netwhitelist=netwhitelist,
         hostports=hostports,
+        lanallow=lanallow,
         host_path=host_path,
         proj_hash=proj_hash,
     )
@@ -223,6 +259,7 @@ def cmd_config_add(kind: str, git_root: str | None) -> None:
         "mounts": "mounts",
         "netwhitelist": "netwhitelist.txt",
         "hostports": "hostports.txt",
+        "lanallow": "lanallow.txt",
     }
     filename = filenames[kind]
     doc_dir = os.path.join(script_repo_root(), "opt", "lib", "claudebox", "doc")

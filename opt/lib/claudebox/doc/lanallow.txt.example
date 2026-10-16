@@ -1,0 +1,23 @@
+# Allow direct TCP and Squid HTTP/CONNECT to exact private IPv4:TCPport pairs.
+# Entries merge from ~/.config/claudebox/lanallow.txt and .claudebox/lanallow.txt;
+# blank lines, # comments (including inline), and duplicate pairs are ignored.
+# Works in restricted AND unrestricted modes; does NOT activate restriction.
+# Use netwhitelist.txt or CLAUDEBOX_NETRESTRICT=1 to restrict public domains.
+# Proxy settings are exported; direct TCP also works. UDP stays blocked.
+# Requires root + NET_ADMIN at startup (the normal claudebox invocation).
+#
+# Only ranges already guarded by claudebox are accepted:
+# 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 100.64.0.0/10.
+# Public IPs are rejected to avoid bypassing the public-domain whitelist.
+# Squid requests must use the literal IP (e.g. http://192.168.1.20:8080/ or
+# CONNECT 100.64.1.2:8443), not a hostname even if it resolves to that IP.
+# Direct TCP clients may use hostnames resolving to the exact allowed IP.
+# If a client honors proxy settings, bypass the proxy for direct connections.
+# No hostnames, host-alias resolution, CIDRs, IPv6, wildcards, or port ranges.
+# TCP ports must be 1-65535. Each IP/port pair is independent; listing two pairs
+# does not open either IP on the other pair's port. Unlisted pairs stay blocked.
+# Use hostports.txt instead for the Docker/Podman host gateway aliases.
+#
+# 192.168.1.20:8080  # LAN HTTP service
+# 100.64.1.2:8443    # Tailnet HTTPS service (CONNECT)
+# 192.168.1.20:445   # SMB file share (direct TCP)
