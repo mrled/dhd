@@ -247,6 +247,20 @@ def cmd_run(
             _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
         ),
     ]
+    # Repository-managed Pi resources are shared independently of project history.
+    for source, destination in (
+        ("AGENTS.md", "AGENTS.md"),
+        ("instructions", "instructions"),
+        ("skills", "skills/dhd"),
+    ):
+        cmd += [
+            "--volume",
+            _volume_opt(
+                os.path.join(script_repo_root(), "opt", "pi", source),
+                f"/home/claude/.pi/agent/{destination}",
+                _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
+            ),
+        ]
     # .claudebox configures claudebox itself -- netwhitelist.txt widens the
     # next session's egress, and run.sh/build.sh/mounts execute or take effect
     # on the host -- so overlay it read-only on the rw /src mount to keep the

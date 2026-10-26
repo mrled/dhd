@@ -66,6 +66,23 @@ class ReadonlyTests(unittest.TestCase):
                 self.assertIn("/test/project/.git:/src/.git:ro" + (",z" if selinux else ""), mounts)
                 self.assertIn("/test/project/.claudebox:/src/.claudebox:ro" + (",z" if selinux else ""), mounts)
 
+    def test_shared_pi_resources_are_readonly(self):
+        for runtime, selinux in (("docker", False), ("podman", False), ("podman", True)):
+            for readonly in (False, True):
+                with self.subTest(runtime=runtime, selinux=selinux, readonly=readonly):
+                    mounts = self.volumes(runtime, selinux, readonly=readonly)
+                    label = ",z" if selinux else ""
+                    for source, destination in (
+                        ("AGENTS.md", "AGENTS.md"),
+                        ("instructions", "instructions"),
+                        ("skills", "skills/dhd"),
+                        ("extensions", "extensions/dhd"),
+                    ):
+                        self.assertIn(
+                            f"/repo/opt/pi/{source}:/home/claude/.pi/agent/{destination}:ro{label}",
+                            mounts,
+                        )
+
     def test_readonly_project_preserves_home_and_selinux(self):
         for runtime, selinux in (("docker", False), ("podman", False), ("podman", True)):
             with self.subTest(runtime=runtime, selinux=selinux):

@@ -40,6 +40,14 @@ modules do not import CLI or run. Within `opt/lib/claudebox`:
 - `tests/` contains the regression suite.
 
 Pi assets remain in `opt/pi`; user configuration and persistent state paths are unchanged.
+Standard runs mount `opt/pi/AGENTS.md` and `opt/pi/instructions/` read-only at
+`~/.pi/agent/AGENTS.md` and `~/.pi/agent/instructions/` inside the container.
+Repository skills and extensions are mounted read-only under
+`~/.pi/agent/skills/dhd/` and `~/.pi/agent/extensions/dhd/`, preserving other
+user-installed skills and extensions. These resources are shared across projects;
+session history remains project-specific. Restart existing containers to acquire
+new mounts; use Pi's `/reload` after editing resources. The instructions directory
+is not automatically loaded: reference relevant files from `AGENTS.md`.
 Persistent home settings are seeded by `state.py`, not a checked-in home template.
 
 Tests: `python3 -m unittest discover -s opt/lib/claudebox/tests -v`.
