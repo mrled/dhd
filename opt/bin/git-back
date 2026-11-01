@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -eu
 
 cmdname=`basename "$0"`
 
@@ -21,8 +21,9 @@ EXAMPLES
 
 IMPLEMENTATION
 
-    All this does is set the GIT_COMMITTER_DATE and GIT_AUTHOR_DATE
-    and run a git command.
+    Sets GIT_COMMITTER_DATE and GIT_AUTHOR_DATE and runs a git command.
+    For 'commit', also passes --date so that --amend replaces the original
+    author date instead of preserving it.
 
     Note that running the simple 'git commit --date <date>' is not sufficient,
     as it only sets one of those values.
@@ -43,4 +44,9 @@ shift
 
 export GIT_COMMITTER_DATE="$date"
 export GIT_AUTHOR_DATE="$date"
-git "$@"
+if test "${1-}" = commit; then
+    shift
+    git commit --date="$date" "$@"
+else
+    git "$@"
+fi
