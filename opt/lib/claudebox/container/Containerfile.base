@@ -95,6 +95,9 @@ RUN brew update \
         # Node 22 is what Paseo's official Docker container uses
         node@22 \
         ripgrep \
+        ruff \
+        ty \
+        uv \
     && brew link --force --overwrite node@22 \
     && npm install --global "@getpaseo/cli@${PASEO_VERSION}"
 
