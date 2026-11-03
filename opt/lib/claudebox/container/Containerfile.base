@@ -83,7 +83,7 @@ RUN useradd -m -u 1000 -s /bin/zsh claude \
 USER claude
 
 ENV HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew
-ENV PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+ENV PATH="/home/claude/.cargo/bin:$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -100,6 +100,12 @@ RUN brew update \
         uv \
     && brew link --force --overwrite node@22 \
     && npm install --global "@getpaseo/cli@${PASEO_VERSION}"
+
+RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs -o /tmp/rustup-init.sh \
+    && sh /tmp/rustup-init.sh -y --no-modify-path --default-toolchain stable \
+    && rm /tmp/rustup-init.sh \
+    && rustc --version \
+    && cargo --version
 
 # Bump CLAUDEBOX_AI_CACHEBUST (via `claudebox2 build --aiupdate`) to force this
 # layer to rebuild and reinstall the AI agents without busting the whole cache.
