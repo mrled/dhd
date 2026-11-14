@@ -75,15 +75,17 @@ RUN if command -v hugo >/dev/null; then \
     fi
 
 RUN useradd -m -u 1000 -s /bin/zsh claude \
-    && mkdir -p /home/linuxbrew \
-    && chown claude:claude /home/linuxbrew \
+    && mkdir -p /home/linuxbrew /opt/rust/cargo /opt/rust/rustup \
+    && chown claude:claude /home/linuxbrew /opt/rust /opt/rust/cargo /opt/rust/rustup \
     && echo 'claude ALL=(root) NOPASSWD: /usr/local/bin/apt-install' > /etc/sudoers.d/claudebox-apt-install \
     && chmod 440 /etc/sudoers.d/claudebox-apt-install
 
 USER claude
 
 ENV HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew
-ENV PATH="/home/claude/.cargo/bin:$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+ENV CARGO_HOME=/opt/rust/cargo
+ENV RUSTUP_HOME=/opt/rust/rustup
+ENV PATH="$CARGO_HOME/bin:$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
