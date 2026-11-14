@@ -66,6 +66,28 @@ class ReadonlyTests(unittest.TestCase):
                 self.assertIn("/test/project/.git:/src/.git:ro" + (",z" if selinux else ""), mounts)
                 self.assertIn("/test/project/.claudebox:/src/.claudebox:ro" + (",z" if selinux else ""), mounts)
 
+    def test_lfs_tmp_is_ephemeral_and_writable(self):
+        for runtime in ("docker", "podman", "/usr/bin/podman"):
+            for readonly in (False, True):
+                with self.subTest(runtime=runtime, readonly=readonly):
+                    isdir = run.os.path.isdir
+                    with patch.object(
+                        run.os.path, "isdir",
+                        side_effect=lambda path: path == "/test/project/.git/lfs/tmp" or isdir(path),
+                    ):
+                        self.volumes(runtime, readonly=readonly)
+                    argv = self.effects["execvp"].call_args.args[1]
+                    self.assertIn("--tmpfs", argv)
+                    self.assertEqual(
+                        argv[argv.index("--tmpfs") + 1],
+                        "/src/.git/lfs/tmp:rw,nosuid,nodev,mode=1777",
+                    )
+
+    def test_missing_lfs_tmp_does_not_add_mount(self):
+        self.volumes()
+        argv = self.effects["execvp"].call_args.args[1]
+        self.assertNotIn("--tmpfs", argv)
+
     def test_shared_pi_resources_are_readonly(self):
         for runtime, selinux in (("docker", False), ("podman", False), ("podman", True)):
             for readonly in (False, True):

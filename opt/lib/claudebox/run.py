@@ -227,6 +227,16 @@ def cmd_run(
                 _bind_mount_opts(["ro", idmap_opt], selinux_relabel),
             ),
         ]
+    # LFS needs scratch space even though Git metadata is mounted read-only.
+    # Only overlay an existing directory: creating it beneath the read-only
+    # .git mount can fail, and worktrees use a .git file instead.
+    # Podman's --tmpfs rejects uid/gid options. Use standard sticky scratch
+    # permissions so claude can write even when the mount is owned by root.
+    if os.path.isdir(os.path.join(git_path, "lfs", "tmp")):
+        cmd += [
+            "--tmpfs",
+            "/src/.git/lfs/tmp:rw,nosuid,nodev,mode=1777",
+        ]
     cmd += [
         "--volume",
         _volume_opt(
