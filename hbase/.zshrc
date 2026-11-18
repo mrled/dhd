@@ -250,3 +250,9 @@ tmux_update_environment() {
     eval $(tmux show-environment -s)
 }
 preexec_functions+=(tmux_update_environment)
+
+if dhd_cmdavail zoxide; then
+    export _ZO_ECHO=1
+    eval "$(zoxide init zsh --cmd d)"
+fi
+

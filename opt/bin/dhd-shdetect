@@ -273,7 +273,8 @@ cmdavail_add \
     op \
     rainbow \
     sops \
-    starship
+    starship \
+    zoxide
 
 # motd stuff
 figlet_font_dir="$HOME/mrldata/Repositories/psyops/docker/setup/figlet-fonts"
