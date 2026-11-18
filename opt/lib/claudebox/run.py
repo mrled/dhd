@@ -296,6 +296,8 @@ def cmd_run(
         "--env",
         "PI_CODING_AGENT_SESSION_DIR=/home/claude/.pi-sessions",
         "--env",
+        "TRUEFOUNDRY_PAT",
+        "--env",
         "TZ=America/Chicago",
     ]
     for var in _host_env_passthrough(
