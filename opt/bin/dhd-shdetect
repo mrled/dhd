@@ -214,8 +214,9 @@ if df -h / >/dev/null 2>&1; then
 fi
 
 # Fucking environment variables on macOS
+# See .profile for information on LANG and LC_* variables.
 if cmdavail launchctl && test "$LANG"; then
-    launchctl setenv LC_ALL "$LANG"
+    launchctl setenv LANG "$LANG"
 fi
 
 # Test for a grep that supports --color=auto, which includes GNU, FreeBSD, and macOS greps
