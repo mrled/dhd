@@ -44,7 +44,8 @@ if [ "$list" -eq 1 ]; then
     tmux -L outer list-sessions -F "$fmt" 2>/dev/null | sed 's/^/  /' \
         || echo "  (no server)"
     echo "inner:"
-    tmux list-sessions -F "$fmt" 2>/dev/null | sed 's/^/  /' \
+    # Ignore the enclosing session's socket when querying the inner server.
+    (unset TMUX; tmux list-sessions -F "$fmt") 2>/dev/null | sed 's/^/  /' \
         || echo "  (no server)"
     exit 0
 fi
