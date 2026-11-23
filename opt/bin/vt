@@ -131,7 +131,7 @@ if [ -n "$outer_socket" ]; then
     # update-environment, with no cross-server plumbing.
     # The outer server sets $TMUX in window environments; unset it or
     # attach-session will refuse to nest.
-    attach_cmd="unset TMUX; exec tmux attach-session -t '$session'"
+    attach_cmd="unset TMUX; exec tmux -u attach-session -t '$session'"
     existing=$(tmux -S "$outer_socket" list-windows -t "$outer_session" \
             -F '#{window_index} #{window_name}' \
         | awk -v s="$session" '$2==s{print $1; exit}')
