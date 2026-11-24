@@ -93,10 +93,10 @@ if [ "$outer" -eq 1 ]; then
     # Only pass -c when creating: with -A it would retarget an existing
     # session's working directory on every reattach.
     if tmux -L outer has-session -t "=$session" 2>/dev/null; then
-        exec tmux -L outer -f ~/.dhd/hbase/.tmux.outer.conf \
+        exec tmux  -u -L outer -f ~/.dhd/hbase/.tmux.outer.conf \
             new-session -A -s "$session"
     fi
-    exec tmux -L outer -f ~/.dhd/hbase/.tmux.outer.conf \
+    exec tmux -u -L outer -f ~/.dhd/hbase/.tmux.outer.conf \
         new-session -A -s "$session" -c "$dir"
 fi
 
